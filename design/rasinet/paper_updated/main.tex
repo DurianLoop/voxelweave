@@ -1,0 +1,207 @@
+\documentclass{article}
+\usepackage{spconf,amsmath,amssymb,graphicx,booktabs,array,microtype,dblfloatfix,balance,float}
+\graphicspath{{figures_icassp/}}
+\input{tables_icassp/result_macros.tex}
+\input{tables_icassp/stress_macros.tex}
+\setlength{\textfloatsep}{6pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{6pt plus 2pt minus 2pt}
+\setlength{\floatsep}{5pt plus 2pt minus 2pt}
+\setlength{\intextsep}{5pt plus 2pt minus 2pt}
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{0.94}
+% Use the reference-only fifth page efficiently without changing margins or font size.
+\makeatletter
+\let\oldthebibliography\thebibliography
+\renewcommand{\thebibliography}[1]{%
+  \oldthebibliography{#1}%
+  \setlength{\itemsep}{11.8pt plus 0.6pt minus 0.5pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\parskip}{0pt}%
+}
+\makeatother
+
+\title{TARGET-TO-COMMITTEE DISAGREEMENT FOR GROUND-TRUTH-FREE\\
+RELIABILITY RANKING OF MRI SLICE INTERPOLATION}
+\name{Anonymous Authors}
+\address{Anonymous submission}
+
+\begin{document}
+\ninept
+\maketitle
+
+\begin{abstract}
+Cohort-average reconstruction metrics cannot identify which individual MRI interpolation requires review when its missing target is unavailable. We formulate this deployment gap as target-specific, ground-truth-free reliability ranking. A specified target interpolator is excluded from a heterogeneous committee; median absolute target-to-member differences are computed on generated voxels and aggregated over a deployment-compatible foreground mask. Ground truth is isolated from scoring and used only for retrospective evaluation. Across 161 T2-weighted examinations from IXI, fastMRI-brain, and an eight-fold out-of-fold NingXia cohort, covering ten fixed dataset--target profiles, examination-level Spearman correlation is \CaseSpearmanRange, normalized AURC is \NAURCRange, and referring the highest-score half reduces retained MAE by \RRRFiftyRange. Committee, score, mask, normalization, TTA, cost, qualitative, and controlled shared-error analyses define the operating conditions and blind spots. The output is a selective-review signal, not a calibrated probability or clinical certificate.
+\end{abstract}
+
+\begin{keywords}
+MRI interpolation, reliability ranking, selective review, model disagreement, quality control
+\end{keywords}
+
+\section{Introduction}
+Through-plane interpolation densifies sparse MRI stacks for visualization, registration, and volumetric processing. Modern methods model inter-slice context or adapt restoration transformers \cite{song2024i3net,liang2021swinir,chen2022hat}, yet they are usually compared by cohort-average PSNR, SSIM, or MAE. Such metrics summarize a test set but do not identify an unreliable examination once the missing slice is unobservable.
+
+Model-internal uncertainty methods use stochastic inference, repeated training, heteroscedastic objectives, TTA, active acquisition, posterior reconstruction, or learned error prediction \cite{gal2016dropout,lakshminarayanan2017deepensembles,kendall2017uncertainties,wang2018tta,edupuganti2021uqmri,kuestner2024ensembles,zhang2019active,shaw2020heteroscedastic,hu2021predict,zhang2024trainingfree}; no-reference MRI quality assessment instead targets perceptual quality or acquisition artifacts \cite{stepien2022nriqa}. Our setting is different: deterministic outputs from several established interpolators already coexist, while model internals or repeated inference may be unavailable. We ask whether their inconsistency can rank the error of one named target model. Selective prediction supplies the operational endpoint: retain low-score cases, refer high-score cases, and evaluate the entire risk--coverage curve rather than interpreting the score as a probability \cite{elyaniv2010selective,geifman2019selectivenet,ding2020aurc,kompa2021second}. We contribute a target-specific self-excluded score, an explicit spatial/intensity contract, a ground-truth-isolated evaluation, and a systematic analysis of committee choice, preprocessing, single-model alternatives, computational cost, and the exact shared-error blind spot.
+
+\section{Method}
+\subsection{Deployment contract and target isolation}
+Let $x$ denote observed sparse-slice context, $y$ the unobserved dense target, and $\hat y_m=f_m(x)$ the output of target interpolator $m$. Available output identities form $\mathcal B$, and the target-specific committee is
+\begin{equation}
+ \mathcal C_m=\{\hat y_b:b\in\mathcal B,\ b\neq m\}.
+ \label{eq:committee}
+\end{equation}
+The committee may combine neural point reconstructions with deterministic analytical interpolation, but never contains $y$ or $\hat y_m$ itself. Before scoring, outputs must share case identity, affine, orientation, voxel grid, shape, generated-slice pattern, and source-intensity representation. Missing, duplicate, non-finite, or geometrically mismatched files invalidate the profile rather than being silently resampled. Disagreement is meaningful only under this deployment contract.
+
+\begin{figure}[!t]
+ \centering
+ \includegraphics[width=0.98\columnwidth]{figure_framework_outlined.pdf}
+ \caption{Target-specific scoring and offline evaluation. The target is excluded from its heterogeneous committee; ground truth is revealed only after scoring.}
+ \label{fig:framework}
+\end{figure}
+
+\subsection{Target-specific disagreement family}
+For generated voxel $i$, the default map is
+\begin{equation}
+ U_m(i)=\mathop{\mathrm{median}}_{b\in\mathcal C_m}
+ |\hat y_m(i)-\hat y_b(i)|.
+ \label{eq:score}
+\end{equation}
+This is a median target-to-committee difference, not statistical median absolute deviation and not posterior variance. Self-exclusion is essential because including $\hat y_m$ creates a structural zero. To separate the protocol from the elementary aggregator, define $d_{mb}(i)=|\hat y_m(i)-\hat y_b(i)|$ and
+\begin{equation}
+ U_m^g(i)=g\!\left(\{d_{mb}(i):b\in\mathcal C_m\}\right),
+ \label{eq:family}
+\end{equation}
+where $g$ may be the median, mean, maximum, or trimmed mean. Comparators also include distance to the committee mean/median image, target-excluded committee spread, mean/median pairwise disagreement, residuals to linear/cubic interpolation, and gradient- or Laplacian-domain variants. These tests distinguish robust target conditioning from generic set dispersion, analytical departure, and local structural inconsistency. Changing the named target changes every $d_{mb}$ and may change the review order; a single all-output spread map cannot attribute risk to one interpolator.
+
+\subsection{Generated support, masking, and intensity}
+For factor-four interpolation, let $\mathcal G$ contain only synthesized-slice voxels; observed anchors are never scored. The default deployment mask and examination score are
+\begin{align}
+ M_m(i)&=\mathbf1\!\left[|\hat y_m(i)|>0.01\max_{j\in\mathcal G}|\hat y_m(j)|\right],\label{eq:mask}\\
+ s_m&=\frac{\sum_{i\in\mathcal G}M_m(i)U_m(i)}{\sum_{i\in\mathcal G}M_m(i)}.
+ \label{eq:case}
+\end{align}
+Foreground aggregation prevents empty background from dominating the score, but a target-derived mask may omit tissue suppressed by the target. We therefore test target thresholds 0.5--5\%, committee union/intersection/median-image masks, and an observed-anchor-derived mask. A ground-truth mask is offline-only and rejected by the deployment path. Primary predictions are inversely mapped to a common source-volume intensity range; independent p1--p99, median/IQR, and min--max normalization are sensitivities because they may erase cross-model amplitude information or reverse case ordering.
+
+\subsection{Identifiability and common-mode invariance}
+Write $\hat y_b=y+c+\epsilon_b$, where $c$ is shared error and $\epsilon_b$ is member-specific. Then
+\begin{equation}
+ \hat y_m-\hat y_b=\epsilon_m-\epsilon_b.
+ \label{eq:decomp}
+\end{equation}
+For any perturbation $c'$ applied identically to the target and every committee member on the evaluated support,
+\begin{equation}
+ U_m(\{\hat y_b+c'\})=U_m(\{\hat y_b\}),
+ \label{eq:invariance}
+\end{equation}
+because each target-to-member difference is unchanged. This exact common-mode invariance is both the method's rationale and its blind spot: target-specific separation can be ranked, but shared deletion, blur, bias, or preprocessing failure is unidentifiable from disagreement alone. Committee diversity is therefore a necessary operating condition, not a guarantee that consensus is correct.
+
+\subsection{Selective review and implementation separation}
+Ground truth enters only offline. Let $E_j$ be foreground MAE for examination $j$. Sorting by increasing $s_m$ yields the retained set $A_q$ at coverage $q$ and risk
+\begin{equation}
+ R(q)=|A_q|^{-1}\sum_{j\in A_q}E_j.
+\end{equation}
+We report foreground pixel Pearson correlation, examination-level Spearman $\rho$, absolute retained MAE, $\mathrm{RRR}(q)=[R_{\rm random}-R(q)]/R_{\rm random}$, and
+\begin{equation}
+ \mathrm{nAURC}=\frac{\mathrm{AURC}-\mathrm{AURC}_{\rm oracle}}
+ {\mathrm{AURC}_{\rm random}-\mathrm{AURC}_{\rm oracle}},
+ \label{eq:naurc}
+\end{equation}
+where zero is oracle and one expected random review. Coverage is always the retained fraction; $1-q$ is referred. Only ordering is interpreted---the magnitude of $s_m$ is not an error probability. Computing Eq.~\eqref{eq:score} costs $O(|\mathcal G||\mathcal C_m|)$ and can stream members. The scoring API receives predictions and metadata only; ground truth, oracle ranking, and error-derived labels reside in a separate evaluator, preventing accidental leakage.
+
+\section{Experiments}
+\subsection{Cohorts, outputs, and frozen protocol}
+We evaluate factor-four T2-weighted through-plane interpolation on IXI (115 examinations) \cite{ixi}, fastMRI-brain (24) \cite{zbontar2018fastmri}, and an internal NingXia cohort (22) pooled from eight held-out folds. IXI includes I$^3$Net, HAT, SwinIR, and ACSI; the other cohorts include the first three. Linear and cubic interpolation provide inexpensive analytical references \cite{keys1981cubic,thevenaz2000interpolation,unser1999splines}, yielding 161 examinations and ten fixed dataset--target profiles.
+
+\begin{table}[H]
+ \centering
+ \caption{Cohorts and stored neural outputs. Analytical references are available for every profile.}
+ \resizebox{\columnwidth}{!}{\input{tables_icassp/table_protocol.tex}}
+ \label{tab:protocol}
+\end{table}
+
+All NIfTI identities, geometry, and generated indices are checked before scoring. The frozen primary configuration uses all available non-target members, Eq.~\eqref{eq:score}, raw inverse-normalized intensity, the 1\% target mask, seed 20260715, and 2,000 paired examination-bootstrap resamples. Every legal nonempty committee subset is recomputed from voxel outputs and summarized by mean, median, best, worst, and range. Composition is neural, analytical, or mixed; mean pairwise output disagreement is a deployment-available diversity proxy, while real error correlation remains offline-only.
+
+SwinIR flip-TTA is evaluated only where matching four-view maps exist. Pixel correlation is calculated per examination and aggregated by Fisher $z$; case ranking uses Spearman $\rho$ with paired bootstrap intervals. Identical bootstrap indices are reused for paired comparisons. Mask variants that alter the foreground support are summarized by score-rank stability and endpoint-specific intervals rather than invalid paired differences against a changed MAE definition. Highest-MAE-decile AUROC/AUPRC is secondary because the two smaller cohorts contain only three positives per target. No profile or examination is removed after observing its score, and no sensitivity result replaces the frozen primary configuration on an external cohort.
+
+\subsection{Primary association and selective review}
+\begin{table}[H]
+ \centering
+ \caption{All ten pre-specified profiles. Lower nAURC is better; coverage is retained fraction.}
+ \resizebox{\columnwidth}{!}{\input{tables_icassp/table_main_compact.tex}}
+ \label{tab:main}
+\end{table}
+
+Table~\ref{tab:main} shows moderate foreground localization (\PixelFisherRange) but strong examination ranking (\CaseSpearmanRange). Aggregation over generated foreground suppresses local noise and preserves between-case severity even when the map does not precisely identify each erroneous structure. nAURC is \NAURCRange; at 50\% retained coverage, referring the highest-score half lowers retained MAE by \RRRFiftyRange\ relative to random review. Confidence intervals are widest on fastMRI-brain and NingXia, so the continuous curves are more informative than a single threshold.
+
+\begin{figure*}[!t]
+ \centering
+ \includegraphics[width=0.82\textwidth]{figure_risk_coverage_outlined.pdf}
+ \caption{Risk--coverage curves averaged over target interpolators after normalization by full-cohort MAE. The score remains between random and oracle review across cohorts; lower retained risk is better.}
+ \label{fig:risk}
+\end{figure*}
+
+The complete curves in Fig.~\ref{fig:risk} avoid choosing a favorable test-set operating point. The largest absolute reduction occurs on IXI; smaller but consistent reductions occur on the two smaller cohorts. Because raw MAE is cohort-scale dependent, cross-cohort comparisons use nAURC and RRR rather than raw error.
+
+\subsection{Score design, committee membership, and preprocessing}
+\begin{table}[H]
+ \centering
+ \caption{Score and committee ablations averaged over fixed target profiles (nAURC; lower is better).}
+ \resizebox{\columnwidth}{!}{\input{tables_icassp/table_key_ablations_regular.tex}}
+ \label{tab:ablation}
+\end{table}
+
+The median is a stable default but not a uniquely superior elementary aggregator (Table~\ref{tab:ablation}). Mean target difference is comparable on fastMRI-brain and NingXia, while target-excluded spread is strongest on NingXia. The contribution therefore lies in the target-specific self-excluded protocol and its evaluation rather than in the median alone. Committee composition is cohort dependent: neural peers are strongest on fastMRI-brain, analytical references on NingXia, and the full committee is near-best on IXI. Across legal subsets, nAURC spans 0.009--0.139; member identity matters more than size, and the diversity proxy correlates only weakly with subset quality ($\rho=-0.141$ to 0.085). The full committee is a frozen governance choice, not an oracle-selected optimum.
+
+\begin{table}[H]
+ \centering
+ \caption{Sensitivity and secondary checks. Normalization reports deterioration from raw intensity; mask values are score-rank stability.}
+ \resizebox{\columnwidth}{!}{\input{tables_icassp/table_sensitivity_regular.tex}}
+ \label{tab:sensitivity}
+\end{table}
+
+Independent per-output normalization markedly degrades or reverses rankings, especially on IXI, whereas input- and committee-derived masks largely preserve them (Table~\ref{tab:sensitivity}). A common source-intensity representation is therefore part of the scoring contract. Target-threshold sensitivity concentrates on fastMRI-brain, where the 5\% mask reaches minimum stability 0.606; most input/committee-mask profile means are at least 0.973. All-pixel correlation is 0.138--0.169 higher than foreground correlation, confirming that empty background can inflate apparent localization.
+
+\subsection{Shared-error boundary and qualitative behavior}
+The controlled stress test uses 20 fixed identity-sorted IXI examinations, all four targets, a foreground-constrained additive patch, five strengths, and a mask frozen before corruption. The target-specific arm perturbs only $\hat y_m$; the shared arm adds the identical patch to the target and every committee output.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.98\columnwidth]{shared_error_stress_outlined.pdf}
+ \caption{Controlled shared-error test. Target-specific corruption raises both MAE and disagreement; identical corruption of all outputs raises MAE while cancelling from target-to-member differences. Bands are 95\% bootstrap intervals.}
+ \label{fig:stress}
+\end{figure}
+
+At maximum strength, target MAE rises by \StressMaeIncrease\ in both arms. Disagreement rises by \StressTargetIncrease\ for target-specific corruption but changes by \StressSharedChange\ under shared corruption, although mean committee MAE still rises by \StressCommitteeMaeIncrease. Figure~\ref{fig:stress} directly confirms Eq.~\eqref{eq:invariance}; it is an identifiability test rather than a simulation of all clinical failures.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.99\columnwidth]{qualitative_failures_relayout.png}
+ \caption{Automatically selected IXI/SwinIR examples: useful referral, stable retention, and false reassurance. Each row reports MAE/score and shows the generated slice with maximum slice-wise MAE.}
+ \label{fig:qual}
+\end{figure}
+
+Figure~\ref{fig:qual} shows that substantial error may coexist with low disagreement when peers share the same failure, while correct but non-conservative detail may trigger unnecessary referral. Under the secondary highest-MAE-decile definition, AUROC is 0.983--0.993 on IXI, 1.000 on fastMRI-brain, and 0.930--0.982 on NingXia; these values are descriptive because each smaller cohort supplies only three positives per target.
+
+\subsection{Single-model comparison and measured cost}
+\begin{table}[H]
+ \centering
+ \caption{Local fastMRI-brain SwinIR comparison and measured post-hoc cost.}
+ \resizebox{0.92\columnwidth}{!}{\input{tables_icassp/table_tta_cost.tex}}
+ \label{tab:tta}
+\end{table}
+
+On the same 24 fastMRI-brain SwinIR examinations, four-view TTA yields $\rho=0.960$ and nAURC 0.023 versus 0.931 and 0.061 for cross-model scoring, but lower pixel association (0.306 versus 0.363). The paired nAURC difference is $-0.038$ [95\% CI $-0.119$, 0.001], so the apparent gain is not conclusive. TTA is attractive when only one model is available; cross-model scoring is attractive when deterministic peers are already stored. Stored-output auditing takes 1.18 s mean/2.87 s p95 per examination on CPU, including 0.31 s loading and 0.87 s scoring, with 0.89 GiB peak RSS. Online use additionally incurs every selected neural reconstruction.
+
+\section{Discussion and Conclusion}
+The evidence supports examination triage more strongly than precise voxel localization. A high $s_m$ prioritizes inspection while preserving the original reconstruction and committee identities; a low score indicates consensus only within the available committee. Coverage should follow review capacity rather than a retrospectively tuned error threshold, and a deployment threshold requires validation after changes in scanner, reconstruction software, intensity mapping, or committee membership.
+
+The protocol is most attractive for retrospective audit, benchmark comparison, or systems that already cache several deterministic outputs. If only one model can be run, TTA, posterior sampling, acquisition residuals, or a validated error predictor may be more economical. A larger committee is not automatically better: member identity matters more than count, and the available no-reference diversity proxy cannot reliably choose the best compact subset. In practice, a review system should therefore freeze the committee specification, log member identities with every score, and monitor score distributions after software or acquisition changes rather than silently swapping members.
+
+The score is also complementary to model-internal uncertainty. TTA probes sensitivity of one model to transformations, whereas cross-model disagreement probes separation from alternative reconstructions. Their failure modes need not coincide: one model may be unstable while peers agree, or all models may be confidently wrong together. A future deployment study should measure whether presenting both signals improves reviewer prioritization, review time, or downstream robustness without encouraging automation bias.
+
+The principal limitations are structural. Shared errors are invisible by construction, correlated members reduce useful diversity, a target-derived mask can omit suppressed tissue, and correct but unusual detail can be over-referred. Evidence is restricted to factor-four T2 brain MRI, the two smaller cohorts have wide intervals, and there is no reader study or downstream diagnostic task. MAE is not diagnostic harm. Target-to-committee disagreement is therefore a reproducible ground-truth-free ranking layer for selective review of stored interpolation outputs, not a calibrated probability or clinical guarantee.
+
+\clearpage
+\nobalance
+\bibliographystyle{IEEEbib}
+\bibliography{references}
+\end{document}

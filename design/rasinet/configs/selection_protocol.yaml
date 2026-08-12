@@ -1,0 +1,45 @@
+revision_freeze: "2026-07-29T15:30:00+08:00"
+development_profiles:
+  - ixi_x4
+  - fastmri_x2
+  - fastmri_x4
+  - fastmri_x6
+validation_profiles:
+  - ningxia_x2
+  - ningxia_x4
+  - ningxia_x6
+primary_targets: [i3net, hat, swinir]
+original_baseline:
+  score: target_abs_median
+  mask: target_0.01
+  voxel_pooling: mean
+  examination_pooling: mean
+  committee: frozen_primary
+candidate_families:
+  scores: [median, mean, trimmed, max, q75, q90, center_mean, center_median, standardized_mad, standardized_iqr, relative, gradient, laplacian, all_output_spread]
+  masks: [target_0.01, committee_union, input_derived]
+  slice_pooling: [mean, q90, top10_mean]
+  examination_pooling: [mean, max, q90, worst2_mean, cvar90]
+  committees: [frozen_primary, full_universal, neural_only, analytical_only, family_balanced, analytical_anchor, low_cost]
+screening:
+  bootstrap_samples: 300
+  retain: 25
+committee_search:
+  bootstrap_samples: 1000
+  retain: 10
+finalists:
+  bootstrap_samples: 2000
+  count: 3
+  one_standard_error_rule: true
+selection_objective:
+  mean_nAURC_rank: 1.0
+  worst_nAURC_rank: 0.5
+  instability_rank: 0.25
+  cost_rank: 0.10
+seeds:
+  screening: 20260730
+  committee: 20260731
+  finalist: 20260732
+  validation: 20260733
+validation_locked: true
+frozen_finalists_sha256: C191B9ED0FD05BDB804733E505BBA95326A6A4C57EF9BEA9C6E6FF9C338FD29A

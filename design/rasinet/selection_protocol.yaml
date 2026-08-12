@@ -1,0 +1,40 @@
+protocol_version: nested_v1
+seed: 20260801
+public_development_profiles: [ixi_x4, fastmri_x2, fastmri_x4, fastmri_x6]
+nested_outer_profiles: [ningxia_x2, ningxia_x4, ningxia_x6]
+outer_folds: [fold_00, fold_01, fold_02, fold_03, fold_04, fold_05, fold_06, fold_07]
+model_bank: [i3net, hat, swinir, arssr, cycleinr, pix2pixgan, smamba_unet, acvtt, ressrdiff, resunet, saint, linear, cubic]
+target_eligibility:
+  required_profiles: [fastmri_x2, fastmri_x4, fastmri_x6, ningxia_x2, ningxia_x4, ningxia_x6]
+  public_fidelity_rule: top_half_composite_fidelity_rank
+  architecture_diversity: true
+common_offline_support:
+  source: ground_truth
+  threshold_fraction: 0.01
+  generated_slices_only: true
+deployment_masks: [bank_union, target_0.01, input_derived]
+committee_subset_sizes: [2, 3, 4, 5, full]
+weighting: [uniform, inverse_fidelity, fidelity_rank, diversity, combined, trim_max]
+score_families: [intensity_mean, intensity_q90, intensity_top10, relative_mean, relative_q90, gradient_mean, gradient_q90, laplacian_mean, local_energy_mean]
+selection_objective:
+  mean_nAURC_rank: 1.0
+  worst_fold_nAURC_rank: 0.5
+  instability_rank: 0.25
+  cost_rank: 0.10
+  one_standard_error_rule: true
+  simplicity_order: [neural_member_count, cost_proxy, committee_size, formula_complexity, conditioning_complexity]
+attribution_objective:
+  matched_advantage_rank: -1.0
+  within_case_spearman_rank: -1.0
+  top1_accuracy_rank: -0.5
+  cost_rank: 0.10
+calibration: [empirical_cdf, robust_z_iqr, robust_z_mad, rank_gaussian]
+relative_attribution: [centered, centered_mad]
+bootstrap:
+  replicates: 2000
+  aggregate: profile_aligned
+  seed: 20260821
+cost_proxy:
+  neural_peer: 1.0
+  analytical_peer: 0.02
+  note: ranking proxy only; analytical runtimes are measured but neural runtimes are not uniformly benchmarked

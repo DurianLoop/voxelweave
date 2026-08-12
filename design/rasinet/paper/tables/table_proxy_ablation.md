@@ -1,0 +1,18 @@
+# Table 4. Proxy Ablation
+
+TTA variance is included as an auxiliary proxy; it improves slice-level correlation but does not replace baseline disagreement.
+
+| Dataset | Method | Proxy | Pixel Corr | Slice Corr | Risk AURC | MAE@50% low-U | Failure AUROC | Top-k recall |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| IXI T2 | SwinIR | Baseline disagreement | 0.615 | 0.457 | 4.492 | 1.525 | 0.987 | 0.833 |
+| IXI T2 | SwinIR | Residual to linear | 0.403 | 0.112 | 5.822 | 3.500 | 0.985 | 0.833 |
+| IXI T2 | SwinIR | Residual to cubic | 0.422 | 0.143 | 5.856 | 3.386 | 0.986 | 0.833 |
+| IXI T2 | SwinIR | TTA variance | 0.575 | 0.856 | 4.648 | 1.635 | 0.988 | 0.833 |
+| fastMRI-brain T2 | SwinIR | Baseline disagreement | 0.512 | 0.294 | 15.616 | 7.313 | 1.000 | 1.000 |
+| fastMRI-brain T2 | SwinIR | Residual to linear | 0.357 | -0.020 | 18.733 | 10.482 | 0.937 | 0.667 |
+| fastMRI-brain T2 | SwinIR | Residual to cubic | 0.349 | 0.104 | 19.638 | 12.559 | 0.968 | 0.667 |
+| fastMRI-brain T2 | SwinIR | TTA variance | 0.479 | 0.767 | 15.760 | 7.098 | 1.000 | 1.000 |
+| NingXia T2 CV | SwinIR | Baseline disagreement | 0.456 | 0.276 | 30.295 | 24.473 | 0.947 | 0.667 |
+| NingXia T2 CV | SwinIR | Residual to linear | 0.381 | 0.557 | 32.833 | 27.066 | 0.965 | 0.667 |
+| NingXia T2 CV | SwinIR | Residual to cubic | 0.367 | 0.122 | 34.231 | 31.372 | 0.965 | 0.667 |
+| NingXia T2 CV | SwinIR | TTA variance | 0.403 | 0.667 | 30.771 | 24.425 | 1.000 | 1.000 |

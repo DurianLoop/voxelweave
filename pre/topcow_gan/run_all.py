@@ -1,0 +1,126 @@
+from __future__ import annotations
+
+import argparse
+
+from .baselines import run_baseline_folder
+from .common import ensure_dir, write_json
+from .gan_bridge import run_gan_inference, run_gan_inference_folders, train_gan, train_gan_case_level
+from .metrics import evaluate_labeled_method, evaluate_method, write_labeled_metric_outputs, write_metric_outputs
+from .settings import PROFILES, build_paths
+from .stage_data import (
+    prepare_eval_inputs,
+    prepare_labeled_eval_inputs,
+    stage_case_level_training,
+    stage_training_links,
+)
+
+
+def run(profile_name: str) -> None:
+    profile = PROFILES[profile_name]
+    paths = build_paths(profile.name)
+    for path in [
+        paths.run_dir,
+        paths.checkpoints,
+        paths.training_plots,
+        paths.metrics,
+    ]:
+        ensure_dir(path)
+
+    split_info = None
+    labeled_eval_manifest = []
+    if profile.case_level:
+        split_info = stage_case_level_training(paths, profile.train_limit, profile.train_fraction)
+        train_count = len(split_info["train_cases"])
+        labeled_eval_manifest = prepare_labeled_eval_inputs(paths, stride=4)
+    else:
+        train_count = stage_training_links(paths, profile.train_limit)
+    eval_manifest = prepare_eval_inputs(paths, profile.val_limit, stride=4)
+    write_json(
+        paths.run_dir / "run_manifest.json",
+        {
+            "profile": profile.name,
+            "train_cases": train_count,
+            "case_level": profile.case_level,
+            "split": split_info,
+            "eval_cases": eval_manifest,
+            "labeled_eval_cases": labeled_eval_manifest,
+            "epochs": profile.epochs,
+            "batch_size": profile.batch_size,
+        },
+    )
+
+    if profile.case_level:
+        checkpoint = train_gan_case_level(
+            paths,
+            epochs=profile.epochs,
+            batch_size=profile.batch_size,
+            skip_if_exists=profile.skip_training_if_checkpoint_exists,
+            patience=profile.patience,
+        )
+    else:
+        checkpoint = train_gan(
+            paths,
+            epochs=profile.epochs,
+            batch_size=profile.batch_size,
+            skip_if_exists=profile.skip_training_if_checkpoint_exists,
+        )
+    run_gan_inference(paths, checkpoint)
+    run_baseline_folder(paths.eval_sparse, paths.baseline_linear, factor=4, kind="linear")
+    run_baseline_folder(paths.eval_sparse, paths.baseline_cubic, factor=4, kind="cubic")
+
+    rows = []
+    rows.extend(evaluate_method(paths.eval_gt, paths.gan_outputs, "up_", "gan_v4", factor=4))
+    rows.extend(evaluate_method(paths.eval_gt, paths.baseline_linear, "linear_", "linear", factor=4))
+    rows.extend(evaluate_method(paths.eval_gt, paths.baseline_cubic, "cubic_", "cubic", factor=4))
+    write_metric_outputs(paths.metrics, rows)
+
+    if labeled_eval_manifest:
+        run_gan_inference_folders(paths.labeled_sparse, paths.labeled_gan_outputs, checkpoint, paths.run_dir)
+        run_baseline_folder(paths.labeled_sparse, paths.labeled_baseline_linear, factor=4, kind="linear")
+        run_baseline_folder(paths.labeled_sparse, paths.labeled_baseline_cubic, factor=4, kind="cubic")
+        labeled_rows = []
+        labeled_rows.extend(
+            evaluate_labeled_method(
+                paths.labeled_gt,
+                paths.labeled_gan_outputs,
+                paths.labeled_labels,
+                "up_",
+                "gan_v4",
+                factor=4,
+            )
+        )
+        labeled_rows.extend(
+            evaluate_labeled_method(
+                paths.labeled_gt,
+                paths.labeled_baseline_linear,
+                paths.labeled_labels,
+                "linear_",
+                "linear",
+                factor=4,
+            )
+        )
+        labeled_rows.extend(
+            evaluate_labeled_method(
+                paths.labeled_gt,
+                paths.labeled_baseline_cubic,
+                paths.labeled_labels,
+                "cubic_",
+                "cubic",
+                factor=4,
+            )
+        )
+        write_labeled_metric_outputs(paths.metrics, labeled_rows)
+
+    print(f"Phase 1-3 pipeline finished: {paths.run_dir}")
+    print(f"Metrics: {paths.metrics / 'summary_metrics.csv'}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--profile", choices=sorted(PROFILES), default="smoke")
+    args = parser.parse_args()
+    run(args.profile)
+
+
+if __name__ == "__main__":
+    main()

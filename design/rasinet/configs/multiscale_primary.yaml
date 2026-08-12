@@ -1,0 +1,27 @@
+datasets:
+  - fastmri
+  - ningxia
+scales:
+  - 2
+  - 4
+  - 6
+primary_neural:
+  - i3net
+  - hat
+  - swinir
+analytical:
+  - linear
+  - cubic
+expanded_neural:
+  - arssr
+  - cycleinr
+  - pix2pixgan
+  - smamba_unet
+score: target_median
+mask: target_0.01
+normalization: raw_common_source_representation
+anchor_start: 0
+bootstrap_samples: 2000
+seed: 20260724
+affine_tolerance: 1.0e-5
+output: design/rasinet/outputs/multiscale

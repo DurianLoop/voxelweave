@@ -1,0 +1,44 @@
+profiles:
+  - full_test115
+factor: 4
+case_limit: 2
+bootstrap_samples: 100
+seed: 20260715
+affine_tolerance: 1.0e-5
+output: design/rasinet/outputs/icassp_full_benchmark
+save_primary_voxel_maps: false
+register_results: false
+analyses:
+  score_variants:
+    - target_abs_median
+    - target_abs_mean
+    - target_abs_max
+    - target_abs_trimmed_mean
+    - distance_committee_mean
+    - distance_committee_median
+    - shared_std
+    - pairwise_mean
+    - pairwise_median
+    - residual_linear
+    - residual_cubic
+    - residual_analytic_mean
+    - residual_analytic_min
+    - residual_analytic_max
+  normalizations:
+    - raw
+    - percentile_p1_p99
+    - robust_median_iqr
+    - minmax
+  masks:
+    - target_0.005
+    - target_0.01
+    - target_0.02
+    - target_0.05
+    - committee_union
+    - committee_intersection
+    - committee_median
+    - input_derived
+  committee_subsets: true
+  structural_scores:
+    - gradient_target_abs_median
+    - laplacian_target_abs_median
