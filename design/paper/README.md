@@ -1,0 +1,47 @@
+# MRI 层间插值论文项目总导航
+
+本目录保存从初始审计到 Plan 9 架构族证伪实验的研究协议、分析脚本、机器可读结果、论文分支和历史交付快照。当前最新科学版本是 **Plan 9 架构泛化分支**；所有稿件均未自动投稿。
+
+## 从这里开始
+
+- [项目最终综合中文报告](FINAL_COMPREHENSIVE_REPORT_ZH.md)：覆盖研究演进、数据、方法、关键数字、正负结果、两篇论文状态和投稿治理。
+- [Plan 9 最终实验报告](PLAN9_ARCH_GENERALIZATION/FINAL_REPORT.md)：I3Net、SAINT、CycleINR 架构泛化实验的完整结果。
+- [TMI 分支说明](TMI/README.md)：各 TMI 稿件的用途和当前推荐版本。
+- [CVPR 分支说明](CVPR/README.md)：各 CVPR 稿件的用途和当前推荐版本。
+- [历史 ZIP 归档](ARCHIVE_PACKAGES/README.md)：Plan 6/7 阶段压缩包、清单和校验值。
+
+## 当前最终候选
+
+| 方向 | 源码 | PDF | 状态 |
+|---|---|---|---|
+| TMI | `TMI/TMI_ARCH_GENERALIZED/main.tex` | `TMI/TMI_ARCH_GENERALIZED/main.pdf` | 9 页，Plan 9 架构泛化版 |
+| CVPR 主文 | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/main.tex` | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/main.pdf` | 技术内容 8 页，参考文献第 9 页 |
+| CVPR 补充 | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/supplement.tex` | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/supplement.pdf` | 5 页 |
+
+## 目录职责
+
+| 目录/文件组 | 内容 |
+|---|---|
+| `PLAN9_ARCH_GENERALIZATION/` | 最新架构族实验、协议、脚本、输出、图和最终报告 |
+| `PLAN7_ACCEPTANCE_OPTIMIZATION/` | 投稿前风险登记、失败方法门控、审稿模拟与 Plan 7 最终审计 |
+| `TMI/` | TMI 历史分支、研究 master、提交候选和 Plan 9 版本 |
+| `CVPR/` | CVPR 恢复稿、升级稿、Plan 7 final 和 Plan 9 版本 |
+| `plan2_outputs/`、`plan3_outputs/`、`plan4_outputs/` | 历史阶段的机器可读结果与图件 |
+| `audit_outputs/` | 初始独立审计输出 |
+| `ARCHIVE_PACKAGES/` | 本地历史 ZIP 及 Git 可见清单；ZIP 本体不进入版本库 |
+| `plan2_*.py`、`plan3_*.py`、`plan4_*.py` | 历史可复现实验脚本；为保持旧命令兼容而留在根目录 |
+| `goal.md`、`plan2.md` … `plan9.md` | 各阶段原始要求与决策约束 |
+
+## 最稳健的当前结论
+
+在已评估的 MRI 层间插值范式中，复用相同物理测量会改变局部误差对齐、抵消与分歧可观测性；但检查级排序收益以及有限差分影响相对共享计数的优势具有显著架构依赖性。因此可以说“在已评估的多种插值范式中观察到”，不能说“架构无关”或“影响度普适优越”。
+
+## 复现和安全边界
+
+初始只读审计仍可从 `D:\MRI` 运行：
+
+```powershell
+D:\conda\envs\MRI\python.exe -B .\design\paper\audit_evidence.py
+```
+
+历史实验脚本和输出未在本次整理中搬动。原始 MRI 数据、模型权重和环境不在历史 ZIP 内。投稿前仍需作者核对伦理、数据使用、匿名化、作者信息、计算报告、venue 政策以及 TMI/CVPR 的合并或错峰策略。

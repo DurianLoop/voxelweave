@@ -1,0 +1,118 @@
+{
+  "experiment": "H-ARCH-01 primary same-target shared-vs-disjoint",
+  "status": "FROZEN PRIMARY",
+  "models": [
+    "i3net",
+    "saint",
+    "cycleinr"
+  ],
+  "cases": 24,
+  "targets_per_case": 5,
+  "device": "cuda",
+  "bootstrap_samples": 5000,
+  "seed": 20260814,
+  "elapsed_seconds": 77.2450858997181,
+  "summaries": [
+    {
+      "model": "i3net",
+      "family": "dedicated_inter_intra_cnn",
+      "cases": 24,
+      "shared_error_ranking_rho": 0.9426086956521739,
+      "disjoint_error_ranking_rho": 0.9608695652173912,
+      "disjoint_minus_shared_rho": 0.01826086956521733,
+      "ci_low": -0.05851720279613475,
+      "ci_high": 0.10948140169544299,
+      "bootstrap_valid": 5000,
+      "conditions": {
+        "disjoint": {
+          "median_error_cosine": 0.6184747413915633,
+          "median_shared_error_fraction": 0.8077109869227622,
+          "median_observable_error_fraction": 0.19228901307723778,
+          "median_prediction_disagreement_mae": 53.406700134277344
+        },
+        "shared": {
+          "median_error_cosine": 0.7896744195334191,
+          "median_shared_error_fraction": 0.8902258596834302,
+          "median_observable_error_fraction": 0.10977414031656992,
+          "median_prediction_disagreement_mae": 45.71378707885742
+        }
+      }
+    },
+    {
+      "model": "saint",
+      "family": "spatial_attention_cnn",
+      "cases": 24,
+      "shared_error_ranking_rho": 0.9339130434782608,
+      "disjoint_error_ranking_rho": 0.9243478260869564,
+      "disjoint_minus_shared_rho": -0.009565217391304337,
+      "ci_low": -0.14216927336397972,
+      "ci_high": 0.1117928359849756,
+      "bootstrap_valid": 5000,
+      "conditions": {
+        "disjoint": {
+          "median_error_cosine": 0.5979022288888449,
+          "median_shared_error_fraction": 0.7976844090082845,
+          "median_observable_error_fraction": 0.20231559099171542,
+          "median_prediction_disagreement_mae": 58.68775177001953
+        },
+        "shared": {
+          "median_error_cosine": 0.8683805110094044,
+          "median_shared_error_fraction": 0.9320203245666128,
+          "median_observable_error_fraction": 0.06797967543338716,
+          "median_prediction_disagreement_mae": 39.17806816101074
+        }
+      }
+    },
+    {
+      "model": "cycleinr",
+      "family": "implicit_coordinate_cycle",
+      "cases": 24,
+      "shared_error_ranking_rho": 0.6339130434782608,
+      "disjoint_error_ranking_rho": 0.9756521739130434,
+      "disjoint_minus_shared_rho": 0.34173913043478255,
+      "ci_low": 0.11285719445619766,
+      "ci_high": 0.7107863489641771,
+      "bootstrap_valid": 5000,
+      "conditions": {
+        "disjoint": {
+          "median_error_cosine": 0.5277799688795155,
+          "median_shared_error_fraction": 0.7633402887675611,
+          "median_observable_error_fraction": 0.2366597112324394,
+          "median_prediction_disagreement_mae": 103.36881256103516
+        },
+        "shared": {
+          "median_error_cosine": 0.981869173613541,
+          "median_shared_error_fraction": 0.9907620667396344,
+          "median_observable_error_fraction": 0.009237933260365531,
+          "median_prediction_disagreement_mae": 15.583228588104248
+        }
+      }
+    }
+  ],
+  "stable_wrong": [
+    {
+      "model": "cycleinr",
+      "error_threshold": 123.93657295364399,
+      "disagreement_threshold": 12.00261116027832,
+      "shared_stable_wrong_rate": 0.03333333333333333,
+      "disjoint_stable_wrong_rate": 0.0,
+      "shared_minus_disjoint_rate": 0.03333333333333333
+    },
+    {
+      "model": "i3net",
+      "error_threshold": 79.48836708934203,
+      "disagreement_threshold": 37.76167678833008,
+      "shared_stable_wrong_rate": 0.0,
+      "disjoint_stable_wrong_rate": 0.0,
+      "shared_minus_disjoint_rate": 0.0
+    },
+    {
+      "model": "saint",
+      "error_threshold": 87.58115599349037,
+      "disagreement_threshold": 31.10206174850464,
+      "shared_stable_wrong_rate": 0.0,
+      "disjoint_stable_wrong_rate": 0.0,
+      "shared_minus_disjoint_rate": 0.0
+    }
+  ]
+}

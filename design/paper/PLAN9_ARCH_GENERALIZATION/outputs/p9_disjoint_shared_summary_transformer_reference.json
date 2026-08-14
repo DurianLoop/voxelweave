@@ -1,0 +1,84 @@
+{
+  "experiment": "H-ARCH-01 primary same-target shared-vs-disjoint",
+  "status": "FROZEN PRIMARY",
+  "models": [
+    "hat",
+    "swinir"
+  ],
+  "cases": 24,
+  "targets_per_case": 5,
+  "device": "cuda",
+  "bootstrap_samples": 5000,
+  "seed": 20260814,
+  "elapsed_seconds": 34.96521640010178,
+  "summaries": [
+    {
+      "model": "hat",
+      "family": "transformer_sr",
+      "cases": 24,
+      "shared_error_ranking_rho": 0.8956521739130434,
+      "disjoint_error_ranking_rho": 0.9521739130434782,
+      "disjoint_minus_shared_rho": 0.05652173913043479,
+      "ci_low": -0.030694001660996097,
+      "ci_high": 0.19065626659861948,
+      "bootstrap_valid": 5000,
+      "conditions": {
+        "disjoint": {
+          "median_error_cosine": 0.5998927182580635,
+          "median_shared_error_fraction": 0.7993044612591536,
+          "median_observable_error_fraction": 0.20069553874084667,
+          "median_prediction_disagreement_mae": 61.78163528442383
+        },
+        "shared": {
+          "median_error_cosine": 0.9522374744577125,
+          "median_shared_error_fraction": 0.9753153983470824,
+          "median_observable_error_fraction": 0.02468460165291774,
+          "median_prediction_disagreement_mae": 24.539420127868652
+        }
+      }
+    },
+    {
+      "model": "swinir",
+      "family": "transformer_sr",
+      "cases": 24,
+      "shared_error_ranking_rho": 0.8834782608695652,
+      "disjoint_error_ranking_rho": 0.9452173913043478,
+      "disjoint_minus_shared_rho": 0.06173913043478263,
+      "ci_low": -0.04450505016975073,
+      "ci_high": 0.2315665412569079,
+      "bootstrap_valid": 5000,
+      "conditions": {
+        "disjoint": {
+          "median_error_cosine": 0.626261338479881,
+          "median_shared_error_fraction": 0.8130036432312603,
+          "median_observable_error_fraction": 0.18699635676873996,
+          "median_prediction_disagreement_mae": 66.34233474731445
+        },
+        "shared": {
+          "median_error_cosine": 0.9549825747404463,
+          "median_shared_error_fraction": 0.976902078750719,
+          "median_observable_error_fraction": 0.02309792124928131,
+          "median_prediction_disagreement_mae": 23.5636625289917
+        }
+      }
+    }
+  ],
+  "stable_wrong": [
+    {
+      "model": "hat",
+      "error_threshold": 89.80778411399442,
+      "disagreement_threshold": 18.83879566192627,
+      "shared_stable_wrong_rate": 0.0,
+      "disjoint_stable_wrong_rate": 0.0,
+      "shared_minus_disjoint_rate": 0.0
+    },
+    {
+      "model": "swinir",
+      "error_threshold": 95.94940745710349,
+      "disagreement_threshold": 18.977951526641846,
+      "shared_stable_wrong_rate": 0.0,
+      "disjoint_stable_wrong_rate": 0.0,
+      "shared_minus_disjoint_rate": 0.0
+    }
+  ]
+}
