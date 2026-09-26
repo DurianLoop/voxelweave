@@ -1,0 +1,163 @@
+from common import *
+import zipfile
+
+def main():
+    protection=read(OUT/'protection_after_install.json');assert protection['failures']==0
+    build=read(P/'build_logs/build_audit.json');assert all(x['success'] and not x['issues'] for x in build)
+    installed=read(OUT/'installed_files.json');inventory=read(OUT/'array_inventory.json');gib=sum(x['bytes'] for x in inventory)/1024**3
+    report=f'''# CVPR 最后一轮科学强化：最终中文报告
+
+本轮已完成并停止科学搜索。按最新附件限定，只对 CVPR《When Agreement Hides Error: Shared Measurement Influence in MRI Slice Interpolation》开展三项新分析及最终写作；TMI 保持原状。你当前打开的 CVPR `main.pdf` 已更新，原稿有逐文件哈希快照。
+
+交付正文 **8页**（技术内容至第7页，参考文献第8页），补充材料 **30页**。最终两份 PDF 均无未定义引用、LaTeX错误或超宽溢出。新增结果、源代码、复现入口、图表、日志和本报告全部位于本目录；只有经验证的CVPR交付文件被安装到原论文位置。
+
+## 1. 这轮真正解决了什么
+
+最关键的进展是：现象已经不依赖“同一个网络做翻转TTA”。完整的不同架构配对，在相同目标、相同参考预测和相同支持上，仅改变伴随预测的切片相位，仍显示一致的局部可观测误差增量。与此同时，神经影响量能够在完全由采集数据形成的支持和尺度下保留超出重叠计数的信息。
+
+这两点使论文的科学论证比上一版更强。但没有因此宣称普遍更好的病例排序、部署评分、完整因果识别或临床收益。固定上下文的扰动实验保留了显著的个体非线性近似失败。文章现在是一篇边界清楚的机制/审计论文。
+
+## 2. 三项新分析：全部结果及边界
+
+### 2.1 完整跨架构共享证据实验
+
+HAT、SwinIR、I3Net、SAINT-style、CycleINR-style的所有20个有序配对，在fastMRI24例和IXI115例分别测试。比较A0/B0与完全相同的A0/B2，不使用TTA、不换权重，不按效果挑选模型对。每例五个目标，先在检查内取均值再跨检查取均值。目标派生掩膜在两条件和所有配对间一致，因此这项实验明确不是acquired-only。
+
+| 结果 | fastMRI | IXI |
+|---|---:|---:|
+| 局部ΔO范围 | +6.236至+16.022个百分点 | +13.113至+28.531个百分点 |
+| 局部同时区间显著为正 | 20/20 | 20/20 |
+| 对齐下降、差异上升的同时区间符合方向 | 各20/20 | 各20/20 |
+| 固定参考A误差排序：同时区间显著为正 | 0/20 | 16/20 |
+| 条件特异的预测对平均误差排序：同时区间显著为正 | 0/20 | 20/20 |
+
+每个队列、每个终点分别做20配对的同时推断，不能称为跨全文探索历史的校正。fastMRI所有固定参考排序区间跨零，其中SAINT→I3Net点估计为负。IXI四个区间跨零的固定参考对，伴随模型均为I3Net：HAT、SwinIR、SAINT、CycleINR分别指向I3Net。更有利的paired-error终点没有替代固定A-error结论。
+
+新SAINT两相位都使用物理目标z/(源深度−1)；该坐标纠正在新推理前冻结。旧坐标版本另存并复现旧数字。全部695个旧映射phase-0包装器输出与存量预测逐像素一致。这个零误差核对不意味着新坐标版本与旧版本相同。
+
+此实验排除了“效应只来自同模型翻转等变性”的解释；仍未固定相位相关的有符号几何、归一化、伴随精度及非线性响应。因此不将ΔO全部解释为物理ID的单因素因果效应。完整27,800逐平面记录、200终点汇总行和所有区间均保留。
+
+详见 `CROSS_ARCH_INTERPRETATION.md`、正文§5.3和Figure 4。
+
+### 2.2 严格纯采集信息的神经影响量
+
+六个采集切片构成输入池；最近两个采集切片的前景并集定义支持，非零采集强度Q99−Q1定义尺度。目标不在池中，目标选择只依赖深度。尺度与掩膜先冻结，有限响应保存并写入哈希后才打开单独的目标数组评估误差。共同尺度本身也是共享预处理，这一点已经披露。
+
+| 队列/模型 | 超出计数的相关优势 [同时95%区间] | 恰好共享一个锚点的partial相关 [同时95%区间] |
+|---|---|---|
+| IXI/HAT | .098 [.090,.106] | .270 [.194,.345] |
+| IXI/SwinIR | .093 [.084,.103] | .265 [.195,.334] |
+| fastMRI/HAT | .103 [.089,.118] | .474 [.321,.627] |
+| fastMRI/SwinIR | .093 [.080,.106] | .365 [.216,.514] |
+
+点估计汇集平面/上下文观测；自助法的独立单位为整次检查。fixed-count调整span、asymmetry和检查固定效应，不能解读为因果中介。十二项幅度/符号稳定性全部超过历史HAT/SwinIR每分层门槛.85，最低.880314。没有按结果更改门槛。原六分层聚合门槛因缺少新NingXia复制记NA；新架构使用的.90是另一历史协议。
+
+新探针使用预先声明的FP32、无AMP/TF32；旧新差异同时涉及精度与信息契约，不能全部归因于去掉GT掩膜。目标仍是评估未知误差对齐所必需，不是目标自由的正确性证明。旧NingXia固定计数null/mixed、SAINT超出计数非显著、I3Net/CycleINR探针不稳定全部保留。
+
+详见 `ACQUIRED_ONLY_INFLUENCE_REPORT.md`、正文§5.2、Figure 3和Table 2。
+
+### 2.3 固定名义上下文的命题局部验证
+
+按冻结哈希顺序选12个IXI检查，两个模型、四个恰好共享一个锚点的上下文，全部四个幅度.0025/.005/.01/.02。四个固定Rademacher场和其负场形成八个样本；耦合条件配对相同场，独立条件使用8×8完整笛卡尔积，两边经验边缘分布精确一致。没有按效果挑选ε或病例。
+
+同幅度中心化响应协方差给出的−2κ与直接输出差异闭合，最大残差约5.60×10⁻¹²；这只验证恒等式。真正的局部近似测试固定ε0=.0025的奇响应，按ε²缩放预测全部其他幅度。
+
+八个模型/幅度的平均观察效应均为负，同时区间均低于零。中位相对近似误差从1.9%至10.6%，但最坏个体误差达126.4%，最大绝对差约112.14原生强度平方单位。全部384条观测保留。96个固定模型/病例/上下文组合中86个aligned、10个near-orthogonal，没有opposing案例；没有为补齐理论反例再搜索子集。
+
+因此只能说支持一个条件性的局部趋势，不能说证明全局Jacobian精确、相位变化保留偏差/Jacobian，或神经模型已验证反向敏感度分支。
+
+详见 `PROPOSITION1_VALIDATION.md`、正文§5.4及补充材料对应完整表图。
+
+## 3. 论文、图表和MIRA输出
+
+- Figure 1保留原客观中位MRI案例和统一误差色标，加入相同目标z=9与两相位的真实物理锚点条带。未换案例，未生成MRI解剖图像。
+- Figure 2/Table 1从原始数组复现旧控制；纠正IXI固定终点文字，原数字不变，并明确pooled-plane点相关与cluster bootstrap。
+- Figure 3/Table 2突出新acquired-only结果；历史六分层图表完整移至补充材料。
+- Figure 4使用完整跨架构40格局部效应图，排序未通过的结果直接写入正文；旧同模型架构图未删除。
+- 命题增加真实扰动数据图，展示所有个体近似误差，而不是只有平均曲线。
+- Algorithm 1明确七字段报告卡；输出54个按设计区分的记录及机器可读schema。没有任意合成标量，未测字段保留NA，不跨信息契约借用影响量或排序结果。
+- 通用MIRA接口支持不同的参考/伴随callable；线性参考、双估计器派发及目标变更不影响评分检查通过。
+- 失败guard在正文压为两句；完整guard、minimum-influence选择、jackknife、residualization、Anchor-CV比较与不利结果仍在补充材料。
+- 相关工作新增八篇经原始来源核实的引用；不再将代数恒等式、共同偏差、输入多样性或敏感度差异本身作为新发现。
+- 补充材料按provenance/theory/protocols/complete results/negative/external/reproducibility组织，主要部分边界清空浮动图表。全部13模型、111配置、20训练预算比较与不同掩膜协议继续保留。
+
+完整逐项记录见 `FINAL_REVISION_CHANGELOG.md`。
+
+## 4. 独立复现与原文件保护
+
+一键入口 `python reproduce_main.py` 已完整执行成功。它从保留的预测/响应/目标数组重新构建历史和新观测、统计与主要图表，并断言LaTeX显示值。另输出可独立查看的两份主表LaTeX。
+
+| 检查 | 结果 |
+|---|---|
+| 历史逐数组/观测字段比较 | 45项PASS；最大差约8.53×10⁻¹⁴ |
+| 三项新分析逐数组/统计比较 | 26项PASS；最大差约5.51×10⁻¹⁰ |
+| 历史主要数字断言 | 87项PASS |
+| 新正文/表格及保留负结果断言 | 53项PASS |
+| LaTeX最终构建 | 正文8页、补充30页，无错误或溢出 |
+| 安装前保护核对 | 3837项，0失败 |
+| 安装后保护核对 | {protection['checks']}项，0失败 |
+
+原稿170份文件的快照、2,524项原科学输入与973项预处理输入均按哈希核对。只安装了{len(installed)}个明确的CVPR交付文件，before/after哈希在 `outputs/installed_files.json`。TMI文件未改动。
+
+新增并保留2,841个NPZ数组文件，合计约{gib:.1f} GiB：695个相位预测、834个acquired响应、24个命题实验、322个历史控制和966个历史神经影响量复现文件。所有当前实验相关26个检查点均在使用清单中；没有把工作区所有可用候选权重混称为本轮使用的检查点。
+
+复现边界同样明确：历史guard的负结论由最低层的逐检查评分记录和冻结CDF/阈值重新计算，不宣称完成所有旧探索评分的原始图像回放；所有历史补充benchmark也没有被伪称为本轮从零训练复现。`REPRODUCTION_CHECK.md`列出每个reported/recomputed/difference/PASS/hash。早期脚本字段名适配、冻结换行校正和构建权限问题均在审计中说明，没有静默修改实验结果。
+
+## 5. 未解决的科学投稿风险
+
+1. **研究历史仍是回顾性的。** 所有主要队列已被该项目观察过；本轮冻结不能抵消过去的选择偏差。同时区间不校正全部历史探索。
+2. **未接触外部确认缺失。** 没有认证为真正untouched的数据，因此按协议跳过可选分支，没有重新划分旧数据冒充独立确认。
+3. **新颖性仍需同行判断。** 最大贡献是受控物理证据干预、可执行影响量审计及系统反证；不是新重建网络，也不是新的基本协方差恒等式。CVPR是否认为一般视觉意义和概念增量足够，仍有不确定性。
+4. **相位干预残余混杂。** 不同物理证据与几何、预处理、伴随精度等不能完全分离。局部噪声试验支持条件机制，但不能替代完整相位因果识别。
+5. **病例排序和可部署评分较弱。** fastMRI全部跨架构固定参考排序区间跨零，IXI亦有四对未通过；guard未优于简单基线，没有通用正确性评分或校准保证。
+6. **严格信息契约的外推有限。** acquired-only神经结果仅HAT/SwinIR和两个脑部队列；没有新NingXia、其他架构或跨架构影响量复制。
+7. **局部线性近似有真实失败。** 个体误差可超100%，没有神经opposing案例，也没有可保证全局余项的界。
+8. **实现与人群范围有限。** 使用冻结的本地适配实现、脑T2及小规模膝部患者资料；不能推出官方架构全面复现、临床效益或自然图像泛化。
+
+本报告按你的要求只处理科学与工程层面的风险，不另行追索由你后续处理的真实投稿资料。
+
+## 6. 最终四个回答
+
+**最强接收理由：** 完整不同架构配对、严格acquired-only响应形成、固定名义上下文的局部检验和从数组出发的复现，构成了一条比“同网络TTA更一致”更有辨别力的证据链。
+
+**最强剩余拒稿理由：** 缺少真正未接触队列，而且相对于成熟集成误差研究的概念增量及一般视觉相关性仍可能被认为有限。
+
+**即使所有新实验为零，是否仍科学上更强：** 是。预先冻结、完整配对、信息契约和可证伪检验会更准确限定论文主张。本轮实际主要局部结果为正，但排序和非线性边界并未因此消失。
+
+**哪些主张应削弱或移除：** 普遍排序提升、通用部署评分优势、完整因果识别、所有架构稳定影响量、临床/前瞻/非MRI收益以及将原控制97–99.8%隐藏误差比例外推到全部条件。四位严格审稿人的逐条批评、对应证据和未回答部分见 `FINAL_REVIEWER_SIMULATION.md`。
+
+无法用现有资料给出校准的“80%录用概率”。本轮交付的是可核查的科学强化及其明确边界，而非录用承诺。三项分析后的科学搜索已经停止。
+'''
+    (P/'FINAL_REPORT_ZH.md').write_text(report,encoding='utf-8')
+    (P/'README.md').write_text('''# CVPR 最终科学强化交付
+
+已完成三项冻结科学分析、原始数组复现、论文修改和LaTeX构建。
+
+- 详细中文报告：[FINAL_REPORT_ZH.md](FINAL_REPORT_ZH.md)
+- 最新正文：[main.pdf](revised_manuscript/main.pdf)，8页
+- 最新补充材料：[supplement.pdf](revised_manuscript/supplement.pdf)，30页
+- 四位审稿人模拟：[FINAL_REVIEWER_SIMULATION.md](FINAL_REVIEWER_SIMULATION.md)
+- 独立复现：[REPRODUCTION_CHECK.md](REPRODUCTION_CHECK.md)
+- 操作说明：[REPRODUCIBILITY.md](REPRODUCIBILITY.md)
+- 七字段报告卡：[mira_report_cards.csv](mira_report_cards.csv)
+
+原CVPR目录已经安装验证后的稿件，TMI未改动。原稿快照和所有约86GiB实验数组保留。轻量评审ZIP不含这些原始数组，不能当作独立原始数据分发包。没有新的评分/阈值搜索；本轮科学实验已停止。
+''',encoding='utf-8')
+    # Lightweight local review package; raw medical arrays stay in the preserved directory.
+    files=[]
+    for file in P.iterdir():
+        if file.is_file() and file.name!='DELIVERY_MANIFEST.json' and file.suffix in ['.md','.csv','.json','.py','.bib']:files.append(file)
+    for directory in ['scripts','revised_manuscript','reproduced_tables']:
+        for file in (P/directory).rglob('*'):
+            if file.is_file() and file.suffix in ['.py','.tex','.bib','.bst','.sty','.cls','.pdf','.png']:files.append(file)
+    for file in OUT.iterdir():
+        if file.is_file() and file.suffix in ['.json','.csv']:files.append(file)
+    for file in (P/'build_logs').iterdir():
+        if file.is_file() and file.suffix in ['.json','.txt','.log']:files.append(file)
+    package=P/'FINAL_CVPR_REVIEW_PACKAGE.zip'
+    with zipfile.ZipFile(package,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+        for file in sorted(set(files)):z.write(file,file.relative_to(P).as_posix())
+    with zipfile.ZipFile(package) as z:assert z.testzip() is None;entries=len(z.namelist())
+    write(P/'DELIVERY_MANIFEST.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'package':package.name,'package_sha256':sha(package),'package_bytes':package.stat().st_size,'package_entries':entries,'raw_arrays_included':False,'raw_arrays_retained':True,'main_pdf_sha256':sha(P/'revised_manuscript/main.pdf'),'supplement_pdf_sha256':sha(P/'revised_manuscript/supplement.pdf'),'protocol_sha256':sha(P/'FINAL_ITERATION_PROTOCOL.md'),'all_required_scientific_analyses_complete':True,'no_further_score_search':True,'TMI_modified':False})
+    print('Final Chinese report and verified review package',entries,'entries',package.stat().st_size,'bytes',flush=True)
+if __name__=='__main__':main()

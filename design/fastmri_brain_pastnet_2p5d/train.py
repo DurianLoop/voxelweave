@@ -25,14 +25,26 @@ from .data import (
     build_ma4_window_sample,
 )
 from .model_ma import PASTNetMultiAnchor2p5D
+from .model_ma3aggressive import PASTNetMA3Aggressive2p5D
 from .model_ma3j import PASTNetMA3Joint2p5D
+from .model_ma3latent import PASTNetMA3LatentInterval2p5D
 from .model_ma4 import PASTNetMA4Window2p5D
+from .model_sparse_window import PASTNetSparseWindow2p5D
 from .settings import DATASET_NAME, Profile, RunPaths
 
 
 MA3_SINGLE_VARIANTS = {"ma3", "ma3af", "ma3ms", "ma3afms"}
 MA3_JOINT_VARIANTS = {"ma3j", "ma3ir"}
-RICH_MULTI_ANCHOR_VARIANTS = {"ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS}
+MA3_LATENT_VARIANTS = {"ma3lc", "ma3la", "ma3lms", "ma3lt", "ma3lh"}
+MA3_AGGRESSIVE_VARIANTS = {"ma3ad", "ma3ci", "ma3ur", "ma3df", "ma3vs"}
+SPARSE_WINDOW_VARIANTS = {"ma3sw", "ma3sf", "ma3sd", "ma3sh"}
+MA3_INTERVAL_VARIANTS = {
+    *MA3_JOINT_VARIANTS,
+    *MA3_LATENT_VARIANTS,
+    *MA3_AGGRESSIVE_VARIANTS,
+    *SPARSE_WINDOW_VARIANTS,
+}
+RICH_MULTI_ANCHOR_VARIANTS = {"ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS}
 
 
 class ModelEMA:
@@ -61,7 +73,7 @@ def _is_window_profile(profile: Profile) -> bool:
 
 
 def _is_ma3c_profile(profile: Profile) -> bool:
-    return profile.model_variant in {"ma3c", "ma3cg", *MA3_JOINT_VARIANTS}
+    return profile.model_variant in {"ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS}
 
 
 def _is_multi_anchor(profile: Profile) -> bool:
@@ -86,6 +98,53 @@ def _make_model_for_profile(profile: Profile, device: torch.device) -> nn.Module
             window_size=profile.window_size,
             mlp_ratio=profile.mlp_ratio,
             residual_scale=profile.residual_scale,
+        ).to(device)
+    elif profile.model_variant in SPARSE_WINDOW_VARIANTS:
+        model = PASTNetSparseWindow2p5D(
+            input_channels=13,
+            base_channels=profile.base_channels,
+            num_blocks=profile.num_blocks,
+            window_size=profile.window_size,
+            mlp_ratio=profile.mlp_ratio,
+            residual_scale=profile.residual_scale,
+            temporal_refine=True,
+            refine_scale=profile.refine_scale,
+            sparse_mode=profile.sparse_mode,
+            flow_channels=profile.flow_channels,
+        ).to(device)
+    elif profile.model_variant in MA3_AGGRESSIVE_VARIANTS:
+        model = PASTNetMA3Aggressive2p5D(
+            input_channels=13,
+            base_channels=profile.base_channels,
+            num_blocks=profile.num_blocks,
+            window_size=profile.window_size,
+            mlp_ratio=profile.mlp_ratio,
+            residual_scale=profile.residual_scale,
+            temporal_refine=True,
+            refine_scale=profile.refine_scale,
+            context_blocks=profile.context_blocks,
+            latent_mixer=profile.latent_mixer,
+            latent_scales=profile.latent_scales,
+            latent_scale=profile.latent_scale,
+            aggressive_mode=profile.aggressive_mode,
+            aggressive_channels=profile.aggressive_channels,
+            aggressive_steps=profile.aggressive_steps,
+            aggressive_scale=profile.aggressive_scale,
+        ).to(device)
+    elif profile.model_variant in MA3_LATENT_VARIANTS:
+        model = PASTNetMA3LatentInterval2p5D(
+            input_channels=13,
+            base_channels=profile.base_channels,
+            num_blocks=profile.num_blocks,
+            window_size=profile.window_size,
+            mlp_ratio=profile.mlp_ratio,
+            residual_scale=profile.residual_scale,
+            temporal_refine=True,
+            refine_scale=profile.refine_scale,
+            context_blocks=profile.context_blocks,
+            latent_mixer=profile.latent_mixer,
+            latent_scales=profile.latent_scales,
+            latent_scale=profile.latent_scale,
         ).to(device)
     elif profile.model_variant in MA3_JOINT_VARIANTS:
         model = PASTNetMA3Joint2p5D(
@@ -117,7 +176,7 @@ def _make_model_for_profile(profile: Profile, device: torch.device) -> nn.Module
         ).to(device)
     else:
         model = _make_v1_model(profile, device)
-    if device.type == "cuda" and profile.model_variant not in MA3_JOINT_VARIANTS:
+    if device.type == "cuda" and profile.model_variant not in MA3_INTERVAL_VARIANTS:
         model = model.to(memory_format=torch.channels_last)
     return model
 
@@ -125,7 +184,13 @@ def _make_model_for_profile(profile: Profile, device: torch.device) -> nn.Module
 def _trainable_parameters_for_profile(model: nn.Module, profile: Profile) -> list[nn.Parameter]:
     if not profile.freeze_backbone:
         return [p for p in model.parameters() if p.requires_grad]
-    allowed = ("joint_head.", "interval_refiner.") if profile.model_variant in MA3_JOINT_VARIANTS else ("gate.", "decoder.", "detail_refiner.")
+    allowed = (
+        "joint_head.",
+        "interval_refiner.",
+        "latent_mixers.",
+        "base.latent_mixers.",
+        "aggressive_refiner.",
+    ) if profile.model_variant in MA3_INTERVAL_VARIANTS else ("gate.", "decoder.", "detail_refiner.")
     trainable: list[nn.Parameter] = []
     frozen = 0
     for name, param in model.named_parameters():
@@ -149,7 +214,9 @@ def _parameter_role(name: str) -> str:
         "reliability_gate.",
         "context.",
         "interval_refiner.",
+        "latent_mixers.",
         "joint_head.",
+        "aggressive_refiner.",
     )
     if any(token in name for token in adapter_tokens):
         return "adapter"
@@ -237,7 +304,7 @@ def _make_teacher_model(profile: Profile, device: torch.device) -> nn.Module | N
         raise ValueError(f"profile {profile.name} uses lambda_teacher but has no init_checkpoint")
     payload = torch.load(profile.init_checkpoint, map_location=device)
     payload_variant = str(payload.get("model_variant", "v1"))
-    if profile.model_variant in MA3_JOINT_VARIANTS and payload_variant == "ma3":
+    if profile.model_variant in MA3_INTERVAL_VARIANTS and payload_variant in {"ma3", "ma3ms"}:
         teacher = PASTNetMultiAnchor2p5D(
             input_channels=13,
             base_channels=profile.base_channels,
@@ -436,7 +503,7 @@ def _batch_loss_ma3j(
     if teacher_model is not None and profile.lambda_teacher > 0:
         batch_size, offsets, channels, height, width = cond.shape
         with torch.no_grad():
-            if isinstance(teacher_model, PASTNetMA3Joint2p5D):
+            if isinstance(teacher_model, (PASTNetMA3Joint2p5D, PASTNetMA3LatentInterval2p5D, PASTNetMA3Aggressive2p5D)):
                 teacher_pred = teacher_model(cond).clamp(0.0, 1.0)
             else:
                 flat_cond = cond.reshape(batch_size * offsets, channels, height, width)
@@ -452,6 +519,16 @@ def _batch_loss_ma3j(
     target_window = _assemble_ma3c_interval_window(anchor_pair, target)
     z_smooth = _z_curvature_loss(recon_window, target_window)
     base_guard = F.l1_loss(recon, base)
+    tail_mse = (
+        _tail_mse_loss(flat_recon, flat_target, profile.tail_fraction)
+        if profile.lambda_tail > 0
+        else flat_recon.new_tensor(0.0)
+    )
+    pyramid = (
+        _pyramid_loss(flat_recon, flat_target)
+        if profile.lambda_pyramid > 0
+        else flat_recon.new_tensor(0.0)
+    )
     loss = (
         charb
         + profile.lambda_mse * mse
@@ -461,7 +538,9 @@ def _batch_loss_ma3j(
         + profile.lambda_edge * edge
         + profile.lambda_z * z_smooth
         + profile.lambda_teacher * teacher
-        + 0.02 * base_guard
+        + profile.joint_base_guard * base_guard
+        + profile.lambda_tail * tail_mse
+        + profile.lambda_pyramid * pyramid
     )
     return loss, {
         "charbonnier": float(charb.detach().item()),
@@ -472,6 +551,8 @@ def _batch_loss_ma3j(
         "symmetry": float(sym.detach().item()),
         "z_smooth": float(z_smooth.detach().item()),
         "teacher": float(teacher.detach().item()),
+        "tail_mse": float(tail_mse.detach().item()),
+        "pyramid": float(pyramid.detach().item()),
         "confidence_mean": float(out["joint_confidence"].detach().mean().item()),
         "gate_prev": float(out["gate"][:, :, 0].detach().mean().item()),
         "gate_left": float(out["gate"][:, :, 1].detach().mean().item()),
@@ -582,7 +663,7 @@ def _batch_loss_for_profile(
     device: torch.device,
     teacher_model: nn.Module | None = None,
 ) -> tuple[torch.Tensor, dict[str, float]]:
-    if profile.model_variant in MA3_JOINT_VARIANTS:
+    if profile.model_variant in MA3_INTERVAL_VARIANTS:
         return _batch_loss_ma3j(model, batch, profile, device, teacher_model)
     if _is_ma3c_profile(profile):
         return _batch_loss_ma3c(model, batch, profile, device, teacher_model)
@@ -600,6 +681,25 @@ def _laplacian_loss(recon: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     recon_lap = F.conv2d(recon, kernel, padding=1, groups=recon.shape[1])
     target_lap = F.conv2d(target, kernel, padding=1, groups=target.shape[1])
     return F.l1_loss(recon_lap, target_lap)
+
+
+def _tail_mse_loss(recon: torch.Tensor, target: torch.Tensor, fraction: float) -> torch.Tensor:
+    fraction = min(1.0, max(1e-4, float(fraction)))
+    squared = (recon - target).square().flatten(1)
+    count = max(1, int(math.ceil(squared.shape[1] * fraction)))
+    return squared.topk(count, dim=1, sorted=False).values.mean()
+
+
+def _pyramid_loss(recon: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    losses = []
+    for scale in (2, 4):
+        losses.append(
+            F.l1_loss(
+                F.avg_pool2d(recon, kernel_size=scale, stride=scale),
+                F.avg_pool2d(target, kernel_size=scale, stride=scale),
+            )
+        )
+    return torch.stack(losses).mean()
 
 
 def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
@@ -697,6 +797,26 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
             print(
                 f"Warm-start {profile.model_variant.upper()} from MA3 checkpoint {profile.init_checkpoint}; "
                 f"{profile.model_variant.upper()} validation loss will be re-measured under interval consistency."
+            )
+        elif profile.model_variant in MA3_LATENT_VARIANTS and payload_variant == "ma3ms":
+            report = _load_compatible_state_dict(
+                model,
+                {f"single.{key}": value for key, value in payload["model_state_dict"].items()},
+            )
+            print(
+                f"Warm-start {profile.model_variant.upper()} latent backbone from G073/MA3MS checkpoint "
+                f"{profile.init_checkpoint} (loaded={report['loaded']}, missing={report['missing']}, "
+                f"unexpected={report['unexpected']}); latent mixers start as exact no-ops."
+            )
+        elif profile.model_variant in MA3_AGGRESSIVE_VARIANTS and payload_variant == "ma3lt":
+            report = _load_compatible_state_dict(
+                model,
+                {f"base.{key}": value for key, value in payload["model_state_dict"].items()},
+            )
+            print(
+                f"Warm-start {profile.model_variant.upper()} aggressive model from G079 checkpoint "
+                f"{profile.init_checkpoint} (loaded={report['loaded']}, missing={report['missing']}, "
+                f"unexpected={report['unexpected']}); {profile.aggressive_mode} refiner starts as an exact no-op."
             )
         elif profile.model_variant in MA3_JOINT_VARIANTS and payload_variant == "ma3":
             report = _load_compatible_state_dict(
@@ -878,6 +998,9 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
     elif _is_multi_anchor(profile):
         rich = profile.model_variant in RICH_MULTI_ANCHOR_VARIANTS
         sampling = (
+            f"pastnet_{profile.latent_mixer}_latent_interval_rich_phase_aware_residual"
+            if profile.model_variant in MA3_LATENT_VARIANTS
+            else
             "pastnet_ma3ir_lowres_3d_interval_refined_rich_phase_aware_residual"
             if profile.model_variant == "ma3ir"
             else
@@ -910,7 +1033,8 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
             "prev/left/right/next anchors + linear coarse + phase + directional difference "
             "+ abs difference + outer-anchor validity masks"
             + (" + outer-anchor deltas + sparse curvature" if rich else "")
-            + (" + interval z-curvature consistency" if profile.model_variant in {"ma3c", "ma3cg", *MA3_JOINT_VARIANTS} else "")
+            + (" + interval z-curvature consistency" if profile.model_variant in {"ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS} else "")
+            + (f" + pre-decoder {profile.latent_mixer} latent interval mixing at scales {profile.latent_scales}" if profile.model_variant in MA3_LATENT_VARIANTS else "")
             + (" + low-resolution 3D interval residual refiner" if profile.model_variant == "ma3ir" else "")
             + (" + joint three-offset residual head" if profile.model_variant == "ma3j" else "")
             + (" + frozen-backbone teacher trust region" if profile.model_variant == "ma3cg" else "")
@@ -964,7 +1088,10 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
             "edge": profile.lambda_edge,
             "z_smooth": profile.lambda_z,
             "teacher": profile.lambda_teacher,
-            "joint_base_guard": 0.02 if profile.model_variant in MA3_JOINT_VARIANTS else 0.0,
+            "joint_base_guard": profile.joint_base_guard if profile.model_variant in MA3_INTERVAL_VARIANTS else 0.0,
+            "tail_mse": profile.lambda_tail,
+            "tail_fraction": profile.tail_fraction,
+            "pyramid": profile.lambda_pyramid,
         },
         "freeze_backbone": profile.freeze_backbone,
         "model_config": {
@@ -979,14 +1106,22 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
                 {}
                 if _is_window_profile(profile) or not _is_multi_anchor(profile)
                 else {
-                    "temporal_refine": profile.model_variant in {*MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS},
+                    "temporal_refine": profile.model_variant in {*MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS},
                     "refine_scale": profile.refine_scale,
                     **(
                         {
                             "anchor_reliability": profile.anchor_reliability,
                             "context_blocks": profile.context_blocks,
                         }
-                        if profile.model_variant not in MA3_JOINT_VARIANTS
+                        if profile.model_variant not in MA3_INTERVAL_VARIANTS
+                        else {}
+                    ),
+                    **(
+                        {
+                            "sparse_mode": profile.sparse_mode,
+                            "flow_channels": profile.flow_channels,
+                        }
+                        if profile.model_variant in SPARSE_WINDOW_VARIANTS
                         else {}
                     ),
                     **(
@@ -997,6 +1132,30 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
                             "interval_refine": profile.model_variant == "ma3ir",
                         }
                         if profile.model_variant in MA3_JOINT_VARIANTS
+                        else {}
+                    ),
+                    **(
+                        {
+                            "context_blocks": profile.context_blocks,
+                            "latent_mixer": profile.latent_mixer,
+                            "latent_scales": profile.latent_scales,
+                            "latent_scale": profile.latent_scale,
+                        }
+                        if profile.model_variant in MA3_LATENT_VARIANTS
+                        else {}
+                    ),
+                    **(
+                        {
+                            "context_blocks": profile.context_blocks,
+                            "latent_mixer": profile.latent_mixer,
+                            "latent_scales": profile.latent_scales,
+                            "latent_scale": profile.latent_scale,
+                            "aggressive_mode": profile.aggressive_mode,
+                            "aggressive_channels": profile.aggressive_channels,
+                            "aggressive_steps": profile.aggressive_steps,
+                            "aggressive_scale": profile.aggressive_scale,
+                        }
+                        if profile.model_variant in MA3_AGGRESSIVE_VARIANTS
                         else {}
                     ),
                 }
@@ -1013,6 +1172,12 @@ class FastMRIPASTNet2p5DInterpolator:
         self.model_variant = str(payload.get("model_variant", "v1"))
         if self.model_variant == "ma4w":
             self.model = PASTNetMA4Window2p5D(**config).to(self.device)
+        elif self.model_variant in SPARSE_WINDOW_VARIANTS:
+            self.model = PASTNetSparseWindow2p5D(**config).to(self.device)
+        elif self.model_variant in MA3_AGGRESSIVE_VARIANTS:
+            self.model = PASTNetMA3Aggressive2p5D(**config).to(self.device)
+        elif self.model_variant in MA3_LATENT_VARIANTS:
+            self.model = PASTNetMA3LatentInterval2p5D(**config).to(self.device)
         elif self.model_variant in MA3_JOINT_VARIANTS:
             self.model = PASTNetMA3Joint2p5D(**config).to(self.device)
         elif self.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg"}:
@@ -1120,7 +1285,7 @@ class FastMRIPASTNet2p5DInterpolator:
             right = resize(norm[:, :, idx + 1], self.input_size, preserve_range=True, anti_aliasing=True).astype(np.float32)
             diff = (right - left).astype(np.float32)
             absdiff = np.abs(diff).astype(np.float32)
-            if self.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS}:
+            if self.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS}:
                 prev_idx = idx - 1
                 next_idx = idx + 2
                 prev_valid_value = 1.0 if prev_idx >= 0 else 0.0
@@ -1133,7 +1298,7 @@ class FastMRIPASTNet2p5DInterpolator:
                 next_anchor = resize(norm[:, :, next_idx], self.input_size, preserve_range=True, anti_aliasing=True).astype(np.float32)
                 prev_valid = np.full(self.input_size, prev_valid_value, dtype=np.float32)
                 next_valid = np.full(self.input_size, next_valid_value, dtype=np.float32)
-            if self.model_variant in MA3_JOINT_VARIANTS:
+            if self.model_variant in MA3_INTERVAL_VARIANTS:
                 joint_conds = []
                 for offset in range(1, stride):
                     rel = float(offset) / float(stride)

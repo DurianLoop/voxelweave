@@ -138,7 +138,7 @@ class PASTNetMultiAnchor2p5D(nn.Module):
             x = F.pad(x, (0, pad_w, 0, pad_h), mode="reflect")
         return x, pad_h, pad_w
 
-    def forward_components(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+    def encode_components(self, x: torch.Tensor) -> dict[str, torch.Tensor | int]:
         x, pad_h, pad_w = self._pad(x)
         prev = x[:, 0:1]
         left = x[:, 1:2]
@@ -192,12 +192,36 @@ class PASTNetMultiAnchor2p5D(nn.Module):
         )
         feat = self.fuse(torch.cat([transferred, feat_aux], dim=1))
         feat = self.context(self.mixer(self.body(feat)))
+        local_context = feat_left + feat_right - 2.0 * feat_coarse
+        return {
+            "feature": feat,
+            "coarse": coarse,
+            "local_context": local_context,
+            "gate": weights,
+            "pad_h": pad_h,
+            "pad_w": pad_w,
+        }
+
+    def decode_components(
+        self,
+        encoded: dict[str, torch.Tensor | int],
+        feature_override: torch.Tensor | None = None,
+    ) -> dict[str, torch.Tensor]:
+        feat = feature_override if feature_override is not None else encoded["feature"]
+        coarse = encoded["coarse"]
+        local_context = encoded["local_context"]
+        weights = encoded["gate"]
+        pad_h = int(encoded["pad_h"])
+        pad_w = int(encoded["pad_w"])
+        if not isinstance(feat, torch.Tensor) or not isinstance(coarse, torch.Tensor):
+            raise TypeError("encoded PAST-Net feature/coarse must be tensors")
+        if not isinstance(local_context, torch.Tensor) or not isinstance(weights, torch.Tensor):
+            raise TypeError("encoded PAST-Net context/gate must be tensors")
         decoded = self.decoder(feat)
         residual = torch.tanh(decoded[:, 0:1])
         confidence = torch.sigmoid(decoded[:, 1:2])
         detail_residual = torch.zeros_like(residual)
         if self.detail_refiner is not None:
-            local_context = feat_left + feat_right - 2.0 * feat_coarse
             detail_residual = torch.tanh(self.detail_refiner(torch.cat([feat, local_context], dim=1)))
         prediction = coarse + confidence * (self.residual_scale * residual + self.refine_scale * detail_residual)
         if pad_h or pad_w:
@@ -214,7 +238,11 @@ class PASTNetMultiAnchor2p5D(nn.Module):
             "detail_residual": detail_residual,
             "confidence": confidence,
             "gate": weights,
+            "feature": feat[:, :, : prediction.shape[2], : prediction.shape[3]],
         }
+
+    def forward_components(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+        return self.decode_components(self.encode_components(x))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.forward_components(x)["prediction"]

@@ -13,13 +13,25 @@ from ixi_pastnet_2p5d.model import PASTNet2p5D
 
 from .data import MA4_MISSING_OFFSETS
 from .model_ma import PASTNetMultiAnchor2p5D
+from .model_ma3aggressive import PASTNetMA3Aggressive2p5D
 from .model_ma3j import PASTNetMA3Joint2p5D
+from .model_ma3latent import PASTNetMA3LatentInterval2p5D
 from .model_ma4 import PASTNetMA4Window2p5D
+from .model_sparse_window import PASTNetSparseWindow2p5D
 from .settings import DATASET_NAME, PROFILES, build_paths
 
 
 MA3_SINGLE_VARIANTS = {"ma3", "ma3af", "ma3ms", "ma3afms"}
 MA3_JOINT_VARIANTS = {"ma3j", "ma3ir"}
+MA3_LATENT_VARIANTS = {"ma3lc", "ma3la", "ma3lms", "ma3lt", "ma3lh"}
+MA3_AGGRESSIVE_VARIANTS = {"ma3ad", "ma3ci", "ma3ur", "ma3df", "ma3vs"}
+SPARSE_WINDOW_VARIANTS = {"ma3sw", "ma3sf", "ma3sd", "ma3sh"}
+MA3_INTERVAL_VARIANTS = {
+    *MA3_JOINT_VARIANTS,
+    *MA3_LATENT_VARIANTS,
+    *MA3_AGGRESSIVE_VARIANTS,
+    *SPARSE_WINDOW_VARIANTS,
+}
 
 
 def _count_params(model: nn.Module) -> int:
@@ -91,9 +103,56 @@ def _complexity(profile_name: str) -> dict:
             residual_scale=profile.residual_scale,
         ).to(device)
         model_name = "pastnet_ma4_window_residual_psnr_aligned"
-    elif profile.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS}:
-        channels = 13 if profile.model_variant in {"ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS} else 10
-        if profile.model_variant in MA3_JOINT_VARIANTS:
+    elif profile.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS}:
+        channels = 13 if profile.model_variant in {"ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS} else 10
+        if profile.model_variant in SPARSE_WINDOW_VARIANTS:
+            model = PASTNetSparseWindow2p5D(
+                input_channels=channels,
+                base_channels=profile.base_channels,
+                num_blocks=profile.num_blocks,
+                window_size=profile.window_size,
+                mlp_ratio=profile.mlp_ratio,
+                residual_scale=profile.residual_scale,
+                temporal_refine=True,
+                refine_scale=profile.refine_scale,
+                sparse_mode=profile.sparse_mode,
+                flow_channels=profile.flow_channels,
+            ).to(device)
+        elif profile.model_variant in MA3_AGGRESSIVE_VARIANTS:
+            model = PASTNetMA3Aggressive2p5D(
+                input_channels=channels,
+                base_channels=profile.base_channels,
+                num_blocks=profile.num_blocks,
+                window_size=profile.window_size,
+                mlp_ratio=profile.mlp_ratio,
+                residual_scale=profile.residual_scale,
+                temporal_refine=True,
+                refine_scale=profile.refine_scale,
+                context_blocks=profile.context_blocks,
+                latent_mixer=profile.latent_mixer,
+                latent_scales=profile.latent_scales,
+                latent_scale=profile.latent_scale,
+                aggressive_mode=profile.aggressive_mode,
+                aggressive_channels=profile.aggressive_channels,
+                aggressive_steps=profile.aggressive_steps,
+                aggressive_scale=profile.aggressive_scale,
+            ).to(device)
+        elif profile.model_variant in MA3_LATENT_VARIANTS:
+            model = PASTNetMA3LatentInterval2p5D(
+                input_channels=channels,
+                base_channels=profile.base_channels,
+                num_blocks=profile.num_blocks,
+                window_size=profile.window_size,
+                mlp_ratio=profile.mlp_ratio,
+                residual_scale=profile.residual_scale,
+                temporal_refine=True,
+                refine_scale=profile.refine_scale,
+                context_blocks=profile.context_blocks,
+                latent_mixer=profile.latent_mixer,
+                latent_scales=profile.latent_scales,
+                latent_scale=profile.latent_scale,
+            ).to(device)
+        elif profile.model_variant in MA3_JOINT_VARIANTS:
             model = PASTNetMA3Joint2p5D(
                 input_channels=channels,
                 base_channels=profile.base_channels,
@@ -122,6 +181,15 @@ def _complexity(profile_name: str) -> dict:
                 context_blocks=profile.context_blocks,
             ).to(device)
         model_name = (
+            f"pastnet_{profile.sparse_mode}_independent_sparse_window"
+            if profile.model_variant in SPARSE_WINDOW_VARIANTS
+            else
+            f"pastnet_{profile.aggressive_mode}_aggressive_interval"
+            if profile.model_variant in MA3_AGGRESSIVE_VARIANTS
+            else
+            f"pastnet_{profile.latent_mixer}_latent_interval_rich_phase_aware_residual"
+            if profile.model_variant in MA3_LATENT_VARIANTS
+            else
             "pastnet_ma3ir_lowres_3d_interval_refined_rich_phase_aware_residual"
             if profile.model_variant == "ma3ir"
             else
@@ -161,9 +229,9 @@ def _complexity(profile_name: str) -> dict:
         model_name = "pastnet_phase_aware_single_slice_residual"
         channels = 6
     params = _count_params(model)
-    joint_offsets = 3 if profile.model_variant in MA3_JOINT_VARIANTS else 1
+    joint_offsets = 3 if profile.model_variant in MA3_INTERVAL_VARIANTS else 1
     macs = _estimate_forward_macs(model, device, channels, joint_offsets=joint_offsets)
-    output_slices = len(MA4_MISSING_OFFSETS) if profile.model_variant == "ma4w" else (3 if profile.model_variant in MA3_JOINT_VARIANTS else 1)
+    output_slices = len(MA4_MISSING_OFFSETS) if profile.model_variant == "ma4w" else (3 if profile.model_variant in MA3_INTERVAL_VARIANTS else 1)
     return {
         "model": model_name,
         "params": params,
@@ -208,6 +276,15 @@ def main() -> None:
                     "ours PAST-Net-MA4 window"
                     if profile.model_variant == "ma4w"
                     else
+                    f"ours PAST-Net independent {profile.sparse_mode} sparse window"
+                    if profile.model_variant in SPARSE_WINDOW_VARIANTS
+                    else
+                    f"ours PAST-Net G079 + {profile.aggressive_mode}"
+                    if profile.model_variant in MA3_AGGRESSIVE_VARIANTS
+                    else
+                    f"ours PAST-Net {profile.latent_mixer} latent interval"
+                    if profile.model_variant in MA3_LATENT_VARIANTS
+                    else
                     "ours PAST-Net-MA3IR 3D interval"
                     if profile.model_variant == "ma3ir"
                     else
@@ -239,7 +316,7 @@ def main() -> None:
             }
         )
     table = pd.DataFrame(rows)
-    order = {"linear": 0, "cubic": 1, "pastnet": 2, "pastnet_ma": 3, "pastnet_ma2": 4, "pastnet_ma3": 5, "pastnet_ma3c": 6, "pastnet_ma3cg": 7, "pastnet_ma3j": 8, "pastnet_ma3ir": 9, "pastnet_ma4w": 10}
+    order = {"linear": 0, "cubic": 1, "pastnet": 2, "pastnet_ma": 3, "pastnet_ma2": 4, "pastnet_ma3": 5, "pastnet_ma3c": 6, "pastnet_ma3cg": 7, "pastnet_ma3j": 8, "pastnet_ma3ir": 9, "pastnet_ma3lc": 10, "pastnet_ma3la": 11, "pastnet_ma3lms": 12, "pastnet_ma3lt": 13, "pastnet_ma3lh": 14, "pastnet_ma4w": 15}
     table["_order"] = table["method"].map(order).fillna(99)
     table = table.sort_values(["_order", "method"]).drop(columns=["_order"])
     table.to_csv(paths.metrics / "paper_table.csv", index=False)

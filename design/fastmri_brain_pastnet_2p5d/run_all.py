@@ -19,6 +19,15 @@ from .train import FastMRIPASTNet2p5DInterpolator, train_pastnet
 
 MA3_SINGLE_VARIANTS = {"ma3", "ma3af", "ma3ms", "ma3afms"}
 MA3_JOINT_VARIANTS = {"ma3j", "ma3ir"}
+MA3_LATENT_VARIANTS = {"ma3lc", "ma3la", "ma3lms", "ma3lt", "ma3lh"}
+MA3_AGGRESSIVE_VARIANTS = {"ma3ad", "ma3ci", "ma3ur", "ma3df", "ma3vs"}
+SPARSE_WINDOW_VARIANTS = {"ma3sw", "ma3sf", "ma3sd", "ma3sh"}
+MA3_INTERVAL_VARIANTS = {
+    *MA3_JOINT_VARIANTS,
+    *MA3_LATENT_VARIANTS,
+    *MA3_AGGRESSIVE_VARIANTS,
+    *SPARSE_WINDOW_VARIANTS,
+}
 
 
 def _clear_generated_files(paths) -> None:
@@ -73,10 +82,19 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
     profile = PROFILES[profile_name]
     paths = build_paths(profile.name)
     is_window = profile.model_variant == "ma4w"
-    is_multi_anchor = profile.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS}
+    is_multi_anchor = profile.model_variant in {"ma", "ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS}
     sampling = (
         "pastnet_ma4_window_residual_psnr_aligned"
         if is_window
+        else
+        f"pastnet_{profile.sparse_mode}_independent_sparse_window"
+        if profile.model_variant in SPARSE_WINDOW_VARIANTS
+        else
+        f"pastnet_{profile.aggressive_mode}_aggressive_interval"
+        if profile.model_variant in MA3_AGGRESSIVE_VARIANTS
+        else
+        f"pastnet_{profile.latent_mixer}_latent_interval_rich_phase_aware_residual"
+        if profile.model_variant in MA3_LATENT_VARIANTS
         else
         "pastnet_ma3ir_lowres_3d_interval_refined_rich_phase_aware_residual"
         if profile.model_variant == "ma3ir"
@@ -111,6 +129,15 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
     source = (
         "ours PAST-Net-MA4 window residual PSNR-aligned model"
         if is_window
+        else
+        f"ours PAST-Net independent {profile.sparse_mode} sparse-window model"
+        if profile.model_variant in SPARSE_WINDOW_VARIANTS
+        else
+        f"ours PAST-Net G079 + {profile.aggressive_mode} aggressive interval model"
+        if profile.model_variant in MA3_AGGRESSIVE_VARIANTS
+        else
+        f"ours PAST-Net pre-decoder {profile.latent_mixer} latent interval model"
+        if profile.model_variant in MA3_LATENT_VARIANTS
         else
         "ours PAST-Net-MA3IR low-resolution 3D interval refinement model"
         if profile.model_variant == "ma3ir"
@@ -147,11 +174,14 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
         if is_window
         else
         "prev/left/right/next anchors + linear coarse + phase + directional difference + abs difference + outer-anchor validity masks"
-        + (" + outer-anchor deltas + sparse curvature" if profile.model_variant in {"ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS} else "")
-        + (" + temporal local residual refinement + Laplacian edge loss" if profile.model_variant in {*MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_JOINT_VARIANTS} else "")
+        + (" + outer-anchor deltas + sparse curvature" if profile.model_variant in {"ma2", *MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS} else "")
+        + (" + temporal local residual refinement + Laplacian edge loss" if profile.model_variant in {*MA3_SINGLE_VARIANTS, "ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS} else "")
         + (" + learned anchor reliability correction" if profile.anchor_reliability else "")
         + (f" + {profile.context_blocks} multi-scale context adapters" if profile.context_blocks > 0 else "")
-        + (" + interval z-curvature consistency" if profile.model_variant in {"ma3c", "ma3cg", *MA3_JOINT_VARIANTS} else "")
+        + (" + interval z-curvature consistency" if profile.model_variant in {"ma3c", "ma3cg", *MA3_INTERVAL_VARIANTS} else "")
+        + (f" + pre-decoder {profile.latent_mixer} latent mixing at scales {profile.latent_scales}" if profile.model_variant in MA3_LATENT_VARIANTS else "")
+        + (f" + aggressive {profile.aggressive_mode} refiner" if profile.model_variant in MA3_AGGRESSIVE_VARIANTS else "")
+        + (f" + independent {profile.sparse_mode} sparse-window synthesis backbone" if profile.model_variant in SPARSE_WINDOW_VARIANTS else "")
         + (" + low-resolution 3D interval residual refiner" if profile.model_variant == "ma3ir" else "")
         + (" + joint three-offset residual head" if profile.model_variant == "ma3j" else "")
         + (" + frozen-backbone teacher trust region" if profile.model_variant == "ma3cg" else "")
@@ -222,6 +252,19 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
             "lambda_z": profile.lambda_z,
             "lambda_teacher": profile.lambda_teacher,
             "joint_scale": profile.joint_scale,
+            "latent_mixer": profile.latent_mixer,
+            "latent_scales": profile.latent_scales,
+            "latent_scale": profile.latent_scale,
+            "lambda_tail": profile.lambda_tail,
+            "tail_fraction": profile.tail_fraction,
+            "lambda_pyramid": profile.lambda_pyramid,
+            "aggressive_mode": profile.aggressive_mode,
+            "aggressive_channels": profile.aggressive_channels,
+            "aggressive_steps": profile.aggressive_steps,
+            "aggressive_scale": profile.aggressive_scale,
+            "sparse_mode": profile.sparse_mode,
+            "flow_channels": profile.flow_channels,
+            "joint_base_guard": profile.joint_base_guard,
             "anchor_reliability": profile.anchor_reliability,
             "context_blocks": profile.context_blocks,
             "freeze_backbone": profile.freeze_backbone,
@@ -250,6 +293,9 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
     method_label = (
         "pastnet_ma4w"
         if is_window
+        else
+        f"pastnet_{profile.model_variant}"
+        if profile.model_variant in {*MA3_LATENT_VARIANTS, *MA3_AGGRESSIVE_VARIANTS, *SPARSE_WINDOW_VARIANTS}
         else
         "pastnet_ma3ir"
         if profile.model_variant == "ma3ir"

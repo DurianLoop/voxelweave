@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+import math
 import time
 from pathlib import Path
 
@@ -7,6 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.checkpoint import checkpoint
 from skimage.transform import resize
 from torch.utils.data import DataLoader, RandomSampler, Subset
 from tqdm import tqdm
@@ -15,8 +18,9 @@ from ixi_diffusion.common import ensure_dir, load_nifti, normalize_volume, save_
 from ixi_diffusion.data import IXISingleSliceInterpolationDataset
 
 from fastmri_brain_pastnet_2p5d.model_ma import PASTNetMultiAnchor2p5D
+from fastmri_brain_pastnet_2p5d.model_ma3aggressive import PASTNetMA3Aggressive2p5D
 
-from .data import IXIMultiAnchorSingleSliceDataset
+from .data import IXIMultiAnchorIntervalDataset, IXIMultiAnchorSingleSliceDataset
 from .model import PASTNet2p5D
 from .settings import Profile, RunPaths
 
@@ -26,7 +30,25 @@ def _autocast_enabled(device: torch.device, profile: Profile | None = None) -> b
 
 
 def _make_model(profile: Profile, device: torch.device) -> nn.Module:
-    if profile.model_variant == "ma3":
+    if profile.model_variant == "ma3df":
+        model = PASTNetMA3Aggressive2p5D(
+            input_channels=13,
+            base_channels=profile.base_channels,
+            num_blocks=profile.num_blocks,
+            window_size=profile.window_size,
+            mlp_ratio=profile.mlp_ratio,
+            residual_scale=profile.residual_scale,
+            temporal_refine=True,
+            refine_scale=profile.refine_scale,
+            context_blocks=profile.context_blocks,
+            latent_mixer=profile.latent_mixer,
+            latent_scales=profile.latent_scales,
+            latent_scale=profile.latent_scale,
+            aggressive_mode=profile.aggressive_mode,
+            aggressive_channels=profile.aggressive_channels,
+            aggressive_scale=profile.aggressive_scale,
+        ).to(device)
+    elif profile.model_variant == "ma3":
         model = PASTNetMultiAnchor2p5D(
             input_channels=13,
             base_channels=profile.base_channels,
@@ -45,7 +67,7 @@ def _make_model(profile: Profile, device: torch.device) -> nn.Module:
             mlp_ratio=profile.mlp_ratio,
             residual_scale=profile.residual_scale,
         ).to(device)
-    if device.type == "cuda":
+    if device.type == "cuda" and profile.model_variant != "ma3df":
         model = model.to(memory_format=torch.channels_last)
     return model
 
@@ -107,6 +129,8 @@ def _laplacian_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
 
 
 def _batch_loss(model: nn.Module, batch: dict[str, torch.Tensor], profile: Profile, device: torch.device) -> tuple[torch.Tensor, dict[str, float]]:
+    if profile.model_variant == "ma3df":
+        return _batch_loss_ma3df(model, batch, profile, device)
     if profile.model_variant == "ma3":
         return _batch_loss_ma3(model, batch, profile, device)
     cond = batch["cond"].to(device, non_blocking=True)
@@ -137,6 +161,84 @@ def _batch_loss(model: nn.Module, batch: dict[str, torch.Tensor], profile: Profi
         "gate_left": float(out["gate"][:, 0].detach().mean().item()),
         "gate_right": float(out["gate"][:, 1].detach().mean().item()),
         "gate_coarse": float(out["gate"][:, 2].detach().mean().item()),
+    }
+
+
+def _tail_mse_loss(recon: torch.Tensor, target: torch.Tensor, fraction: float) -> torch.Tensor:
+    squared = (recon - target).square().flatten(1)
+    count = max(1, int(math.ceil(squared.shape[1] * min(1.0, max(1e-4, fraction)))))
+    return squared.topk(count, dim=1, sorted=False).values.mean()
+
+
+def _interval_window(anchor_pair: torch.Tensor, missing: torch.Tensor) -> torch.Tensor:
+    return torch.cat(
+        [anchor_pair[:, 0], missing[:, 0], missing[:, 1], missing[:, 2], anchor_pair[:, 1]],
+        dim=1,
+    )
+
+
+def _batch_loss_ma3df(
+    model: nn.Module,
+    batch: dict[str, torch.Tensor],
+    profile: Profile,
+    device: torch.device,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    cond = batch["cond_ma_stack"].to(device, non_blocking=True)
+    coarse = batch["coarse_stack"].to(device, non_blocking=True)
+    target = batch["target_stack"].to(device, non_blocking=True)
+    anchor_pair = batch["anchor_pair"].to(device, non_blocking=True)
+    if torch.is_grad_enabled():
+        prediction = checkpoint(model, cond, use_reentrant=False)
+        with torch.no_grad():
+            base_prediction = model.base(cond).detach()
+        confidence_mean = 0.0
+    else:
+        out = model.forward_components(cond)
+        prediction = out["prediction"]
+        base_prediction = out["base_prediction"].detach()
+        confidence_mean = float(out["joint_confidence"].detach().mean())
+    recon = prediction.clamp(0.0, 1.0)
+    flat_recon = recon.flatten(0, 1)
+    flat_target = target.flatten(0, 1)
+    flat_coarse = coarse.flatten(0, 1)
+    charb = _charbonnier(flat_recon, flat_target)
+    mse = F.mse_loss(flat_recon, flat_target)
+    grad = _gradient_loss(flat_recon, flat_target)
+    edge = _laplacian_loss(flat_recon, flat_target)
+    res = F.l1_loss(flat_recon, flat_coarse)
+    flipped = _reverse_multi_anchor_input(cond.flatten(0, 1)).reshape_as(cond)
+    reverse_raw = checkpoint(model, flipped, use_reentrant=False) if torch.is_grad_enabled() else model(flipped)
+    reverse = torch.flip(reverse_raw.clamp(0.0, 1.0), dims=(1,))
+    sym = F.l1_loss(recon, reverse)
+    recon_window = _interval_window(anchor_pair, recon)
+    target_window = _interval_window(anchor_pair, target)
+    z_smooth = F.l1_loss(
+        recon_window[:, 2:] - 2.0 * recon_window[:, 1:-1] + recon_window[:, :-2],
+        target_window[:, 2:] - 2.0 * target_window[:, 1:-1] + target_window[:, :-2],
+    )
+    tail = _tail_mse_loss(flat_recon, flat_target, profile.tail_fraction)
+    base_guard = F.l1_loss(recon, base_prediction)
+    loss = (
+        charb
+        + profile.lambda_mse * mse
+        + profile.lambda_grad * grad
+        + profile.lambda_res * res
+        + profile.lambda_sym * sym
+        + profile.lambda_edge * edge
+        + profile.lambda_z * z_smooth
+        + profile.lambda_tail * tail
+        + profile.joint_base_guard * base_guard
+    )
+    return loss, {
+        "charbonnier": float(charb.detach()),
+        "mse": float(mse.detach()),
+        "gradient": float(grad.detach()),
+        "edge": float(edge.detach()),
+        "residual_reg": float(res.detach()),
+        "symmetry": float(sym.detach()),
+        "z_smooth": float(z_smooth.detach()),
+        "tail_mse": float(tail.detach()),
+        "confidence_mean": confidence_mean,
     }
 
 
@@ -207,13 +309,59 @@ def _validate(model: nn.Module, loader: DataLoader, profile: Profile, device: to
     return total / max(count, 1) if count else float("nan")
 
 
+def _load_g07_into_g086(model: nn.Module, checkpoint: Path) -> int:
+    payload = torch.load(checkpoint, map_location="cpu")
+    source = payload["model_state_dict"]
+    target = model.state_dict()
+    compatible = {
+        f"base.single.{key}": value
+        for key, value in source.items()
+        if f"base.single.{key}" in target
+        and tuple(target[f"base.single.{key}"].shape) == tuple(value.shape)
+    }
+    model.load_state_dict(compatible, strict=False)
+    return len(compatible)
+
+
+def _set_adapter_only(model: nn.Module, enabled: bool) -> None:
+    for name, parameter in model.named_parameters():
+        parameter.requires_grad = not enabled or not name.startswith("base.single.")
+
+
+@torch.no_grad()
+def _update_ema(ema_model: nn.Module, model: nn.Module, decay: float) -> None:
+    model_state = model.state_dict()
+    for name, value in ema_model.state_dict().items():
+        source = model_state[name].detach()
+        if value.is_floating_point():
+            value.mul_(decay).add_(source, alpha=1.0 - decay)
+        else:
+            value.copy_(source)
+
+
+def _set_warmup_cosine_lr(optimizer: torch.optim.Optimizer, profile: Profile, epoch: int) -> None:
+    if profile.warmup_epochs <= 0:
+        return
+    if epoch < profile.warmup_epochs:
+        ratio = float(epoch + 1) / float(profile.warmup_epochs)
+    else:
+        progress = float(epoch - profile.warmup_epochs) / float(max(1, profile.epochs - profile.warmup_epochs - 1))
+        ratio = profile.min_lr_ratio + (1.0 - profile.min_lr_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
+    for group in optimizer.param_groups:
+        group["lr"] = float(group["initial_lr"]) * ratio
+
+
 def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
     best_path = paths.checkpoints / "pastnet_epoch_best.pth"
     if profile.skip_training_if_checkpoint_exists and best_path.exists():
         return best_path
 
     ensure_dir(paths.checkpoints)
-    dataset_class = IXIMultiAnchorSingleSliceDataset if profile.model_variant == "ma3" else IXISingleSliceInterpolationDataset
+    dataset_class = (
+        IXIMultiAnchorIntervalDataset
+        if profile.model_variant == "ma3df"
+        else (IXIMultiAnchorSingleSliceDataset if profile.model_variant == "ma3" else IXISingleSliceInterpolationDataset)
+    )
     train_ds = dataset_class(
         "train", profile.modality, profile.stride, profile.train_cases, target_shape=profile.target_shape
     )
@@ -261,17 +409,48 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
     )
 
     model = _make_model(profile, device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=profile.lr, weight_decay=profile.weight_decay)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="min",
-        factor=0.5,
-        patience=max(1, profile.patience // 3),
-    )
+    if profile.model_variant == "ma3df":
+        if profile.init_checkpoint is None or not profile.init_checkpoint.exists():
+            raise FileNotFoundError(f"IXI G086 requires G07 checkpoint: {profile.init_checkpoint}")
+        loaded = _load_g07_into_g086(model, profile.init_checkpoint)
+        print(f"Warm-start IXI G086 from G07: loaded={loaded} tensors; new adapters are exact no-ops")
+        adapter, backbone = [], []
+        for name, parameter in model.named_parameters():
+            (backbone if name.startswith("base.single.") else adapter).append(parameter)
+        optimizer = torch.optim.AdamW(
+            [
+                {"params": backbone, "lr": profile.lr, "initial_lr": profile.lr},
+                {
+                    "params": adapter,
+                    "lr": profile.lr * profile.adapter_lr_scale,
+                    "initial_lr": profile.lr * profile.adapter_lr_scale,
+                },
+            ],
+            betas=profile.optimizer_betas,
+            weight_decay=profile.weight_decay,
+        )
+        scheduler = None
+        ema_model = copy.deepcopy(model).eval() if profile.ema_decay > 0 else None
+    else:
+        optimizer = torch.optim.AdamW(
+            model.parameters(), lr=profile.lr, betas=profile.optimizer_betas, weight_decay=profile.weight_decay
+        )
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="min",
+            factor=0.5,
+            patience=max(1, profile.patience // 3),
+        )
+        ema_model = None
     scaler = torch.amp.GradScaler("cuda", enabled=_autocast_enabled(device, profile))
     rows = []
     best_val = float("inf")
     stale = 0
+    if profile.model_variant == "ma3df":
+        initial_model = ema_model if ema_model is not None else model
+        best_val = _validate(initial_model, val_loader, profile, device, 0)
+        torch.save(_checkpoint_payload(initial_model, profile, -1, best_val), best_path)
+        print(f"IXI G086 epoch-0 guard: val={best_val:.6g}")
     print(
         f"IXI PAST-Net 2.5D: device={device}, profile={profile.name}, "
         f"train_samples={len(train_ds)}, val_samples={len(val_ds)}, batch={profile.batch_size}, "
@@ -281,11 +460,15 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
     )
     for epoch in range(profile.epochs):
         start = time.time()
+        if profile.model_variant == "ma3df":
+            _set_warmup_cosine_lr(optimizer, profile, epoch)
+            _set_adapter_only(model, epoch < profile.adapter_only_epochs)
         model.train()
         total = 0.0
         count = 0
         skipped_nonfinite = 0
         grad_accum_steps = max(1, profile.grad_accum_steps)
+        accumulated = 0
         optimizer.zero_grad(set_to_none=True)
         pbar = tqdm(train_loader, desc=f"PASTNet-Epoch {epoch + 1}/{profile.epochs}")
         for step, batch in enumerate(pbar, start=1):
@@ -294,18 +477,20 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
             if not torch.isfinite(loss):
                 skipped_nonfinite += 1
                 optimizer.zero_grad(set_to_none=True)
+                accumulated = 0
                 pbar.set_postfix(loss="nonfinite", skipped=skipped_nonfinite)
                 continue
             scaler.scale(loss / grad_accum_steps).backward()
-            if step % grad_accum_steps == 0 or step == len(train_loader):
+            accumulated += 1
+            if accumulated == grad_accum_steps or step == len(train_loader):
                 scaler.unscale_(optimizer)
-                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                if torch.isfinite(grad_norm):
-                    scaler.step(optimizer)
-                else:
-                    skipped_nonfinite += 1
+                torch.nn.utils.clip_grad_norm_(model.parameters(), profile.grad_clip_norm)
+                scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad(set_to_none=True)
+                accumulated = 0
+                if ema_model is not None:
+                    _update_ema(ema_model, model, profile.ema_decay)
             total += float(loss.item())
             count += 1
             pbar.set_postfix(
@@ -315,15 +500,24 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
                 conf=f"{parts['confidence_mean']:.2f}",
                 lr=f"{optimizer.param_groups[0]['lr']:.1e}",
             )
+        if accumulated:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), profile.grad_clip_norm)
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad(set_to_none=True)
+            if ema_model is not None:
+                _update_ema(ema_model, model, profile.ema_decay)
         train_loss = total / max(count, 1) if count else float("nan")
-        val_loss = _validate(model, val_loader, profile, device, epoch + 1)
-        if np.isfinite(val_loss):
+        eval_model = ema_model if ema_model is not None else model
+        val_loss = _validate(eval_model, val_loader, profile, device, epoch + 1)
+        if np.isfinite(val_loss) and scheduler is not None:
             scheduler.step(val_loss)
         improved = np.isfinite(val_loss) and val_loss < best_val
         if improved:
             best_val = val_loss
             stale = 0
-            torch.save(_checkpoint_payload(model, profile, epoch, best_val), best_path)
+            torch.save(_checkpoint_payload(eval_model, profile, epoch, best_val), best_path)
         else:
             stale += 1
         row = {
@@ -347,7 +541,8 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
             print(f"Early stopping: stale={stale}")
             break
 
-    torch.save(_checkpoint_payload(model, profile, rows[-1]["epoch"], best_val), paths.checkpoints / "pastnet_epoch_final.pth")
+    final_model = ema_model if ema_model is not None else model
+    torch.save(_checkpoint_payload(final_model, profile, rows[-1]["epoch"], best_val), paths.checkpoints / "pastnet_epoch_final.pth")
     write_csv(paths.run_dir / "training_history.csv", rows)
     write_json(
         paths.run_dir / "training_history.json",
@@ -357,7 +552,7 @@ def train_pastnet(paths: RunPaths, profile: Profile) -> Path:
 
 
 def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val: float) -> dict:
-    is_ma3 = profile.model_variant == "ma3"
+    is_ma3 = profile.model_variant in {"ma3", "ma3df"}
     return {
         "epoch": epoch,
         "model_state_dict": model.state_dict(),
@@ -390,6 +585,9 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
             "residual_regularization": profile.lambda_res,
             "symmetry": profile.lambda_sym,
             "edge": profile.lambda_edge,
+            "z_curvature": profile.lambda_z,
+            "tail_mse": profile.lambda_tail,
+            "base_guard": profile.joint_base_guard,
         },
         "model_config": {
             "input_channels": 13 if is_ma3 else 6,
@@ -399,6 +597,19 @@ def _checkpoint_payload(model: nn.Module, profile: Profile, epoch: int, best_val
             "mlp_ratio": profile.mlp_ratio,
             "residual_scale": profile.residual_scale,
             **({"temporal_refine": True, "refine_scale": profile.refine_scale} if is_ma3 else {}),
+            **(
+                {
+                    "context_blocks": profile.context_blocks,
+                    "latent_mixer": profile.latent_mixer,
+                    "latent_scales": profile.latent_scales,
+                    "latent_scale": profile.latent_scale,
+                    "aggressive_mode": profile.aggressive_mode,
+                    "aggressive_channels": profile.aggressive_channels,
+                    "aggressive_scale": profile.aggressive_scale,
+                }
+                if profile.model_variant == "ma3df"
+                else {}
+            ),
         },
     }
 
@@ -409,7 +620,9 @@ class PASTNet2p5DInterpolator:
         payload = torch.load(checkpoint, map_location=self.device)
         config = payload.get("model_config", {})
         self.model_variant = str(payload.get("model_variant", "v1"))
-        if self.model_variant == "ma3":
+        if self.model_variant == "ma3df":
+            self.model = PASTNetMA3Aggressive2p5D(**config).to(self.device)
+        elif self.model_variant == "ma3":
             self.model = PASTNetMultiAnchor2p5D(**config).to(self.device)
         else:
             self.model = PASTNet2p5D(**config).to(self.device)
@@ -427,6 +640,13 @@ class PASTNet2p5DInterpolator:
                 pred = self.model(cond).float().clamp(0.0, 1.0)
         return pred.squeeze(0).squeeze(0).cpu().numpy()
 
+    def _predict_interval(self, cond_np: np.ndarray) -> np.ndarray:
+        cond = torch.from_numpy(cond_np).float().unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            with torch.amp.autocast(device_type=self.device.type, enabled=self.device.type == "cuda" and self.amp):
+                pred = self.model(cond).float().clamp(0.0, 1.0)
+        return pred.squeeze(0).squeeze(1).cpu().numpy()
+
     def interpolate_volume(self, volume: np.ndarray, stride: int = 4) -> np.ndarray:
         norm, lo, hi = normalize_volume(volume)
         out_depth = (volume.shape[2] - 1) * stride + 1
@@ -438,7 +658,7 @@ class PASTNet2p5DInterpolator:
             right = resize(norm[:, :, idx + 1], self.input_size, preserve_range=True, anti_aliasing=True).astype(np.float32)
             diff = (right - left).astype(np.float32)
             absdiff = np.abs(diff).astype(np.float32)
-            if self.model_variant == "ma3":
+            if self.model_variant in {"ma3", "ma3df"}:
                 prev_idx = idx - 1
                 next_idx = idx + 2
                 prev_valid_value = 1.0 if prev_idx >= 0 else 0.0
@@ -458,11 +678,12 @@ class PASTNet2p5DInterpolator:
                 prev_delta = ((left - prev_anchor) * prev_valid_value).astype(np.float32)
                 next_delta = ((next_anchor - right) * next_valid_value).astype(np.float32)
                 curvature = (next_delta - prev_delta).astype(np.float32)
+            interval_conditions = []
             for offset in range(1, stride):
                 rel = float(offset) / float(stride)
                 coarse = ((1.0 - rel) * left + rel * right).astype(np.float32)
                 phase = np.full(self.input_size, rel, dtype=np.float32)
-                if self.model_variant == "ma3":
+                if self.model_variant in {"ma3", "ma3df"}:
                     cond_np = np.stack(
                         [
                             prev_anchor,
@@ -483,9 +704,35 @@ class PASTNet2p5DInterpolator:
                     )
                 else:
                     cond_np = np.stack([left, right, coarse, phase, diff, absdiff], axis=0)
+                if self.model_variant == "ma3df":
+                    cond_np = np.stack(
+                        [
+                            prev_anchor,
+                            left,
+                            right,
+                            next_anchor,
+                            coarse,
+                            phase,
+                            diff,
+                            absdiff,
+                            prev_valid,
+                            next_valid,
+                            prev_delta,
+                            next_delta,
+                            curvature,
+                        ],
+                        axis=0,
+                    )
+                    interval_conditions.append(cond_np)
+                    continue
                 generated = self._predict_slice(cond_np)
                 slice_ = resize(generated, volume.shape[:2], preserve_range=True, anti_aliasing=True)
                 out[:, :, idx * stride + offset] = slice_ * (hi - lo) + lo
+            if self.model_variant == "ma3df":
+                generated_interval = self._predict_interval(np.stack(interval_conditions).astype(np.float32))
+                for offset, generated in enumerate(generated_interval, start=1):
+                    slice_ = resize(generated, volume.shape[:2], preserve_range=True, anti_aliasing=True)
+                    out[:, :, idx * stride + offset] = slice_ * (hi - lo) + lo
         return out
 
     def process_folder(self, input_dir: Path, output_dir: Path, stride: int) -> int:

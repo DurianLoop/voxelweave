@@ -63,3 +63,36 @@ class IXIMultiAnchorSingleSliceDataset(IXISingleSliceInterpolationDataset):
         ).astype(np.float32)
         item["cond_ma"] = torch.from_numpy(cond_ma)
         return item
+
+
+class IXIMultiAnchorIntervalDataset(IXIMultiAnchorSingleSliceDataset):
+    """Group the three x4 missing offsets from one anchor interval."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.stride != 4:
+            raise ValueError("G086 interval training currently requires stride=4")
+        self.interval_items = self.items[:: self.stride - 1]
+
+    def __len__(self) -> int:
+        return len(self.interval_items)
+
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
+        path, case_id, z, _offset, depth = self.interval_items[index]
+        original_items = self.items
+        try:
+            self.items = [
+                (path, case_id, z, offset, depth)
+                for offset in range(1, self.stride)
+            ]
+            samples = [super().__getitem__(offset - 1) for offset in range(1, self.stride)]
+        finally:
+            self.items = original_items
+        return {
+            "cond_ma_stack": torch.stack([sample["cond_ma"] for sample in samples]),
+            "coarse_stack": torch.stack([sample["coarse"] for sample in samples]),
+            "target_stack": torch.stack([sample["target"] for sample in samples]),
+            "anchor_pair": torch.stack(
+                [samples[0]["cond_ma"][1:2], samples[0]["cond_ma"][2:3]]
+            ),
+        }

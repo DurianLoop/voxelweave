@@ -1,0 +1,10 @@
+from common import *
+p=P/'FINAL_ITERATION_PROTOCOL.md';t=p.read_text(encoding='utf-8')
+new='Phase0 uses preserved predictions after wrapper verification, except the following explicit coordinate correction. Missing phase2 arrays are regenerated with the frozen interfaces and retained. IXI retains historical in-memory NIfTI staging quantization. For SAINT, both new phase0 and phase2 use the same physical target coordinate z/(source depth-1), including the phase origin. Historical phase-local/output-depth coordinates are reproduced separately for old-number verification; they cannot be silently mixed with physical-coordinate-correct predictions. Thus new SAINT phase0 is regenerated with this declared coordinate mapping, at unchanged weights and input channels. This correction is fixed before outcomes, not selected by its effect.'
+old='Phase0 uses preserved predictions after wrapper verification. Missing phase2 arrays are regenerated with the exact frozen interfaces and retained. IXI retains historical in-memory NIfTI staging quantization. SAINT physical target coordinates must be mapped correctly in a shifted lattice; historical fastMRI phase-local z behavior is reproduced separately for old-number verification and is not silently used as a physical-coordinate-correct new intervention. Any resulting correction is documented.'
+assert new in t
+original=t.replace(new,old)
+assert hashlib.sha256(original.encode()).hexdigest()==read(P/'freeze.json')['artifacts']['FINAL_ITERATION_PROTOCOL.md']
+(P/'FINAL_ITERATION_PROTOCOL_V1.md').write_bytes(original.encode('utf-8'))
+write(P/'execution_freeze.json',{'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'protocol_sha256':sha(p),'original_freeze_sha256':sha(P/'freeze.json'),'amendment':'A1: after asset hash completion but before any inference or new result summaries, explicitly fix both SAINT phase coordinate denominators. Original protocol bytes are restored as V1 and retain original hash. Source inspection only; no model outputs inspected for this choice.','new_inference_started':False})
+guard();print('Execution protocol bound; original freeze preserved.')

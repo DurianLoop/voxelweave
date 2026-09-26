@@ -38,7 +38,7 @@ def _clear_generated_files(paths) -> None:
 
 def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
     profile = PROFILES[profile_name]
-    is_ma3 = profile.model_variant == "ma3"
+    is_ma3 = profile.model_variant in {"ma3", "ma3df"}
     paths = build_paths(profile.name)
     for path in [
         paths.run_dir,
@@ -101,8 +101,17 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
             "lambda_sym": profile.lambda_sym,
             "lambda_edge": profile.lambda_edge,
             "lambda_mse": profile.lambda_mse,
+            "lambda_z": profile.lambda_z,
+            "lambda_tail": profile.lambda_tail,
+            "tail_fraction": profile.tail_fraction,
+            "joint_base_guard": profile.joint_base_guard,
+            "context_blocks": profile.context_blocks,
+            "latent_mixer": profile.latent_mixer,
+            "latent_scales": profile.latent_scales,
+            "aggressive_mode": profile.aggressive_mode,
+            "init_checkpoint": str(profile.init_checkpoint) if profile.init_checkpoint is not None else None,
             "eval_cases": eval_manifest,
-            "table_ready": profile.name in {"full", "full_test115", "full_g07_ma3_wide200_test115", "full_test115_x2", "full_test115_x6"},
+            "table_ready": profile.name in {"full", "full_test115", "full_g07_ma3_wide200_test115", "full_g086_dual_interval160_test115", "full_test115_x2", "full_test115_x6"},
             "eval_only_checkpoint": str(eval_only_checkpoint) if eval_only_checkpoint is not None else None,
         },
     )
@@ -119,7 +128,7 @@ def run(profile_name: str, eval_only_checkpoint: Path | None = None) -> None:
     run_baseline_folder(paths.eval_sparse, paths.baseline_cubic, factor=profile.stride, kind="cubic")
 
     rows = []
-    method_label = "pastnet_ma3" if is_ma3 else "pastnet"
+    method_label = "pastnet_g086" if profile.model_variant == "ma3df" else ("pastnet_ma3" if is_ma3 else "pastnet")
     rows.extend(
         evaluate_method(paths.eval_gt, paths.model_outputs, "diff_", method_label, factor=profile.stride, case_names=eval_names)
     )
