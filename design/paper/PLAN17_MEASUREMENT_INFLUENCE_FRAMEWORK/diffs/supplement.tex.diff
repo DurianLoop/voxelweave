@@ -1,0 +1,89 @@
+--- original/supplement.tex
++++ revised/supplement.tex
+@@ -12,12 +12,14 @@
+ \begin{document}
+ \maketitle
+ 
++\input{p17_additional_material.tex}
++
+ \section{Scope and Evidence Contract}
+ This supplement reports protocol details, full strata, and every result that materially limits a submitted claim. Experiments are included according to relevance, not favorability. The manuscript does not claim a new reconstruction architecture, calibrated uncertainty, universal estimator superiority, plane-invariant influence, local failure localization, or prospective acquisition benefit.
+ 
+ The independent units are 24 fastMRI examinations, 115 IXI examinations, and eight NingXia patients containing 22 series. All NingXia intervals resample patients with subordinate series, planes, models, and contexts retained. Missing target values are not subtracted in a disagreement score, but its evaluation support can be target-derived. Plan 9/11 use a ground-truth 1\% mask; the recovered bank uses the target model's prediction mask, not ground truth. Anchor-CV uses held-out acquired anchors (including their masks); adjacent MAE uses masks from acquired pairs. These information regimes must not be conflated.
+ 
+-\section{Definitions and Frozen Protocol}
++\section{Definitions and Documented Protocol}
+ For predictions $f_a=y+e_a$ and $f_b=y+e_b$, shared and observable error fractions are
+ \begin{equation}
+ S=\frac{\|\bar e\|^2}{\|\bar e\|^2+\|\delta\|^2},\qquad
+@@ -25,19 +27,19 @@
+ \end{equation}
+ where $\bar e=(e_a+e_b)/2$ and $\delta=(e_a-e_b)/2$. Numerical identity error is below $4.42\times10^{-10}$ in the stored audit.
+ 
+-For nonlinear models, four frozen seeds (6101--6104) generate centered Rademacher fields at 1\% of the globally normalized case range. Each shared anchor is perturbed separately. The response-cosine statistic averages identical-field response cosines across shared anchors and seeds. The broad grid uses reference offsets $(-2,+2)$ and eight target-preserving comparators. Span and asymmetry are explicit covariates; the complete offset list is stored with the experiment registry. The fixed-count subset contains the four comparators with exactly one common anchor.
++For nonlinear models, four frozen seeds (6101--6104) generate centered Rademacher fields at 1\% of the globally normalized case range. Each shared anchor is perturbed separately. The influence numerator sums identical-field response inner products over shared anchors and seeds, while its denominator uses the geometric mean of all-anchor response energies on the two sides, including unshared anchors. The broad grid uses reference offsets $(-2,+2)$ and eight target-preserving comparators. Span and asymmetry are explicit covariates; the complete offset list is stored with the experiment registry. The fixed-count subset contains the four comparators with exactly one common anchor.
+ 
+ \section{Plan-9 Architecture-Family Protocol}
+-The architecture hypothesis and falsification conditions were frozen before new P0 results. Phase-0 anchors are $\{0,4,8,12\}$, phase-2 anchors are $\{2,6,10,14\}$, and common missing targets are $\{3,5,7,9,11\}$. The clean shared control applies an in-plane horizontal flip to phase-0 inputs and maps outputs back. A one-case smoke using through-plane reversal was rejected before cohort inference because it changed physical geometry and exposed direction non-equivariance; its outputs are retained but excluded. Regenerated phase-0 outputs match stored predictions exactly for every one of 24 cases and all five architectures (pixel MAE and maximum absolute difference zero).
++The architecture hypothesis and falsification conditions are recorded in local documents; their pre-outcome timing is not independently established. Phase-0 anchors are $\{0,4,8,12\}$, phase-2 anchors are $\{2,6,10,14\}$, and common missing targets are $\{3,5,7,9,11\}$. The clean shared control applies an in-plane horizontal flip to phase-0 inputs and maps outputs back. A one-case smoke using through-plane reversal was rejected after its one-case outcome exposed order non-equivariance; documents report that this preceded full-cohort inference; its outputs are retained but excluded. Regenerated phase-0 outputs match stored predictions exactly for every one of 24 cases and all five architectures (pixel MAE and maximum absolute difference zero).
+ 
+ I3Net uses four regular anchors and outputs 13 planes. SAINT consumes a left/right pair plus relative and absolute position maps. The internal CycleINR-style model linearly densifies four regular anchors and queries a coordinate-conditioned residual network. The adapted SAINT and CycleINR-style implementations are not claimed as exact official reproductions. All interventions occur at physical anchor identity; no architecture is distorted into another input interface.
+ 
+-The following table unifies the reconstruction context for fastMRI, IXI, and NingXia. It deliberately preserves the recovered audit's missing cells: fastMRI and out-of-fold NingXia have broad $\times2/\times4/\times6$ coverage, while IXI has a complete auditable recovery only at $\times4$ for fewer methods. The table is not used to select a winner and does not identify any method as ours.
++The following historical table preserves masked/common-support recovery, including its missing cells. Those missing cells do not mean the native baseline runs are absent: the complete native 13-model, three-cohort comparison and all 111 configurations are retained elsewhere in this supplement. The two supports are not interchangeable and no method is labeled ours.
+ 
+ \input{table_full_reconstruction_benchmark.tex}
+ 
+ \section{Exploratory Full-Model-Bank Audit}
+-After inspecting the recovered benchmark, we added an explicitly exploratory breadth audit; it is not part of the prospectively frozen architecture-family test. On common case support within each cohort and factor, it covers 6--13 models, 483 undirected error pairs, and 807 directed target--member disagreement pairs. Independent bootstrap units are examinations for fastMRI/IXI and patient folds for NingXia.
++After inspecting the recovered benchmark, we added an explicitly exploratory breadth audit; it is not part of the documented architecture-family test. On common case support within each cohort and factor, it covers 6--13 models, 483 undirected error pairs, and 807 directed target--member disagreement pairs. Independent bootstrap units are examinations for fastMRI/IXI and patient folds for NingXia.
+ 
+ Figure~\ref{fig:p10-bank} shows three results. First, median pairwise case-error rank correlation is .938/.963/.953 for fastMRI $\times2/\times4/\times6$, .991 for IXI $\times4$, and .992/.980/.972 for NingXia $\times2/\times4/\times6$. All seven clustered 95\% intervals have lower bounds above .83. Second, disagreement generally ranks target error, but target--member error dependence does not by itself determine that reliability. Third, a matched cross-family partner is better for several implicit targets yet neutral or worse for several transformer and attention-CNN targets; architecture family is not a universal selection rule.
+ 
+@@ -70,8 +72,8 @@
+ 
+ The equal-weight four-family observable gain is .155 [.148,.162]. Leave-one-family-out estimates are .180 without I3Net, .131 without INR, .161 without SAINT, and .147 without transformers; all intervals exclude zero. The frozen shared-condition thresholds identify stable-wrong rates of 0 for HAT, SwinIR, I3Net, and SAINT and 4/120 (3.33\%) for CycleINR; CycleINR has 0/120 under disjoint contexts. This negative prevalence result is not replaced by the earlier Plan-8 definition.
+ 
+-\section{Independent IXI Five-Architecture Replication}
+-The Plan-11 replication applies the same phase-0/phase-2 clean contrast to all 115 held-out IXI examinations, with five deterministic targets per examination and 5,000 examination-bootstrap replicates. Each of the five phase-0 wrappers reproduces one frozen IXI examination (IXI012) with zero maximum absolute error; this is a wrapper gate, not a 115-case reproduction audit. The resulting plane table contains exactly 5,750 rows (five models, 115 examinations, five targets, two conditions), with no duplicate keys or non-finite metric values.
++\section{Distinct-Cohort IXI Five-Architecture Replication}
++The Plan-11 replication applies the same phase-0/phase-2 clean contrast to all 115 historically reused IXI reconstruction-test examinations, with five deterministic targets per examination and 5,000 examination-bootstrap replicates. Each of the five phase-0 wrappers reproduces one frozen IXI examination (IXI012) with zero maximum absolute error; this is a wrapper gate, not a 115-case reproduction audit. The resulting plane table contains exactly 5,750 rows (five models, 115 examinations, five targets, two conditions), with no duplicate keys or non-finite metric values.
+ 
+ \begin{table*}[t]
+ \centering
+@@ -110,7 +112,7 @@
+ I3Net & .859 & .737 & .939 & .776$^{\dagger}$ & $-.006^{\dagger}$ & .434$^{\dagger}$\\
+ CycleINR & .779 & .857 & .876 & .789$^{\dagger}$ & .007$^{\dagger}$ & .229$^{\dagger}$\\
+ \bottomrule
+-\multicolumn{7}{l}{$^{\dagger}$Exploratory only after the prospectively frozen stability gate failed; excluded from influence claims.}
++\multicolumn{7}{l}{$^{\dagger}$Exploratory only after the documented stability gate failed; excluded from influence claims.}
+ \end{tabular}
+ \end{table*}
+ 
+@@ -133,7 +135,7 @@
+ \end{tabular}
+ \end{table*}
+ 
+-The original order-reversal control is not used as the clean causal contrast. It supports the complete covariance chain on IXI and NingXia, but several cosine/shared/observable arrows reverse on fastMRI because order reversal changes more than anchor dependence. The horizontal-flip clean control preserves anchor identities, target, distances, count, $z$ order, mask, and preprocessing and is therefore the primary intervention.
++The original order-reversal control is not used as the cleaner dependence contrast. It supports the complete covariance chain on IXI and NingXia, but several cosine/shared/observable arrows reverse on fastMRI because order reversal changes more than anchor dependence. The horizontal-flip clean control preserves anchor identities, target, distances, count, $z$ order, mask, and preprocessing and is therefore the primary intervention.
+ 
+ Metric robustness was assessed over MAE, RMSE/MSE, SSIM error, gradient MAE, low-pass MAE, and residual high-frequency MAE for three physical planes, three cohorts, and two architectures. All 42 disjoint-minus-shared point differences are positive. All seven IXI intervals exclude zero. SSIM error has weak or negative absolute ranking on fastMRI/NingXia and several smaller-cohort gradient/high-frequency intervals cross zero. The claim is broad error observability, not metric independence.
+ 
+@@ -246,7 +248,7 @@
+ 
+ Partial rank association for Anchor-CV after adjacent MAE, robust scale, and spacing is .333 on fastMRI, $-.059$ on IXI, and $-.100$ on NingXia. Scale normalization reduces/reverses rankings, so the score is not a scale-free invariant. Frozen risk--coverage also has no universal winner: output PC is better on fastMRI/IXI and adjacent MAE is better on NingXia.
+ 
+-The rule-frozen consequence audit instead matches model identity while allowing factor-specific weights. It pairs common-support $\times4$ and $\times2$ MAE for every eligible model on fastMRI and patient-folded NingXia. Anchor-CV is positively associated with benefit for 13/13 fastMRI models and 12/13 NingXia models (median within-model $\rho=.851/.727$); adjacent MAE gives 13/13 and 12/13 (.802/.748), and candidate-bank disagreement gives 11/11 and 10/11 (.835/.710). The smaller bank denominator is structural: the precomputation includes neural targets only; Linear/Cubic are candidate members but not target rows. The only non-positive model is the severely degraded NingXia Res-SRDiff run; all three intervals cross zero. No model is removed by result direction.
++The fixed-rule retrospective consequence audit instead matches model identity while allowing factor-specific weights. It pairs common-support $\times4$ and $\times2$ MAE for every eligible model on fastMRI and patient-folded NingXia. Anchor-CV is positively associated with benefit for 13/13 fastMRI models and 12/13 NingXia models (median within-model $\rho=.851/.727$); adjacent MAE gives 13/13 and 12/13 (.802/.748), and candidate-bank disagreement gives 11/11 and 10/11 (.835/.710). The smaller bank denominator is structural: the precomputation includes neural targets only; Linear/Cubic are candidate members but not target rows. The only non-positive model is the severely degraded NingXia Res-SRDiff run; all three intervals cross zero. No model is removed by result direction.
+ 
+ At 10/20/30/50\% selection budgets, model-median oracle-normalized gains remain positive for all three scores in both cohorts. Individual NingXia Res-SRDiff policies can fall below random, so allocation is not universally beneficial. These analyses use already reconstructed dense acquisitions and cannot identify the causal scanner-time benefit of changing acquisition density.
+ 
+@@ -279,7 +281,7 @@
+ \item Anchor-CV/consequence: \path{plan6_anchor_cv_explanation*} and \path{plan6_ixi_x2_consequence*};
+ \item Plan-7 stability and negative gates: \path{ARCHIVE/PLANS/PLAN07/PLAN7_ACCEPTANCE_OPTIMIZATION/outputs/p7_cvpr_*};
+ \item exploratory recovered-model-bank breadth audit: \path{ARCHIVE/PLANS/PLAN10_ACCEPTANCE_ITERATION/outputs/p10_*};
+-\item rule-frozen same-model densification audit: \path{ARCHIVE/PLANS/PLAN11_CLAIM_STRENGTHENING/outputs/p11_same_model_benefit_*};
++\item fixed-rule retrospective same-model densification audit: \path{ARCHIVE/PLANS/PLAN11_CLAIM_STRENGTHENING/outputs/p11_same_model_benefit_*};
+ \item frozen IXI five-architecture replication and identity swap: \path{ARCHIVE/PLANS/PLAN11_CLAIM_STRENGTHENING/outputs/p11_ixi_clean_*_full.*} and \path{p11_identity_swap_*_full.*};
+ \item full selection rationale: \path{CVPR/archive/CVPR_RECOVERED/PAPER/EVIDENCE_SELECTION_AUDIT.md}.
+ \end{itemize}

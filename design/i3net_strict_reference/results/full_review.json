@@ -1,0 +1,176 @@
+{
+  "integrity_passed": true,
+  "smoke": false,
+  "best_epoch": 32,
+  "best_sha256": "6e8d59568294cd5007af110ec0586922d1949cf982ade1c96ae71e3cb8977844",
+  "reevaluation_max_abs": 0.0,
+  "summary": {
+    "psnr": 25.17213238692313,
+    "ssim": 0.8244768926628763,
+    "mae": 0.02627426470796797,
+    "mse": 0.003381651301224842,
+    "ncc": 0.9338849910856245,
+    "dice_proxy": 0.9755018593623886,
+    "hd95_proxy": 4.807599254279886,
+    "tail10_mse": 0.02914071687702208
+  },
+  "completion": {
+    "completed": true,
+    "smoke": false,
+    "epochs": 100,
+    "stopped_early": true,
+    "best_psnr": 25.17213238692313,
+    "best_sha256": "6e8d59568294cd5007af110ec0586922d1949cf982ade1c96ae71e3cb8977844",
+    "last_sha256": "cf8e2cd3d0bca665fc5ce00d1519f32fc29a41259f2ef63d8f083ecf02c2785d",
+    "last_30_best_gain_db": 0.0,
+    "budget_limited": false,
+    "test_used": false
+  },
+  "comparison_limit": "PAST control has historical G086 pretraining; not matched initialization or total compute",
+  "patients": 23,
+  "paired_metrics": {
+    "psnr": {
+      "i3net_mean": 25.17213238692313,
+      "past_control_mean": 25.56201147523987,
+      "delta_i3net_minus_past": -0.38987908831673734,
+      "ci95": [
+        -0.5186866498851535,
+        -0.2576153878534382
+      ],
+      "i3net_patient_wins": 4
+    },
+    "ssim": {
+      "i3net_mean": 0.8244768926628763,
+      "past_control_mean": 0.8350883597146924,
+      "delta_i3net_minus_past": -0.010611467051816075,
+      "ci95": [
+        -0.012615652863789743,
+        -0.008622789431007383
+      ],
+      "i3net_patient_wins": 1
+    },
+    "mae": {
+      "i3net_mean": 0.02627426470796791,
+      "past_control_mean": 0.02462835529001919,
+      "delta_i3net_minus_past": 0.0016459094179487183,
+      "ci95": [
+        0.001294663188659666,
+        0.0020113464267950683
+      ],
+      "i3net_patient_wins": 1
+    },
+    "mse": {
+      "i3net_mean": 0.003381651301224792,
+      "past_control_mean": 0.003099145562058209,
+      "delta_i3net_minus_past": 0.0002825057391665826,
+      "ci95": [
+        0.0001827708717448812,
+        0.00039285398511721277
+      ],
+      "i3net_patient_wins": 4
+    },
+    "ncc": {
+      "i3net_mean": 0.9338849910856244,
+      "past_control_mean": 0.9395487665097018,
+      "delta_i3net_minus_past": -0.005663775424077526,
+      "ci95": [
+        -0.007766436158084742,
+        -0.003688164501527583
+      ],
+      "i3net_patient_wins": 4
+    },
+    "dice_proxy": {
+      "i3net_mean": 0.9755018593623886,
+      "past_control_mean": 0.9771887817882694,
+      "delta_i3net_minus_past": -0.0016869224258806098,
+      "ci95": [
+        -0.0020897215519565973,
+        -0.0011866177735297945
+      ],
+      "i3net_patient_wins": 1
+    },
+    "hd95_proxy": {
+      "i3net_mean": 4.807599254279886,
+      "past_control_mean": 5.402722418241106,
+      "delta_i3net_minus_past": -0.5951231639612208,
+      "ci95": [
+        -1.1845023571020854,
+        -0.10061590482556104
+      ],
+      "i3net_patient_wins": 14
+    },
+    "tail10_mse": {
+      "i3net_mean": 0.029140716877022035,
+      "past_control_mean": 0.02696749393356998,
+      "delta_i3net_minus_past": 0.002173222943452057,
+      "ci95": [
+        0.0012565612529631383,
+        0.0031817402434907546
+      ],
+      "i3net_patient_wins": 5
+    }
+  },
+  "control_worst_quartile_delta": -0.4585885473464509,
+  "bootstrap": "10000 patient resamples, one seed; no across-training-seed uncertainty",
+  "i3net_efficiency": {
+    "variant": "i3net_strict",
+    "best_sha256": "6e8d59568294cd5007af110ec0586922d1949cf982ade1c96ae71e3cb8977844",
+    "device": "NVIDIA GeForce RTX 5090 D v2",
+    "parameters": 23205197,
+    "conv_linear_gflops_interval": 906.984685568,
+    "conv_linear_gflops_slice": 302.3282285226667,
+    "flops_coverage": "Conv/Linear MAC x2 only; excludes DCT matmul, normalization, rearrangement and elementwise ops; NOT total FLOPs",
+    "latency_ms_interval_median": 35.95289960503578,
+    "latency_ms_slice_median": 11.98429986834526,
+    "latency_ms_interval_p95": 50.09769005700946,
+    "peak_forward_gib": 0.2257833480834961,
+    "contract": {
+      "shape": [
+        1,
+        3,
+        13,
+        256,
+        256
+      ],
+      "consumed_input_shape": [
+        1,
+        4,
+        1,
+        256,
+        256
+      ],
+      "amp": true,
+      "warmup": 10,
+      "repetitions": 30,
+      "scope": "forward only; generates 13 positions and returns 3 central missing slices; excludes IO/resize/metrics",
+      "torch": "2.11.0+cu128"
+    }
+  },
+  "control_efficiency": {
+    "variant": "control",
+    "device": "NVIDIA GeForce RTX 5090 D v2",
+    "parameters": 992179,
+    "conv_linear_gflops_interval": 446.589659136,
+    "conv_linear_gflops_slice": 148.863219712,
+    "flops_coverage": "Conv2d/3d and Linear MAC x2 only; excludes FFT, unfold, matching reductions and elementwise ops; not total FLOPs",
+    "latency_ms_interval_median": 143.08089995756745,
+    "latency_ms_slice_median": 47.69363331918915,
+    "latency_ms_interval_p95": 143.6017298605293,
+    "peak_forward_gib": 0.8587446212768555,
+    "contract": {
+      "shape": [
+        1,
+        3,
+        13,
+        256,
+        256
+      ],
+      "amp": true,
+      "warmup": 10,
+      "repetitions": 30,
+      "scope": "forward only, three missing slices, excludes IO/resize/metrics",
+      "torch": "2.11.0+cu128"
+    }
+  },
+  "sota_claim": false
+}

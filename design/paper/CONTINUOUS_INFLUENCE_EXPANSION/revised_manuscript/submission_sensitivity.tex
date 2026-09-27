@@ -1,0 +1,127 @@
+\section{Post-hoc Submission Sensitivities}
+\label{sec:submission-sensitivity}
+The accepted primary evidence and its raw arrays were hashed before these analyses. These are post-hoc sensitivities, not prespecified primary tests. All original targets and frozen predictions are retained; no network is rerun, no new mask threshold is searched and no new score is formed. Each examination has equal weight after target averaging. We use 5,000 common examination-bootstrap draws for all 20 ordered pairs within each cohort. Simultaneous intervals apply separately to each cohort/support/geometry endpoint, not jointly to the entire sensitivity collection. Model pairs share examinations and architectures, and are not independent replications.
+
+\subsection{Support contracts}
+The original target 1\%-foreground mask, the existing union of the nearest two acquired phase-0 foreground masks, and all common finite image pixels are the only contracts. Each acquired anchor is thresholded at 1\% of its own maximum absolute intensity. Support is identical for all pairs and both conditions at the same target; the acquired mask never accesses the target. Shared $O$, disjoint $O$, their difference and pixel counts for every pair are retained in the accompanying numerical files. The target remains necessary for retrospective error evaluation under every contract.
+
+All 20 effects and all 20 simultaneous intervals per cohort remain positive under each support. The maximum pair-effect rank movement is one on fastMRI and zero on IXI; minimum Spearman agreement with the original pair ordering is .997. This rules against dependence on the tested target-derived support, not against all conceivable support effects or against shared measurement/geometry confounding.
+\begin{table*}[t]\centering\scriptsize
+\caption{fastmri: all 20 post-hoc support contrasts. $\Delta O$ [simultaneous 95\% CI], percentage points.}\label{tab:support-fastmri}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrr}\toprule
+Ordered pair & Target mask & Acquired union & Full image\\\midrule
+CycleINR$\to$HAT & 11.20 [9.46,12.95] & 11.07 [9.33,12.81] & 11.07 [9.33,12.81] \\
+CycleINR$\to$I3Net & 6.78 [5.39,8.18] & 6.74 [5.36,8.12] & 6.74 [5.36,8.12] \\
+CycleINR$\to$SAINT & 7.58 [5.76,9.40] & 7.49 [5.68,9.30] & 7.49 [5.68,9.30] \\
+CycleINR$\to$SwinIR & 11.49 [9.39,13.59] & 11.36 [9.27,13.45] & 11.35 [9.25,13.44] \\
+HAT$\to$CycleINR & 11.56 [10.34,12.78] & 11.43 [10.22,12.65] & 11.41 [10.19,12.64] \\
+HAT$\to$I3Net & 9.76 [8.75,10.76] & 9.71 [8.72,10.71] & 9.71 [8.71,10.70] \\
+HAT$\to$SAINT & 12.96 [11.60,14.32] & 12.87 [11.51,14.23] & 12.86 [11.50,14.21] \\
+HAT$\to$SwinIR & 16.02 [14.61,17.44] & 15.88 [14.46,17.30] & 15.87 [14.45,17.29] \\
+I3Net$\to$CycleINR & 6.24 [5.23,7.24] & 6.16 [5.16,7.17] & 6.15 [5.15,7.16] \\
+I3Net$\to$HAT & 8.89 [7.64,10.15] & 8.82 [7.57,10.07] & 8.82 [7.57,10.06] \\
+I3Net$\to$SAINT & 10.70 [9.73,11.67] & 10.63 [9.66,11.60] & 10.62 [9.65,11.59] \\
+I3Net$\to$SwinIR & 7.75 [6.42,9.08] & 7.68 [6.36,8.99] & 7.67 [6.36,8.99] \\
+SAINT$\to$CycleINR & 7.77 [6.49,9.04] & 7.68 [6.40,8.95] & 7.66 [6.39,8.94] \\
+SAINT$\to$HAT & 12.65 [11.25,14.06] & 12.57 [11.17,13.97] & 12.56 [11.16,13.96] \\
+SAINT$\to$I3Net & 11.13 [10.08,12.17] & 11.10 [10.06,12.13] & 11.08 [10.05,12.12] \\
+SAINT$\to$SwinIR & 10.85 [9.24,12.45] & 10.77 [9.18,12.37] & 10.76 [9.16,12.35] \\
+SwinIR$\to$CycleINR & 11.06 [9.38,12.74] & 10.94 [9.26,12.61] & 10.91 [9.23,12.59] \\
+SwinIR$\to$HAT & 15.67 [14.32,17.03] & 15.54 [14.18,16.89] & 15.53 [14.17,16.88] \\
+SwinIR$\to$I3Net & 8.65 [7.45,9.84] & 8.61 [7.44,9.79] & 8.60 [7.43,9.78] \\
+SwinIR$\to$SAINT & 10.85 [9.25,12.45] & 10.77 [9.18,12.37] & 10.76 [9.17,12.35] \\\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\scriptsize
+\caption{ixi: all 20 post-hoc support contrasts. $\Delta O$ [simultaneous 95\% CI], percentage points.}\label{tab:support-ixi}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrr}\toprule
+Ordered pair & Target mask & Acquired union & Full image\\\midrule
+CycleINR$\to$HAT & 21.12 [20.56,21.69] & 20.99 [20.42,21.55] & 20.96 [20.39,21.52] \\
+CycleINR$\to$I3Net & 13.15 [12.22,14.08] & 13.07 [12.13,14.01] & 13.04 [12.12,13.97] \\
+CycleINR$\to$SAINT & 22.55 [21.99,23.11] & 22.40 [21.84,22.96] & 22.35 [21.80,22.91] \\
+CycleINR$\to$SwinIR & 22.33 [21.79,22.88] & 22.19 [21.64,22.73] & 22.15 [21.61,22.69] \\
+HAT$\to$CycleINR & 21.20 [20.58,21.81] & 21.05 [20.43,21.66] & 21.02 [20.41,21.63] \\
+HAT$\to$I3Net & 18.33 [17.32,19.34] & 18.27 [17.26,19.28] & 18.22 [17.21,19.22] \\
+HAT$\to$SAINT & 27.55 [26.85,28.25] & 27.42 [26.72,28.12] & 27.35 [26.66,28.05] \\
+HAT$\to$SwinIR & 28.53 [27.83,29.24] & 28.42 [27.71,29.12] & 28.36 [27.66,29.05] \\
+I3Net$\to$CycleINR & 13.11 [12.09,14.13] & 13.01 [11.99,14.03] & 13.00 [11.98,14.01] \\
+I3Net$\to$HAT & 18.00 [16.90,19.10] & 17.93 [16.83,19.03] & 17.88 [16.79,18.97] \\
+I3Net$\to$SAINT & 17.95 [16.84,19.07] & 17.87 [16.75,18.98] & 17.81 [16.71,18.92] \\
+I3Net$\to$SwinIR & 17.96 [16.87,19.06] & 17.89 [16.79,18.98] & 17.84 [16.75,18.92] \\
+SAINT$\to$CycleINR & 22.59 [21.99,23.20] & 22.43 [21.82,23.03] & 22.38 [21.79,22.98] \\
+SAINT$\to$HAT & 27.48 [26.79,28.18] & 27.36 [26.66,28.06] & 27.29 [26.60,27.98] \\
+SAINT$\to$I3Net & 18.24 [17.21,19.27] & 18.16 [17.13,19.19] & 18.11 [17.08,19.13] \\
+SAINT$\to$SwinIR & 28.10 [27.40,28.80] & 27.97 [27.26,28.67] & 27.90 [27.20,28.59] \\
+SwinIR$\to$CycleINR & 22.40 [21.80,23.01] & 22.24 [21.64,22.84] & 22.20 [21.61,22.80] \\
+SwinIR$\to$HAT & 28.49 [27.77,29.20] & 28.38 [27.66,29.09] & 28.31 [27.61,29.02] \\
+SwinIR$\to$I3Net & 18.27 [17.25,19.28] & 18.20 [17.18,19.22] & 18.15 [17.14,19.16] \\
+SwinIR$\to$SAINT & 28.13 [27.42,28.84] & 27.99 [27.28,28.71] & 27.93 [27.22,28.63] \\\bottomrule\end{tabular}\end{table*}
+\subsection{Residue, mirror and nearest-distance checks}
+Targets are divided by their physical index modulo four. Within each examination we average each residue class, then weight residues 1 and 3 equally. The mirror difference is the residue-1 effect minus the residue-3 effect, analogous to the historical reflection-class analysis but retaining this experiment's mean estimand. It is not a new reflected-image prediction or an identity-only counterfactual. Nearest-distance matching requires actual bracketing distances $\{1,3\}$ in both phases. All originally selected targets satisfy this gate, so the matched balanced estimate equals the residue-balanced estimate.
+
+The balanced local conclusion survives in both cohorts, as does each residue separately. However, mirror intervals exclude zero for eight fastMRI pairs (two positive, six negative) and six IXI pairs (two positive, four negative). These are retained orientation warnings; the remaining intervals do not prove equivalence. The stricter complete four-anchor contract requires two actual acquired anchors on each side in both phases and both residues within an examination. All IXI selected targets meet it. For fastMRI only target $z=7$ meets the complete-context requirement, leaving no residue-1 target: every such balanced pair estimate is NA. Boundary anchors are never duplicated or synthesized.
+\begin{table*}[t]\centering\scriptsize
+\caption{fastmri: all ordered-pair geometry contrasts, percentage points, with simultaneous 95\% intervals per column. Mirror difference is an orientation diagnostic, not an observability-gain endpoint.}\label{tab:geometry-fastmri}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}\toprule
+Ordered pair & Residue 1 & Residue 3 & Balanced & Mirror difference\\\midrule
+CycleINR$\to$HAT & 10.00 [8.33,11.67] & 12.00 [9.90,14.11] & 11.00 [9.32,12.68] & -2.00 [-3.52,-0.47] \\
+CycleINR$\to$I3Net & 5.87 [4.54,7.20] & 7.39 [5.65,9.13] & 6.63 [5.30,7.97] & -1.52 [-2.93,-0.11] \\
+CycleINR$\to$SAINT & 6.49 [4.74,8.24] & 8.30 [6.14,10.47] & 7.40 [5.64,9.16] & -1.82 [-3.30,-0.33] \\
+CycleINR$\to$SwinIR & 8.25 [6.20,10.29] & 13.66 [11.20,16.11] & 10.95 [8.92,12.98] & -5.41 [-7.04,-3.78] \\
+HAT$\to$CycleINR & 9.11 [7.17,11.06] & 13.19 [11.98,14.39] & 11.15 [9.86,12.44] & -4.07 [-6.05,-2.10] \\
+HAT$\to$I3Net & 9.25 [7.98,10.53] & 10.09 [8.76,11.42] & 9.67 [8.69,10.65] & -0.84 [-2.54,0.87] \\
+HAT$\to$SAINT & 12.16 [10.61,13.71] & 13.50 [11.88,15.12] & 12.83 [11.49,14.16] & -1.34 [-2.96,0.28] \\
+HAT$\to$SwinIR & 13.82 [12.37,15.27] & 17.49 [15.78,19.21] & 15.66 [14.28,17.03] & -3.67 [-5.12,-2.22] \\
+I3Net$\to$CycleINR & 6.58 [5.16,8.00] & 6.01 [4.52,7.49] & 6.29 [5.32,7.27] & 0.57 [-1.63,2.77] \\
+I3Net$\to$HAT & 10.35 [8.97,11.72] & 7.93 [6.30,9.55] & 9.14 [7.93,10.34] & 2.42 [0.68,4.16] \\
+I3Net$\to$SAINT & 11.91 [10.52,13.30] & 9.90 [8.84,10.95] & 10.90 [9.91,11.90] & 2.01 [0.57,3.46] \\
+I3Net$\to$SwinIR & 7.35 [5.66,9.05] & 8.01 [6.13,9.88] & 7.68 [6.40,8.96] & -0.65 [-3.16,1.86] \\
+SAINT$\to$CycleINR & 7.75 [5.93,9.56] & 7.78 [6.19,9.36] & 7.76 [6.48,9.04] & -0.03 [-2.29,2.24] \\
+SAINT$\to$HAT & 12.94 [11.35,14.53] & 12.46 [10.82,14.10] & 12.70 [11.32,14.08] & 0.48 [-1.08,2.04] \\
+SAINT$\to$I3Net & 11.56 [10.26,12.86] & 10.84 [9.58,12.09] & 11.20 [10.16,12.24] & 0.73 [-0.74,2.19] \\
+SAINT$\to$SwinIR & 10.15 [8.37,11.92] & 11.31 [9.30,13.33] & 10.73 [9.17,12.28] & -1.17 [-3.26,0.93] \\
+SwinIR$\to$CycleINR & 10.29 [7.56,13.01] & 11.58 [10.09,13.07] & 10.93 [9.14,12.73] & -1.29 [-3.84,1.26] \\
+SwinIR$\to$HAT & 15.47 [13.82,17.12] & 15.81 [14.26,17.36] & 15.64 [14.29,16.99] & -0.34 [-1.98,1.30] \\
+SwinIR$\to$I3Net & 8.28 [6.70,9.85] & 8.90 [7.56,10.24] & 8.59 [7.38,9.79] & -0.62 [-2.24,1.00] \\
+SwinIR$\to$SAINT & 10.74 [8.92,12.57] & 10.93 [9.05,12.80] & 10.83 [9.26,12.41] & -0.18 [-1.99,1.63] \\\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\scriptsize
+\caption{ixi: all ordered-pair geometry contrasts, percentage points, with simultaneous 95\% intervals per column. Mirror difference is an orientation diagnostic, not an observability-gain endpoint.}\label{tab:geometry-ixi}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}\toprule
+Ordered pair & Residue 1 & Residue 3 & Balanced & Mirror difference\\\midrule
+CycleINR$\to$HAT & 20.07 [19.29,20.85] & 22.17 [21.46,22.89] & 21.12 [20.56,21.69] & -2.10 [-3.09,-1.11] \\
+CycleINR$\to$I3Net & 12.34 [11.27,13.42] & 13.92 [12.78,15.07] & 13.13 [12.23,14.04] & -1.58 [-2.88,-0.28] \\
+CycleINR$\to$SAINT & 22.46 [21.68,23.25] & 22.64 [21.93,23.34] & 22.55 [21.99,23.11] & -0.17 [-1.18,0.84] \\
+CycleINR$\to$SwinIR & 21.57 [20.82,22.32] & 23.15 [22.46,23.84] & 22.36 [21.82,22.90] & -1.58 [-2.55,-0.61] \\
+HAT$\to$CycleINR & 20.70 [19.85,21.54] & 21.63 [20.83,22.43] & 21.16 [20.56,21.76] & -0.93 [-2.08,0.21] \\
+HAT$\to$I3Net & 18.28 [16.96,19.61] & 18.39 [17.39,19.40] & 18.34 [17.35,19.32] & -0.11 [-1.43,1.21] \\
+HAT$\to$SAINT & 28.39 [27.31,29.48] & 26.70 [25.96,27.43] & 27.55 [26.85,28.25] & 1.70 [0.45,2.94] \\
+HAT$\to$SwinIR & 29.06 [28.00,30.11] & 28.04 [27.25,28.84] & 28.55 [27.85,29.25] & 1.01 [-0.24,2.26] \\
+I3Net$\to$CycleINR & 12.41 [11.14,13.68] & 13.70 [12.40,15.00] & 13.05 [12.08,14.03] & -1.29 [-2.99,0.41] \\
+I3Net$\to$HAT & 18.21 [16.73,19.68] & 17.76 [16.69,18.84] & 17.99 [16.91,19.06] & 0.44 [-1.02,1.91] \\
+I3Net$\to$SAINT & 18.29 [16.78,19.80] & 17.56 [16.43,18.69] & 17.92 [16.83,19.02] & 0.73 [-0.85,2.30] \\
+I3Net$\to$SwinIR & 18.17 [16.70,19.65] & 17.72 [16.62,18.83] & 17.95 [16.88,19.02] & 0.45 [-1.06,1.96] \\
+SAINT$\to$CycleINR & 21.65 [20.81,22.49] & 23.48 [22.68,24.27] & 22.56 [21.97,23.16] & -1.83 [-2.97,-0.69] \\
+SAINT$\to$HAT & 27.12 [26.08,28.17] & 27.84 [27.05,28.63] & 27.48 [26.79,28.18] & -0.72 [-1.98,0.54] \\
+SAINT$\to$I3Net & 17.97 [16.65,19.30] & 18.47 [17.41,19.54] & 18.22 [17.22,19.22] & -0.50 [-1.85,0.86] \\
+SAINT$\to$SwinIR & 27.99 [26.94,29.05] & 28.24 [27.43,29.05] & 28.12 [27.42,28.81] & -0.25 [-1.54,1.04] \\
+SwinIR$\to$CycleINR & 22.01 [21.17,22.86] & 22.76 [21.98,23.54] & 22.39 [21.79,22.98] & -0.74 [-1.87,0.38] \\
+SwinIR$\to$HAT & 28.64 [27.57,29.71] & 28.36 [27.56,29.16] & 28.50 [27.78,29.21] & 0.28 [-0.97,1.53] \\
+SwinIR$\to$I3Net & 18.25 [16.93,19.57] & 18.29 [17.28,19.31] & 18.27 [17.28,19.26] & -0.04 [-1.36,1.27] \\
+SwinIR$\to$SAINT & 29.07 [27.95,30.18] & 27.21 [26.47,27.95] & 28.14 [27.42,28.86] & 1.86 [0.59,3.12] \\\bottomrule\end{tabular}\end{table*}
+\subsection{Joint family robustness}
+The complete matrices remain primary. The following descriptive summaries resample whole examinations jointly across all pair columns; they do not resample pairs as independent units. Pair-family mean/median is recomputed inside each bootstrap sample. Excluding one architecture removes every pair involving it in either direction, leaving twelve. All family intervals remain positive, including after removing each individual architecture. These results test dominance within the observed model family, not generalization to arbitrary architectures.
+\begin{table*}[t]\centering\scriptsize
+\caption{Joint examination-bootstrap family summaries (pp). Intervals are descriptive percentile 95\% intervals, not simultaneous across exclusions.}
+\label{tab:family-robustness}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrr}\toprule Cohort & Excluded architecture & Pairs & Mean [CI] & Median [CI]\\\midrule
+fastmri & none & 20 & 10.48 [9.63,11.35] & 10.85 [9.86,11.74] \\
+fastmri & hat & 12 & 9.24 [8.37,10.14] & 9.67 [8.75,10.39] \\
+fastmri & swinir & 12 & 9.77 [9.01,10.57] & 10.23 [9.52,10.87] \\
+fastmri & i3net & 12 & 11.64 [10.67,12.65] & 11.35 [10.19,12.45] \\
+fastmri & saint & 12 & 10.42 [9.59,11.29] & 10.41 [9.50,11.21] \\
+fastmri & cycleinr & 12 & 11.32 [10.50,12.18] & 10.85 [9.97,11.82] \\
+ixi & none & 20 & 21.77 [21.26,22.33] & 21.77 [21.33,22.21] \\
+ixi & hat & 12 & 20.40 [19.86,20.99] & 20.30 [19.77,20.88] \\
+ixi & swinir & 12 & 20.11 [19.56,20.70] & 19.73 [19.19,20.31] \\
+ixi & i3net & 12 & 25.04 [24.59,25.51] & 25.04 [24.59,25.53] \\
+ixi & saint & 12 & 20.24 [19.71,20.83] & 19.73 [19.19,20.31] \\
+ixi & cycleinr & 12 & 23.09 [22.50,23.73] & 22.91 [22.33,23.54] \\
+\bottomrule\end{tabular}\end{table*}

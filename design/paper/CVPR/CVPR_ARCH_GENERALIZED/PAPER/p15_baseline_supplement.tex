@@ -1,0 +1,161 @@
+\section{Complete Baseline Ledger and Training-Budget Sensitivity}
+The experiment master table contains 13 reconstruction baselines. We recover all 39 three-cohort $\times4$ rows, all 52 fastMRI/NingXia $\times2/\times6$ rows, and all 20 recorded longer-budget rows: 111 configurations and 555 metric values. Original metric summaries agree to their reported four-decimal precision. Two overwritten SAINT summaries at fastMRI $\times2/\times6$ are recovered from all 48 preserved output volumes. No run is retrained for this audit.
+
+The native evaluator measures every nonacquired plane on the whole image, averages planes within an examination, and then averages examinations. NingXia first averages series within a held-out patient fold, then averages all eight folds. PSNR uses each target plane's range; SSIM is the full-plane implementation. These are reference-based evaluation metrics, not deployable QA scores. Each configuration has matching case identities and generated-plane counts across its models; this count audit does not independently certify all historical preprocessing. The old masked common-support tables and this native-metric ledger remain distinct contracts. Automatic threshold-mask Dice/HD95 columns are not interpreted as anatomical segmentation.
+
+All model names denote the local implementations, including generic SR models adapted to 2.5-D conditioning, inherited GAN, and local SAINT/CycleINR variants. The recorded master profiles include different training budgets and early stopping; no equal-compute claim is made. PAST-Net's fastMRI development trajectory remains development evidence rather than a new independent three-cohort baseline result.
+
+\paragraph{What the full bank adds.}
+Using all 13 native-metric baselines gives 78 model pairs per cohort. Median case-error rank correlations are .997 on IXI, .899 on fastMRI, and 1.000 on eight NingXia patient folds. These descriptive estimates show shared difficulty across the full bank while retaining the lower fastMRI association than in the masked analysis. They do not imply independent model pairs or extend the five-model intervention to 13 models.
+
+\paragraph{Budget protocol and negative boundaries.}
+For every recorded 60/90-epoch experiment, compare its matched standard-profile cases; use 10,000 paired bootstrap draws (seed 20260910), examinations for fastMRI and patient folds for NingXia. The primary MAE intervals simultaneously cover all 20 comparisons using the bootstrap maximum standardized deviation. All five metric changes remain in the numerical record. Fifteen MAE intervals favor longer training; five cross zero. Runs are separate training experiments, not a controlled single-checkpoint continuation, and standard values are never replaced by their best budget.
+
+NingXia Res-SRDiff $\times2$ MAE changes from 440.61 at 30 epochs to 140.45 at 60 and 118.25 at 90, still above Linear's 78.53. A short-budget failure therefore cannot establish an intrinsic diffusion-family failure. Conversely, CycleINR $\times2$ barely changes (.000006 MAE reduction), and five simultaneous intervals remain inconclusive. The source note that fastMRI ACVTT $\times6$ worsened at 60 epochs is contradicted by its numbers: PSNR improves 19.8309 to 20.0269, and MAE 72.4367 to 70.9050; all five metric directions improve. The original note is preserved and this correction is explicit.
+\begin{table*}[t]\centering\small
+\caption{IXI $\times4$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 26.1722 & 0.8529 & 29.2781 & 6553.8673 & 0.9390\\
+Cubic & 25.7138 & 0.8422 & 31.1269 & 7217.2979 & 0.9303\\
+ACVTT & 27.3431 & 0.8822 & 25.5217 & 5206.8325 & 0.9557\\
+Res-SRDiff & 28.0441 & 0.8821 & 24.1938 & 4664.4129 & 0.9611\\
+ArSSR & 27.2467 & 0.8773 & 25.5509 & 5267.3658 & 0.9533\\
+CycleINR-style & 26.1728 & 0.8527 & 29.2765 & 6553.8469 & 0.9390\\
+ResUNet & 27.4611 & 0.8812 & 25.2395 & 4985.4989 & 0.9552\\
+Pix2Pix-GAN & 27.1070 & 0.8506 & 27.0202 & 5372.2668 & 0.9538\\
+SwinIR & 28.6485 & 0.8997 & 22.4556 & 4137.5109 & 0.9658\\
+SAINT-style & 28.6677 & 0.8970 & 22.8365 & 4128.0151 & 0.9660\\
+I3Net & 31.3058 & 0.9285 & 17.5276 & 2565.3177 & 0.9788\\
+HAT & 28.7249 & 0.9016 & 22.2500 & 4088.7422 & 0.9663\\
+SMamba-UNet & 29.3536 & 0.9077 & 21.1352 & 3691.2381 & 0.9699\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{fastMRI $\times4$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 19.1133 & 0.5970 & 78.8111 & 23092.0046 & 0.7733\\
+Cubic & 17.9736 & 0.5332 & 91.9330 & 29740.2642 & 0.7285\\
+ACVTT & 20.1941 & 0.6624 & 71.5480 & 18286.6190 & 0.8320\\
+Res-SRDiff & 21.6727 & 0.6909 & 56.3371 & 13095.4191 & 0.8814\\
+ArSSR & 20.3143 & 0.6575 & 65.9931 & 17745.8948 & 0.8301\\
+CycleINR-style & 20.3156 & 0.6577 & 66.0985 & 17743.2358 & 0.8302\\
+ResUNet & 22.2549 & 0.7374 & 53.5705 & 11842.8147 & 0.8955\\
+Pix2Pix-GAN & 21.9090 & 0.7294 & 53.2622 & 12485.1668 & 0.8915\\
+SwinIR & 22.3578 & 0.7494 & 50.8733 & 11636.3791 & 0.8977\\
+SAINT-style & 23.2605 & 0.7705 & 46.4417 & 9347.6662 & 0.9177\\
+I3Net & 24.0102 & 0.7921 & 41.0101 & 7755.6546 & 0.9308\\
+HAT & 23.0894 & 0.7688 & 47.2467 & 9773.1765 & 0.9138\\
+SMamba-UNet & 22.7322 & 0.7618 & 49.4487 & 10826.4468 & 0.9051\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{NingXia $\times4$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 22.7335 & 0.6749 & 103.2052 & 42189.1127 & 0.8576\\
+Cubic & 21.6460 & 0.6184 & 119.4078 & 53313.5368 & 0.8252\\
+ACVTT & 23.4735 & 0.7281 & 95.4376 & 35779.4840 & 0.8804\\
+Res-SRDiff & 21.1538 & 0.5538 & 153.0213 & 66533.1526 & 0.8207\\
+ArSSR & 23.1634 & 0.7091 & 96.4890 & 38343.9409 & 0.8708\\
+CycleINR-style & 22.9009 & 0.6935 & 101.0990 & 40735.3568 & 0.8625\\
+ResUNet & 23.3816 & 0.7209 & 97.0409 & 36316.2290 & 0.8785\\
+Pix2Pix-GAN & 22.4530 & 0.7112 & 105.8119 & 46398.6707 & 0.8552\\
+SwinIR & 23.9513 & 0.7525 & 85.9679 & 32030.5455 & 0.8930\\
+SAINT-style & 23.8350 & 0.7422 & 89.4140 & 32992.9496 & 0.8905\\
+I3Net & 23.4911 & 0.7208 & 93.5655 & 35725.4805 & 0.8825\\
+HAT & 23.9499 & 0.7519 & 86.1449 & 32226.9860 & 0.8933\\
+SMamba-UNet & 23.9126 & 0.7500 & 86.8152 & 32498.3175 & 0.8917\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{fastMRI $\times2$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 21.6348 & 0.7030 & 53.9754 & 11591.9388 & 0.8732\\
+Cubic & 20.3321 & 0.6363 & 64.1081 & 15236.6373 & 0.8370\\
+ACVTT & 21.7910 & 0.7110 & 53.4000 & 11160.0709 & 0.8783\\
+Res-SRDiff & 22.4766 & 0.6511 & 50.3378 & 9901.7857 & 0.9034\\
+ArSSR & 23.1137 & 0.7613 & 43.5812 & 8391.3334 & 0.9140\\
+CycleINR-style & 23.0957 & 0.7593 & 43.7063 & 8411.5115 & 0.9132\\
+ResUNet & 24.1700 & 0.7913 & 39.7905 & 6909.6572 & 0.9338\\
+Pix2Pix-GAN & 26.0734 & 0.8302 & 31.2304 & 4584.5238 & 0.9565\\
+SwinIR & 24.8716 & 0.8153 & 35.9392 & 5990.3711 & 0.9428\\
+SAINT-style & 24.4308 & 0.7809 & 39.6861 & 6749.7212 & 0.9373\\
+I3Net & 27.7711 & 0.8670 & 25.3325 & 3113.5377 & 0.9700\\
+HAT & 24.6475 & 0.8106 & 37.2729 & 6225.7429 & 0.9409\\
+SMamba-UNet & 24.6548 & 0.8077 & 37.1110 & 6361.0863 & 0.9401\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{fastMRI $\times6$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 18.2648 & 0.5595 & 88.2647 & 28258.4309 & 0.7215\\
+Cubic & 18.2648 & 0.5595 & 88.2647 & 28258.4309 & 0.7215\\
+ACVTT & 19.8309 & 0.6601 & 72.4367 & 20031.3896 & 0.8120\\
+Res-SRDiff & 21.2529 & 0.6791 & 59.4388 & 14747.2531 & 0.8702\\
+ArSSR & 19.4214 & 0.6156 & 74.9270 & 21914.5364 & 0.7872\\
+CycleINR-style & 19.3873 & 0.6158 & 74.9017 & 22086.6021 & 0.7854\\
+ResUNet & 22.1434 & 0.7375 & 53.8609 & 12277.0333 & 0.8921\\
+Pix2Pix-GAN & 21.6510 & 0.7250 & 54.8359 & 13567.5373 & 0.8828\\
+SwinIR & 21.8398 & 0.7305 & 56.4490 & 13267.8010 & 0.8840\\
+SAINT-style & 22.3172 & 0.7466 & 52.5303 & 11683.3596 & 0.8979\\
+I3Net & 22.8308 & 0.7617 & 47.0732 & 10309.8900 & 0.9088\\
+HAT & 21.8230 & 0.7313 & 55.7775 & 13341.4608 & 0.8829\\
+SMamba-UNet & 21.9153 & 0.7313 & 56.5002 & 13166.6662 & 0.8848\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{NingXia $\times2$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 24.9741 & 0.7264 & 78.5349 & 27551.4768 & 0.9112\\
+Cubic & 24.1081 & 0.6767 & 89.5215 & 33708.1987 & 0.8952\\
+ACVTT & 25.3139 & 0.7518 & 76.2396 & 25631.8031 & 0.9180\\
+Res-SRDiff & 15.3187 & 0.2945 & 440.6059 & 311894.3839 & 0.8320\\
+ArSSR & 25.1538 & 0.7427 & 76.6719 & 26571.4634 & 0.9146\\
+CycleINR-style & 25.1538 & 0.7427 & 76.6723 & 26571.4525 & 0.9146\\
+ResUNet & 25.2629 & 0.7478 & 76.6937 & 25684.3115 & 0.9170\\
+Pix2Pix-GAN & 25.2116 & 0.7543 & 74.8168 & 25448.9329 & 0.9169\\
+SwinIR & 25.5845 & 0.7651 & 73.1350 & 24249.0709 & 0.9226\\
+SAINT-style & 25.3398 & 0.7535 & 75.9435 & 25247.7430 & 0.9191\\
+I3Net & 25.7679 & 0.7574 & 70.8835 & 23483.9767 & 0.9265\\
+HAT & 25.8489 & 0.7738 & 70.0441 & 22767.1915 & 0.9276\\
+SMamba-UNet & 25.4409 & 0.7603 & 74.6767 & 24857.0321 & 0.9201\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{NingXia $\times6$: complete native metrics, recorded master profile.}
+\begin{tabular}{lrrrrr}\toprule Method&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+Linear & 21.7375 & 0.6509 & 118.6269 & 53812.4881 & 0.8146\\
+Cubic & 21.6523 & 0.6483 & 119.6982 & 54616.6079 & 0.8118\\
+ACVTT & 22.6160 & 0.7126 & 108.2221 & 44622.4723 & 0.8490\\
+Res-SRDiff & 20.4586 & 0.5616 & 156.7453 & 75246.6372 & 0.7890\\
+ArSSR & 22.3530 & 0.7007 & 108.1897 & 47147.2527 & 0.8389\\
+CycleINR-style & 21.8961 & 0.6728 & 116.1079 & 52220.1671 & 0.8214\\
+ResUNet & 22.7683 & 0.7143 & 104.7535 & 42861.1183 & 0.8551\\
+Pix2Pix-GAN & 21.1353 & 0.6662 & 129.1480 & 61058.8712 & 0.8005\\
+SwinIR & 22.9792 & 0.7362 & 98.5621 & 40916.0806 & 0.8624\\
+SAINT-style & 22.7341 & 0.7233 & 106.0398 & 44729.0092 & 0.8562\\
+I3Net & 22.3951 & 0.6940 & 111.4996 & 46546.2263 & 0.8452\\
+HAT & 23.0110 & 0.7361 & 98.5351 & 40588.4310 & 0.8635\\
+SMamba-UNet & 22.9507 & 0.7336 & 100.4715 & 41414.3824 & 0.8611\\
+\bottomrule\end{tabular}\end{table*}
+\begin{table*}[t]\centering\small
+\caption{All recorded extended-budget results. Native five-metric values are kept separately from the master-profile ranking.}
+\begin{tabular}{llrrrrrrr}\toprule Cohort&Method&Factor&Epochs&PSNR&SSIM&MAE&MSE&NCC\\\midrule
+NX & ArSSR & 4 & 60 & 23.4566 & 0.7241 & 91.8598 & 36115.4376 & 0.8793\\
+NX & ResUNet & 4 & 60 & 23.7562 & 0.7379 & 90.5450 & 33771.8800 & 0.8876\\
+NX & SAINT-style & 4 & 60 & 23.8388 & 0.7473 & 88.1769 & 33105.9966 & 0.8909\\
+NX & SMamba-UNet & 4 & 60 & 24.0160 & 0.7542 & 84.8084 & 31545.2244 & 0.8947\\
+NX & SwinIR & 4 & 60 & 24.0370 & 0.7573 & 83.8378 & 31317.4826 & 0.8946\\
+NX & CycleINR-style & 2 & 60 & 25.1538 & 0.7427 & 76.6723 & 26571.4690 & 0.9146\\
+NX & HAT & 2 & 60 & 26.1387 & 0.7853 & 66.2919 & 21520.2802 & 0.9321\\
+NX & Res-SRDiff & 2 & 60 & 22.6714 & 0.5619 & 140.4503 & 56206.7760 & 0.8894\\
+NX & SAINT-style & 2 & 60 & 25.6706 & 0.7677 & 72.4046 & 23699.0011 & 0.9245\\
+NX & SMamba-UNet & 2 & 60 & 25.9101 & 0.7813 & 68.4655 & 22757.3826 & 0.9281\\
+NX & SwinIR & 2 & 60 & 26.0556 & 0.7821 & 67.3308 & 21930.8546 & 0.9310\\
+NX & ArSSR & 6 & 60 & 22.4720 & 0.7020 & 106.4477 & 46384.2568 & 0.8423\\
+NX & CycleINR-style & 6 & 60 & 22.1578 & 0.6886 & 111.6263 & 49569.1804 & 0.8335\\
+NX & Res-SRDiff & 6 & 60 & 20.8328 & 0.6008 & 139.9794 & 62636.9837 & 0.7782\\
+NX & ResUNet & 6 & 60 & 22.9161 & 0.7281 & 100.4640 & 41591.4635 & 0.8610\\
+NX & SwinIR & 6 & 60 & 23.0201 & 0.7392 & 97.7710 & 40687.7343 & 0.8637\\
+NX & Res-SRDiff & 2 & 90 & 23.5044 & 0.6178 & 118.2457 & 43546.3681 & 0.8924\\
+fastMRI & SwinIR & 2 & 60 & 25.4180 & 0.8274 & 33.7890 & 5326.9072 & 0.9500\\
+fastMRI & ACVTT & 6 & 60 & 20.0269 & 0.6677 & 70.9050 & 19173.6891 & 0.8211\\
+fastMRI & Res-SRDiff & 2 & 60 & 24.0661 & 0.7540 & 40.8709 & 7086.3766 & 0.9320\\
+\bottomrule\end{tabular}\end{table*}
+\begin{figure*}[t]\centering\includegraphics[width=\textwidth]{p15_training_budget.pdf}
+\caption{All 20 recorded budget extensions. Positive reductions favor longer training; the symmetric-log axis keeps the large diffusion changes and small effects visible. Intervals simultaneously cover the 20 primary MAE contrasts. Five cross zero. Budget sensitivity does not validate a new QA score or erase the original short-budget failure.}
+\end{figure*}
+\clearpage

@@ -1,18 +1,7 @@
-# TMI 稿件分支说明
+# TMI 当前论文
 
-| 分支 | 角色 | 建议用途 |
-|---|---|---|
-| `TMI_MANUSCRIPT/` | 早期完整稿 | 历史参考，不作为当前投稿源 |
-| `TMI_MANUSCRIPT_MASTER/` | 扩展研究 master | 保留完整实验叙事和长篇材料 |
-| `TMI_MANUSCRIPT_SUBMISSION/` | Plan 6 压缩提交版 | 历史提交候选 |
-| `TMI_MANUSCRIPT_SUBMISSION_FINAL/` | Plan 7 优化版 | 架构泛化前的冻结强版本 |
-| `TMI_ARCH_GENERALIZED/` | Plan 9 架构族泛化版 | **当前最新科学候选** |
+图稿更新 Plan 16：第 2 页图 1 已重绘并替换。[图稿报告与提示词](../PLAN16_RESEARCH_DIAGRAMS/FINAL_REPORT_ZH.md)。跨栏图提高可读性，主稿现为 11 页。
 
-当前入口：
+科学版本 Plan 15（2026-09-10）。[当前 PDF](TMI_ARCH_GENERALIZED/main.pdf)；[完整 baseline 整合报告](../PLAN15_BASELINE_INTEGRATION/FINAL_REPORT_ZH.md)。
 
-- [Plan 9 TMI 源码](TMI_ARCH_GENERALIZED/main.tex)
-- [Plan 9 TMI PDF](TMI_ARCH_GENERALIZED/main.pdf)
-- [最终构建审计](TMI_ARCH_GENERALIZED/FINAL_BUILD_AUDIT.md)
-- [最终审稿模拟](TMI_ARCH_GENERALIZED/FINAL_REVIEW_SIMULATION.md)
-
-最新分支保留 MRI 重建 QA 的中心定位，并加入 I3Net、SAINT、CycleINR、HAT 和 SwinIR 的架构族证据。不要用最新文件覆盖历史分支；投稿前还需人工核对伦理、作者、venue 和双稿重合政策。
+13 方法三队列主表进入正文，111 配置完整五指标和全部训练预算分析进入补充。旧物理干预、MRA 迁移与负结果保留；全部文件有改动前快照。

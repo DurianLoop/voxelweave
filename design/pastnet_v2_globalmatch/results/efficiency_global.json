@@ -1,0 +1,26 @@
+{
+  "variant": "global",
+  "device": "NVIDIA GeForce RTX 5090 D v2",
+  "parameters": 1048019,
+  "conv_linear_gflops_interval": 448.642639872,
+  "conv_linear_gflops_slice": 149.547546624,
+  "flops_coverage": "Conv2d/3d and Linear MAC x2, plus dense SDPA QK/AV MAC x2 for four anchors; excludes FFT, unfold, matching reductions and elementwise ops; not total FLOPs",
+  "latency_ms_interval_median": 147.95674942433834,
+  "latency_ms_slice_median": 49.31891647477945,
+  "latency_ms_interval_p95": 148.5737399198115,
+  "peak_forward_gib": 0.8707947731018066,
+  "contract": {
+    "shape": [
+      1,
+      3,
+      13,
+      256,
+      256
+    ],
+    "amp": true,
+    "warmup": 10,
+    "repetitions": 30,
+    "scope": "forward only, three missing slices, excludes IO/resize/metrics",
+    "torch": "2.11.0+cu128"
+  }
+}

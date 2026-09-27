@@ -1,0 +1,56 @@
+{
+  "profile": "full",
+  "dataset": "fastMRI-brain-T2 expanded",
+  "data_root": "D:\\MRI\\dataset\\NingXiaData\\processed_saint_cv\\fold_05",
+  "run_root": "D:\\MRI\\ningxia_t2_smamba_unet_2p5d_cv\\runs\\fold_05",
+  "modality": "T2",
+  "sampling": "smamba_unet_2p5d_residual",
+  "source": "ours SMamba-UNet/MambaIR-style 2.5D reproduction",
+  "condition": "left/right adjacent sparse slices + linear coarse + relative position",
+  "train_cases": null,
+  "val_cases": null,
+  "test_cases": null,
+  "epochs": 30,
+  "batch_size": 8,
+  "grad_accum_steps": 3,
+  "effective_batch_size": 24,
+  "stride": 4,
+  "embed_dim": 48,
+  "depths": [
+    2,
+    2,
+    2
+  ],
+  "num_heads": [
+    3,
+    3,
+    3
+  ],
+  "window_size": 8,
+  "eval_cases": [
+    {
+      "case": "NX006_4143d0cfa8ed.nii.gz",
+      "source": "dataset\\NingXiaData\\processed\\t2_nifti\\NX006_4143d0cfa8ed.nii.gz",
+      "source_depth": 16,
+      "sparse_depth": 4,
+      "target_depth": 13,
+      "stride": 4
+    },
+    {
+      "case": "NX006_539c16575ab2.nii.gz",
+      "source": "dataset\\NingXiaData\\processed\\t2_nifti\\NX006_539c16575ab2.nii.gz",
+      "source_depth": 16,
+      "sparse_depth": 4,
+      "target_depth": 13,
+      "stride": 4
+    },
+    {
+      "case": "NX006_980405a72d23.nii.gz",
+      "source": "dataset\\NingXiaData\\processed\\t2_nifti\\NX006_980405a72d23.nii.gz",
+      "source_depth": 19,
+      "sparse_depth": 5,
+      "target_depth": 17,
+      "stride": 4
+    }
+  ]
+}

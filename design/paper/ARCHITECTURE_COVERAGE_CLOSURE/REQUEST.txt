@@ -1,0 +1,525 @@
+You are performing one bounded “architecture coverage closure” iteration
+for the current CVPR manuscript:
+
+“When Agreement Hides Error:
+ Auditing Shared Measurement Dependence in MRI Slice Interpolation”
+
+Read the CURRENT main paper, supplement, final protocol, MIRA report cards,
+model registry, all frozen checkpoints, wrapper code, prediction arrays,
+and the complete 13-model baseline ledger before doing anything.
+
+============================================================
+WHY THIS ITERATION EXISTS
+============================================================
+
+The paper’s strongest phenomenon result is already broad:
+
+- HAT
+- SwinIR
+- I3Net
+- SAINT-style
+- CycleINR-style
+
+participate in the cross-architecture shared-vs-disjoint intervention,
+and all 20 ordered pairs show positive local observable-error gain on
+fastMRI and IXI.
+
+However, the deepest acquired-only continuous-influence evidence in the
+main paper currently contains only HAT and SwinIR.
+
+The repository also contains a 13-model reconstruction bank.
+
+A reviewer may therefore ask:
+
+“Why is the shared-measurement phenomenon broad across architectures,
+while the proposed influence mechanism is demonstrated mainly on two
+transformer models?”
+
+The purpose of this iteration is to answer that question transparently.
+
+THIS IS NOT A SEARCH FOR MORE POSITIVE RESULTS.
+
+Negative, unstable, and ineligible architectures are useful outcomes.
+
+============================================================
+STRICT STOPPING RULE
+============================================================
+
+This iteration may do ONLY:
+
+1. architecture/model eligibility audit;
+2. acquired-only influence replication on the remaining THREE existing
+   core architectures when technically valid;
+3. shared/disjoint phenomenon extension to additional EXISTING frozen
+   baseline models when technically valid;
+4. manuscript/report-card restructuring.
+
+Do NOT:
+- train another model;
+- add a fourteenth baseline;
+- search another scalar reliability score;
+- change influence formulas;
+- change stability thresholds;
+- change perturbation amplitudes after seeing results;
+- add another dataset;
+- search for favorable architecture subsets.
+
+============================================================
+TASK 1 — BUILD A MODEL × EVIDENCE ELIGIBILITY MATRIX
+============================================================
+
+Audit every model already present in the 13-model master bank:
+
+- Linear
+- Cubic
+- ACVTT
+- Res-SRDiff
+- ArSSR
+- CycleINR-style
+- ResUNet
+- Pix2Pix-GAN
+- SwinIR
+- SAINT-style
+- I3Net
+- HAT
+- SMamba-UNet
+
+For each model determine eligibility for FOUR distinct evidence levels:
+
+LEVEL A — reconstruction breadth
+Does a valid frozen reconstruction benchmark exist?
+
+LEVEL B — shared/disjoint phenomenon intervention
+Can the frozen implementation consume phase-shifted physical anchor
+sets while preserving:
+- the same target;
+- the estimator/checkpoint;
+- the intended input semantics;
+- preprocessing except unavoidable declared phase effects?
+
+No retraining or architecture modification is allowed.
+
+LEVEL C — acquired-only finite-response influence
+Can individual physical anchor inputs be perturbed reproducibly while:
+- keeping mask and normalization acquired-only;
+- using the exact frozen perturbation protocol;
+- preserving physical anchor identity;
+- producing valid response tensors for all required contexts?
+
+LEVEL D — fixed-context covariance validation
+Is the model interface compatible with the exact coupled-versus-independent
+common-anchor perturbation experiment?
+
+For every model and level output one of:
+
+ELIGIBLE
+INELIGIBLE — <specific technical/scientific reason>
+AVAILABLE BUT NOT YET RUN
+HISTORICAL ONLY
+
+Do not confuse reconstruction availability with mechanism eligibility.
+
+Create:
+
+MODEL_EVIDENCE_ELIGIBILITY.csv
+MODEL_EVIDENCE_ELIGIBILITY.md
+
+============================================================
+TASK 2 — ACQUIRED-ONLY INFLUENCE ON ALL FIVE CORE ARCHITECTURES
+============================================================
+
+The current core architecture set is:
+
+HAT
+SwinIR
+SAINT-style
+I3Net
+CycleINR-style
+
+HAT/SwinIR already have final acquired-only results.
+
+For SAINT, I3Net, and CycleINR:
+
+IF technically eligible under the SAME acquired-only contract,
+run exactly the current protocol.
+
+Do not alter:
+
+- context grid;
+- target-selection rule;
+- acquired foreground-union support;
+- acquired Q99-Q1 normalization;
+- perturbation seeds;
+- primary amplitude;
+- alternative amplitudes/sign;
+- fixed-count covariates;
+- bootstrap unit;
+- multiplicity family.
+
+Use the current acquired-only threshold policy exactly as documented.
+Do not choose a new stability threshold to accommodate an architecture.
+
+For every architecture report:
+
+A. perturbation rank stability;
+B. PASS/FAIL under the frozen eligibility rule;
+C. |rho_I| - |rho_count|;
+D. simultaneous CI;
+E. exactly-one-anchor partial influence–alignment rho;
+F. simultaneous CI;
+G. all secondary signs;
+H. information contract.
+
+CRITICAL:
+
+A stability PASS with a null beyond-count effect is a VALID and IMPORTANT
+result.
+
+A stability FAIL must remain in the table and makes the model
+phenomenon-only for continuous-influence claims.
+
+Do not exclude a model because its result is unfavorable.
+
+SAINT is especially important:
+historical evidence suggests numerically stable responses but weaker/null
+beyond-count advantage.
+The new acquired-only experiment must test this honestly rather than
+attempt to make it positive.
+
+Output:
+
+FIVE_ARCH_ACQUIRED_ONLY_INFLUENCE.csv
+FIVE_ARCH_ACQUIRED_ONLY_INFLUENCE.md
+
+============================================================
+TASK 3 — OPTIONAL FIXED-CONTEXT VALIDATION EXTENSION
+============================================================
+
+Only for models that PASS the frozen acquired-only response-stability
+criterion and whose interface makes the existing covariance experiment
+strictly comparable:
+
+apply the SAME fixed-context coupled-vs-independent validation.
+
+Do not run this merely to increase model count.
+
+Use the exact existing:
+- IXI selection rule;
+- contexts;
+- amplitudes;
+- common-anchor perturbation;
+- Cartesian-product independent construction;
+- epsilon0 local prediction;
+- inference procedure.
+
+Report every eligible architecture.
+
+If only HAT/SwinIR remain eligible, retain that boundary explicitly.
+
+============================================================
+TASK 4 — USE MORE OF THE 13-MODEL BANK FOR THE PHENOMENON,
+BUT ONLY WHEN INTERVENTION-COMPATIBLE
+============================================================
+
+For each non-core model in the 13-model bank:
+
+Linear
+Cubic
+ACVTT
+Res-SRDiff
+ArSSR
+ResUNet
+Pix2Pix-GAN
+SMamba-UNet
+
+determine whether a scientifically valid same-target phase-0/phase-2
+intervention can be formed from the frozen checkpoint/wrapper.
+
+Do NOT infer eligibility from the existence of PSNR/SSIM outputs.
+
+The model must permit meaningful variation of physical acquired-anchor
+identity without changing the reconstruction problem.
+
+If eligible:
+
+generate or reuse:
+
+F(phase0)
+F(phase2)
+
+for the SAME declared targets.
+
+Where a valid deterministic shared control exists, evaluate same-model
+shared-vs-disjoint local observable fraction.
+
+Where compatible cross-model phase outputs exist, they may contribute to
+a SECONDARY expanded cross-architecture matrix.
+
+Do not replace the frozen five-architecture primary matrix.
+
+The original five-model analysis remains PRIMARY.
+
+The expanded model set is explicitly:
+“architecture-breadth sensitivity.”
+
+Use the already-defined support sensitivity contracts:
+- target-derived declared support;
+- acquired-union support;
+- full common-valid support where valid.
+
+Do not search a best support.
+
+If a model cannot support the intervention:
+record INELIGIBLE and the exact reason.
+
+Output:
+
+EXPANDED_PHENOMENON_BREADTH.csv
+EXPANDED_PHENOMENON_BREADTH.md
+
+============================================================
+TASK 5 — DO NOT TURN RECONSTRUCTION BASELINES INTO FAKE MIRA BASELINES
+============================================================
+
+Preserve this conceptual distinction:
+
+A reconstruction baseline demonstrates reconstruction quality/breadth.
+
+A MIRA mechanism experiment requires an intervention-compatible estimator
+and a valid information contract.
+
+Do not write:
+
+“13 baselines validate MIRA”
+
+unless 13 models actually underwent the relevant intervention.
+
+Instead use precise language such as:
+
+“The repository contains 13 reconstruction implementations; N were
+compatible with the physical-evidence intervention, M with the
+finite-response probe, and K passed the frozen stability criterion.”
+
+This accounting is itself valuable.
+
+============================================================
+TASK 6 — ADD A MODEL-EVIDENCE COVERAGE TABLE TO THE MAIN PAPER
+============================================================
+
+Create one compact main-paper table or figure.
+
+Rows:
+all major architectures, preferably all 13 if legible.
+
+Columns:
+
+Reconstruction benchmark
+Same-model phenomenon
+Cross-architecture intervention
+Acquired-only influence
+Influence stability
+Fixed-context covariance
+Role in final claims
+
+Use symbols:
+
+✓ supported
+○ evaluated but null/inconclusive
+× stability/eligibility failed
+— not applicable / not run
+
+Do not visually equate “null” with “not evaluated.”
+
+The table must make it immediately clear that:
+
+- the phenomenon claim is broader than HAT/SwinIR;
+- the continuous influence claim is deliberately narrower;
+- failures are retained rather than hidden.
+
+============================================================
+TASK 7 — REWRITE THE MODEL-BREADTH LANGUAGE
+============================================================
+
+Rewrite the abstract/introduction/results/discussion so that the evidence
+hierarchy is explicit.
+
+Preferred conceptual language:
+
+“Measurement-dependence effects are replicated across diverse frozen
+architectures, whereas continuous finite-response influence requires a
+stricter numerical eligibility contract and is therefore evaluated and
+claimed separately.”
+
+If the five-architecture acquired-only audit yields mixed results, say so.
+
+Do NOT use:
+“the mechanism is universal across architectures.”
+
+Potential contribution wording:
+
+1. physical-evidence dependence produces robust local observability loss
+   across diverse frozen estimators;
+
+2. local response influence provides a more specific mechanism where its
+   numerical probe is stable;
+
+3. architectures that fail the response-stability or beyond-count test
+   define the mechanism’s empirical boundary rather than being discarded.
+
+============================================================
+TASK 8 — UPDATE THE MIRA REPORT CARD
+============================================================
+
+Expand the current MIRA report-card table so that every core architecture
+has a visible role.
+
+For the acquired-only probe use:
+
+HAT
+SwinIR
+SAINT
+I3Net
+CycleINR
+
+with actual:
+- stability;
+- influence>count;
+- fixed-count association;
+- eligibility.
+
+Do not fill values from historical target-informed experiments into the
+new acquired-only contract.
+
+NA must remain NA where appropriate.
+
+============================================================
+TASK 9 — KEEP THE 13-MODEL BENCHMARK IN THE SUPPLEMENT
+============================================================
+
+Do NOT move the full 13×cohort PSNR/SSIM/MAE table into the main paper.
+
+Instead, main text may state:
+
+“We recover 13 frozen reconstruction implementations and 111 recorded
+configurations; intervention eligibility is narrower and explicitly
+reported.”
+
+The supplement retains:
+
+- full native metrics;
+- budget sensitivity;
+- full model-bank audit;
+- adverse Res-SRDiff results;
+- Anchor-CV comparisons.
+
+The main paper should not become a reconstruction leaderboard.
+
+============================================================
+TASK 10 — CLAIM-EVIDENCE AUDIT
+============================================================
+
+After the new coverage analysis, update every major claim.
+
+For each claim record:
+
+Claim
+Eligible architectures
+Eligible cohorts
+Information contract
+Positive results
+Null results
+Failed-stability results
+Inference family
+Main/supplement location
+
+Specifically verify:
+
+CLAIM A:
+shared/disjoint evidence changes local observability.
+
+CLAIM B:
+architectural diversity does not guarantee independent error.
+
+CLAIM C:
+continuous estimator influence contains information beyond anchor count.
+
+CLAIM D:
+the local covariance model describes finite neural response.
+
+The architecture set may differ across A–D.
+Do NOT hide that difference.
+
+============================================================
+TASK 11 — ETHICS / DATA BLOCKER REMAINS HUMAN-ONLY
+============================================================
+
+Do not invent or infer:
+
+- NingXia institution approval;
+- IRB number;
+- exemption;
+- consent;
+- waiver;
+- de-identification certification;
+- use permission;
+- exact fastMRI release authorization.
+
+Preserve NEEDS HUMAN CONFIRMATION.
+
+Do not let architecture experiments overwrite or distract from this
+submission blocker.
+
+============================================================
+TASK 12 — FINAL STOPPING RULE
+============================================================
+
+After:
+
+- five-core-architecture acquired-only audit;
+- intervention eligibility audit for the 13-model bank;
+- any valid frozen-baseline phenomenon extension;
+- evidence-coverage table;
+- manuscript update;
+
+STOP.
+
+Do not search for:
+- more models;
+- more datasets;
+- more scalar scores;
+- more thresholds;
+- alternative influence formulas.
+
+A mixed outcome is acceptable and scientifically preferable to selective
+positive expansion.
+
+============================================================
+FINAL DELIVERABLES
+============================================================
+
+MODEL_EVIDENCE_ELIGIBILITY.csv
+MODEL_EVIDENCE_ELIGIBILITY.md
+
+FIVE_ARCH_ACQUIRED_ONLY_INFLUENCE.csv
+FIVE_ARCH_ACQUIRED_ONLY_INFLUENCE.md
+
+EXPANDED_PHENOMENON_BREADTH.csv
+EXPANDED_PHENOMENON_BREADTH.md
+
+UPDATED_MIRA_REPORT_CARD.csv
+UPDATED_CLAIM_EVIDENCE_MATRIX.md
+
+ARCHITECTURE_COVERAGE_CHANGELOG.md
+
+revised main-paper LaTeX
+revised supplement LaTeX
+revised evidence-coverage figure/table
+
+At the end report exactly:
+
+1. how many of the 13 models are reconstruction-only;
+2. how many are valid shared/disjoint intervention models;
+3. how many are valid finite-response influence models;
+4. how many pass the frozen influence-stability criterion;
+5. whether the new evidence strengthens, weakens, or only clarifies each
+   of Claims A–D.

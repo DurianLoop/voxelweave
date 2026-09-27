@@ -110,6 +110,24 @@ RMSE / NMSE / NRMSE / SNLI / LPIPS / Params / FLOPs / inference time / GPU memor
 
 Note: IXI-T2 已统一补齐为 test n=115；其中 `ArSSR` / `CycleINR` / `ResUNet residual` / `SwinIR 2.5D` / `SAINT` 是复用既有 full best checkpoint 的 eval-only n=115 评估，`I3Net` 使用 `full_test115_stable` 稳定重训结果，`ACVTT` 使用 IXI `full_test115_b64` 与 fastMRI/NingXia `full_tiny` 官方代码适配结果，`Res-SRDiff` 使用 IXI `full_test115` 与 fastMRI/NingXia `full_tiny` 官方扩散核心适配结果。IXI-GAN 训练 best epoch=0 后早停，仅作为 inherited GAN 弱基线记录。
 
+## PAST-Net fastMRI x4 开发轨迹（尚未进入三数据集主表）
+
+以下版本目前只完成 fastMRI test n=24，不能替代上方三数据集统一结果。待候选结构固定后再原样迁移 IXI/NingXia。
+
+| Method | PSNR | SSIM | MAE | MSE | NCC | 状态 |
+|---|---:|---:|---:|---:|---:|---|
+| PAST-Net G079 tail-aware | 24.4032 | .8060 | 38.4845 | 7239.4437 | .9365 | 前一阶段参考 |
+| PAST-Net G081 PhaseFlow | 24.4187 | .8066 | 38.4218 | 7216.4669 | .9367 | 小幅正结果 |
+| PAST-Net G082 Fourier-INR | 24.4121 | .8062 | 38.4562 | 7223.0122 | .9366 | 停止 |
+| PAST-Net G083 Unrolled | 24.4091 | .8062 | 38.4639 | 7231.3298 | .9365 | 停止 |
+| **PAST-Net G084 Dual-domain** | **24.4423** | **.8073** | **38.3100** | **7173.3934** | **.9371** | 当前fastMRI开发最优 |
+| PAST-Net G085 Volumetric U-Net | 24.4085 | .8061 | 38.4578 | 7230.7852 | .9365 | 停止 |
+| **PAST-Net G086 Dual-domain restart** | **24.4470** | **.8075** | **38.2894** | **7165.7872** | **.9371** | 当前fastMRI开发最优；停止续训 |
+| PAST-Net G087 Sparse-window | 24.0859 | .7903 | 40.8068 | 7737.2032 | .9318 | 停止独立窗口路线 |
+| PAST-Net G088 Sparse-window + Flow | 24.0638 | .7895 | 40.9240 | 7742.8106 | .9316 | 停止 |
+| PAST-Net G089 Sparse-window + FFT | 24.1089 | .7910 | 40.7628 | 7686.0198 | .9323 | 组内最佳但未晋级 |
+| PAST-Net G090 Sparse-window hybrid | 24.0497 | .7890 | 41.0388 | 7764.1283 | .9316 | 停止 |
+
 ## 数据集定位
 
 | Dataset | 当前定位 | 说明 |

@@ -1,0 +1,36 @@
+--- Plan15/main.tex
++++ Plan16/main.tex
+@@ -24,16 +24,18 @@
+ 
+ Figure~\ref{fig:mechanism} states the proposed chain. For predictions $f_a=y+e_a$ and $f_b=y+e_b$, output separation observes $e_a-e_b$. Shared measurements can induce similar local estimator responses; similar responses can align $e_a$ and $e_b$; aligned errors cancel in the difference. The elementary identity is not our novelty. The scientific question is what determines the error inner product. Our evidence identifies shared local measurement influence as one determinant in MRI interpolation.
+ 
++\begin{figure*}[t]
++\centering
++\includegraphics[width=.98\textwidth]{p16_cvpr_framework.png}
++\caption{Measurement-influence framework (schematic). Shared-anchor perturbations (diagram: $\delta$; text: $\epsilon\xi$) probe frozen-estimator response alignment. Aligned target errors can cancel in disagreement, so agreement cannot certify correctness. Slice cards and model blocks are illustrations, not patient examples, measured results, or new layers.}
++\label{fig:mechanism}
++\end{figure*}
++
+ This formulation also explains why a tempting early hypothesis failed. Integer anchor overlap has the right overall trend but is not a monotone dose: one weak shared anchor can matter less than another, and an exact four-anchor ladder reverses at zero-to-one overlap. We therefore replace count by estimator influence. For analytical interpolation this is derived from coefficients. For frozen HAT and SwinIR networks it is approximated by the cosine between output responses to identical finite perturbations of the same physical anchor. The quantity is explicitly local to a target, context, input, and plane.
+ 
+ Our contributions are threefold. First, we establish and decompose \emph{consensus blindness} with same-target, measurement-controlled interventions across three MRI cohorts and a prospectively frozen five-architecture replication on two independent brain cohorts. Second, we show that local estimator influence refines raw overlap for analytical estimators and stable HAT/SwinIR/SAINT probes, while retaining the SAINT fixed-count uncertainty, NingXia nonreplication, physical-plane dependence, and I3Net/CycleINR stability failures as scope boundaries. Third, we test a lightweight acquired-anchor consequence with same-model $\times4\!\rightarrow\!\times2$ comparisons across a recovered model bank, without claiming score uniqueness or acquisition causality. The main result is a falsifiable mechanism for when disagreement is informative, not another uncertainty leaderboard.
+ 
+-\begin{figure*}[t]
+-\centering
+-\includegraphics[width=.98\textwidth]{fig1_mechanism.pdf}
+-\caption{Proposed mechanism and reliability boundary. Reusing a physical measurement is not itself decisive; what matters is how similarly that measurement influences both local estimators. Aligned errors cancel in prediction differences. Large separation is one-sided evidence that at least one estimate is inaccurate, but small separation cannot certify correctness.}
+-\label{fig:mechanism}
+-\end{figure*}
++
+ 
+ \section{Related Work}
+ \paragraph{MRI reconstruction and uncertainty.}
+@@ -227,7 +229,7 @@
+ Several limitations are material. NingXia contains 22 series but only eight independent patients; its fixed-count result is null/mixed. Architecture breadth now covers two brain cohorts, but the five-architecture intervention remains limited to brain T2 and has no knee replication. External MRA extends only the analytical test. The local SAINT and CycleINR-style implementations are adapted/internal reproductions, not exact official models. Only SAINT passes all new-architecture influence-stability gates; its beyond-count estimate is imprecise. I3Net/CycleINR support the physical-dependence phenomenon but not a finite-response influence claim. The grids have different feasible overlap support, the final ranking arrow remains cohort dependent, and finite differences cannot identify a global Jacobian. Densification remains retrospective and compares factor-specific checkpoints. IXI adds one same-architecture pair, not a broad matrix. Scanner time, motion, and clinical cost are absent; target-derived output masks require separate deployment validation. A train/validation patient overlap affects historical checkpoint-selection provenance, although test patients are disjoint. No result establishes diagnostic safety.
+ 
+ \section{Conclusion}
+-Deterministic MRI interpolators can agree while jointly wrong because shared error cancels from prediction differences. Across three cohorts and five neural architectures, same-target interventions show that dependence-preserving contexts hide more error than disjoint contexts. The architecture tests support a local physical-dependence--error-geometry mechanism, but neither universal ranking improvement nor universally stable finite-response influence. Raw same-model benefit associations are positive for most models, but current-error adjustment and acquired-range normalization expose important limits. Operational value still requires prospective validation for the acquisition and endpoint.
++Shared error can make deterministic MRI interpolators agree while jointly wrong. Across three cohorts and five neural architectures, same-target interventions support a local measurement-dependence mechanism, with cohort-dependent ranking and architecture-dependent influence stability. Retrospective benefit associations weaken after current-error adjustment or scale changes. Prospective acquisition and endpoint validation remain necessary.
+ 
+ \clearpage
+ {\small

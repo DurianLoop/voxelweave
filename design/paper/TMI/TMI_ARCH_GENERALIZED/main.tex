@@ -1,16 +1,16 @@
 \documentclass[journal,10pt]{IEEEtran}
-\usepackage{graphicx,booktabs,amsmath,amssymb,array,cite,url}
+\usepackage{graphicx,booktabs,multirow,amsmath,amssymb,array,cite,url}
 \graphicspath{{figures/}}
 \hyphenation{dis-agree-ment inter-po-la-tion re-con-struc-tion}
 
 \begin{document}
-\title{Measurement Dependence Governs Disagreement-Based Reliability in Deterministic MRI Slice Interpolation}
+\title{Disagreement-Based Quality Assessment of MRI Slice Interpolation: Measurement Dependence and Anatomical Error}
 \author{Anonymous Authors}
 \markboth{IEEE Transactions on Medical Imaging, Manuscript Under Review}{}
 \maketitle
 
 \begin{abstract}
-Deterministic through-plane MRI interpolation gives no indication when a plausible missing slice is inaccurate. Prediction disagreement observes only differences between errors and can miss their shared component. We characterize whether reuse of acquired slice anchors controls this blindness and whether the effect survives architecture changes. The original three-cohort study uses frozen HAT and SwinIR interpolators in 24 fastMRI brain T2 examinations, 115 IXI brain T2 examinations, and 22 NingXia knee T2 series from eight patients. A preregistered fastMRI $\times4$ extension adds I3Net, an adapted SAINT-style conditional network, and an internal CycleINR-style coordinate model under a clean same-target horizontal-flip shared control and a disjoint phase grid. Disjoint contexts increase observable paired-error energy by 8.0, 13.7, and 22.6 percentage points for I3Net, SAINT, and CycleINR; all examination-bootstrap intervals exclude zero. HAT/SwinIR gains are 17.8/17.6 points, and the equal-family gain remains positive after leaving out any family. Examination-ranking improvement is heterogeneous: strong for CycleINR, small or uncertain for I3Net/HAT/SwinIR, and slightly negative for SAINT. Across factors, diverse architectures still fail on similar examinations (median pairwise error-rank $\rho=.945$--$.981$ on fastMRI), so architecture diversity does not guarantee independent error. The result defines a technical QA consequence and boundary, not calibrated uncertainty or clinical safety: measurement dependence robustly changes local error observability across the evaluated paradigms, while its ranking utility is architecture dependent and agreement cannot certify correctness.
+Agreement between deterministic MRI interpolators can hide substantial shared error. We study measurement dependence in 24 fastMRI brain examinations, 115 IXI brain examinations, and 22 NingXia knee series from eight patients, with additional analytical experiments on 125 TopCoW and 100 CAS2023 annotated angiograms. A complete 13-baseline, three-cohort benchmark contextualizes the study. Five neural architectures on both brain cohorts retain positive disjoint-minus-shared observable gains under exploratory simultaneous inference, while examination ranking is less robust. Raw-output reconstruction distinguishes prediction-derived bank masks from ground-truth support. In retrospective densification audits, all 26 fastMRI/NingXia Anchor-CV intervals cross zero after conditioning on current error. On IXI, normalizing both scores and benefit preserves positive association, whereas normalizing only one reverses ranking. Fixed linear/cubic estimators on TopCoW give local observable gains of 34.5 and 34.5 percentage points, but general-error ranking does not imply vessel-error ranking. A bright-anchor weighting rule motivated on TopCoW transfers without retuning to CAS2023: disjoint vessel-error correlations improve by .073 [.017,.130] and .070 [.014,.126] under two-pair simultaneous intervals. General-error ranking deteriorates, and vessel-risk coverage intervals cross zero. Shared-energy decompositions are algebraically coupled rather than independent mechanism tests. The results support anatomically specified quality assessment with explicit measurement, support, and scale contracts, without establishing calibrated uncertainty, diagnostic safety, or prospective acquisition utility.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -22,18 +22,18 @@ Magnetic resonance imaging, slice interpolation, reliability, uncertainty, disag
 
 Ensembles, stochastic sampling, and test-time augmentation estimate uncertainty from output variation \cite{gal2016dropout,lakshminarayanan2017ensembles,edupuganti2021uncertainty,narnhofer2022bayesian}. Their premise is one-sided: disagreement witnesses a difference, while agreement need not imply correctness. Hu \emph{et al.} showed that variability-based uncertainty can miss systematic MRI reconstruction error \cite{hu2021predict}, and MRI ensembles have been evaluated under domain shift \cite{kuestner2024ensembles}. We investigate a complementary, physically auditable source of dependence: two interpolation contexts may reuse the same acquired slices and therefore inherit aligned errors that cancel in their difference.
 
-Figure~\ref{fig:concept} summarizes the hypothesis. We reconstruct the same missing physical plane under contexts that either share no acquired anchors or maximally reuse them. The study does not claim a new correlated-error identity, a new reconstruction backbone, or calibrated uncertainty. Its contribution is a three-cohort medical-imaging characterization of how known measurement dependence changes error observability.
+Figure~\ref{fig:concept} summarizes the paired-reconstruction framework and the acquired-support MRA scoring branch. We reconstruct the same missing physical plane under contexts that either share no acquired anchors or maximally reuse them. The study does not claim a new correlated-error identity, a new reconstruction backbone, or calibrated uncertainty. Its contribution is a three-cohort medical-imaging characterization of how known measurement dependence changes error observability.
 
-Our contributions are: (i) a target-preserving neural measurement-dependence contrast across three cohorts and a preregistered five-architecture fastMRI falsification; (ii) complete shared/observable error distributions, seven endpoints, and leave-one-family-out analysis; (iii) analytical $\times2/\times4/\times6$, geometry, intensity, strict stable-wrong, and cross-model error-diversity audits; and (iv) examination-level risk--coverage against strong output and acquired-data comparators. Negative boundaries are retained: ranking improvement is not universal, SSIM-error ranking does not generalize, independent output normalization is invalid, and architecture diversity alone does not ensure useful error diversity.
+Our contributions include an acquired-only anatomical score with fixed-rule external MRA transfer, alongside: (i) a target-preserving neural measurement-dependence contrast across three cohorts and a frozen five-architecture replication on two independent brain cohorts; (ii) complete shared/observable error distributions, seven endpoints, leave-one-family-out analysis, and a reflection-matched identity-swap; (iii) analytical $\times2/\times4/\times6$, geometry, intensity, strict stable-wrong, and cross-model error-diversity audits; and (iv) examination-level risk--coverage plus a same-model retrospective densification audit against strong output and acquired-data comparators. Negative boundaries are retained: ranking improvement is cohort dependent, SSIM-error ranking does not generalize, independent output normalization is invalid, the degraded Res-SRDiff run reverses the NingXia benefit association, and architecture diversity alone does not ensure useful error diversity.
 
-\begin{figure}[t]
-\centering\includegraphics[width=\columnwidth]{fig1_concept.pdf}
-\caption{Consensus blindness. Aligned errors cancel in output disagreement. Measurement-disjoint contexts can reveal more context-sensitive error, but agreement remains ambiguous.}
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{p16_tmi_framework.png}
+\caption{Paired-reconstruction framework with acquired-support MRA scoring. General and bright masks independently pool disagreement; references and vessel labels enter retrospective evaluation only. This branch is distinct from historical GT-mask protocols. Images, masks, and model blocks are schematic illustrations, not patient data, measured results, or a new reconstruction backbone.}
 \label{fig:concept}
-\end{figure}
+\end{figure*}
 
 \section{Related Work}
-Classical splines and learned slice synthesis estimate missing samples from smoothness or anatomical priors \cite{deboor1978splines,peng2020saint,song2024i3net}. Coordinate models such as CycleINR provide a materially different continuous volumetric interpolation paradigm \cite{fang2024cycleinr}. Leave-one-slice-out evaluation predates this work \cite{horvath2017highorder}; we do not claim the operation as novel. Uncertainty in MRI reconstruction has been studied with variational, Bayesian, posterior-sampling, and ensemble methods \cite{edupuganti2021uncertainty,narnhofer2022bayesian,tanno2021uncertainty,kuestner2024ensembles}. These methods learn or sample predictive distributions. We instead ask whether deterministic reliability pairs depend on the same physical evidence and explicitly try to falsify the phenomenon across interpolation paradigms.
+Classical splines and learned slice synthesis estimate missing samples from smoothness or anatomical priors \cite{deboor1978splines,peng2020saint,song2024i3net}. Coordinate models such as CycleINR provide a materially different continuous volumetric interpolation paradigm \cite{fang2024cycleinr}. A recent multi-architecture prostate study finds that adjacent-versus-distant input formulation can matter more for reconstruction fidelity than backbone complexity \cite{savant2026formulation}. That study varies the reconstruction problem; we instead hold the target and estimator fixed while intervening on physical measurement identity to study reliability and error cancellation. Leave-one-slice-out evaluation predates this work \cite{horvath2017highorder}; we do not claim the operation as novel. Uncertainty in MRI reconstruction has been studied with variational, Bayesian, posterior-sampling, and ensemble methods \cite{edupuganti2021uncertainty,narnhofer2022bayesian,tanno2021uncertainty,kuestner2024ensembles}. Recent conformal quantile regression estimates pixelwise MRI error intervals \cite{giannakopoulos2026pixelwise}. These methods learn, calibrate, or sample predictive distributions. We instead ask whether deterministic reliability pairs depend on the same physical evidence and explicitly try to falsify the phenomenon across interpolation paradigms.
 
 Ensemble theory distinguishes diversity from accuracy \cite{brown2005diversity,ortega2022diversity}. Our distinction is at the intervention level: target, model, mask, and measurement count remain paired while physical anchor identity changes. This makes dependence observable in a way that arbitrary output transformations do not.
 
@@ -62,7 +62,7 @@ At factor four, phase-0 anchors are $z=0,4,8,\ldots$ and phase-2 anchors are $z=
 \subsection{Cohorts and Reconstruction}
 fastMRI brain T2 used a frozen 112/24/24 split; the 24-case test set enters analysis \cite{zbontar2018fastmri,knoll2020fastmri}. IXI contributed 115 held-out brain T2 examinations \cite{ixi_dataset}. NingXia contributed 22 knee T2 series from eight patients. Its HAT/SwinIR predictions were out of fold under eight patient-group folds, and inference resamples patients rather than series.
 
-Frozen 2.5-D HAT and SwinIR interpolators generated the original three-cohort contexts; that historical analysis uses the through-plane reversal control and retains its stated order-equivariance limitation. No model was refit for reliability. The architecture extension instead uses a clean in-plane horizontal flip mapped back to the target, preserving physical anchor order and geometry. Complete original 16-plane fastMRI sources provide four phase-2 anchors and therefore validly evaluate I3Net, an adapted locally trained SAINT-style conditional CNN, and an internal CycleINR-style coordinate model. These labels describe architectural lineage rather than exact official checkpoints. Five common missing targets per examination use phase-0 anchors $\{0,4,8,12\}$ and disjoint phase-2 anchors $\{2,6,10,14\}$. An independent factor experiment used analytical interpolation in shallow volumes at $\times6$.
+Frozen 2.5-D HAT and SwinIR interpolators generated the original three-cohort contexts; that historical analysis uses the through-plane reversal control and retains its stated order-equivariance limitation. No model was refit for reliability. The architecture extension instead uses a clean in-plane horizontal flip mapped back to the target, preserving physical anchor order and geometry. Complete original sources validly evaluate HAT, SwinIR, I3Net, an adapted locally trained SAINT-style conditional CNN, and an internal CycleINR-style coordinate model on all 24 fastMRI and 115 IXI examinations. These labels describe architectural lineage rather than exact official checkpoints. Five residue-balanced missing targets per examination use phase-0 anchors $\{0,4,8,12\}$ and disjoint phase-2 anchors $\{2,6,10,14\}$ where available. Phase-0 reproduction is exact on all 24 fastMRI examinations per model and one frozen IXI examination per model. An independent factor experiment used analytical interpolation in shallow volumes at $\times6$.
 
 \begin{table}[t]
 \caption{Cohorts and experimental roles}
@@ -78,16 +78,22 @@ NingXia knee&22&8&OOF overlap, factors, risk\\
 \end{tabular}
 \end{table}
 
-The resources deliberately differ in volume depth and intensity distribution. We do not pool raw errors or set a cross-cohort score threshold. Replication means that a within-cohort directional contrast recurs under the same computation. For NingXia, 22 series are observations while eight patients define inference. Multiple planes and architectures remain subordinate to the examination/patient cluster.
-
 \subsection{Physical Matching and Scores}
-Generated planes were matched using NIfTI affine-derived physical origins. Shapes, orientation codes, affines, plane-normal angles, and distances were audited. Acquired anchors were excluded. For paired predictions $a,b$, the primary score was mean $|a-b|$ on a fixed foreground mask. Dense targets entered only retrospective acquisition synthesis and evaluation.
+Generated planes were matched within the recorded grids. A new DICOM audit verifies pixel order and physical positions for all 24 fastMRI test cases; the legacy diagonal affine does not preserve patient orientation. Shapes, orientation codes, affines, plane-normal angles, and distances were audited. Acquired anchors were excluded. For paired predictions $a,b$, the score is mean $|a-b|$ on the declared foreground mask. Plan 9/11 scores use a target-derived 1\% mask. Candidate-bank scores instead use a target-model prediction mask; raw-output recomputation verifies this distinction. The clean legacy flip analysis uses a phase-0 prediction mask. Acquired-anchor scores use only observed slices. These are retrospective evaluations, not uniformly target-free pipelines.
 
 Endpoints were MAE, RMSE, MSE, $1-\mathrm{SSIM}$, gradient MAE, Gaussian low-frequency MAE, and high-frequency residual MAE. The strict stable-wrong definition combined pooled within-dataset/model top-quartile plane MAE and bottom-quartile disagreement. Examination scores were aggregated over matched planes.
 
-For paired errors, total energy was $T=(\|e_a\|^2+\|e_b\|^2)/2$, shared energy $S=\|\bar e\|^2$, and observable energy $O=\|\delta\|^2$. We verified $T=S+O$ before computing fractions. Normalized disagreement divides paired RMSE by total-error scale, making the conditional analysis sensitive to allocation of fixed error energy rather than simply its magnitude.
+For paired errors, total energy was $T=(\|e_a\|^2+\|e_b\|^2)/2$, shared energy $S=\|\bar e\|^2$, and observable energy $O=\|\delta\|^2$. We verified $T=S+O$ before computing fractions. The stored normalized statistic is $D_1=\mathrm{MAE}(a-b)/\sqrt{T}$, not RMSE disagreement. It obeys
+\begin{equation}
+D_1=2\kappa\sqrt{1-q},\qquad
+\kappa=\frac{\mathrm{MAE}(a-b)}{\mathrm{RMSE}(a-b)}\in[0,1].
+\label{eq:coupling}
+\end{equation}
+For nonzero disagreement, $\kappa$ describes residual shape. Thus the normalized-disagreement/shared-fraction association is structurally coupled and cannot independently validate the mechanism.
 
 Three intensity strategies were prespecified. Raw scale preserves the stored computation. Pooled-common normalization applies one robust affine transform to both predictions and target within a case. Independent-output normalization transforms each prediction separately and is a negative control: it can remove amplitude failures differently and therefore does not preserve an absolute paired residual.
+
+The IXI identity-swap control matches the nearest-anchor distance multiset $\{1,3\}$ up to left--right reflection. Residues $z\bmod4=1$ and 3 are summarized separately and then weighted equally. A bootstrap interval for their difference that excludes zero is defined as an orientation warning. This removes residue imbalance but establishes reflection-equivalent, not identical signed, target geometry.
 
 The selective-risk endpoint was independently stored mean HAT/SwinIR $\times4$ examination MAE. Comparators were measurement-disjoint disagreement, maximal-shared disagreement, HAT--SwinIR committee disagreement, and adjacent-anchor MAE. After sorting from low to high score, risk $R(c)$ is retained mean endpoint error at coverage $c$. Normalized AURC subtracts oracle AURC and divides by reverse-oracle minus oracle AURC; lower is better \cite{ding2020selective}.
 
@@ -95,6 +101,8 @@ The selective-risk endpoint was independently stored mean HAT/SwinIR $\times4$ e
 Spearman correlation measures ordering, not calibration. Primary intervals used 5,000 cluster bootstrap replicates, resampling 24 fastMRI examinations, 115 IXI examinations, or eight NingXia patients with subordinate planes/models retained. Partial rank analyses residualized shared fraction and disagreement against total error and examination indicators. Multi-endpoint confirmation required a positive disjoint-minus-shared direction for a majority of justified endpoints in every eligible cohort; all endpoints are reported. No universal superiority or clinical-safety test is performed.
 
 The endpoint and score are paired by dataset, case, model, and physical plane. Bootstrap samples carry both contexts together, so their difference is recomputed rather than treating correlations as independent. We report point-estimate unanimity but do not count 42 correlated rows as independent discoveries. Complete risk curves complement correlation because the high-risk tail can differ even when overall ranks are similar.
+
+The exploratory sensitivity analysis uses 10,000 paired cluster bootstrap replicates and five-model simultaneous intervals from the bootstrap maximum absolute standardized deviation. A same-label densification comparison can use different factor-specific checkpoints. Benefit is common-support $\mathrm{MAE}_{\times4}-\mathrm{MAE}_{\times2}$ for the same dataset, case, fold, model, and support. Every model with finite paired errors is eligible. Frozen scores are Anchor-CV, adjacent-anchor MAE, and median $\times4$ target-model disagreement against registry-declared candidate-bank members. Inference is reported separately by dataset and model with examination/patient-cluster bootstrap; the analysis is exploratory because the underlying reconstruction outputs already existed.
 
 \section{Results}
 \subsection{Original All-Plane Paired Intervention}
@@ -111,7 +119,7 @@ The later three-plane computation uses equal examination coverage and adds IXI p
 \end{figure}
 
 \subsection{Shared Error Suppresses Observability}
-Across every cohort, architecture, and context, shared fraction had a strong negative partial association with RMSE-normalized disagreement after controlling total error and examination: $-0.746$ to $-0.923$ on fastMRI, $-0.806$ to $-0.975$ on IXI, and $-0.894$ to $-0.959$ on NingXia (Fig.~\ref{fig:consensus}). Thus suppression was not merely caused by low-error images having small output differences. Equation~\ref{eq:decomp} closed to numerical precision.
+Across every cohort, architecture, and context, shared fraction had a strong negative partial association with MAE disagreement normalized by paired-error RMS after controlling total error and examination: $-0.746$ to $-0.923$ on fastMRI, $-0.806$ to $-0.975$ on IXI, and $-0.894$ to $-0.959$ on NingXia (Fig.~\ref{fig:consensus}). These are descriptive associations constrained by Eq.~\ref{eq:coupling}, not independent tests of error cancellation. The stored MAE normalization factorizes to numerical precision after retaining the residual-shape term.
 
 Strict stable-wrong prevalence was zero for disjoint contexts. Under maximal sharing it was zero on fastMRI, 0.28--0.32\% on IXI, and 2.42--3.23\% on NingXia. Patient-clustered NingXia intervals were wide. The failure is coherent but rare under this definition.
 
@@ -119,7 +127,7 @@ The prevalence calculation uses one pooled threshold per dataset/model across bo
 
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{p6_e02_consensus_distributions.pdf}
-\caption{Consensus distributions and normalized disagreement across contexts. In all 12 strata, more shared error energy predicts less observable disagreement conditional on total error and examination.}
+\caption{Consensus distributions and normalized disagreement across contexts. The distributions describe error allocation; normalized disagreement and shared fraction are structurally coupled by Eq.~\ref{eq:coupling}.}
 \label{fig:consensus}
 \end{figure}
 
@@ -169,15 +177,11 @@ From $\times2$ to $\times6$, mean shared fraction increased $0.843\rightarrow0.9
 
 Across 322 $\times4$ HAT/SwinIR output volumes, shapes, orientations, and affines were identical. All physical planes matched at every tolerance from $10^{-6}$ to $10^{-1}$ mm; maximum affine and plane-distance differences were zero. Applying one shared per-case robust transform to predictions and target preserved a positive disjoint-minus-shared contrast in all six architecture--cohort strata (0.121--0.700). It did not preserve cross-examination ranks, especially on IXI. Independent output normalization changed ranks further and is invalid for absolute discrepancy.
 
-Figure~\ref{fig:intensity} visualizes the scale boundary. A global affine transform with one positive scale would preserve ranks exactly; a per-case scale need not. Applying different scales to each prediction is worse because their difference contains artificial target/offset terms. Consequently, a reliability system must freeze an intensity convention before choosing a triage threshold.
-
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{p6_e03_intensity_audit.pdf}
 \caption{Intensity operating range. A shared case transform preserves the paired overlap direction but can change cross-examination ranks; independent output transforms are not a valid absolute-discrepancy control.}
 \label{fig:intensity}
 \end{figure}
-
-Table~\ref{tab:factors} gives the factor summaries. Mean paired MAE rises in every cohort while observable fraction contracts by about threefold. Absolute disagreement falls monotonically on fastMRI and NingXia; IXI changes $48.2\rightarrow45.2\rightarrow46.6$ without reliability recovery. Thus neither high nor low target error follows mechanically from raw disagreement magnitude.
 
 \begin{table}[t]
 \caption{Analytical factor response}
@@ -253,86 +257,57 @@ Adjacent-anchor MAE&.0212&.0143&\textbf{.0070}\\
 \end{figure}
 
 \subsection{Retrospective Densification Consequence}
-A score can rank current error without identifying cases that benefit from denser sampling. We therefore evaluated stored $\times4\rightarrow\times2$ improvement as a separate consequence. The original same-family analysis correlated disjoint disagreement with MAE reduction at 0.811 (case-clustered CI 0.592--0.904) on fastMRI and 0.626 (patient-clustered CI 0.200--0.844) on NingXia. At a frozen top-25\% budget, selected benefit was 33.36 versus 21.37 under random fastMRI selection and 35.39 versus 24.25 on NingXia.
+A score can rank current error without identifying incremental benefit. We evaluate stored $\times4\rightarrow\times2$ improvement with matched model labels and common target support; this does not fix factor-specific learned weights. The common-support audit includes all 13 eligible models on fastMRI and NingXia rather than selecting a favorable architecture.
 
-Plan6 required the permitted IXI+fastMRI pair for confirmation. Before any IXI test output, we froze the lowest-validation-loss eligible I3Net $\times2$ checkpoint, its SHA-256, the endpoint, and 10/20/30/50\% budgets. All 115 IXI outputs and matching ground truths/inputs/metric rows completed. Anchor-CV, adjacent MAE, and output PC correlated with realized benefit by 0.948/0.950/0.970 on IXI and 0.871/0.846/0.843 on fastMRI. Every score had positive clustered gain above random at every budget; IXI Anchor-CV captured 0.920--0.973 of oracle gain.
+Anchor-CV has positive within-model association with benefit for 13/13 fastMRI models and 12/13 NingXia models, with median $\rho=.851/.727$. Adjacent-anchor MAE gives 13/13 and 12/13 (median .802/.748), while candidate-bank disagreement gives 11/11 and 10/11 (.835/.710); its denominator reflects neural-only target precomputation, although Linear/Cubic are bank members. The only non-positive model is the severely degraded NingXia Res-SRDiff run, whose three intervals all cross zero. At 10/20/30/50\% budgets, the across-model median oracle-normalized gain is positive for every score and cohort, although individual Res-SRDiff policies can fall below random.
 
-This result supports examination-level consequence, not prospective policy or a unique score. IXI benefit subtracts frozen I3Net $\times2$ error from mean frozen HAT/SwinIR $\times4$ error, so it is cross-estimator. The high performance of all three scores is consistent with intrinsic case difficulty. A same-model randomized acquisition study is required to identify sampling treatment benefit.
+Since benefit contains current $\times4$ error, we also condition on its rank. Anchor-CV median partial correlation falls from .851/.727 to .203/.291 on fastMRI/NingXia; all 26 model--cohort intervals cross zero. This weakens a claim of incremental benefit information beyond current difficulty.
 
-\begin{table}[t]
-\caption{Frozen score correlation with x4$\rightarrow$x2 benefit}
-\label{tab:benefit}\centering
-\begin{tabular}{lrr}
-\toprule
-Score&fastMRI&IXI\\
-\midrule
-Anchor-CV&.871&.948\\
-Adjacent-anchor MAE&.846&.950\\
-Output PC&.843&.970\\
-\bottomrule
-\end{tabular}
-\end{table}
+We additionally recover a same-architecture I3Net pair on all 115 IXI examinations. Different $\times2/\times4$ checkpoint hashes are recorded. Re-evaluation uses 7,334 common odd planes, identical target-derived masks and physical affines; case means are computed before examination bootstrap. Mean MAE falls from 33.65 to 25.62, with positive benefit in 115/115 cases. Linear interpolation on the same support gives 57.36 and 39.21. Raw Anchor-CV and adjacent MAE correlate with benefit at .843 [.768,.894] and .845 [.771,.896]; conditional correlations are .216 [.007,.430] and .227 [.020,.437]. These are pointwise exploratory intervals.
 
-\subsection{Broad Reconstruction Benchmark}
-Table~\ref{tab:arch-benchmark} establishes that the mechanism test is not restricted to two weak or unusually related reconstructors. All entries use the same 24 fastMRI examinations, generated-plane support, ground-truth-derived 1\% evaluation mask, and metric implementation. The table is descriptive rather than a leaderboard claim: I3Net is strongest on this benchmark, while CycleINR is less accurate but supplies the most distinct coordinate-based error geometry.
+Normalization by the acquired-anchor robust range reverses the raw-benefit correlations to $-.238$ [$-.404,-.058$] and $-.236$ [$-.397,-.060$]. At 50\% selection, normalized Anchor-CV is below random by .920 MAE units (95\% CI $[-1.635,-.149]$). This is a scale-sensitive ranking failure against a raw-scale endpoint, not a claim that normalization is always harmful. Normalizing both score and benefit by the same acquired range gives correlations .539 [.356,.698] and .551 [.372,.704]; raw scores against normalized benefit instead give $-.375/-.373$. The four contracts preserve both positive and negative results: a shared denominator can itself induce association, so this is a unit-sensitivity diagnostic, not a new calibrated score.
 
-\begin{table*}[t]
-\caption{Common-support fastMRI reconstruction benchmark. MAE is reported at each factor; PSNR/SSIM are shown at $\times4$.}
-\label{tab:arch-benchmark}\centering
-\begin{tabular}{llrrrrr}
-\toprule
-Method&Paradigm&MAE $\times2$&MAE $\times4$&MAE $\times6$&PSNR $\times4$&SSIM $\times4$\\
-\midrule
-Linear&Analytical&98.7&134.5&148.7&14.24&.588\\
-Cubic&Analytical&114.5&153.2&148.7&13.21&.544\\
-I3Net&Inter/intra-slice CNN&45.6&70.9&81.6&19.03&.871\\
-SAINT&Spatial conditional CNN&72.1&80.1&90.9&18.30&.848\\
-CycleINR&Implicit coordinate&80.3&114.4&128.2&15.38&.666\\
-HAT&Transformer SR&68.0&86.1&96.7&17.80&.828\\
-SwinIR&Transformer SR&65.7&90.4&97.7&17.37&.803\\
-\bottomrule
-\end{tabular}
-\end{table*}
+Independent source reconstruction also distinguishes prediction-only bank support from GT support. Across all 11 neural targets, acquired-input masks yield median raw benefit correlations .863/.723 on fastMRI/NingXia, compared with .835/.710 for prediction masks and .805/.519 for bank unions. Current-error-adjusted medians remain $-.058/.425$ for acquired masks. Changing support does not remove the current-difficulty limitation.
+
+
+
+\subsection{Complete Baseline Comparison and Budget Sensitivity}
+Table~\ref{tab:p15-master} restores all 13 methods on all three $\times4$ cohorts: classical, CNN, GAN, Transformer, INR, Mamba, ACVTT, and diffusion-refinement baselines. We independently reproduce every original PSNR/SSIM/MAE/MSE/NCC entry. I3Net leads all five metrics on IXI/fastMRI, whereas SwinIR leads four on NingXia and HAT leads NCC. The complete supplement retains 111 configurations: 39 at $\times4$, 52 at $\times2/\times6$, and 20 longer-budget results. Native full-plane metrics and eight-fold NingXia averaging differ from the masked common-support QA contract and are never interchanged.
+
+\input{table_p15_master_x4.tex}
+
+All 13 models give median case-error rank correlations .997/.899/1.000 on IXI/fastMRI/NingXia (78 pairs each; descriptive). The historical masked seven-stratum audit remains separate: median correlations .938--.991, including a low NingXia diffusion tail. Full-bank evidence therefore supports shared difficulty but not uniformly independent errors.
+
+Crucially, training budget changes the failure interpretation. Across all 20 recorded extensions, 15 paired MAE intervals favor longer training under simultaneous inference; five cross zero. NingXia Res-SRDiff $\times2$ MAE improves 440.61$\rightarrow$140.45$\rightarrow$118.25 at 30/60/90 epochs, still worse than Linear (78.53). The corresponding 60/90-epoch reductions are 300.16 [153.17,447.14] and 322.36 [166.01,478.71]. These separate runs diagnose convergence sensitivity; they do not replace the standard-budget failure or establish an intrinsic diffusion limitation. Profiles retain unequal recorded budgets, including extended fastMRI HAT training. Complete five-metric, multi-scale, and budget tables accompany the baseline supplement.
 
 \subsection{Generalization Across Interpolation Paradigms}
-Figure~\ref{fig:arch-generalization} reports the preregistered physical-dependence intervention. Disjoint contexts increase observable error by 8.0 points for I3Net (95\% CI 7.2--8.8), 13.7 for SAINT (12.5--14.9), and 22.6 for CycleINR (21.9--23.3). HAT and SwinIR reference gains are 17.8 and 17.6 points. The equal-weight four-family estimate is 15.5 points [14.8,16.2], and leave-one-family-out estimates remain 13.1--18.0 points with every case-level difference positive. Thus local error geometry, rather than examination ranking, is the robust cross-paradigm endpoint.
+Figure~\ref{fig:arch-generalization} reports the frozen physical-dependence intervention on two independent brain cohorts. On fastMRI, disjoint-minus-shared observable-error gain is 17.8/17.6/8.0/13.7/22.6 points for HAT/SwinIR/I3Net/SAINT/CycleINR; all clustered intervals exclude zero. The IXI replication gives 29.0/30.2/25.2/29.8/29.6 points, with all five intervals above zero and all 115 case effects positive for every model. Its equal-weight four-family estimate is 28.6 points, and leave-one-family-out estimates remain 28.1--29.7 points. Reflection-balanced identity-swap estimates are 29.2/30.0/25.1/29.7/29.5 points; all five mirror-difference intervals include zero. Phase-0 wrapper maximum error is zero for all ten cohort--model runs. Thus local error geometry, rather than examination ranking, is the more reproducible cross-paradigm endpoint.
 
-\begin{figure}[t]
-\centering\includegraphics[width=\columnwidth]{p9_architecture_forest.pdf}
-\caption{Architecture-family falsification at fastMRI $\times4$. Points are disjoint-minus-shared observable paired-error fraction with examination-clustered 95\% intervals. No architecture is omitted for an unfavorable ranking result.}
+\begin{figure*}[t]
+\centering\includegraphics[width=.96\textwidth]{p13_architecture_robustness.pdf}
+\caption{Architecture replication and multiplicity sensitivity. (a) Local gains retain positive five-model simultaneous 95\% intervals (10,000 examination bootstraps); fastMRI uses means and IXI medians. (b) Thick bars are historical pointwise intervals; thin bars are simultaneous intervals with within-case median ranking. Simultaneous ranking intervals exclude zero for three IXI models and none on fastMRI. Cohorts are not pooled.}
 \label{fig:arch-generalization}
-\end{figure}
+\end{figure*}
 
-Ranking improvement is not universal. Disjoint-minus-shared error-ranking $\Delta\rho$ is .342 [.113,.711] for CycleINR, .018 [$-.061$,.107] for I3Net, $-.010$ [$-.143$,.114] for SAINT, and .057/.062 with intervals crossing zero for HAT/SwinIR. The preregistered stable-wrong rule yields four of 120 shared CycleINR planes and zero for the other models, with zero disjoint CycleINR events. This is an architecture-specific rare phenotype, not a common prevalence estimate.
+The ranking arrow does not generalize uniformly across cohorts. On IXI, $\Delta\rho$ is .031/.035/.025/.032/.134 for HAT/SwinIR/I3Net/SAINT/CycleINR and every interval is positive. On fastMRI, only CycleINR is clearly positive (.342 [.113,.711]); the other four intervals cross zero. The frozen stable-wrong rule yields four of 120 shared fastMRI CycleINR planes and zero for the other models, with zero disjoint CycleINR events. This remains rare. Exploratory five-model simultaneous ranking intervals exclude zero for IXI HAT/SwinIR/SAINT only, and for no fastMRI model. In contrast, all local-gain simultaneous intervals remain positive under four mean/median aggregation choices.
 
-Architectural distance also fails to guarantee examination-level independence. Across the five models, median pairwise case-error rank is .945, .981, and .981 at $\times2/\times4/\times6$; six of 24 cases fall in the top error quartile for all five models at $\times4$ and $\times6$. Pixel geometry is more diverse: median HAT--SwinIR error cosine is .918, versus .564 for CycleINR--I3Net, with corresponding observable fractions .041 and .245. The data therefore distinguish useful local error diversity from the persistent intrinsic difficulty of entire examinations.
+Architectural distance also fails to guarantee examination-level independence. In the prospectively frozen five-model subset, median pairwise case-error rank is .945, .981, and .981 at $\times2/\times4/\times6$; six of 24 cases fall in the top error quartile for all five models at $\times4$ and $\times6$. The exploratory full-bank audit above generalizes the shared-difficulty observation without promoting a new primary endpoint. Pixel geometry is more diverse: median HAT--SwinIR error cosine is .918, versus .564 for CycleINR--I3Net, with corresponding observable fractions .041 and .245. The data therefore distinguish useful local error diversity from the persistent intrinsic difficulty of entire examinations.
 
-\subsection{Failure Granularity}
-Examination scores need not localize a failed plane. Historical analysis found 14 NingXia planes in the lowest PC quartile and highest error quartile; 12 were at the first generated $\times4$--$\times6$ position, suggesting shared boundary context. Controlled common blur also reduced variation while preserving error. Conversely, a strict natural fastMRI stable-wrong rule found no event. These differences motivate four failure classes: stable-wrong consensus, benign diversity, boundary-sensitive error, and global examination difficulty.
+\subsection{External MRA and Anatomical Error}
+All 125 locally available TopCoW MRA cases have paired vascular annotations~\cite{yang2026topcow}. We use the public challenge training images as a new external evaluation cohort, with no estimator fitting. Fixed linear (L) and four-point Lagrange cubic (C) interpolation use complete native-resolution contexts on phase-0/phase-2 $\times4$ grids. All 10779 eligible odd planes enter; residues 1 and 3 receive equal case weight. The score mask is the union of the two nearest phase-0 acquired-anchor masks. Vessel labels are used only to evaluate error, never to select inputs or target planes.
 
-The distinction prevents an examination-level ranking from being presented as a heatmap. A high case score can prioritize review but cannot identify which slice or anatomy is wrong; a median case score can suppress an isolated catastrophic plane. Plane-localization and examination-triage endpoints must be validated separately.
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{p14_anatomical_transfer.pdf}
+\caption{Anatomical specificity with fixed analytical estimators. (a) TopCoW acquired-support scores rank general and vessel-region errors differently (pointwise intervals). (b) Bright-anchor weighting improves vessel-error ranking on TopCoW and transfers in disjoint contexts to CAS2023; intervals are simultaneous across two pairings within each cohort/context. TopCoW motivated the rule; CAS2023 received it without retuning. General-error ranking deteriorates under this weighting.}
+\label{fig:topcow}
+\end{figure*}
 
-\section{Discussion}
-The experiments connect a familiar correlated-error limitation to a recorded imaging variable. Through-plane anchors are not generic augmentations: their physical positions determine the anatomical evidence available for the same missing plane. When contexts reuse them, errors align and a larger fraction cancels. Disjoint contexts rank intensity error and selective risk more effectively across three cohorts, while analytical factor response shows worsening consensus blindness as sampling becomes sparser.
+Keeping the estimator pair fixed, L$_0$--C$_2$ minus L$_0$--C$_0$ increases observable fraction by 34.5 [34.4,34.6] points; C$_0$--L$_2$ minus C$_0$--L$_0$ gives 34.5 [34.4,34.6]. Ranking changes against fixed linear/cubic error are 0.020/0.028, and against vessel-region error -0.043/-0.038 (Fig.~\ref{fig:topcow}). Vessel-risk coverage also worsens: disjoint-minus-shared normalized excess risk area is .00140 [.00028,.03211] for L and .00135 [.00026,.03120] for C. These endpoints test distinct consequences. The paired $\times4\!\rightarrow\!\times2$ control uses the same interpolation rules, eliminating factor-specific learned weights; all case-level general and vessel benefits, including negative values, are retained in the numerical record. Region-restricted intensity error is an anatomical endpoint, not segmentation or diagnostic accuracy.
 
-The result separates diversity, observability, and calibration. Diversity is output distance; observability is the fraction of paired error surviving in that distance; calibration maps a score to an absolute or probabilistic statement. We study the first two. A condition can have larger raw disagreement yet poorer ranking, and no reported number supports statements such as ``this slice is correct with a given probability.''
+\paragraph{Fixed anatomical weighting and transfer.}
+After observing TopCoW's endpoint mismatch, we fix a label-free rule: retain the brightest 5\% of each acquired anchor's 1\%-foreground, then unite the nearest two anchor masks. The same TopCoW cases are exploratory development evidence. Disjoint vessel-error correlations rise from .488/.471 to .705/.693 for L/C, with changes .217 [.100,.334] and .222 [.110,.334] under two-pair simultaneous intervals.
 
-Several boundaries change the practical recommendation. First, local observability generalizes more strongly than examination ranking: SAINT's ranking contrast is slightly negative and I3Net's is null within uncertainty. Second, endpoint choice matters: MAE disagreement did not rank SSIM error in two cohorts. Third, intensity scale matters for examination triage even though the paired direction survives a fair common transform. Fourth, stable-wrong consensus remains possible but is rare and model specific under the frozen rule. Fifth, adjacent-anchor MAE beats all output scores on NingXia. Reliability evaluation should record which information changes, compare strong acquired-input baselines, and use the intended harm endpoint.
-
-The literature boundary is also precise. Correlated errors, systematic-error blindness, and leave-one-slice-out evaluation are not new \cite{brown2005diversity,hu2021predict,horvath2017highorder}. Recent acquisition perturbations in prostate MRI also show that variance maps can emphasize acquisition fragility while correlating only moderately with error \cite{vandervelde2026prostate}. The defensible contribution here is the target-preserving physical measurement-overlap intervention and its three-cohort endpoint, factor, geometry, failure, and selective-risk characterization.
-
-\subsection{Cohort Heterogeneity}
-fastMRI supplies the strongest historical all-plane contrast but the smallest public brain panel. Its Plan6 MAE differences are 0.101 for HAT and 0.132 for SwinIR, while SSIM ranking is essentially null. The analytical factor decline is also largest on this cohort. This combination suggests excellent observability for global intensity error but no evidence that the same score orders structural similarity.
-
-IXI supplies the largest and most precise replication. All 14 architecture-specific endpoint intervals exclude zero; the shared-fraction association reaches $-0.975$ in the maximal-shared HAT stratum, and disjoint risk is nearly oracle. Yet IXI is also most sensitive to per-case normalization. Its evidence supports a robust physical-dependence direction, not a transferable absolute score threshold.
-
-NingXia changes anatomy and provenance and uses out-of-fold models, but eight patients limit inference. Its maximal-shared stable-wrong prevalence is highest, SSIM ranking is negative, and adjacent-anchor MAE wins selective risk. These results argue for retaining simple acquired-input checks in an external knee system and for targeted boundary analysis, not for an anatomy-specific causal claim.
-
-\subsection{Comparator Semantics and Cost}
-The compared scores vary different information. Disjoint phase changes physical anchor identity and requires two reconstructions plus potentially additional measurements. Maximal-shared reversal changes order but reuses evidence. The committee changes architecture while preserving acquisition. Adjacent-anchor MAE changes no output and requires zero neural calls. Predictive performance must therefore be interpreted with information availability rather than treated as an abstract leaderboard.
-
-Representative Anchor-CV CPU scoring took 0.42/3.97/3.93 ms on fastMRI/IXI/NingXia and stored no predicted volume. Committee, flip-TTA, and disjoint pairs required two neural calls, 0.25--0.29 s / 2.43--3.20 s / 0.49--0.60 s by cohort, about 271 MiB peak allocated GPU memory, and 8.6--66.5 MiB outputs. These measurements establish computational differences only. A disjoint score can be computationally feasible yet acquisition-expensive; a zero-call input baseline can be immediately available.
-The flip-TTA row is deliberately a cost comparator only: a definition-matched IXI TTA reliability output was unavailable, so no three-cohort nAURC is imputed. Output-PC times are likewise score-only and exclude generating the two prerequisite reconstructions.
+We transfer the unchanged rule to all 100 paired CAS2023 angiograms~\cite{cas2023} (6,412 eligible planes), without fitting, label-based plane selection, or threshold search. Disjoint vessel-error correlations improve from .880/.877 to .953/.947: changes .073 [.017,.130] and .070 [.014,.126]. Shared-context changes .010/$ .005$ have simultaneous intervals crossing zero. This anatomical improvement has a cost: general-error correlations fall by .085/.084 on CAS2023 and .250/.235 on TopCoW in disjoint contexts. CAS2023 vessel-risk coverage changes favor bright weighting, but both pointwise intervals cross zero. Thus rank transfer does not establish screening utility. Labels define intensity-error endpoints, not diagnostic outcomes; CAS header provenance does not certify physical slice spacing.
 
 \begin{table*}[t]
 \caption{Reliability operating regimes; latency is measured on one representative examination per cohort}
@@ -351,51 +326,44 @@ Measurement-disjoint&2&0.29/3.20/0.56 s&Complementary physical phase grids&Worth
 \end{tabular}
 \end{table*}
 
-\subsection{Clinical Interpretation and Validation}
-A low disagreement score means only that tested contexts agree under the declared scale. It cannot exclude common smoothing, anatomy omission, or pathology loss. A high score can flag a pair but cannot identify which output or structure is wrong. No score should be displayed as a probability of diagnostic correctness.
+\subsection{Failure Granularity}
+Examination scores need not localize a failed plane. Historical analysis found 14 NingXia planes in the lowest PC quartile and highest error quartile; 12 were at the first generated $\times4$--$\times6$ position, suggesting shared boundary context. Controlled common blur also reduced variation while preserving error. Conversely, a strict natural fastMRI stable-wrong rule found no event. These differences motivate four failure classes: stable-wrong consensus, benign diversity, boundary-sensitive error, and global examination difficulty.
 
-The next technical study should freeze this pipeline on an independent multi-site T2 cohort, including boundary and pathology-enriched strata. A prospective paired acquisition should randomize two interleaved phases, acquire a dense reference, quantify inter-phase motion, and use an order-symmetric model when possible. Power must follow patient counts rather than planes. Only after technical replication should a reader study evaluate abstention, review prioritization, lesion detection, quantitative bias, and rescan burden.
+The distinction prevents an examination-level ranking from being presented as a heatmap. A high case score can prioritize review but cannot identify which slice or anatomy is wrong; a median case score can suppress an isolated catastrophic plane. Plane-localization and examination-triage endpoints must be validated separately.
 
-The practical recommendation should be falsified if a matched-order disjoint control fails in multiple cohorts, if gains disappear after motion/intensity control, if a zero-call adjacent baseline consistently matches output scoring, or if clinically important stable-wrong failures remain frequent at the selected threshold. The present study supports that validation program but no deployment decision.
+\section{Discussion}
+The experiments connect a familiar correlated-error limitation to a recorded imaging variable. Through-plane anchors are not generic augmentations: their physical positions determine the anatomical evidence available for the same missing plane. When contexts reuse them, errors align and a larger fraction cancels. Disjoint contexts rank intensity error and selective risk more effectively across three cohorts, while analytical factor response shows worsening consensus blindness as sampling becomes sparser.
+
+The result separates diversity, observability, and calibration. Diversity is output distance; observability is the fraction of paired error surviving in that distance; calibration maps a score to an absolute or probabilistic statement. We study the first two. A condition can have larger raw disagreement yet poorer ranking, and no reported number supports statements such as ``this slice is correct with a given probability.''
+
+Local exposure, examination ranking, and screening utility require separate validation. The MRA transfer makes this distinction actionable: a fixed acquired-bright score improves vessel-error ranking while losing general-error ranking, with uncertain risk-coverage benefit. A quality score should therefore specify its anatomical endpoint before evaluation.
+
+The literature boundary is also precise. Correlated errors, systematic-error blindness, and leave-one-slice-out evaluation are not new \cite{brown2005diversity,hu2021predict,horvath2017highorder}. Recent acquisition perturbations in prostate MRI also show that variance maps can emphasize acquisition fragility while correlating only moderately with error \cite{vandervelde2026prostate}. The defensible contribution here is the target-preserving physical measurement-overlap intervention and its three-cohort endpoint, factor, geometry, failure, and selective-risk characterization.
+
+\subsection{Comparator Semantics and Cost}
+The compared scores vary different information. Disjoint phase changes physical anchor identity and requires two reconstructions plus potentially additional measurements. Maximal-shared reversal changes order but reuses evidence. The committee changes architecture while preserving acquisition. Adjacent-anchor MAE changes no output and requires zero neural calls. Predictive performance must therefore be interpreted with information availability rather than treated as an abstract leaderboard.
+
+Representative Anchor-CV CPU scoring took 0.42/3.97/3.93 ms on fastMRI/IXI/NingXia and stored no predicted volume. Committee, flip-TTA, and disjoint pairs required two neural calls, 0.25--0.29 s / 2.43--3.20 s / 0.49--0.60 s by cohort, about 271 MiB peak allocated GPU memory, and 8.6--66.5 MiB outputs. These measurements establish computational differences only. A disjoint score can be computationally feasible yet acquisition-expensive; a zero-call input baseline can be immediately available.
+The flip-TTA row is deliberately a cost comparator only: a definition-matched IXI TTA reliability output was unavailable, so no three-cohort nAURC is imputed. Output-PC times are likewise score-only and exclude generating the two prerequisite reconstructions.
+
+
 
 \subsection{Limitations}
-All phase grids are retrospective simulations from dense T2 volumes; no scanner prospectively changed sampling. NingXia has only eight independent patients. The full three-cohort endpoint matrix remains HAT/SwinIR and retains the historical reversal control's order confound; the clean five-architecture extension is confined to 24 fastMRI examinations and $\times4$. SAINT and CycleINR are adapted/internal reproductions rather than exact official implementations. The clean in-plane shared control is still an equivariance control, not a prospective acquisition. The analytical factor experiment changes target availability and distance together. MAE/SSIM are not clinical endpoints, and there is no reader study, pathology-stratified analysis, calibrated uncertainty, or prospective adaptive acquisition.
+All phase grids are retrospective simulations from dense MRI volumes; no scanner prospectively changed sampling. NingXia has only eight independent patients. One legacy fastMRI patient overlaps train/validation, but none overlaps test; historical checkpoint-selection bias is not quantified. The full three-cohort endpoint matrix remains HAT/SwinIR and retains the historical reversal control's order confound; the clean five-architecture extension covers two brain cohorts at $\times4$, not NingXia knee. SAINT and CycleINR are adapted/internal reproductions rather than exact official implementations. The clean in-plane shared control is still an equivariance control, and identity-swap matches geometry only up to left--right reflection; neither is a prospective acquisition. The analytical factor experiment changes target availability and distance together. MRA broadens contrast and anatomical evaluation only for fixed analytical estimators; neural conclusions remain T2-specific. The densification audit is exploratory; IXI has only one recovered same-architecture pair, and factor-specific weights differ. Target-derived output masks require an acquired-only support validation before deployment. MAE/SSIM are not clinical endpoints, and there is no reader study, pathology-stratified analysis, calibrated uncertainty, or prospective adaptive acquisition.
 
 Eligible planes are fully bracketed and exclude acquired anchors, so results need not transfer to unbracketed boundary extrapolation. The 42 endpoint rows are correlated rather than independent replications. Shared fraction is target-dependent and diagnostic, not deployable. Risk--coverage uses one frozen examination aggregation; maximum-plane or reader-task risk could reorder methods. Cross-cohort intensity calibration and prospective scanner-time utility remain unresolved.
 
 \subsection{Evidence and Reproducibility Boundaries}
-Every Plan6 experiment writes a per-observation table, summary table/JSON manifest, source script, and figure generated from those records. Historical all-plane results and newly balanced three-plane results retain separate file prefixes; neither overwrites the other. The geometry table contains each output identity and affine-derived match. The IXI $\times2$ record freezes the checkpoint hash before inference and verifies all 115 cases.
-
-The principal journal evidence is the physical dependence contrast, energy distributions, endpoint/factor robustness, architecture falsification, geometry/intensity controls, and selective risk. The journal uses the cross-architecture experiment to characterize MRI QA and does not import the conference paper's detailed finite-response statistic as a new method contribution. Shared cohorts and the architecture experiment must be disclosed under the venue policy; they are not independent studies merely because the framing differs.
-
-The exact ethics and release record remains an author dependency. Public-data terms must be cited from the releases actually used, and internal NingXia approval/waiver language must identify the institution and decision. Until those fields are filled, the manuscript is scientifically compiled but not submission-ready.
-
-\begin{table*}[t]
-\caption{Claim boundary summary}
-\label{tab:claims}\centering
-\begin{tabular}{p{4.2cm}p{4.1cm}p{7.0cm}}
-\toprule
-Question&Evidence&Conclusion\\
-\midrule
-Does measurement disjointness improve error observability?&All-plane paired intervention; 42 endpoint contrasts; risk curves&Supported for tested deterministic interpolation and intensity-domain endpoints.\\
-Does shared energy suppress normalized disagreement beyond total error?&12 partial rank strata&Supported conditionally; association is not causal mediation.\\
-Is the effect an affine/tolerance artifact?&322 output geometry audit; common-scale control&No for tested geometry and paired direction; cross-case triage remains scale dependent.\\
-Does it generalize over interpolation paradigm?&Five neural architectures at fastMRI $\times4$; leave-one-family-out analysis&Observable fraction improves in every evaluated architecture; examination-ranking benefit is heterogeneous and not universal.\\
-Does it generalize over factor?&Common-support 13-method benchmark; analytical $\times2/4/6$ mechanism&Reconstruction error worsens across factors and analytical blindness increases; not a five-architecture neural mechanism test at $\times2/6$.\\
-Is disjoint disagreement universally best?&Four-score nAURC and false-retention counts&No; best tested output score, adjacent MAE wins NingXia; IXI operational benefit is coverage dependent.\\
-Are stable-wrong failures common?&Strict pooled-quartile prevalence&No; coherent but rare and imprecise in eight-patient NingXia.\\
-Does retrospective benefit imply prospective acquisition utility?&IXI+fastMRI frozen consequence&No; case-level cross-estimator prediction only.\\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-Disjoint scoring may require physical measurements unavailable in a conventional sparse scan. Compute cost and acquisition cost differ. A prospective validation should acquire randomized interleaved phases plus a dense reference, quantify motion, predefine a reader-relevant endpoint and coverage threshold, and stop if a matched-order disjoint control fails or a zero-call input baseline consistently matches it.
+Per-plane and case-level records, source hashes, protocol amendments, and plotting scripts retain the historical and new analyses separately. TopCoW (125 cases) motivated a fixed rule subsequently evaluated on CAS2023 (100 cases); this chronology is explicit. The journal emphasizes anatomical QA and does not claim the conference paper's finite-response statistic as a new method. Shared cohorts and architecture experiments remain overlapping evidence.
 
 \subsection{Ethics and Data Availability}
 fastMRI and IXI are public deidentified resources. NingXia is an internal human MRI cohort. \textbf{[AUTHOR ACTION: insert approving/exempting institution, decision identifier, consent/waiver, and permitted-use language.] } Code, manifests, case-level derived tables, and checkpoint hashes will be released anonymously where licensing permits; raw public and internal data remain under their governing terms.
 
+\section*{Acknowledgment}
+OpenAI Codex assisted with the abstract, Sections II--VI, statistical and external-MRA scripts, and the robustness/MRA figures. The source data are pre-existing; author verification of the generated material and the final disclosure is required before submission.
+
 \section{Conclusion}
-Disagreement observes differences between reconstruction errors, not error itself. Across fastMRI, IXI, and patient-clustered NingXia, disjoint physical anchors made intensity-domain error more observable than shared-anchor output comparisons. A preregistered fastMRI falsification extends the local error-geometry effect from transformers to I3Net, an adapted SAINT-style network, and an internal CycleINR-style model, but also falsifies universal ranking improvement. Different architectures continue to fail on many of the same examinations. The supported principle is therefore narrow: diversify influential physical evidence, validate against the intended endpoint and architecture, and never treat agreement as a correctness certificate.
+Disagreement observes differences between reconstruction errors, not error itself. Across fastMRI, IXI, and patient-clustered NingXia, disjoint physical anchors made intensity-domain error more observable than shared-anchor output comparisons. Frozen five-architecture tests on two independent brain cohorts extend the local error-geometry effect from transformers to I3Net, an adapted SAINT-style network, and an internal CycleINR-style model; a reflection-balanced IXI control preserves it. Ranking remains cohort dependent, architectures share difficult examinations, and retrospective benefit prediction is limited by current-error coupling, intensity scale, and a degraded-model exception. The supported principle is therefore narrow: diversify influential physical evidence, validate against the intended endpoint and architecture, and never treat agreement as a correctness certificate.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}

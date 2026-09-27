@@ -1,0 +1,26 @@
+{
+  "variant": "repair",
+  "device": "NVIDIA GeForce RTX 5090 D v2",
+  "parameters": 992179,
+  "conv_linear_gflops_interval": 446.589659136,
+  "conv_linear_gflops_slice": 148.863219712,
+  "flops_coverage": "Conv2d/3d and Linear MAC x2 only; excludes FFT, unfold, matching reductions and elementwise ops; not total FLOPs",
+  "latency_ms_interval_median": 143.56425125151873,
+  "latency_ms_slice_median": 47.85475041717291,
+  "latency_ms_interval_p95": 144.61685409769416,
+  "peak_forward_gib": 0.8587446212768555,
+  "contract": {
+    "shape": [
+      1,
+      3,
+      13,
+      256,
+      256
+    ],
+    "amp": true,
+    "warmup": 10,
+    "repetitions": 30,
+    "scope": "forward only, three missing slices, excludes IO/resize/metrics",
+    "torch": "2.11.0+cu128"
+  }
+}

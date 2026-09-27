@@ -1,19 +1,9 @@
-# CVPR 稿件分支说明
+# CVPR 当前论文
 
-| 分支 | 角色 | 建议用途 |
-|---|---|---|
-| `CVPR_RECOVERED/` | 从早期材料恢复的机制稿 | 历史参考 |
-| `CVPR_UPGRADE/PAPER/` | Plan 6 升级稿 | 历史实验整合版本 |
-| `CVPR_UPGRADE/PAPER_FINAL/` | Plan 7 风险优化版 | Plan 8/9 前的冻结候选 |
-| `CVPR_ARCH_GENERALIZED/PAPER/` | Plan 9 架构族泛化版 | **当前最新科学候选** |
+**Plan 17，2026-09-11。** [正文 8 页](CVPR_ARCH_GENERALIZED/PAPER/main.pdf)，技术内容止于第 7 页；[补充材料 20 页](CVPR_ARCH_GENERALIZED/PAPER/supplement.pdf)。
 
-当前入口：
+本轮将论文重构为 Measurement-Influence Reliability Audit：Algorithm 1、条件协方差命题、真实共享/不共享误差图、五架构证据和完整审计。修正影响量描述并剔除主分析的自比较；旧结果仍在补充材料。新 guard 未证实优越性，没有被包装为成功方法。
 
-- [Plan 9 CVPR 主文源码](CVPR_ARCH_GENERALIZED/PAPER/main.tex)
-- [Plan 9 CVPR 主文 PDF](CVPR_ARCH_GENERALIZED/PAPER/main.pdf)
-- [补充材料源码](CVPR_ARCH_GENERALIZED/PAPER/supplement.tex)
-- [补充材料 PDF](CVPR_ARCH_GENERALIZED/PAPER/supplement.pdf)
-- [最终构建审计](CVPR_ARCH_GENERALIZED/PAPER/FINAL_BUILD_AUDIT.md)
-- [最终审稿模拟](CVPR_ARCH_GENERALIZED/PAPER/FINAL_REVIEW_SIMULATION.md)
+13 模型、111 配置、全部五指标和 20 项训练预算对照完整保留在补充材料。当前定性图为真实推理结果；Plan 16 旧生成图与改稿前文件可在保护快照中找到。
 
-最新分支把物理测量依赖、局部误差对齐/抵消和架构族证伪作为中心。它明确保留不利结果：新架构中只有 SAINT 通过全部影响稳定性门槛，且其固定计数效应区间跨零。该稿不能写成普适影响度方法，也不能在未处理与 TMI 的科学重合前直接并行投稿。
+[详细报告](../PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/FINAL_REPORT_ZH.md) · [审稿风险](../PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/HOSTILE_REVIEW_ZH.md) · [运行说明](../PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/RUN_COMMANDS_ZH.md) · [证据台账](../PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/research_ledger.json)

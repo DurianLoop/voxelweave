@@ -1,0 +1,195 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[review]{cvpr}
+\input{preamble}
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+\def\paperID{*****}
+\def\confName{CVPR}
+\def\confYear{2026}
+\title{When Agreement Hides Error:\\
+Auditing Shared Measurement Dependence in MRI Slice Interpolation}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Agreement can hide reconstruction error when predictors reuse the same physical evidence. We introduce the Measurement-Influence Reliability Audit (MIRA): same-target measurement-identity interventions with frozen estimators, paired-error decomposition, and local response analysis. Across all 20 ordered pairs of five architecture implementations on NYU fastMRI brain T2 and IXI, disjoint companion measurements increase local error observability with simultaneous intervals above zero. Acquired-only HAT, SwinIR and SAINT-style probes pass their frozen numerical gates and support influence beyond anchor count on both cohorts; fixed-context perturbations support the conditional local covariance trend. The stricter probe contract excludes incompatible regular-grid interfaces. Support and residue-balancing sensitivities preserve the local finding, while orientation effects remain. Examination ranking is cohort dependent, and the data have been reused retrospectively. MIRA audits when agreement loses observability; it does not provide a calibrated correctness score.
+\end{abstract}
+
+\section{Introduction}
+Prediction agreement is often treated as evidence of reliability. It is more informative when alternative predictions fail differently and less informative when they inherit the same error. Our question is: \emph{when does prediction agreement cease to be evidence of reliability?} We study deterministic cross-context disagreement, not all Bayesian, probabilistic, or calibrated uncertainty methods.
+
+MRI slice interpolation offers a controlled setting for this question. A retrospectively available dense examination identifies the missing target plane, the acquired slice positions, and the physical identity of each anchor. Two contexts can reconstruct the same target while sharing or separating acquired measurements. This lets us intervene on evidence dependence rather than merely compare networks with different architectures or accuracy.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{final_fig1_physical_anchors.pdf}
+\caption{Shared measurements can conceal aligned error. A fixed median-effect fastMRI example uses frozen SwinIR weights. Physical anchor strips identify reused and distinct measurements; the target and prediction A are identical across rows. Shared inputs give small disagreement despite substantial error. Disjoint inputs expose more of that error. All error and disagreement maps share one scale. The supplement gives the fixed selection rule, precision check and a seeded random example.}
+\label{fig:teaser}
+\end{figure*}
+
+Figure~\ref{fig:teaser} shows the failure directly. Under shared anchors, the two predictions smooth the same structures and largely agree on their errors. Disjoint anchors need not make either reconstruction substantially more accurate; they change which error components become visible in the difference. The distinction matters: low disagreement is an observation about two outputs, not a certificate about their unknown target.
+
+The error-difference identity is elementary, and variability missing systematic MRI error is already known~\cite{hu2021predict}. Our contribution is an executable \emph{Measurement-Influence Reliability Audit} (MIRA). It specifies the physical intervention, quantities that require ground truth, local influence computation, stability checks, and unit of statistical inference. A local covariance model explains why shared anchors matter through estimator sensitivity rather than through their count alone. Controlled experiments then test where this explanation succeeds and where it fails.
+
+The distinction between local geometry and global utility is central. A repeatable reduction in observable error does not imply that disjoint disagreement always ranks examinations better. Nor does a stable finite-response probe establish a universal scalar score. We distinguish evidence for a conditional mechanism from evidence for useful error ranking, and retain the failures of attempted scalar scores.
+
+Our contributions are: (1) a same-target audit of local observability loss across diverse frozen estimators; (2) finite-response influence linked to a conditional covariance model where its numerical probe is valid; and (3) an explicit evidence hierarchy in which incompatible interfaces, historical stability failures and null results define the empirical boundary rather than disappear from the model count. The project is retrospective, with cohort reuse documented below.
+
+\section{Related Work}
+\paragraph{Diversity, covariance and uncertainty.}
+The interaction between ensemble error and diversity is established by ambiguity decompositions, negative-correlation learning and diversity measures~\cite{krogh1994ensembles,liu1999negative,kuncheva2003diversity,brown2005diversity,ortega2022diversity}. Random-subspace methods and gradient-diversity training already diversify inputs or sensitivities~\cite{ho1998subspace,kariyappa2019diversity}. We do not claim a new error identity or that diversity first becomes meaningful through MIRA. Our distinction is a controlled physical-measurement intervention with frozen, possibly different estimators, a response audit and explicit failure boundaries.
+
+\paragraph{MRI uncertainty and practical reliability.}
+Deep ensembles, dropout, TTA and posterior reconstruction characterize predictive variation~\cite{lakshminarayanan2017ensembles,gal2016dropout,wang2019tta,edupuganti2021uncertainty,narnhofer2022bayesian,luo2023diffusion}. Hu \etal distinguish random and systematic MRI error~\cite{hu2021predict}; common-error blindness is not new. Unlike a posterior sampler, MIRA tests how measurement identity and local responses affect the interpretation of deterministic agreement. Error/OOD detection and selective prediction evaluate actionable ranking or abstention~\cite{hendrycks2017baseline,geifman2017selective}. Our local energy result does not establish those downstream properties, and the scoring failures remain relevant.
+
+\paragraph{Consistency and interpolation.}
+Acquired-data consistency~\cite{lustig2010spirit} differs from agreement between two missing-slice estimates. We audit HAT/SwinIR and frozen I3Net, SAINT-style and CycleINR-style implementations~\cite{chen2023hat,liang2021swinir,song2024i3net,peng2020saint,fang2024cycleinr}, without proposing an interpolator. Complementary acquisitions and high-order slice interpolation are established~\cite{greenspan2002interslice,nicastro2022shift,horvath2017highorder}. The question here is when agreement hides error, not whether complementary slices or interpolation holdouts are new.
+
+\section{Our Measurement-Influence Framework}
+\subsection{Error observability}
+Let $F_a,F_b$ be frozen reconstruction estimators (possibly identical) and $c_a,c_b$ two contexts for target location $z$. On a common support, predictions $f_a,f_b$ have errors $e_a=f_a-y$ and $e_b=f_b-y$. The observable is $D=\|f_a-f_b\|$; the target $y$ is unavailable when forming a deployment score. Retrospectively,
+\begin{equation}
+D^2=\|e_a\|^2+\|e_b\|^2-2\langle e_a,e_b\rangle .\label{eq:difference}
+\end{equation}
+Define $T=(\|e_a\|^2+\|e_b\|^2)/2$, common error $\bar e=(e_a+e_b)/2$, and difference error $h=(e_a-e_b)/2$. For $T>0$,
+\begin{equation}
+S=\|\bar e\|^2/T,\quad O=\|h\|^2/T,\quad S+O=1.\label{eq:energy}
+\end{equation}
+These are latent evaluation quantities, not estimated probabilities. If $e_a=e_b\ne0$, then $O=D=0$ despite error. Conversely, $\max(\|e_a\|,\|e_b\|)\ge D/2$ gives only a one-sided error bound. Shared fractions and normalized disagreement are algebraically related; their correlation is not independent evidence for a mechanism.
+
+\subsection{Controlled same-target measurement intervention}
+The framework takes frozen $F_a,F_b$, target location $z$, two target-preserving contexts, and a registry of physical anchor identities. It records model weights, preprocessing, score support, target geometry, and information used to define each. The intervention holds the target and estimator identities fixed while varying anchor identity; relevant geometry is matched where feasible and remaining differences are reported.
+
+At $\times4$, phase-0 anchors $\{0,4,8,\ldots\}$ and phase-2 anchors $\{2,6,10,\ldots\}$ are disjoint. Targets with residues 1 or 3 are absent from both. A shared control applies an in-plane flip to the same phase-0 anchors, then maps predictions back. This is a deterministic test-time augmentation (TTA) pair. A disjoint pair instead compares phase-0 and phase-2 reconstructions. It changes measurement dependence together with the companion context; it is not an intervention that fixes every nuisance variable. Nearest-anchor distances can be matched as the multiset $\{1,3\}$ up to reflection, but full signed geometry and context normalization may still differ. The cross-architecture experiment instead compares $A_0/B_0$ with the identical $A_0/B_2$, without a flip or other TTA. This directly tests whether the phenomenon extends beyond same-network equivariance.
+
+\begin{figure}[t]
+\centering
+\begin{minipage}{.97\columnwidth}
+\hrule\smallskip
+\textbf{Algorithm 1: Measurement-Influence Reliability Audit}\par
+\smallskip\small
+\textbf{Input:} frozen $F_a,F_b$; target locations; anchor-ID registry; declared contexts, preprocessing, support, and perturbation settings. Retrospective targets are a separate evaluation input.\par
+\textbf{1. Validate} same-target mapping, acquired IDs, model weights, geometry, and source of masks/scales.\par
+\textbf{2. Reconstruct} shared and disjoint pairs; store $f_a,f_b$ and their disagreement on the same support.\par
+\textbf{3. Estimate influence} from embedded coefficients or matched anchor responses using Eq.~\ref{eq:influence}.\par
+\textbf{4. Check stability} across declared amplitudes/signs; retain failed models as phenomenon-only evidence.\par
+\textbf{5. Evaluate retrospectively} alignment, $S,O$, and error ranking; aggregate and resample whole examinations/patients.\par
+\textbf{6. Report} all eligible contrasts, uncertainty, failures, and the information-access boundary.\par
+\textbf{Output report card:} (i) local observability gap; (ii) named examination-ranking gap; (iii) beyond-count advantage; (iv) fixed-count association; (v) stability PASS/FAIL/NA; (vi) information contract; (vii) claim eligibility. Unmeasured fields remain NA; no combined scalar.\par
+\smallskip\hrule
+\end{minipage}
+\end{figure}
+
+\subsection{Analytical shared influence and a local model}
+For $f_c=\sum_j w_{cj}x_j$, embed coefficients in the union of physical anchor IDs, assigning zero to unused anchors. Under independent anchor perturbations with variances $\sigma_j^2$, the shared contribution to output covariance is proportional to $\sum_{j\in c_a\cap c_b}w_{aj}w_{bj}\sigma_j^2$. Overlap count discards sign, magnitude, and noise covariance. Coefficient cosine and common absolute mass $\sum_j\min(|w_{aj}|,|w_{bj}|)$ are descriptive alternatives; common mass alone does not prove positive covariance when coefficients have opposite signs.
+
+\paragraph{Proposition 1 (shared variation under fixed marginals).}
+Condition on a fixed target and nominal inputs. Assume the local error model
+\begin{equation}
+e_a=b_a+J_a\xi_a,\qquad e_b=b_b+J_b\xi_b,\label{eq:local}
+\end{equation}
+with fixed biases/Jacobians, zero-mean perturbations, marginal covariances $\Sigma_a,\Sigma_b$, and cross-covariance $C=\mathbb E[\xi_a\xi_b^\top]$. Compared with $C=0$ at unchanged marginals and biases, let $\kappa=\operatorname{tr}(J_a C J_b^\top)$. Then
+\begin{align}
+\Delta\mathbb E\langle e_a,e_b\rangle&=\kappa,\\
+\Delta\mathbb E\|f_a-f_b\|^2&=-2\kappa.\label{eq:covariance}
+\end{align}
+If $\tau=\mathbb E T>0$, the ratio-of-expectations observable fraction $\widetilde O=\mathbb E\|h\|^2/\tau$ changes by $-\kappa/(2\tau)$. Thus positive shared sensitivity increases the expected error inner product and suppresses disagreement energy. Shared variation with opposing sensitivities can do the reverse.
+
+\emph{Proof sketch.} Expanding Eq.~\ref{eq:local}, zero means remove the bias--noise cross terms, leaving $\langle b_a,b_b\rangle+\operatorname{tr}(J_a C J_b^\top)$. Marginal error energies do not depend on $C$; substitute into Eq.~\ref{eq:difference}. The supplement gives the full derivation, remainder qualification, and numerical checks.
+
+This proposition is conditional and local. It does not prove that sharing creates common deterministic bias, that error-vector cosine increases in every realization, or that $\mathbb E O=\widetilde O$. Actual phase interventions can change biases and Jacobians. Their effect therefore requires empirical testing rather than following automatically from the proposition.
+
+\subsection{Neural finite-response shared influence}
+For anchor $j$ and a matched zero-mean field $\xi_{js}$, compute $r_{cjs}=F_c(x+\epsilon\xi_{js})-F_c(x)$; absent anchors have zero response. The implemented statistic is
+\begin{equation}
+\widehat I=
+\frac{\sum_s\sum_{j\in c_a\cap c_b}\langle r_{ajs},r_{bjs}\rangle}
+{\sqrt{\bigl(\sum_s\sum_{j\in c_a}\|r_{ajs}\|^2\bigr)
+\bigl(\sum_s\sum_{j\in c_b}\|r_{bjs}\|^2\bigr)}}.\label{eq:influence}
+\end{equation}
+It is the cosine of response vectors embedded in physical-anchor space, \emph{not} the average cosine of individual shared-anchor responses. Its denominator includes unshared-anchor energy. Under a local linear response and independent matched anchor fields of covariance $\Sigma_j$, the expected numerator, divided by the number of fields and $\epsilon^2$, is $\sum_j\operatorname{tr}(J_{aj}\Sigma_jJ_{bj}^\top)$, the shared covariance term. The normalized finite-sample ratio is a directional proxy, not an unbiased covariance estimator.
+
+We use four centered Rademacher fields, primary amplitude .01 and alternatives .005/.02/$-.01$. Clipping is part of the finite response. The new acquired-only experiment fixes its mask and Q99--Q1 scale from acquired slices before responses, then accesses targets only for evaluation. FP32 without AMP/TF32 is fixed in its protocol. Historical full-examination scales and target-derived masks remain a different contract. HAT/SwinIR retain their per-stratum .85 rank-stability criterion; SAINT-style uses the separate frozen new-architecture .90 gate. Passing a numerical gate does not establish global Jacobian accuracy.
+
+\subsection{Reliability interpretation and scope}
+Algorithm 1 requires no estimator retraining. With retrospective targets it can expose how much common error agreement conceals and whether influence explains variation beyond count. Without targets it can measure disagreement, anchor sharing, and suitably defined local response, but it cannot identify an arbitrary common bias. The framework is therefore an audit, not a calibrated detector of every individual failure. Reused test cohorts and outcome-informed analysis choices are explicitly part of its evidence record.
+
+\section{Experimental Design and Provenance}
+\paragraph{Cohorts and frozen implementations.}
+We use 24 locally catalogued NYU fastMRI brain T2 examinations~\cite{knoll2020fastmri,muckley2021brain,fastmri_portal}, 115 IXI brain T2 examinations~\cite{ixi_dataset}, and 22 NingXia knee T2 series from eight patients. Existing dataset-specific training splits or patient-group out-of-fold models supply the weights. HAT/SwinIR cover all three cohorts; locally configured I3Net, adapted SAINT-style and internal CycleINR-style add three brain-cohort lineages. These are frozen local implementations, not claims of exact official reproductions. Wrapper verification and the declared SAINT coordinate correction are detailed in the supplement.
+
+\paragraph{Primary analyses and bounded coverage closure.}
+(1) All 20 ordered cross-architecture pairs per brain cohort use five missing planes per examination and one identical target-derived 1\% mask. The fixed reference $A_0$ is unchanged. (2) Acquired-only influence uses both HAT/SwinIR, three depth-selected targets, reference $(-2,+2)$ and eight non-self contexts from offsets $\{\pm1,\pm2,\pm3\}$. Four contexts share exactly one anchor. A six-plane acquired pool defines a common scale; the nearest acquired foreground union defines support. (3) Twelve hash-selected IXI examinations test coupled versus independent perturbations at fixed nominal contexts, both models and all four one-anchor comparators. The supplement gives complete geometry, precision and noise settings. The bounded closure repeats (2) for SAINT-style and, conditional on numerical stability, (3). I3Net/CycleINR cannot consume the exact two-anchor variable-spacing probe without changing their frozen four-anchor contract. They retain NA for acquired-only influence, separately from historical stability failures. No score or threshold is searched.
+
+\paragraph{Statistical units and study status.}
+Examinations are independent units; NingXia resamples patients with all subordinate observations. New cross-architecture points average five planes within each examination, then average examinations. Ranking correlates examination means. New influence points pool planes/contexts, with examination bootstrap and fixed-count geometry/examination adjustment. Simultaneous 95\% intervals use 5,000 paired examination draws and maximum standardized deviation: 20 ordered pairs per cohort/endpoint, two models per influence cohort/endpoint, or eight model/amplitude contrasts. Original pooled-plane controls and historical five-model inference remain separately labeled. Their families are unchanged: new SAINT influence intervals cover both cohorts per endpoint, and its covariance intervals cover four amplitudes. These extension families do not claim joint coverage across the old and new studies.
+
+The final protocol, inputs, masks, checkpoints and case/pair registries were frozen before new inference. This is a frozen retrospective iteration, not preregistration or an untouched holdout. Earlier outcomes informed the project; some historical controls and endpoints evolved. Local IDs show one fastMRI training/validation patient overlap but no test overlap, disjoint IXI IDs and patient-group NingXia folds. Selection uncertainty across the research history is outside the reported bootstrap intervals. Full provenance, unresolved release/ethics documentation and negative results are in the supplement. The present support and geometry checks are post-hoc sensitivities, separately frozen before calculation; they do not change the primary protocol.
+
+\paragraph{Model-evidence accounting.}
+The bank contains 13 reconstruction implementations and 111 recorded configurations. Table~\ref{tab:coverage} separates reconstruction, phase intervention, acquired-only influence and covariance evidence. The additional eight baseline phase tests are secondary architecture-breadth sensitivities with an exact-repeat shared control, whose zero disagreement is constructed. They establish interface and phase-response coverage, not eight independent validations of the shared-error mechanism. The five-architecture cross-model matrix remains primary.
+\input{architecture_coverage_table.tex}
+
+\section{Results}
+\subsection{Phenomenon: common error becomes invisible}
+Figure~\ref{fig:control} and Table~\ref{tab:controlled} re-express the original two-architecture clean comparison using one local estimand: the fraction of paired-error energy visible in disagreement. Shared and disjoint conditions use identical paired targets and the original prediction-derived support. Examinations/patients and models receive equal weight; series are first averaged within NingXia patients. Shared $O$ is small in every cohort, while disjoint evidence exposes more error. Historical pooled-plane ranking and stable-wrong prevalence remain in the supplement, with their original endpoints and aggregation. This descriptive re-expression does not create a new confirmatory experiment.
+
+\input{local_control_table.tex}
+\begin{figure*}[t]
+\centering\includegraphics[width=.95\textwidth]{final_fig2_original_control.pdf}
+\caption{Local error observability in the original clean same-model experiment. (a) Shared/disjoint observable fractions, with pointwise 95\% patient/examination-bootstrap intervals. (b) Common versus observable energy under sharing, using the same observations and aggregation. Target planes, models and subordinate series are averaged before the independent unit. The energy decomposition is descriptive, not independent evidence for its own algebraic identity.}
+\label{fig:control}
+\end{figure*}
+
+The objectively selected example in Fig.~\ref{fig:teaser} makes the spatial failure visible. Shared prediction MAEs are 73.8 and 77.7 but their difference MAE is 22.8; observable fraction is 2.0\%. With the same target and reference prediction, disjoint difference MAE rises to 69.3 and observable fraction to 19.8\%, while paired error changes little. These values describe that example, not an estimate of prevalence. Its CPU predictions differ slightly from historical mixed-precision outputs; the cohort statistics are unchanged.
+
+\subsection{Mechanism: acquired-only influence beyond count}
+Overlap count is not a monotone dose: the analytical ladder reverses from zero to one shared anchor in every original cohort. The new acquired-only probe asks whether continuous response influence retains information when neither its scale nor support accesses the missing target. On IXI, beyond-count alignment advantages are .098/.093 for HAT/SwinIR; on fastMRI they are .103/.093. Every two-model simultaneous interval is positive (Fig.~\ref{fig:influence}, Table~\ref{tab:acquired-core}). At exactly one shared anchor, partial associations adjusting span, asymmetry and examination are .270/.265 on IXI and .474/.365 on fastMRI, again with positive simultaneous intervals.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{final_fig3_acquired_influence.pdf}
+\caption{Influence formed with acquired-only masks and scales. (a) Absolute alignment-correlation advantage over count. (b) Exactly-one-anchor partial correlation adjusting geometry and examination. HAT/SwinIR intervals retain the original two-model family per cohort/endpoint; the new SAINT family covers both cohorts per endpoint. Targets enter only error evaluation. (c) Signed coupled-minus-independent disagreement-energy change and the fixed $\epsilon_0=.0025$ prediction for all three models and four amplitudes. Aggregate trends agree; original HAT/SwinIR median individual relative errors are 1.9--10.6\%, but the worst individual error is 126.4\%: there is no uniform Jacobian guarantee. Complete individual scatter is retained in the supplement.}
+\label{fig:influence}
+\end{figure*}
+\input{final_acquired_table.tex}
+
+The original twelve HAT/SwinIR checks exceed .85 (minimum .880). SAINT-style passes all three .90 checks per cohort (minimum .951 fastMRI, .996 IXI); its beyond-count advantages are .033 and .133, with positive simultaneous intervals. Fixed-count associations are .380 and .417. Historical target-informed SAINT beyond-count results remain null, and historical I3Net/CycleINR stability failures remain in the supplement; neither is relabeled acquired-only. The original six-stratum aggregate gate remains NA without NingXia. Numerical PASS, beyond-count support and information access are distinct requirements.
+
+\subsection{Cross-architecture sharing beyond TTA}
+All 20 ordered pairs on each brain cohort show a positive local observable gain with simultaneous intervals above zero: 6.2--16.0 percentage points on fastMRI and 13.1--28.5 on IXI (Fig.~\ref{fig:arch}). Error alignment decreases and disagreement increases in every pair. The result therefore extends beyond same-network flip equivariance. It does not establish a pure effect of identity with every nuisance fixed: companion geometry, accuracy, normalization and nonlinear response may also change.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{final_fig4_cross_architecture.pdf}
+\caption{All cross-architecture measurement interventions, without TTA. Row A retains its phase-0 prediction; column B changes from phase 0 to phase 2 at the same target. Cells show mean observable-fraction gains in percentage points. Stars indicate simultaneous 95\% intervals excluding zero across all 20 ordered pairs per cohort. Diagonals are outside this cross-architecture design. The target-derived mask is identical across pairs and conditions.}
+\label{fig:arch}
+\end{figure*}
+
+\paragraph{Post-hoc support and geometry checks.}
+The same predictions retain all 20 positive simultaneous local intervals per cohort under acquired-anchor foreground union and full-image support; pair-effect ordering changes by at most one rank. Residue-1 and residue-3 estimates, their equal-weight average, and nearest-distance matching also retain all 20 positive intervals. However, mirror differences exclude zero for 8 fastMRI and 6 IXI pairs. The stricter four-neighbor, two-residue contract is feasible on IXI and NA on shallow fastMRI volumes. Thus balancing preserves the phenomenon but does not remove orientation/context effects. Joint examination bootstrap preserves pair dependence; leave-one-architecture-out family summaries stay positive. Complete post-hoc matrices and family intervals are in the supplement; the 20 pairs are not independent replications.
+
+The examination-ranking boundary is substantial. Fixed-reference A-error ranking has 16 positive simultaneous intervals on IXI and four crossing zero (all with I3Net as companion); all 20 fastMRI intervals cross zero, including one negative point estimate. Condition-specific paired-error ranking has 20 positive intervals on IXI and none on fastMRI. Those endpoints are not interchangeable. The historical same-model five-architecture local effects and weaker ranking results remain in the supplement, together with the earlier analytical two-member ensemble contrast. Architecture diversity alone does not eliminate measurement dependence, and improved local observability does not imply universal ranking improvement.
+
+\subsection{A fixed-context neural test of the local model}
+At fixed nominal inputs, coupled perturbations reuse eight balanced fields on the common anchor; independent perturbations use their full $8\times8$ Cartesian product. Empirical marginals are identical. The matched finite-response covariance closes $\Delta\mathbb E D^2=-2\kappa$ numerically, which is an algebraic check. The substantive approximation test (Fig.~\ref{fig:influence}c) instead freezes the odd response at $\epsilon_0=.0025$ and predicts effects at .0025/.005/.01/.02 by $\epsilon^2$ scaling.
+
+In the original HAT/SwinIR family, all eight model/amplitude mean effects are negative with simultaneous intervals below zero. Median relative approximation errors range from 1.9\% to 10.6\%; the worst individual error is 126.4\%, so the local trend is not a uniform approximation guarantee. Of 96 model/case/context combinations, 86 have aligned and 10 near-orthogonal reference sensitivities; none is opposing. All are retained. The experiment supports a conditional local sensitivity explanation, not the proposition's unobserved opposing-sensitivity branch or a claim that phase changes preserve bias/Jacobians. The same frozen validation on SAINT-style adds four negative mean intervals; median relative errors are 0.008--1.069\%, with a 3.199\% maximum. This non-transformer replication broadens the observed local trend without removing the original 126.4\% boundary or creating an opposing-sensitivity example.
+
+\paragraph{Actionable scoring remains unresolved.}
+The single acquired-only guard has no positive internal-evaluation cases and only two per pair on IXI; every IXI guard-minus-baseline simultaneous AP interval crosses zero. Its full negative evaluation and the earlier context-selection, jackknife and residualization failures remain in the supplement; no further score is searched.
+
+
+
+\section{Discussion and Limitations}
+MIRA separates replicated local observability loss, conditional influence/ranking support, and unestablished actionable reliability. Cross-architecture interventions address a TTA-only explanation; acquired-only probes address target-derived influence formation; fixed-context perturbations test a local approximation separately from its algebraic identity. None identifies arbitrary common bias without targets. Table~\ref{tab:acquired-core} shows all five core probes; complete MIRA report cards in the supplement retain NA for fields absent from each design.
+
+The principal limitations remain retrospective cohort reuse, incomplete historical selection chronology, residual phase-geometry/preprocessing changes, adapted implementations and limited independent patient counts. Acquired-only neural influence now covers three compatible models on two brain cohorts, including a non-transformer. This does not erase historical knee/architecture failures or establish validity for the incompatible regular-grid models. No authenticated untouched cohort was available for the optional final confirmation. Sampling intervals do not account for the full history of analysis selection. Local perturbations are not a validated clinical noise model.
+
+All 13 baseline models, 111 configurations and training-budget comparisons remain in the supplement, with adverse results intact. Five additional interfaces are available but their acquired-only probes were not run; it is not counted as acquired-only validation. They establish breadth of reconstruction evidence, not a new reconstruction method. Current-error adjustment weakens retrospective densification associations, Res-SRDiff retains an adverse boundary, and no clinical, prospective acquisition or non-MRI benefit is established.
+
+\section{Conclusion}
+Architectural diversity and evidence diversity are different axes. In these MRI interpolation experiments, different frozen architectures can inherit aligned error when they reuse the same measurements. Changing companion evidence reveals more of that error, including after support and residue-balancing checks, while residual orientation effects prevent a pure identity-only causal interpretation. Agreement among different networks therefore should not be treated as independent reliability evidence merely because their architectures differ.
+
+MIRA makes this distinction testable through physical-anchor interventions, explicit information contracts and separate observability, influence and ranking fields. The acquired-only mechanism evidence is scoped to HAT, SwinIR and SAINT-style on the two brain cohorts. The fixed-context covariance evidence includes SAINT-style on IXI while retaining substantial individual HAT/SwinIR nonlinear failures. Neither establishes universal ranking or calibrated uncertainty. MIRA measures when agreement loses observability, not whether an individual reconstruction is correct.
+
+\clearpage
+{\small\bibliographystyle{ieeenat_fullname}\bibliography{references}}
+\end{document}

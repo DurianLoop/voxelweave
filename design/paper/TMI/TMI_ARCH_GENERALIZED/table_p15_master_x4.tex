@@ -1,0 +1,22 @@
+\begin{table*}[t]
+\caption{All 13 master-table baselines at $\times4$, independently recovered from original metrics. PSNR/SSIM are higher-is-better; MAE is lower-is-better. Full-plane evaluation excludes acquired planes. IXI/fastMRI average examinations; NingXia averages eight patient folds. These values do not replace the masked common-support reliability endpoints.}
+\label{tab:p15-master}\centering\small\setlength{\tabcolsep}{3.7pt}
+\begin{tabular}{lrrrrrrrrr}\toprule
+&\multicolumn{3}{c}{IXI (115)}&\multicolumn{3}{c}{fastMRI (24)}&\multicolumn{3}{c}{NingXia (8 folds)}\\
+Method&PSNR&SSIM&MAE&PSNR&SSIM&MAE&PSNR&SSIM&MAE\\\midrule
+Linear & 26.17 & 0.853 & 29.28 & 19.11 & 0.597 & 78.81 & 22.73 & 0.675 & 103.21\\
+Cubic & 25.71 & 0.842 & 31.13 & 17.97 & 0.533 & 91.93 & 21.65 & 0.618 & 119.41\\
+ACVTT & 27.34 & 0.882 & 25.52 & 20.19 & 0.662 & 71.55 & 23.47 & 0.728 & 95.44\\
+Res-SRDiff & 28.04 & 0.882 & 24.19 & 21.67 & 0.691 & 56.34 & 21.15 & 0.554 & 153.02\\
+ArSSR & 27.25 & 0.877 & 25.55 & 20.31 & 0.657 & 65.99 & 23.16 & 0.709 & 96.49\\
+CycleINR-style & 26.17 & 0.853 & 29.28 & 20.32 & 0.658 & 66.10 & 22.90 & 0.693 & 101.10\\
+ResUNet & 27.46 & 0.881 & 25.24 & 22.25 & 0.737 & 53.57 & 23.38 & 0.721 & 97.04\\
+Pix2Pix-GAN & 27.11 & 0.851 & 27.02 & 21.91 & 0.729 & 53.26 & 22.45 & 0.711 & 105.81\\
+SwinIR & 28.65 & 0.900 & 22.46 & 22.36 & 0.749 & 50.87 & 23.95 & 0.752 & 85.97\\
+SAINT-style & 28.67 & 0.897 & 22.84 & 23.26 & 0.770 & 46.44 & 23.84 & 0.742 & 89.41\\
+I3Net & 31.31 & 0.928 & 17.53 & 24.01 & 0.792 & 41.01 & 23.49 & 0.721 & 93.57\\
+HAT & 28.72 & 0.902 & 22.25 & 23.09 & 0.769 & 47.25 & 23.95 & 0.752 & 86.14\\
+SMamba-UNet & 29.35 & 0.908 & 21.14 & 22.73 & 0.762 & 49.45 & 23.91 & 0.750 & 86.82\\
+\bottomrule\end{tabular}
+\par\smallskip\parbox{.98\textwidth}{\footnotesize Locally adapted implementations retain their recorded training budgets; the master uses extended HAT training on fastMRI. This is not an equal-compute leaderboard. Standard and longer-budget results are reported separately.}
+\end{table*}

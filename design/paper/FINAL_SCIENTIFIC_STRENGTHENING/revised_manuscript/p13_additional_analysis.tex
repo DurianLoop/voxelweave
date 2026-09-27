@@ -1,0 +1,46 @@
+\section{Exploratory Robustness and Information Audit}
+These analyses were designed after inspecting existing results. They add no independent cohort and are not prospectively registered. All five architectures, both brain cohorts, all eligible benefit models, and adverse outcomes are retained. Bootstrap count is 10,000; the seed is 20260908.
+
+\paragraph{Aggregation and simultaneous inference.}
+We recompute observable gain with all four combinations of within-case and across-case mean/median aggregation. Every model retains a positive five-model simultaneous interval in every combination and cohort. Intervals use the maximum absolute bootstrap deviation divided by each estimate's bootstrap standard deviation, with shared examination draws across models. They are approximate bootstrap simultaneous intervals, not exact small-sample coverage guarantees. Historical fastMRI local gain uses mean/mean aggregation, whereas ranking uses within-case medians; IXI uses medians. Cohorts remain separate.
+
+The more fragile endpoint is ranking. Under historical within-case median aggregation, simultaneous intervals exclude zero for IXI HAT, SwinIR and SAINT only; I3Net and CycleINR include zero. No fastMRI ranking interval excludes zero under simultaneous inference, including CycleINR. Historical pointwise intervals remain reported; they answer a different multiplicity question. Averaging the two conditions' paired errors to obtain a common ranking endpoint gives the same three-versus-zero simultaneous pattern. This common endpoint remains post-intervention and is not a fixed phase-0 error estimate.
+
+\paragraph{Densification and current-error coupling.}
+For the existing 598 rows, $b=E_4-E_2$ is checked exactly and models are paired on the same case, fold and support. Matching labels does not hold scale-specific checkpoints fixed. Since $b$ contains $E_4$, raw score--benefit association need not establish incremental information beyond current difficulty. We regress ranks of score and benefit on the rank of $E_4$ and correlate residuals, reranking within each bootstrap sample. NingXia resamples eight patients with subordinate series retained; degenerate partial-correlation replicates are recorded rather than silently counted as zero.
+
+\begin{table*}[t]
+\centering\small
+\caption{Current-error sensitivity, with every eligible model retained. Entries are model-median correlations; the final column counts positive pointwise partial-correlation intervals. This is a diagnostic adjustment using retrospective target error, not a deployable score.}
+\begin{tabular}{llrrr}
+\toprule
+Cohort&Score&Raw $\rho$&Partial $\rho\mid E_4$&Positive partial CI / models\\
+\midrule
+fastMRI&Anchor-CV&.851&.203&0/13\\
+&Adjacent MAE&.802&$-.068$&0/13\\
+&Bank disagreement&.835&.056&1/11\\
+NingXia&Anchor-CV&.727&.291&0/13\\
+&Adjacent MAE&.748&.426&1/13\\
+&Bank disagreement&.710&.389&0/11\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{p13_benefit_boundaries.pdf}
+\caption{Benefit boundaries. (a,b) Raw Anchor-CV associations (blue) and associations conditional on current error (orange), with patient/examination-bootstrap 95\% intervals for the latter. All 26 conditional intervals cross zero. (c) Recovered IXI I3Net allocation shows a reversal after acquired-range normalization against the same raw-scale benefit endpoint. Lines are point estimates, not uncertainty bands.}
+\label{fig:p13-benefit}
+\end{figure*}
+
+\paragraph{Recovered IXI same-architecture pair.}
+The existing I3Net $\times2$ and $\times4$ profiles each contain 115 outputs and distinct checkpoints. All 7,334 common odd target planes are re-evaluated with identical physical affines and a common target-derived 1\% mask; case MAE averages planes before inference. Mean MAE is 33.65 at $\times4$ and 25.62 at $\times2$, with positive benefit for 115/115 examinations. Linear interpolation on this support gives 57.36 and 39.21. These numbers are not interchangeable with the benchmark's all-generated-plane averages.
+
+Anchor-CV and adjacent MAE, computed only from $\times4$ acquired anchors, give raw benefit correlations .843 [.768,.894] and .845 [.771,.896]. Their partial correlations given current error are .216 [.007,.430] and .227 [.020,.437]. These exploratory pointwise intervals do not imply universal superiority. Dividing the scores by the acquired-anchor 1st--99th percentile range reverses raw-benefit ranking to $-.238$ [$-.404,-.058$] and $-.236$ [$-.397,-.060$]. At 50\% selection normalized Anchor-CV is below random by .920 raw MAE units [$-1.635,-.149$]. The endpoint is deliberately left in raw units: this establishes sensitivity to the scoring scale, not failure of every jointly normalized evaluation.
+
+\paragraph{Algebra and information access.}
+Writing $T$ for mean paired squared error and $q$ for shared fraction, normalized RMSE disagreement equals $2\sqrt{1-q}$. The historical TMI script actually uses MAE disagreement, so its statistic is $2\kappa\sqrt{1-q}$ with $\kappa=\mathrm{MAE}(a-b)/\mathrm{RMSE}(a-b)\leq1$. The residual-shape factor must not be omitted. The shared-fraction correlation is structurally coupled and does not independently establish a mechanism.
+
+The Plan 9/11 output-score mask uses dense targets. The bank instead uses target-model prediction support; its field name does not denote ground truth. Raw Anchor-CV and adjacent MAE use acquired-only masks. The earlier scale-normalized Anchor-CV uses a full-volume robust range, whereas the new IXI normalization explicitly uses acquired anchors. Deployment requires a separately frozen acquisition-only mask and scale convention. Exact wrapper agreement validates implementation consistency for the tested cases, not freedom from target-support bias or general model correctness.
+
+\paragraph{Reproducibility.}
+The new scripts, source hashes, geometry checks, complete model-specific intervals, leave-one-cluster-out tables and patient-equal sensitivity results are retained in \path{PLAN13_EVIDENCE_UPGRADE/}. All reported values are regenerated from the formal CSV records; technical smoke outputs are excluded by declared file identity.

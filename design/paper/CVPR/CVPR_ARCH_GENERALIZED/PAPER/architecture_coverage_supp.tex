@@ -1,0 +1,140 @@
+\section{Bounded Architecture-Coverage Closure}
+
+\label{sec:architecture-closure}
+
+This retrospective closure preserves the five-architecture primary matrix and all earlier negative results. The 13-model reconstruction bank is audited for four distinct contracts: native reconstruction, physical phase intervention, acquired-only finite response, and fixed-context covariance. Technical eligibility was determined from frozen wrappers, not observed accuracy. No model, data cohort, score, threshold or perturbation formula was added.
+
+\subsection{Interface eligibility and full-bank accounting}
+
+All 13 implementations have traced native reconstruction evidence. The eight non-core phase experiments use the recorded master x4 weights on the same 24 fastMRI and 115 IXI examinations and the same five target indices. They preserve acquired-phase normalization and IXI input staging. Fresh predictions are retained as floating-point arrays; this is not a claim of reproducing historical output-file quantization or stochastic benchmark scores. Existing core weights remain fixed even where the later reconstruction master table uses a different training profile.
+
+I3Net requires four low-resolution slices at its checkpoint stride; CycleINR has a frozen four-anchor regular-grid probe. Neither can consume the exact new two-anchor grid without changing the context contract. Cubic falls back to linear with only two inputs. Pix2Pix-GAN fixes three x4 output channels and cannot represent all required variable-gap target fractions. ArSSR accepts variable-depth volumes and stride, but an exact acquired-only pair adapter remains unvalidated. Res-SRDiff draws additional Gaussian sampler noise not specified by the finite-response protocol. Linear, ACVTT, ArSSR, ResUNet and SMamba-UNet have compatible interfaces but are not given new influence experiments in this bounded task. Thus three models have evaluated acquired-only influence; five additional interfaces are available but not run, and five are ineligible under this exact contract.
+
+\subsection{All-core acquired-only report card}
+\input{mira_report_card_table.tex}
+
+Table~\ref{tab:acquired-core} retains every core architecture and each unavailable field.
+
+SAINT uses its unchanged six channels: two acquired images, relative target position, physical target z/(source depth-1), and fixed in-plane coordinate maps. Input pools, mask, Q1 offset, Q99--Q1 range, target selection, four Rademacher seeds, amplitudes and sign reversal are exactly those of the final acquired-only protocol. FP32/no AMP/no TF32 and native clipping are retained. Response arrays are hash-bound before the separate target files are read. All 417 target responses and 13,344 non-self context/amplitude observations are retained.
+
+HAT/SwinIR numerical thresholds and original inference families remain unchanged. SAINT requires all three alternative-versus-primary rank correlations to exceed .90 separately per cohort. Its extension intervals are simultaneous over both cohorts per endpoint, using the original 5,000 examination draws and respective seeds; they are not substituted into the original HAT/SwinIR families. Historical target-informed SAINT null results and I3Net/CycleINR failures remain in the negative-results section. Changing information formation and precision can change results, so the new positive result does not invalidate the historical null.
+
+\begin{table*}[t]\centering\small\caption{New acquired-only SAINT stability. All three checks are required; threshold .90 unchanged.}\begin{tabular}{lrrrl}\toprule Cohort & $+.005$ & $+.02$ & $-.01$ & Status\\\midrule
+
+fastmri & 0.950686 & 0.983707 & 0.996964 & PASS \\
+
+ixi & 0.996704 & 0.996341 & 0.997466 & PASS \\
+
+\bottomrule\end{tabular}\end{table*}
+
+\subsection{Secondary signs: every amplitude and endpoint}
+
+The following secondary correlations are descriptive. They do not add corrected hypothesis families or replace the primary alignment endpoint. Fixed-count values control span, asymmetry and examination as in the primary analysis.
+
+\begin{table*}[t]\centering\scriptsize\caption{SAINT secondary signs under acquired-only formation. BC denotes absolute-correlation advantage over count; FC denotes fixed-count partial association.}\begin{tabular}{llrrrrrrr}\toprule Cohort & Endpoint & BC .01 & FC .01 & BC .005 & FC .005 & BC .02 & FC .02 & BC/FC $-.01$\\\midrule
+
+fastmri & alignment & 0.033 & 0.380 & 0.047 & 0.374 & 0.033 & 0.393 & 0.033/0.384\\
+
+fastmri & companion error & 0.047 & 0.072 & 0.068 & 0.065 & 0.041 & 0.079 & 0.046/0.066\\
+
+fastmri & disagreement & 0.003 & -0.239 & 0.003 & -0.238 & 0.008 & -0.250 & 0.004/-0.245\\
+
+fastmri & observable & 0.030 & -0.337 & 0.045 & -0.333 & 0.030 & -0.349 & 0.031/-0.341\\
+
+fastmri & paired error & 0.031 & 0.046 & 0.044 & 0.045 & 0.026 & 0.049 & 0.030/0.043\\
+
+fastmri & reference error & 0.010 & 0.018 & 0.012 & 0.017 & 0.006 & 0.018 & 0.010/0.016\\
+
+ixi & alignment & 0.133 & 0.417 & 0.133 & 0.415 & 0.132 & 0.422 & 0.133/0.415\\
+
+ixi & companion error & 0.064 & 0.049 & 0.066 & 0.054 & 0.063 & 0.043 & 0.064/0.049\\
+
+ixi & disagreement & 0.034 & -0.169 & 0.033 & -0.179 & 0.034 & -0.168 & 0.034/-0.170\\
+
+ixi & observable & 0.142 & -0.359 & 0.143 & -0.366 & 0.140 & -0.357 & 0.142/-0.358\\
+
+ixi & paired error & 0.038 & 0.037 & 0.040 & 0.039 & 0.036 & 0.030 & 0.038/0.036\\
+
+ixi & reference error & 0.002 & 0.029 & 0.003 & 0.025 & 0.000 & 0.023 & 0.001/0.027\\
+
+\bottomrule\end{tabular}\end{table*}
+
+\subsection{Fixed-context covariance replication}
+
+SAINT passed the IXI numerical gate and uses the same physical pair interface, so it receives all twelve original hash-selected cases, central targets, four one-anchor contexts, four amplitudes, eight balanced fields and Cartesian independent construction. Selection does not depend on a positive beyond-count result. A separate four-amplitude simultaneous family preserves the earlier eight HAT/SwinIR contrasts. No target is read for this validation. The fixed .0025 odd-response approximation is distinguished from same-amplitude covariance identity closure.
+
+\begin{table*}[t]\centering\scriptsize\caption{All new SAINT fixed-context validation amplitudes (12 examinations, 48 case/context observations each). Relative error divides by absolute fixed-local prediction.}\begin{tabular}{rrrrrr}\toprule $\epsilon$ & Observed $\Delta\mathbb ED^2$ [sim. CI] & Fixed local prediction & Median rel. error & Maximum rel. error & Identity residual\\\midrule
+
+0.0025 & -1.432 [-2.215,-0.648] & -1.431 & 0.008\% & 0.015\% & 2.86e-12 \\
+
+0.0050 & -5.734 [-8.873,-2.596] & -5.726 & 0.206\% & 0.516\% & 2.93e-12 \\
+
+0.0100 & -22.965 [-35.535,-10.395] & -22.903 & 0.434\% & 1.398\% & 2.38e-12 \\
+
+0.0200 & -92.110 [-142.518,-41.702] & -91.612 & 1.069\% & 3.199\% & 3.01e-12 \\
+
+\bottomrule\end{tabular}\end{table*}
+
+Among the 48 new case/context examples, 48 are aligned, 0 near-orthogonal and 0 opposing. All are retained. The original HAT/SwinIR maximum relative error of 126.4\% remains material; the new architecture does not establish a uniform neural approximation bound.
+
+\subsection{All eight non-core phase sensitivities}
+
+The shared companion is an exact repeat of the same frozen phase-0 output. Its zero disagreement and zero observable fraction are constructed. Positive disjoint-minus-shared O therefore demonstrates phase-response sensitivity, not an independently controlled shared-error mechanism or a cross-architecture result. This deliberately limited secondary design must not be described as thirteen baselines validating MIRA influence. No expanded cross-model matrix replaces the original five-model primary.
+
+Res-SRDiff conditions the unchanged stochastic sampler on one exogenously fixed RNG seed (20260914) in both phase passes. The full sampler random-draw order is preserved, including draws for unused output planes. Draw indices are phase-local: identical initial RNG states do not match the noise assigned to a given physical target across phases. This residual sampler-noise confound prevents interpreting the Res-SRDiff contrast as a pure measurement-identity effect. Skipping only their neural evaluations was verified against full inference with identical outputs and final RNG states on both phases of the first registered case in each cohort. ArSSR retains full-volume feature encoding and physical target support; the initial selected-output optimization failed a 0.0001 native-unit equality check because of floating-point coordinate arithmetic. The correction restores the wrapper's stepwise float32 coordinate arithmetic without changing the tolerance, weights or observations; the initial diagnostic failure is retained.
+
+All three support rules are reported: target-derived 1-percent foreground, union of the nearest bracketing phase-0 acquired foregrounds, and common finite full-image pixels. Targets are identical across masks and conditions. Five-target means precede examination means; 5,000 paired examination draws yield simultaneous intervals over all eight non-core models separately per cohort/support. These are post-hoc architecture-breadth sensitivities.
+
+\begin{table*}[t]\centering\scriptsize
+
+\caption{fastmri: complete secondary phase sensitivities, $\Delta O$ [simultaneous 95\% CI] in pp. Shared $O=0$ is constructed.}
+
+\begin{tabular}{lrrr}\toprule Model & Target support & Acquired union & Full common valid\\\midrule
+
+ACVTT & 12.457 [11.111,13.802] & 12.191 [10.828,13.555] & 12.190 [10.825,13.554]\\
+
+ArSSR & 24.309 [23.400,25.217] & 24.158 [23.275,25.041] & 24.183 [23.295,25.071]\\
+
+Cubic & 38.638 [37.474,39.801] & 38.528 [37.419,39.637] & 38.623 [37.506,39.741]\\
+
+Pix2Pix-GAN & 29.572 [28.341,30.803] & 29.441 [28.213,30.669] & 29.427 [28.200,30.654]\\
+
+Linear & 30.365 [29.442,31.289] & 30.107 [29.236,30.979] & 30.162 [29.284,31.039]\\
+
+Res-SRDiff & 22.112 [20.542,23.682] & 21.993 [20.443,23.543] & 21.987 [20.437,23.538]\\
+
+ResUNet & 20.101 [18.694,21.508] & 19.924 [18.513,21.335] & 19.918 [18.509,21.327]\\
+
+SMamba-UNet & 26.335 [24.955,27.715] & 26.143 [24.761,27.526] & 26.135 [24.753,27.516]\\
+
+\bottomrule\end{tabular}\end{table*}
+
+\begin{table*}[t]\centering\scriptsize
+
+\caption{ixi: complete secondary phase sensitivities, $\Delta O$ [simultaneous 95\% CI] in pp. Shared $O=0$ is constructed.}
+
+\begin{tabular}{lrrr}\toprule Model & Target support & Acquired union & Full common valid\\\midrule
+
+ACVTT & 28.135 [27.477,28.792] & 28.000 [27.340,28.660] & 27.957 [27.301,28.614]\\
+
+ArSSR & 31.517 [30.845,32.188] & 31.396 [30.721,32.071] & 31.348 [30.679,32.018]\\
+
+Cubic & 41.801 [40.770,42.832] & 41.671 [40.634,42.707] & 41.627 [40.598,42.656]\\
+
+Pix2Pix-GAN & 24.394 [23.853,24.934] & 24.272 [23.727,24.816] & 24.208 [23.665,24.750]\\
+
+Linear & 28.969 [28.387,29.550] & 28.775 [28.196,29.353] & 28.757 [28.181,29.333]\\
+
+Res-SRDiff & 32.295 [31.457,33.133] & 32.216 [31.370,33.062] & 32.136 [31.300,32.972]\\
+
+ResUNet & 30.956 [30.258,31.655] & 30.809 [30.107,31.511] & 30.783 [30.087,31.479]\\
+
+SMamba-UNet & 29.860 [29.057,30.663] & 29.767 [28.959,30.575] & 29.700 [28.901,30.500]\\
+
+\bottomrule\end{tabular}\end{table*}
+
+\subsection{Claim boundaries and author documentation}
+
+Claims A (local observability under changed evidence) and B (architectural diversity is insufficient) continue to rely primarily on the five-model intervention and its support/geometry sensitivities. The eight self-control extensions clarify interface breadth, not eight independent causal confirmations. Claim C gains a numerically eligible non-transformer on both brain cohorts; Claim D gains that implementation on the fixed IXI design. Neither claim extends to all reconstruction baselines. Existing null ranking, knee, scoring, orientation and stability results remain unchanged. NingXia ethics, consent, de-identification and use permissions, and precise fastMRI release authorization remain NEEDS HUMAN CONFIRMATION.
+
+\paragraph{Reproduction.} The closure protocol, model-evidence matrix, raw-response bindings, exact commands and claim map accompany the local package in \path{ARCHITECTURE_COVERAGE_CLOSURE/}. New array-derived checks are separate from the previous complete reproduction; no historical CSV is relabeled as a new neural response.

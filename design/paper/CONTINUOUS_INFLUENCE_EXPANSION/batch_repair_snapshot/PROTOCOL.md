@@ -1,0 +1,31 @@
+# Continuous-influence expansion: frozen retrospective protocol
+
+2026-09-14. User explicitly authorizes further continuous-influence models and a large table, superseding the previous iteration's stopping boundary. No training, new dataset, score search, new formula or favorable subset search. All new outputs remain in this directory; the prior closure, its arrays, protocol, tables and review package remain immutable. Snapshot the current CVPR before revising its entry files. TMI and covariance experiments are outside this extension.
+
+## Fixed model set and technical gate
+
+New tests: Linear, ACVTT, ResUNet, SMamba-UNet and ArSSR, using the exact brain-cohort master checkpoints bound in ARCHITECTURE_COVERAGE_CLOSURE/model_registry.json. Existing HAT/SwinIR/SAINT observations are reused, never relabeled newly inferred. The large table includes all 13 reconstruction implementations and explicitly reports interface ineligibility for Cubic (two-anchor linear fallback), I3Net and CycleINR (frozen four-anchor contract), GAN (fixed x4 output channels), Res-SRDiff (unspecified internal sampler noise). No adaptation silently changes these estimators.
+
+ArSSR's variable-depth native wrapper accepts a two-anchor volume and integer spacing. Densify those two measured anchors by the exact native linear initializer at the physical spacing, then query the actual target plane with native local-volume coordinates. Densified planes are deterministic internal features, NOT additional acquired anchors. Embed responses in the original six physical-anchor slots only. Validate target-only inference against the full native normalized-input query routine for all nine contexts on the first registered target in each cohort, without accessing targets. Maximum absolute normalized-output discrepancy <=1e-5; repeated inference <=1e-6. A failure is recorded before outcome computation; no relaxed tolerance. The other adapters are similarly checked against their native FP32 low-level predictor (autocast disabled, as required by the inherited acquired-only precision contract). Linear is the normalized/resized physical two-anchor interpolation control; it is not a neural architecture. Interface validation must pass before that model/cohort begins response inference.
+
+## Unchanged acquired-only experiment
+
+Use the original 24 fastMRI and 115 IXI examinations, all three depth-selected targets (417 total per model), exact six acquired-plane input NPZ files, masks, acquired Q1 offset and Q99-Q1 range. Target values are not read until each response file and input hash have been recorded. Common 256x256 input grid and native output resizing; FP32, no AMP/TF32; preserve native output/residual clipping.
+
+Reference offsets (-2,+2); all eight contexts (-2,+1),(-2,+3),(-1,+2),(-3,+2),(-1,+1),(-1,+3),(-3,+1),(-3,+3). Four centered Rademacher fields with seeds6101–6104. Epsilon .01 primary; .005,.02,-.01 alternatives. Perturb each acquired anchor individually; retain all 4x9x2x4 response fields on the frozen acquired mask and every nominal output. Same response-space cosine with unshared-anchor energy in the denominator. No target-dependent response formation.
+
+All new models require ALL three nonzero-overlap rank-stability correlations >=.90 in EACH cohort. HAT/SwinIR retain .85, SAINT .90. Stability is separate from beyond-count significance. Zero/undefined response or partial-correlation cases are flagged as undefined, not imputed to zero. Interface, numerical stability, beyond-count effect and fixed-count effect are reported separately. Numerical failures and null/negative associations remain in the full table and secondary data.
+
+## Frozen inference families and primary large table
+
+Primary endpoints unchanged: |rho(influence,alignment)| - |rho(count,alignment)| on all non-self contexts, and exactly-one-anchor partial rank correlation adjusting span, asymmetry and examination. Use original 5000 examination bootstrap draws, seeds18003 IXI and18004 fastMRI, paired across every included model within cohort. Inference treats whole examinations as clusters and retains all planes/contexts. Existing weighted-rank and fixed-count routines are reused and checked with explicit cluster replication.
+
+NEW comparison family: all EIGHT scheduled models per cohort and per endpoint, independent of observed stability/sign. Recompute this joint-family CI for old and new observations; retain original HAT/SwinIR/SAINT intervals in separate legacy columns and the preserved supplement. Never silently replace old family labels. If a technical failure prevents a scheduled estimator from producing a finite endpoint, report NA and nominal versus estimable family sizes; do not select models using effect sign or stability. These are new retrospective family intervals, not preregistration or correction for the entire research history.
+
+For every tested model report all six secondary metrics (alignment, observable fraction, disagreement, paired error, reference error, companion error) under all four amplitudes with descriptive BC/FC associations. Do not replace the primary endpoint by a more favorable secondary result. No post-result mask, threshold, epsilon or checkpoint change.
+
+## Resource and output policy
+
+One GPU worker with batch4 for 2D models and batch1 for ArSSR; Linear runs on CPU. Do not stop other GPU jobs. Preserve complete checkpoints and outputs, use -B to avoid modifying imported source folders. Bind code/inputs/checkpoints before inference; hash every output. A resource interruption can resume the identical experiment with completed hash-verified files, but it is not scientific ineligibility. No data deletion to free space.
+
+Deliver the 13-model/two-cohort large CSV and readable Markdown/LaTeX table, all 16 measured model-cohort rows if gates permit, stability values, joint CIs, legacy CIs, effect status, information contract and NA reasons. Update main/supplement claims only after evaluation; preserve all historical nulls/failures. Independently reconstruct response-space influence from original arrays and verify table values and bootstrap indexing before building PDFs. Human-only ethics/release documentation remains NEEDS HUMAN CONFIRMATION.

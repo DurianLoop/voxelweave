@@ -1,0 +1,356 @@
+--- original/main.tex
++++ revised/main.tex
+@@ -1,239 +1,187 @@
+ \documentclass[10pt,twocolumn,letterpaper]{article}
+ \usepackage[review]{cvpr}
+ \input{preamble}
+-\usepackage{placeins}
+ \definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+ \usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+ \def\paperID{*****}
+ \def\confName{CVPR}
+ \def\confYear{2026}
+-\title{When Agreement Hides Error:\
++\title{When Agreement Hides Error:\\
+ Shared Measurement Influence in MRI Slice Interpolation}
+-
+ \begin{document}
+ \maketitle
+ 
+ \begin{abstract}
+-Prediction disagreement is widely used as reliability evidence, yet common error can cancel from a prediction difference. We study this failure in deterministic MRI inter-slice interpolation, where the physical anchors supporting one missing target can be controlled. Across 24 fastMRI brain examinations, 115 IXI brain examinations, and eight patient clusters from NingXia knee MRI, target-preserving disjoint contexts improve error ranking over dependence-preserving controls by $\Delta\rho=.092/.095/.193$. Under clean sharing, only 2.61/1.58/0.25\% of paired-error energy remains observable. A prospectively frozen $\times4$ test spans HAT, SwinIR, I3Net, an adapted SAINT-style network, and an internal CycleINR-style model. Every architecture has positive disjoint-minus-shared observable gain on fastMRI (8.0--22.6 points) and an independent IXI replication (25.2--30.2 points); all 115 IXI case effects per model are positive. Examination-ranking gains remain cohort dependent. An exact analytical ladder also falsifies anchor count as a monotone explanation: local estimator influence is more informative, but its finite-response approximation is not stable or superior for every architecture. A 125-case external MR angiography experiment tests acquired-only score support with fixed analytical estimators. Retrospective benefit audits retain a degraded-model exception and expose sensitivity to score--endpoint scale agreement. Exploratory controls retain local gains under simultaneous inference but weaken ranking and benefit claims. The contribution is a bounded error-geometry mechanism, not calibrated uncertainty or prospective acquisition benefit.
++When does prediction agreement cease to be evidence of reliability? Two reconstructions can agree because the same acquired measurements influence them similarly, aligning errors that disappear from their difference. We introduce the Measurement-Influence Reliability Audit, a framework that combines same-target measurement interventions, error-energy decomposition, and local estimator-response analysis without retraining a reconstruction network. A local covariance proposition specifies when shared acquisition variation suppresses disagreement, and motivates an influence statistic that accounts for the strength and direction of responses to physical anchors. Retrospective experiments across three MRI cohorts and five frozen architecture implementations support a reproducible loss of local error observability under sharing; clean shared controls hide approximately 97--99.8\% of paired-error energy in the original two-architecture experiment. Influence refines overlap count where the probe is stable, while fixed-count and architecture failures delimit this interpretation. Case-level ranking is less consistent, and a limited acquired-only scoring experiment does not establish a superior reliability score. The framework exposes the distinction between observable disagreement and hidden common error: agreement alone cannot certify correctness under shared influential evidence.
+ \end{abstract}
+ 
+ \section{Introduction}
+-Sparse through-plane MRI is routinely densified by interpolation or learned slice synthesis. A reconstruction can look anatomically plausible while smoothing, displacing, or inventing structure, so a reliability signal is desirable when dense targets are absent. Ensembles, test-time transformations, and cross-context consistency commonly use output variation as such a signal \cite{lakshminarayanan2017ensembles,gal2016dropout,edupuganti2021uncertainty}. Their appeal is intuitive: if plausible predictors disagree, at least one deserves scrutiny. Their blind spot is equally fundamental but less often controlled experimentally: predictors can agree because they reuse the same influential information and therefore make aligned errors.
++Prediction agreement is often treated as evidence of reliability. It is more informative when alternative predictions fail differently and less informative when they inherit the same error. Our question is: \emph{when does prediction agreement cease to be evidence of reliability?} We study deterministic cross-context disagreement, not all Bayesian, probabilistic, or calibrated uncertainty methods.
+ 
+-We turn this abstract dependence problem into a physical intervention. For one missing MRI slice, phase-shifted acquisition grids can provide reconstruction contexts that preserve the target while changing which acquired slice anchors support it. This makes it possible to ask not merely whether outputs differ, but whether dependence among their generating measurements determines which target-error components disagreement can observe.
+-
+-Figure~\ref{fig:mechanism} states the proposed chain. For predictions $f_a=y+e_a$ and $f_b=y+e_b$, output separation observes $e_a-e_b$. Shared measurements can induce similar local estimator responses; similar responses can align $e_a$ and $e_b$; aligned errors cancel in the difference. The elementary identity is not our novelty. The scientific question is what determines the error inner product. Our evidence identifies shared local measurement influence as one determinant in MRI interpolation.
++MRI slice interpolation offers a controlled setting for this question. A retrospectively available dense examination identifies the missing target plane, the acquired slice positions, and the physical identity of each anchor. Two contexts can reconstruct the same target while sharing or separating acquired measurements. This lets us intervene on evidence dependence rather than merely compare networks with different architectures or accuracy.
+ 
+ \begin{figure*}[t]
+-\centering
+-\includegraphics[width=.98\textwidth]{p16_cvpr_framework.png}
+-\caption{Measurement-influence framework (schematic). Shared-anchor perturbations (diagram: $\delta$; text: $\epsilon\xi$) probe frozen-estimator response alignment. Aligned target errors can cancel in disagreement, so agreement cannot certify correctness. Slice cards and model blocks are illustrations, not patient examples, measured results, or new layers.}
+-\label{fig:mechanism}
++\centering\includegraphics[width=.98\textwidth]{p17_qualitative_teaser.pdf}
++\caption{Agreement hides spatially aligned error. A median-effect fastMRI case, selected by a recorded rule before new inference, is reconstructed with frozen SwinIR weights. The reference prediction A and target are identical across rows. Shared inputs give similar predictions and small disagreement despite substantial error; disjoint inputs expose more of that error. Every error and disagreement map uses the same scale. These are actual CPU reconstructions, not generated anatomy. The compact chain is conditional, not a universal implication; Proposition 1 states its assumptions. A seeded random case and numerical reproduction differences are in the supplement.}
++\label{fig:teaser}
+ \end{figure*}
+ 
+-This formulation also explains why a tempting early hypothesis failed. Integer anchor overlap has the right overall trend but is not a monotone dose: one weak shared anchor can matter less than another, and an exact four-anchor ladder reverses at zero-to-one overlap. We therefore replace count by estimator influence. For analytical interpolation this is derived from coefficients. For frozen HAT and SwinIR networks it is approximated by the cosine between output responses to identical finite perturbations of the same physical anchor. The quantity is explicitly local to a target, context, input, and plane.
++Figure~\ref{fig:teaser} shows the failure directly. Under shared anchors, the two predictions smooth the same structures and largely agree on their errors. Disjoint anchors need not make either reconstruction substantially more accurate; they change which error components become visible in the difference. The distinction matters: low disagreement is an observation about two outputs, not a certificate about their unknown target.
+ 
+-Our contributions are threefold. First, we establish and decompose \emph{consensus blindness} with same-target, measurement-controlled interventions across three MRI cohorts and a prospectively frozen five-architecture replication on two independent brain cohorts. Second, we show that local estimator influence refines raw overlap for analytical estimators and stable HAT/SwinIR/SAINT probes, while retaining the SAINT fixed-count uncertainty, NingXia nonreplication, physical-plane dependence, and I3Net/CycleINR stability failures as scope boundaries. Third, we test a lightweight acquired-anchor consequence with same-model $\times4\!\rightarrow\!\times2$ comparisons across a recovered model bank, without claiming score uniqueness or acquisition causality. The main result is a falsifiable mechanism for when disagreement is informative, not another uncertainty leaderboard.
++The error-difference identity is elementary, and variability missing systematic MRI error is already known~\cite{hu2021predict}. Our contribution is an executable \emph{Measurement-Influence Reliability Audit} (MIRA). It specifies the physical intervention, quantities that require ground truth, local influence computation, stability checks, and unit of statistical inference. A local covariance model explains why shared anchors matter through estimator sensitivity rather than through their count alone. Controlled experiments then test where this explanation succeeds and where it fails.
+ 
++The distinction between local geometry and global utility is central. A repeatable reduction in observable error does not imply that disjoint disagreement always ranks examinations better. Nor does a stable finite-response probe establish a universal scalar score. We retain the original failures and one additional limited scoring test rather than make successful deployment a prerequisite for a coherent mechanism paper.
+ 
++Our contributions are: (1) a same-target measurement audit usable with frozen estimators and explicit information-access contracts; (2) a local covariance explanation and an implementation-matched influence measure for common-error blindness; and (3) replication and falsification across cohorts and architecture lineages, separating robust local observability effects from weaker case-ranking consequences. The study is a retrospective synthesis of iteratively developed experiments. Its provenance audit does not establish that every historical choice preceded outcome inspection.
+ 
+ \section{Related Work}
+-\paragraph{MRI reconstruction and uncertainty.}
+-Probabilistic, Bayesian, ensemble, and posterior-sampling methods quantify uncertainty in accelerated MRI \cite{edupuganti2021uncertainty,narnhofer2022bayesian,kustner2024ensembles,luo2023diffusion}. Training-free posterior approximation addresses inverse problems \cite{zhang2024trainingfree}, while conformal quantile regression estimates MRI error intervals \cite{giannakopoulos2026pixelwise}. These methods estimate predictive distributions or risk. Hu \etal showed that uncertainty variation can miss systematic MRI reconstruction error \cite{hu2021predict}. We study a narrower complementary question: how dependence between the physical measurements generating two deterministic predictions changes the target error visible in their disagreement.
++\paragraph{Reconstruction uncertainty and common error.}
++Ensembles, dropout, and MRI posterior methods use predictive variation to characterize uncertainty~\cite{lakshminarayanan2017ensembles,gal2016dropout,edupuganti2021uncertainty,narnhofer2022bayesian,luo2023diffusion}. Ensemble diversity interacts with component error~\cite{brown2005diversity,ortega2022diversity}; different architectures need not yield independent failures. Hu \etal explicitly separate random and systematic MRI reconstruction error~\cite{hu2021predict}. We do not claim that common bias is newly discovered. Our distinction is a physical, same-target intervention connecting measurement identity to local response alignment and observable error.
+ 
+-\paragraph{Diversity, consistency, and dependence.}
+-Deep ensembles use predictive diversity for uncertainty \cite{lakshminarayanan2017ensembles}; diversity interacts with individual error and generalization rather than replacing them \cite{brown2005diversity,ortega2022diversity}. MRI self-consistency methods such as SPIRiT enforce compatibility with acquired measurements \cite{lustig2010spirit}. Our intervention differs from both: we hold the missing target fixed, explicitly manipulate reuse of physical slice measurements, and relate their estimator influence to target-error alignment and observability.
++\paragraph{Consistency and interpolation.}
++MRI self-consistency can enforce agreement with acquired data~\cite{lustig2010spirit}; it has a different information contract from comparing two missing-slice predictions. SAINT and I3Net learn anisotropic slice synthesis~\cite{peng2020saint,song2024i3net}, while CycleINR represents a different coordinate-based lineage~\cite{fang2024cycleinr}. We audit frozen local implementations, including adapted SAINT-style and internal CycleINR-style models, rather than propose another interpolator. Complementary acquisitions can improve super-resolution~\cite{greenspan2002interslice,nicastro2022shift}, and leave-one-slice-out interpolation checks are established~\cite{horvath2017highorder}. Our question concerns the reliability interpretation of agreement, not novelty of acquisition complementarity or holdout reconstruction.
+ 
+-\paragraph{Slice synthesis and acquisition design.}
+-SAINT and I3Net learn anisotropic medical slice synthesis \cite{peng2020saint,song2024i3net}; CycleINR uses an implicit coordinate representation with cycle consistency for arbitrary-scale medical volume super-resolution \cite{fang2024cycleinr}. A recent multi-architecture prostate study reports that adjacent-versus-distant input formulation can dominate backbone complexity for reconstruction fidelity \cite{savant2026formulation}. We instead hold the target and estimator fixed and manipulate physical measurement identity to study reliability and error cancellation. Single-stack slice-to-volume reconstruction couples interpolation and motion \cite{young2024svr}. Leave-one-slice-out interpolation checks predate this work \cite{horvath2017highorder}. Shifted multi-slice super-resolution and acquisition-design studies exploit complementary measurements for reconstruction accuracy \cite{greenspan2002interslice,nicastro2022shift}. We neither introduce a new interpolator nor claim the holdout operation as novel. Our distinction is using same-target physical dependence as a controlled reliability variable and attempting to falsify the mechanism under substantially different interpolation interfaces.
++\section{Our Measurement-Influence Framework}
++\subsection{Error observability}
++Let $F$ be a frozen reconstruction estimator and $c_a,c_b$ two contexts for target location $z$. On a common support, predictions $f_a,f_b$ have errors $e_a=f_a-y$ and $e_b=f_b-y$. The observable is $D=\|f_a-f_b\|$; the target $y$ is unavailable when forming a deployment score. Retrospectively,
++\begin{equation}
++D^2=\|e_a\|^2+\|e_b\|^2-2\langle e_a,e_b\rangle .\label{eq:difference}
++\end{equation}
++Define $T=(\|e_a\|^2+\|e_b\|^2)/2$, common error $\bar e=(e_a+e_b)/2$, and difference error $h=(e_a-e_b)/2$. For $T>0$,
++\begin{equation}
++S=\|\bar e\|^2/T,\quad O=\|h\|^2/T,\quad S+O=1.\label{eq:energy}
++\end{equation}
++These are latent evaluation quantities, not estimated probabilities. If $e_a=e_b\ne0$, then $O=D=0$ despite error. Conversely, $\max(\|e_a\|,\|e_b\|)\ge D/2$ gives only a one-sided error bound. Shared fractions and normalized disagreement are algebraically related; their correlation is not independent evidence for a mechanism.
+ 
+-\section{From Disagreement to Shared Influence}
+-\subsection{Error observability}
+-Let $y$ be the missing target slice and $f_i=y+e_i$ two deterministic reconstructions. Then
++\subsection{Controlled same-target measurement intervention}
++The framework takes $F$, target location $z$, two target-preserving contexts, and a registry of physical anchor identities. It records model weights, preprocessing, score support, target geometry, and information used to define each. The intervention holds the target and estimator fixed while varying anchor identity; relevant geometry is matched where feasible and remaining differences are reported.
++
++At $\times4$, phase-0 anchors $\{0,4,8,\ldots\}$ and phase-2 anchors $\{2,6,10,\ldots\}$ are disjoint. Targets with residues 1 or 3 are absent from both. A shared control applies an in-plane flip to the same phase-0 anchors, then maps predictions back. This is a deterministic test-time augmentation (TTA) pair. A disjoint pair instead compares phase-0 and phase-2 reconstructions. It changes measurement dependence together with the companion context; it is not an intervention that fixes every nuisance variable. Nearest-anchor distances can be matched as the multiset $\{1,3\}$ up to reflection, but full signed geometry and context normalization may still differ.
++
++\begin{figure}[t]
++\centering
++\begin{minipage}{.97\columnwidth}
++\hrule\smallskip
++\textbf{Algorithm 1: Measurement-Influence Reliability Audit}\par
++\smallskip\small
++\textbf{Input:} frozen $F$; target locations; anchor-ID registry; declared contexts, preprocessing, support, and perturbation settings. Retrospective targets are a separate evaluation input.\par
++\textbf{1. Validate} same-target mapping, acquired IDs, model weights, geometry, and source of masks/scales.\par
++\textbf{2. Reconstruct} shared and disjoint pairs; store $f_a,f_b$ and their disagreement on the same support.\par
++\textbf{3. Estimate influence} from embedded coefficients or matched anchor responses using Eq.~\ref{eq:influence}.\par
++\textbf{4. Check stability} across declared amplitudes/signs; retain failed models as phenomenon-only evidence.\par
++\textbf{5. Evaluate retrospectively} alignment, $S,O$, and error ranking; aggregate and resample whole examinations/patients.\par
++\textbf{6. Report} all eligible contrasts, uncertainty, failures, and the information-access boundary.\par
++\textbf{Output:} an audit of agreement's limitations in this measurement regime; no per-case correctness certificate.\par
++\smallskip\hrule
++\end{minipage}
++\end{figure}
++
++\subsection{Analytical shared influence and a local model}
++For $f_c=\sum_j w_{cj}x_j$, embed coefficients in the union of physical anchor IDs, assigning zero to unused anchors. Under independent anchor perturbations with variances $\sigma_j^2$, the shared contribution to output covariance is proportional to $\sum_{j\in c_a\cap c_b}w_{aj}w_{bj}\sigma_j^2$. Overlap count discards sign, magnitude, and noise covariance. Coefficient cosine and common absolute mass $\sum_j\min(|w_{aj}|,|w_{bj}|)$ are descriptive alternatives; common mass alone does not prove positive covariance when coefficients have opposite signs.
++
++\paragraph{Proposition 1 (shared variation under fixed marginals).}
++Condition on a fixed target and nominal inputs. Assume the local error model
+ \begin{equation}
+- \|f_a-f_b\|^2=\|e_a\|^2+\|e_b\|^2-2\langle e_a,e_b\rangle .
+- \label{eq:difference}
++e_a=b_a+J_a\xi_a,\qquad e_b=b_b+J_b\xi_b,\label{eq:local}
+ \end{equation}
+-Writing $\bar e=(e_a+e_b)/2$ and $\delta=(e_a-e_b)/2$ gives
++with fixed biases/Jacobians, zero-mean perturbations, marginal covariances $\Sigma_a,\Sigma_b$, and cross-covariance $C=\mathbb E[\xi_a\xi_b^\top]$. Compared with $C=0$ at unchanged marginals and biases, let $\kappa=\operatorname{tr}(J_a C J_b^\top)$. Then
++\begin{align}
++\Delta\mathbb E\langle e_a,e_b\rangle&=\kappa,\\
++\Delta\mathbb E\|f_a-f_b\|^2&=-2\kappa.\label{eq:covariance}
++\end{align}
++If $\tau=\mathbb E T>0$, the ratio-of-expectations observable fraction $\widetilde O=\mathbb E\|h\|^2/\tau$ changes by $-\kappa/(2\tau)$. Thus positive shared sensitivity increases the expected error inner product and suppresses disagreement energy. Shared variation with opposing sensitivities can do the reverse.
++
++\emph{Proof sketch.} Expanding Eq.~\ref{eq:local}, zero means remove the bias--noise cross terms, leaving $\langle b_a,b_b\rangle+\operatorname{tr}(J_a C J_b^\top)$. Marginal error energies do not depend on $C$; substitute into Eq.~\ref{eq:difference}. The supplement gives the full derivation, remainder qualification, and numerical checks.
++
++This proposition is conditional and local. It does not prove that sharing creates common deterministic bias, that error-vector cosine increases in every realization, or that $\mathbb E O=\widetilde O$. Actual phase interventions can change biases and Jacobians. Their effect therefore requires empirical testing rather than following automatically from the proposition.
++
++\subsection{Neural finite-response shared influence}
++For anchor $j$ and a matched zero-mean field $\xi_{js}$, compute $r_{cjs}=F_c(x+\epsilon\xi_{js})-F_c(x)$; absent anchors have zero response. The implemented statistic is
+ \begin{equation}
+- \tfrac12(\|e_a\|^2+\|e_b\|^2)=\|\bar e\|^2+\|\delta\|^2 .
+- \label{eq:decomp}
++\widehat I=
++\frac{\sum_s\sum_{j\in c_a\cap c_b}\langle r_{ajs},r_{bjs}\rangle}
++{\sqrt{\bigl(\sum_s\sum_{j\in c_a}\|r_{ajs}\|^2\bigr)
++\bigl(\sum_s\sum_{j\in c_b}\|r_{bjs}\|^2\bigr)}}.\label{eq:influence}
+ \end{equation}
+-We call the normalized terms \emph{shared} and \emph{observable} error fractions. If $e_a=e_b\neq0$, disagreement is zero despite error; if $e_a=-e_b$, all paired error energy is observable. Equation~\ref{eq:difference} is a starting identity. The mechanism question is what makes $\langle e_a,e_b\rangle$ large.
++It is the cosine of response vectors embedded in physical-anchor space, \emph{not} the average cosine of individual shared-anchor responses. Its denominator includes unshared-anchor energy. Under a local linear response and independent matched anchor fields of covariance $\Sigma_j$, the expected numerator, divided by the number of fields and $\epsilon^2$, is $\sum_j\operatorname{tr}(J_{aj}\Sigma_jJ_{bj}^\top)$, the shared covariance term. The normalized finite-sample ratio is a directional proxy, not an unbiased covariance estimator.
+ 
+-The same geometry gives a one-sided statement. By the triangle inequality,
+-\begin{equation}
+- \max(\|e_a\|,\|e_b\|)\geq \tfrac12\|f_a-f_b\| .
+- \label{eq:onesided}
+-\end{equation}
+-Large separation therefore certifies that at least one reconstruction has nonzero error of a corresponding scale. No converse exists: the right side can vanish for arbitrarily large common error. This asymmetry is why we use \emph{observability} rather than calibration terminology. Disagreement may supply evidence of failure, but agreement cannot by itself supply evidence of correctness.
++Historical probes use four centered Rademacher fields, amplitude .01, alternatives .005/.02/$-.01$, and an audit threshold of .90 for rank stability. Input/output clipping is part of the implemented finite response. Stability supports numerical reproducibility at those settings, not global Jacobian accuracy. Historical masks and full-examination normalization access target information; Eq.~\ref{eq:influence} can be computed without targets only when its preprocessing and support are also acquired-only. We do not retroactively claim that information contract for the stored probes.
+ 
+-\subsection{Analytical and neural influence}
+-For a local linear estimator $f=\sum_j c_jx_j$, embed two contexts in the union of physical anchor positions, with zero coefficients at unused anchors. Overlap count records common nonzero locations but ignores their unequal weights. We use coefficient cosine, signed dot product, and common absolute mass
+-\begin{equation}
+- I_{\cap}(a,b)=\sum_j\min(|c_{a,j}|,|c_{b,j}|)
+- \label{eq:mass}
+-\end{equation}
+-as analytical influence summaries.
++\subsection{Reliability interpretation and scope}
++Algorithm 1 requires no estimator retraining. With retrospective targets it can expose how much common error agreement conceals and whether influence explains variation beyond count. Without targets it can measure disagreement, anchor sharing, and suitably defined local response, but it cannot identify an arbitrary common bias. The framework is therefore an audit, not a calibrated detector of every individual failure. Reused test cohorts and outcome-informed analysis choices are explicitly part of its evidence record.
+ 
+-For a frozen nonlinear interpolator $F_c$, we perturb the same shared physical anchor $j$ in contexts $a$ and $b$ with an identical seeded field $\epsilon\xi_{js}$. The centered output response is
+-\begin{equation}
+- r_{cjs}=F_c(x+\epsilon\xi_{js})-F_c(x).
+-\end{equation}
+-Neural shared influence is the mean response cosine between $r_{ajs}$ and $r_{bjs}$ over shared anchors and four frozen seeds. The primary perturbation is a centered Rademacher field at 1\% of the globally normalized case range. This is a local response approximation, not a global coefficient, attribution theorem, or property of a network independent of target and plane.
++\section{Experimental Design and Provenance}
++\paragraph{Cohorts and frozen estimators.}
++We use 24 fastMRI brain T2 examinations~\cite{knoll2020fastmri}, 115 IXI brain T2 examinations~\cite{ixi_dataset}, and 22 NingXia knee T2 series from eight patients. Their reconstruction outputs come from existing training splits or patient-group out-of-fold models. fastMRI has one patient shared between historical training and validation, but no test-patient ID overlap; IXI train/validation/test IDs are disjoint. Historical checkpoint-selection bias cannot be quantified from these outputs. Distinct cohorts do not constitute untouched holdouts for this iteratively developed reliability analysis.
+ 
+-\section{Experimental Design}
+-\subsection{Cohorts and frozen estimators}
+-We use 24 held-out fastMRI brain T2 examinations \cite{knoll2020fastmri}, 115 held-out IXI brain T2 examinations \cite{ixi_dataset}, and 22 out-of-fold NingXia knee T2 series from eight patients. NingXia inference resamples patients with all subordinate series retained. Frozen HAT and SwinIR $\times4$ reconstructions test the original nonlinear influence claim; linear and cubic interpolation provide analytical support. The architecture falsification adds locally trained I3Net, adapted SAINT-style, and internal CycleINR-style checkpoints. They test architecture lineage, not exact official implementations or weights. Phase-0 wrappers reproduce all 24 fastMRI outputs per model and one frozen IXI examination per model exactly. The five-architecture clean shared/disjoint experiment uses all 24 fastMRI and 115 IXI examinations, with five residue-balanced targets per IXI examination. fastMRI and NingXia additionally have common-support $\times2/\times4$ outputs for 13 recovered models and enter a rule-frozen same-model retrospective consequence audit. Dense volumes supply retrospective anchors and targets. A DICOM audit verifies physical slice order for all 24 fastMRI test cases; their legacy affine alone does not preserve patient orientation. Input-only scores use acquired anchors; the five-architecture intervention uses target-derived masks, while bank scores use target-model prediction masks. These supports are evaluated separately.
++HAT/SwinIR supply the three-cohort influence experiment. I3Net, adapted SAINT-style, and internal CycleINR-style add three frozen architecture implementations on both brain cohorts. They are lineage tests, not claims of exact official reproductions. The ten primary checkpoints are hashed in the research ledger. Historical phase-0 wrapper checks reproduce 24 fastMRI examinations per model and one IXI examination per model; they do not verify every IXI wrapper output.
+ 
+-\subsection{Controlled measurement contexts}
+-The zero-overlap condition reconstructs the same missing plane from phase-0 and phase-2 $\times4$ lattices. A clean maximal-sharing control applies horizontal flip equivariance to identical anchors while preserving target, anchor identity, $z$ order, distances, count, mask, and preprocessing. The primary endpoint is the Spearman correlation between masked prediction disagreement and paired reconstruction MAE. Intervals use 5,000 examination/patient-cluster bootstrap replicates. The IXI identity-swap analysis further matches nearest-anchor distances to $\{1,3\}$ up to left--right reflection, summarizes residues $z\bmod4=1$ and 3 separately, then weights them equally; a mirror-difference interval excluding zero triggers an orientation warning.
++\paragraph{Designs and support.}
++The five-architecture contrast uses five missing planes per examination. fastMRI has targets $\{3,5,7,9,11\}$; IXI uses deterministic, approximately residue-balanced targets. These experiments use a GT-derived 1\% mask. Earlier clean HAT/SwinIR controls instead use a phase-0 prediction mask. They are reported separately. A DICOM audit supports slice ordering for fastMRI; its legacy NIfTI affine alone does not establish patient orientation.
+ 
+-An exact four-anchor ladder fixes target-relative absolute distances $\{1,2,3,4\}$ and compares a reference sign pattern with all valid patterns sharing $k\in\{0,1,2,3,4\}$ positions. Distance-weighted local linear regression predicts the same target. All valid configurations are averaged at each $k$; none is selected by outcome. This test asks whether count is a sufficient monotone dose and provides exact coefficients for Eq.~\ref{eq:mass}.
++The analytical count ladder fixes absolute target distances $\{1,2,3,4\}$ and averages all valid sign configurations at each overlap. The neural pair grid compares reference $(-2,+2)$ with eight contexts, recording span, asymmetry and overlap. Four contexts share exactly one anchor. New four-anchor models use regular $\times4$ grids with overlap zero or three; their support differs from the pair grid. The supplement gives every offset, setting and eligibility rule.
+ 
+-The pair-input neural grid uses a reference context $(-2,+2)$ and eight target-preserving comparators. Target, input count, model, mask, and preprocessing are fixed; span, asymmetry, overlap, and physical identity are recorded. Confirmation includes three physical planes per examination. A cleaner subset keeps four comparators with exactly one shared anchor. For four-anchor I3Net/CycleINR probes, every context remains a regular $\times4$ grid; a frozen 24-case IXI subset uses one central plane, two overlap-three contexts, and five zero-overlap contexts. Four Rademacher fields at amplitudes $+.005,+.01,+.02,-.01$ define the stability gate ($\rho\geq.90$ for every alternate setting). Models failing any gate remain eligible for the physical-dependence phenomenon but not for influence claims.
++\paragraph{Inference and chronology.}
++The independent unit is examination, or patient in NingXia. Plane/context measurements travel with their cluster in resampling. Historical intervals are pointwise unless stated otherwise. Five-model simultaneous intervals use 10,000 joint examination bootstrap draws and a maximum standardized-deviation statistic, separately by cohort and estimand. They do not correct the entire history of hypothesis exploration. Main figures retain null and negative effects.
+ 
+-\subsection{Practical consequence and statistics}
+-Given acquired anchors $x_0,x_4,x_8,\ldots$, Anchor-CV withholds each interior $x_{4j}$, predicts it linearly from $x_{4(j-1)}$ and $x_{4(j+1)}$, and returns the median masked residual. It uses only acquired slices, no additional trained model, and zero neural calls. We compare it with adjacent-anchor MAE/RMSE and output-based scores. Matching model identity does not hold factor-specific learned weights fixed. The retrospective benefit endpoint is common-support $\mathrm{MAE}_{\times4}-\mathrm{MAE}_{\times2}$ for the same dataset, case, fold, model, and support. Frozen scores are Anchor-CV, adjacent-anchor MAE, and the median $\times4$ disagreement between the target model and registry-declared candidate-bank members. Every model with finite paired errors is retained. Budgets are fixed at 10/20/30/50\% and report gain above random and oracle-normalized gain. Because the dense acquisitions and reconstruction outputs predate this rule-frozen audit, it is explicitly retrospective and exploratory.
+-
+-Independent units are 24 fastMRI examinations, 115 IXI examinations, and eight NingXia patients. Plane counts are descriptive. The mechanism chain is evaluated arrow by arrow: influence-to-alignment and influence-to-observable-fraction partial ranks control examination and geometry; alignment-to-normalized-disagreement additionally controls influence. Context-level ranking has only eight configurations and is reported separately. We use association language and do not claim causal mediation.
++Our machine-readable audit catalogs source files, attempted analyses, splits, masks, metrics, checkpoints, normalization and bootstrap rules. Repository history does not independently establish all earlier ``prespecified'' assertions. We therefore describe the study as retrospective and remove those assertions. The original ranking-primary architecture protocol, smoke-informed control correction, and subsequent emphasis on local observability remain documented. Qualitative case selection and the one new score family were recorded before their new evaluation, but neither creates a new independent cohort.
+ 
+ \section{Results}
+-\subsection{Dependence exposes consensus blindness}
+-Figure~\ref{fig:control} shows the central intervention. Measurement-disjoint contexts rank error better than clean shared controls in every cohort. Disjoint-minus-shared $\Delta\rho$ is .092 [.043,.176] on fastMRI, .095 [.078,.126] on IXI, and .193 [.111,.371] on NingXia. Clean-sharing error cosines are .949, .968, and .995, leaving only 2.61\%, 1.58\%, and .25\% of paired error energy observable. Under thresholds fixed from the disjoint condition, sharing raises high-error/low-disagreement prevalence by 27.1, 20.9, and 28.2 percentage points, respectively; every clustered interval excludes zero.
++\subsection{Phenomenon: common error becomes invisible}
++Figure~\ref{fig:control} and Table~\ref{tab:controlled} summarize the original two-architecture clean comparison. Mean observable fractions under sharing are only 2.61/1.58/.25\% on fastMRI/IXI/NingXia. Pooled-plane error-ranking contrasts remain positive with clustered intervals. These are not examination-ranking estimates: pooled planes contribute to each point correlation, while patients/examinations determine interval resampling. The five-architecture case-ranking test is reported separately below.
+ 
+-The effect is not tied to one learned estimator. Disjoint case-level error-ranking $\rho$ is .961/.955 for HAT/SwinIR on fastMRI and .910/.903 on NingXia. Analytical linear/cubic interpolation gives .977/.974 and .958/.967 on the same cohorts. IXI supplies the largest clean-control replication rather than a post-hoc favorable subset.
+-
+-Table~\ref{tab:controlled} separates effect size from sample size. The smallest cohort produces the largest point contrast but also the widest patient-clustered interval; it is therefore a boundary replication rather than the primary source of precision. The two brain cohorts independently support nearly identical $\Delta\rho$ despite different sample size and provenance.
+-
+-\begin{table*}[t]
+-\centering
+-\caption{Controlled measurement dependence. Stable-wrong $\Delta$ is the increase in high-error/low-disagreement prevalence under thresholds frozen from the disjoint condition.}
+-\label{tab:controlled}
+-\setlength{\tabcolsep}{4pt}
+-\begin{tabular}{lrrrrr}
+-\toprule
+-Cohort & Independent units & $\rho_{\rm disjoint}$ & $\rho_{\rm shared}$ & $\Delta\rho$ [95\% CI] & Observable error / stable-wrong $\Delta$ \\
+-\midrule
+-fastMRI & 24 examinations & .959 & .867 & .092 [.043,.176] & 2.61\% / +27.1 pp \\
+-IXI & 115 examinations & .981 & .886 & .095 [.078,.126] & 1.58\% / +20.9 pp \\
+-NingXia & 8 patients (22 series) & .892 & .698 & .193 [.111,.371] & .25\% / +28.2 pp \\
+-\bottomrule
+-\end{tabular}
+-\end{table*}
+-
++\input{p17_control_table.tex}
+ \begin{figure*}[t]
+-\centering
+-\includegraphics[width=.98\textwidth]{fig2_controlled_intervention.pdf}
+-\caption{Same-target controlled intervention. Left: error-ranking improvement of measurement-disjoint over clean dependence-preserving contexts, with clustered 95\% intervals. Right: shared (colored) and observable (gray) paired-error energy under clean sharing. NingXia uncertainty is patient-clustered over eight patients.}
++\centering\includegraphics[width=.95\textwidth]{fig2_controlled_intervention.pdf}
++\caption{Controlled sharing and error observability. Left: pooled-plane disagreement ranking against fixed phase-0 error, with examination/patient-clustered pointwise 95\% intervals. Right: mean shared and observable paired-error fractions in clean shared HAT/SwinIR controls. Fractions describe error geometry; they are not independent evidence for the algebraic identity.}
+ \label{fig:control}
+ \end{figure*}
+ 
+-\subsection{Influence refines and survives falsification of count}
+-Raw count has the expected overall relationship with error geometry, but the exact compact ladder is not monotone. Across all cohorts, overlap-count trends are $+.9$ for error cosine/shared fraction and $-.9$ to $-1.0$ for observable fraction/disagreement; nevertheless, the zero-to-one transition reverses. The early claim that every added common anchor must reduce observability is therefore rejected.
++The objectively selected example in Fig.~\ref{fig:teaser} makes the spatial failure visible. Shared prediction MAEs are 73.8 and 77.7 but their difference MAE is 22.8; observable fraction is 2.0\%. With the same target and reference prediction, disjoint difference MAE rises to 69.3 and observable fraction to 19.8\%, while paired error changes little. These values describe that example, not an estimate of prevalence. Its CPU predictions differ slightly from historical mixed-precision outputs; the cohort statistics are unchanged.
+ 
+-Analytical influence resolves this exception. Common coefficient mass correlates with error alignment at .815, .789, and .855 on fastMRI, IXI, and NingXia, versus .503, .466, and .630 for count. Across alignment, shared fraction, observable fraction, and disagreement, every clustered interval for the absolute-correlation advantage of influence over count is above zero (.189--.283).
++\subsection{Mechanism: influence refines count conditionally}
++Raw overlap has an overall trend but fails as a monotone dose: the compact analytical ladder reverses from zero to one shared anchor in every cohort. Unequal coefficient influence improves alignment association, explaining why two contexts with the same count can differ. This rejects count sufficiency, not every possible dependence mechanism.
+ 
+-The nonlinear result is consistent across two architectures and three broad context grids (Fig.~\ref{fig:influence}). For error alignment, neural influence/count correlations are .838/.799 and .851/.796 on fastMRI, .797/.714 and .787/.712 on IXI, and .786/.743 and .772/.735 on NingXia for HAT/SwinIR. Across the 18 primary alignment/shared/observable endpoints, advantages range from .036 to .089 and every clustered interval excludes zero. Geometry- and examination-adjusted residual associations remain $|\rho|=.185$--.395.
++Figure~\ref{fig:influence} combines broad-grid association with the stricter fixed-count test. Source review found that the historical broad grid included reference self-pairs, which mechanically have unit influence and error cosine. A post-hoc integrity sensitivity removes all 966 self-pairs: influence still improves absolute error-alignment correlation over count by .060--.128 across six strata, with six-stratum simultaneous clustered intervals above zero. At exactly one shared anchor, adjusted influence associations remain positive on both brain cohorts but are null/mixed on NingXia (Table~\ref{tab:neural}). The eight-patient failure is not relabeled as merely lower precision.
+ 
+ \begin{figure*}[t]
+-\centering
+-\includegraphics[width=.98\textwidth]{fig3_shared_influence.pdf}
+-\caption{Neural shared influence improves absolute association over raw anchor-overlap count for error alignment, shared error fraction, and observable error fraction in all six cohort--architecture strata. Points show $|\rho_{\rm influence}|-|\rho_{\rm count}|$ with examination/patient-clustered 95\% intervals.}
++\centering\includegraphics[width=.98\textwidth]{p17_influence_beyond_count.pdf}
++\caption{Beyond-count evidence and its boundary. (a) Broad-grid advantage after removing self-pairs, with six-stratum simultaneous 95\% intervals. (b) Influence--alignment partial correlation at exactly one shared anchor, controlling span, asymmetry and examination; intervals are historical pointwise clustered 95\%. The NingXia fixed-count result remains null/mixed. Original self-inclusive summaries and other endpoints are retained in the supplement.}
+ \label{fig:influence}
+ \end{figure*}
++\input{p17_influence_table.tex}
+ 
+-The exact-one-overlap subset is the decisive beyond-count boundary. After controlling span, asymmetry, and examination, neural influence retains the expected association for every endpoint/model on fastMRI and IXI ($|\rho|=.135$--.587; intervals exclude zero). NingXia does not replicate it: error-alignment partial $\rho$ is .014 for HAT and $-.039$ for SwinIR, all endpoint intervals cross zero, and some directions reverse. Thus the larger fastMRI/IXI cohorts support continuous influence beyond count; the eight-patient cohort supports only the broad descriptor and limits universal wording.
++The HAT/SwinIR stability audit retains 42 passing numerical settings (minimum rank correlation .942), but only one of three physical-plane pair gates passes. New-architecture SAINT passes amplitude/sign stability (minimum .940), yet its alignment advantage over count is .014 [$-.002$,.029] and fixed-count estimate .063 [$-.021$,.149]. I3Net and CycleINR fail the .90 stability gate. They support the phenomenon, not a stable finite-response influence claim. Numerical stability and beyond-count evidence are distinct requirements.
+ 
+-\begin{table*}[t]
+-\centering
+-\caption{Broad-grid and fixed-one-overlap neural evidence. Broad columns compare error-alignment correlation for count and neural influence; fixed columns give geometry/examination-adjusted influence correlation and clustered intervals.}
+-\label{tab:neural}
+-\setlength{\tabcolsep}{4pt}
+-\begin{tabular}{llrrrr}
+-\toprule
+-Cohort & Model & Broad $\rho_{\rm count}$ & Broad $\rho_{\rm influence}$ & Advantage [95\% CI] & Fixed-one-overlap partial $\rho$ [95\% CI] \\
+-\midrule
+-fastMRI & HAT & .799 & .838 & .039 [.028,.049] & .169 [.053,.283] \\
+- & SwinIR & .796 & .851 & .055 [.048,.061] & .350 [.212,.464] \\
+-IXI & HAT & .714 & .797 & .082 [.076,.088] & .346 [.259,.424] \\
+- & SwinIR & .712 & .787 & .075 [.070,.080] & .258 [.181,.335] \\
+-NingXia & HAT & .743 & .786 & .043 [.027,.057] & .014 [$-.232$,.223] \\
+- & SwinIR & .735 & .772 & .036 [.016,.057] & $-.039$ [$-.175$,.144] \\
+-\bottomrule
+-\end{tabular}
+-\end{table*}
+-
+-\subsection{The local mechanism is stronger than a global ranking law}
+-The arrow-wise analysis supports the local chain in all six strata. Influence-to-error-alignment partial $\rho$ is .219--.410; alignment-to-normalized-disagreement is $-.933$ to $-.889$; influence-to-observable-fraction is $-.412$ to $-.211$. All 18 intervals exclude zero. The context-level consequence is weaker: greater alignment predicts poorer disagreement--error ranking in all strata, but intervals exclude zero in only three of six. A local pair can have aligned errors because common anchors influence both predictions, while the global case-ranking effect also depends on anatomy, error magnitude, and the small set of contexts. The cancellation arrow is constrained by the energy identity; its correlation is not independent mechanistic validation. The empirical evidence is the controlled change in error geometry, not causal mediation.
+-
+-A prespecified stability audit strengthens this interpretation. All 42 amplitude, sign/field, and direction-count strata pass the rank-stability gate (minimum $\rho=.942$). Physical-plane rank stability is .779--.954 and only one of three plane-pair gates passes. The response statistic is numerically stable at a declared target/plane but not a plane-invariant global property.
+-
+-\begin{table*}[t]
+-\centering
+-\caption{Mechanism-chain partial Spearman ranges across HAT/SwinIR. Every local-arrow interval excludes zero. The final column counts architecture strata with a context-ranking interval excluding zero.}
+-\label{tab:chain}
+-\setlength{\tabcolsep}{4pt}
+-\begin{tabular}{lrrrr}
+-\toprule
+-Cohort & Influence$\rightarrow$alignment & Alignment$\rightarrow$norm. disagreement & Influence$\rightarrow$observable & Alignment$\rightarrow$ranking \\
+-\midrule
+-fastMRI & .372--.410 & $-.933$--$-.926$ & $-.412$--$-.370$ & $-.333$--$-.143$ (0/2) \\
+-IXI & .321--.347 & $-.893$--$-.890$ & $-.342$--$-.298$ & $-.643$--$-.500$ (2/2) \\
+-NingXia & .219--.258 & $-.898$--$-.889$ & $-.231$--$-.211$ & $-.667$--$-.548$ (1/2) \\
+-\bottomrule
+-\end{tabular}
+-\end{table*}
+-
+-\subsection{Architecture-family falsification}
+-Figure~\ref{fig:arch} separates the robust local endpoint from its cohort-dependent ranking consequence. On fastMRI, disjoint-minus-shared observable-error gain is 17.8/17.6/8.0/13.7/22.6 points for HAT/SwinIR/I3Net/SAINT/CycleINR; all clustered intervals exclude zero. The independently frozen IXI replication gives 29.0/30.2/25.2/29.8/29.6 points, with all five intervals above zero and all 115 case effects positive for every model. Reflection-balanced identity-swap estimates remain 29.2/30.0/25.1/29.7/29.5 points, and all five mirror-difference intervals include zero. The IXI equal-weight four-family estimate is 28.6 points; leave-one-family-out estimates remain 28.1--29.7 points. Phase-0 wrapper maximum error is zero for all ten cohort--model runs.
++\subsection{Replication: local geometry is stronger than ranking}
++Across five architectures, fastMRI local observable gains range from 8.0 to 22.6 percentage points and IXI gains from 25.2 to 30.2. All five-model simultaneous intervals remain positive, including all four within-/between-case mean/median sensitivity combinations. Every IXI case effect is positive for each model. Reflection-balanced identity-swap estimates remain positive, while all five mirror-difference intervals include zero; this constrains a particular geometry alternative, not all confounding.
+ 
+ \begin{figure*}[t]
+ \centering\includegraphics[width=.96\textwidth]{p13_architecture_robustness.pdf}
+-\caption{Architecture replication and multiplicity sensitivity. (a) Local gains retain positive five-model simultaneous 95\% intervals (10,000 examination bootstraps); fastMRI uses means and IXI medians. (b) Thick bars are historical pointwise intervals; thin bars are simultaneous intervals with within-case median ranking. Simultaneous ranking intervals exclude zero for three IXI models and none on fastMRI. Cohorts are not pooled.}
++\caption{Local replication versus case-level ranking. Local effects retain positive five-model simultaneous intervals; fastMRI local points use means and IXI medians. Ranking uses within-case medians in both cohorts. Thin intervals are simultaneous and thick intervals historical pointwise intervals. Only three IXI ranking intervals and no fastMRI ranking intervals exclude zero simultaneously. Models and cohorts are not independent replicate experiments to be pooled.}
+ \label{fig:arch}
+ \end{figure*}
+ 
+-The ranking arrow does not generalize uniformly across cohorts. On IXI, $\Delta\rho$ is .031/.035/.025/.032/.134 for HAT/SwinIR/I3Net/SAINT/CycleINR and every interval is positive. On fastMRI, only CycleINR is clearly positive (.342 [.113,.711]); the other four intervals cross zero. The frozen stable-wrong rule also yields 4/120 shared fastMRI CycleINR planes and zero for every other shared model and every disjoint model. An exploratory 10,000-bootstrap reanalysis keeps local gains positive for every model under all four within-/between-case mean/median combinations. Five-model simultaneous ranking intervals are positive for only HAT, SwinIR, and SAINT on IXI and none on fastMRI. Local geometry is more robust than ordering.
++The weaker downstream result is examination ordering. Under simultaneous inference, ranking gains exclude zero for HAT, SwinIR and SAINT on IXI, but not I3Net/CycleINR and not any fastMRI model. A local mechanism can be reproducible while a global ranking law fails. The historical shared-threshold stable-wrong rule identifies only four of 120 shared CycleINR fastMRI planes and none for the other models; those thresholds came from the reported test distribution, not external detector validation.
+ 
+-The influence probe also identifies a boundary rather than a clean five-model replication. SAINT passes all amplitude/sign gates (minimum $\rho=.940$); its broad influence association is .706 [.680,.734] with error cosine and $-.698$ [$-.730$,$-.666$] with observable fraction. Yet influence exceeds count for error cosine by only .014 [$-.002$,.029], and its exact-one-overlap, geometry/examination-adjusted estimate is .063 [$-.021$,.149]. I3Net and CycleINR fail the prospectively frozen stability gate and are classified as phenomenon-only. Hence stable non-transformer influence is directionally consistent, but ``influence beats count across all architectures'' is falsified.
++\paragraph{Practical uncertainty constructions.}
++The shared neural control itself is a two-view TTA consistency construction. A new, acquired-mask experiment additionally tests a two-member Linear/Cubic ensemble on 115 IXI examinations. Changing only the companion phase improves fixed-reference-error ranking for ensemble variance by .031 [.012,.050] and .036 [.016,.056] under two-direction simultaneous intervals; local gains are about 32.1 points. Disagreement MAE is reported alongside it. Population variance equals the squared pair difference divided by four, so these are related proxies, not two independent discoveries. The same complete-support protocol is infeasible in shallow fastMRI volumes and they are excluded by geometry. This extends the measurement test to a practical analytic ensemble, not to all neural ensembles or calibrated uncertainty methods.
+ 
+-Architecture diversity is not synonymous with independent failure. At fastMRI $\times4$, the median examination error-rank correlation among the prospectively frozen five models is .981, and six of 24 cases are in the top error quartile for all five. An exploratory full-bank audit in the supplement expands this to seven cohort--factor strata, 6--13 recovered models per stratum, and 483 pairs: every stratum's median case-error rank correlation exceeds .93. Cross-family pairing improves disagreement--error ranking for some implicit targets but is neutral or adverse for others. Pixelwise error cosine is lower for CycleINR--I3Net (.564 median) than HAT--SwinIR (.918), showing that local error diversity can increase even while case difficulty remains shared.
++\subsection{A bounded attempt at actionable scoring}
++We test one acquired-only guard against small-disagreement failures: $G=\max\{F_{\rm dev}(D_n),F_{\rm dev}(A_n)\}$, where $A$ is Anchor-CV, $n$ denotes acquired-range normalization, and each empirical CDF is fitted on 12 development fastMRI cases. It adds an acquired-data floor when predictors reuse phase-0 anchors; it is not a learned influence score. Two fixed model pairs cover HAT/SwinIR and I3Net/CycleINR. Thresholds and the single formula are then applied to the other 12 fastMRI cases and all 115 IXI cases, compared with raw normalized disagreement, adjacent MAE/RMSE, Anchor-CV, range and spacing.
+ 
+-Table~\ref{tab:p15-master} integrates all 13 master-table baselines on all three $\times4$ cohorts; the supplement retains all five metrics over 111 configurations, including 52 multi-scale and 20 extended-budget rows. Native full-plane metrics remain distinct from masked QA endpoints. Across all 13 models, median case-error rank correlation is .997/.899/1.000 on IXI/fastMRI/NingXia (78 pairs each). Budget matters: NingXia Res-SRDiff $\times2$ MAE falls from 440.61 to 140.45/118.25 at 60/90 epochs, yet remains above Linear's 78.53. Fifteen of 20 MAE budget comparisons favor longer training under simultaneous inference; five are inconclusive. Thus the short-budget negative run does not establish an intrinsic family failure.
++Neither result supports a new method claim. The fixed both-high-error/low-disagreement label has no positive internal-evaluation cases and only two per pair on IXI. Internal AUC/AP are therefore undefined, and all 12 IXI guard-minus-baseline simultaneous AP intervals include zero. Historical cohort reuse further prevents an untouched-holdout interpretation. We stop after this candidate. The mechanism is reproducible within its scope, while a universally superior scalar reliability score remains open. Full values, degenerate resamples and earlier failed candidates are retained in the supplement.
+ 
+-\input{table_p15_master_x4.tex}
++\section{Discussion and Limitations}
++MIRA separates three evidence levels. \emph{Replicated locally:} shared measurement regimes can align errors and conceal common error energy. \emph{Context dependent:} stable influence contains information beyond count on some cohorts and architectures, and disjoint contexts sometimes improve case ranking. \emph{Unestablished:} calibrated correctness, universal scalar superiority, prospective acquisition benefit, or non-MRI generalization. The covariance proposition explains a conditional sensitivity mechanism; it neither establishes global causality nor turns a retrospective audit into a target-free certificate.
+ 
+-\subsection{Practical consequence without superiority}
+-\begin{figure*}[t]
+-\centering
+-\includegraphics[width=.98\textwidth]{fig_same_model_consequence.pdf}
+-\caption{Rule-frozen same-model retrospective consequence. (a,b) Each point is an eligible reconstruction model; bars are medians and red crosses retain non-positive directions. (c) Lines show model-median oracle-normalized gain and shading shows model IQR, not a confidence interval. Bank scores were precomputed for neural targets only; analytical interpolators remain candidate members.}
+-\label{fig:consequence}
+-\end{figure*}
++The central limitations are concrete. Analyses repeatedly inspect the same cohorts, some controls and endpoints evolved after results, and filesystem dates do not establish prespecification. Historical influence masks and normalization use targets. Interventions leave residual geometry, boundary and preprocessing differences. NingXia has eight independent patients; the five-architecture study covers brain T2, not a matched neural knee replication. Adapted implementations and imperfect historical training/validation separation limit architecture interpretation. Statistical intervals quantify sampling uncertainty conditional on the chosen analyses, not selection uncertainty from the full research history.
+ 
+-Figure~\ref{fig:consequence} evaluates acquired-anchor cross-validation as a consequence, not the central novelty. Anchor-CV ranks $\times4$ examination error with $\rho=.943/.955/.958$ on fastMRI/IXI/NingXia. Adjacent MAE gives .934/.956/.973 and adjacent RMSE .942/.956/.959; paired differences are not consistently significant. Conditional association beyond adjacent MAE, scale, and spacing is .333/$-.059$/$-.100$. Anchor-CV is therefore an interpretable acquired-only difficulty signal, not unique information.
+-
+-Matching model labels removes a cross-architecture switch, but factor-specific checkpoints can differ. Across 13 models, Anchor-CV has positive within-model association with $\times4\!\rightarrow\!\times2$ benefit for 13/13 fastMRI and 12/13 NingXia models, with median $\rho=.851/.727$. Adjacent MAE gives 13/13 and 12/13 (median .802/.748); candidate-bank disagreement gives 11/11 and 10/11 (median .835/.710). All three non-positive NingXia directions belong to the severely degraded Res-SRDiff run and all corresponding intervals cross zero; the run is retained rather than redefining eligibility. Controlling current $\times4$ MAE reduces Anchor-CV median partial $\rho$ to .203/.291; all 26 clustered intervals cross zero. A recovered 115-case IXI I3Net same-architecture analysis gives $\rho=.843$ [.768,.894], versus .845 [.771,.896] for adjacent MAE. Acquired-range normalization reverses these raw-benefit rankings to $-.238/-.236$. Normalizing both score and benefit instead yields $.539/.551$ on IXI. Thus benefit ranking depends on its unit convention and current difficulty, not only acquisition value.
+-
+-\paragraph{External acquired-support check.}
+-We apply fixed linear (L) and four-point Lagrange cubic (C) estimators to 125 TopCoW MRA cases with vascular annotations~\cite{yang2026topcow}, covering 10779 common missing planes. L$_0$--C$_0$ versus L$_0$--C$_2$, and C$_0$--L$_0$ versus C$_0$--L$_2$, keep the estimator pairing fixed while changing anchor identity. Both residues are averaged equally within cases. The score mask uses only phase-0 acquired anchors; labels define evaluation endpoints only. Observable gains are 34.5 [34.4,34.6] and 34.5 [34.4,34.6] points under two-pair simultaneous intervals. This is an analytical external check, not a neural MRA replication. Fixed phase-0 error and annotated-vessel ranking are separately reported in the supplement.
+-
+-\flushbottom
+-\setlength{\parskip}{0pt}
+-\section{Discussion}
+-The central finding is that physical measurement dependence changes which paired-error components survive in disagreement. MRI interpolation makes this testable because target position and physical anchor identity are known. When contexts depend strongly on the same measurements, their local responses and target errors align, causing disagreement to understate error. Measurement-disjoint contexts expose a larger error component.
+-
+-The progression from overlap count to influence is scientifically important. Count is attractive because it is exact and acquisition-only, but the zero-to-one reversal falsifies a strict dose law. Unequal coefficient mass explains analytical configurations, and paired neural finite responses transfer the idea to nonlinear interpolators. Influence is local to a target--context--input configuration, not an intrinsic global model coefficient. The result also clarifies what is and is not actionable. Anchor-CV offers an inexpensive acquired-only examination signal and tracks same-model retrospective densification value across most evaluated fastMRI and NingXia models. Yet adjacent differences and candidate-bank disagreement carry similar rank information, Res-SRDiff reverses the NingXia direction, and none of these examination scores localizes the worst physical plane. The mechanism therefore informs reliability-context design and triage experiments without implying calibrated uncertainty, autonomous reacquisition, or a universally superior scalar.
+-
+-Several limitations are material. NingXia contains 22 series but only eight independent patients; its fixed-count result is null/mixed. Architecture breadth now covers two brain cohorts, but the five-architecture intervention remains limited to brain T2 and has no knee replication. External MRA extends only the analytical test. The local SAINT and CycleINR-style implementations are adapted/internal reproductions, not exact official models. Only SAINT passes all new-architecture influence-stability gates; its beyond-count estimate is imprecise. I3Net/CycleINR support the physical-dependence phenomenon but not a finite-response influence claim. The grids have different feasible overlap support, the final ranking arrow remains cohort dependent, and finite differences cannot identify a global Jacobian. Densification remains retrospective and compares factor-specific checkpoints. IXI adds one same-architecture pair, not a broad matrix. Scanner time, motion, and clinical cost are absent; target-derived output masks require separate deployment validation. A train/validation patient overlap affects historical checkpoint-selection provenance, although test patients are disjoint. No result establishes diagnostic safety.
++The complete 13-model reconstruction benchmark, training-budget audit, mechanism-chain associations, retrospective densification, normalization variants, and external analytical MRA studies remain in the supplement. They contextualize scope rather than establish a universal method. In particular, current-error adjustment weakens Anchor-CV benefit associations, Res-SRDiff retains an adverse boundary, and anatomy-specific ranking need not improve general error ranking. No clinical, prospective acquisition, or natural-image generalization claim follows from this work.
+ 
+ \section{Conclusion}
+-Shared error can make deterministic MRI interpolators agree while jointly wrong. Across three cohorts and five neural architectures, same-target interventions support a local measurement-dependence mechanism, with cohort-dependent ranking and architecture-dependent influence stability. Retrospective benefit associations weaken after current-error adjustment or scale changes. Prospective acquisition and endpoint validation remain necessary.
++Agreement between frozen reconstructions can conceal common error inherited from shared influential measurements. A same-target audit, a conditional covariance model, and replication with explicit failures make that limitation measurable. Local observability is more reproducible than examination ranking, and practical target-free superiority remains unproven.
+ 
+ \clearpage
+-{\small
+-\bibliographystyle{ieeenat_fullname}
+-\bibliography{references}
+-}
++{\small\bibliographystyle{ieeenat_fullname}\bibliography{references}}
+ \end{document}

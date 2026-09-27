@@ -1,0 +1,518 @@
+CVPR                                                                                                                                                CVPR
+#*****                                                                                                                                              #*****
+                                CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+
+             When Agreement Hides Error: Shared Measurement Influence in MRI Slice
+                                         Interpolation
+
+                                                       Anonymous CVPR submission
+
+                                                                 Paper ID *****
+
+
+                                  Abstract                                      variation as such a signal [3, 4, 10]. Their appeal is intuitive:    036
+                                                                                if plausible predictors disagree, at least one deserves scrutiny.    037
+ 001     Prediction disagreement is widely used as reliability evi-             Their blind spot is equally fundamental but less often con-          038
+ 002     dence, yet it can be small when estimates share the same               trolled experimentally: predictors can agree because they            039
+ 003     error. We study this failure in deterministic MRI inter-slice          reuse the same influential information and therefore make            040
+ 004     interpolation, where the physical measurements support-                aligned errors.                                                      041
+ 005     ing a missing target can be controlled. Target-preserving                  We turn this abstract dependence problem into a physical         042
+ 006     measurement-disjoint contexts rank reconstruction error bet-           intervention. For one missing MRI slice, phase-shifted acqui-        043
+ 007     ter than dependence-preserving controls on fastMRI, IXI,               sition grids can provide reconstruction contexts that preserve       044
+ 008     and NingXia: disjoint-minus-shared Spearman differences                the target while changing which acquired slice anchors sup-          045
+ 009     are .092, .095, and .193, with patient/examination-clustered           port it. This makes it possible to ask not merely whether            046
+ 010     confidence intervals above zero. Under clean sharing, 97.4–            outputs differ, but whether dependence among their generat-          047
+ 011     99.7% of paired error energy is common to the two predic-              ing measurements determines which target-error components            048
+ 012     tions. An exact analytical ladder rejects shared-anchor count          disagreement can observe.                                            049
+ 013     as a sufficient monotone explanation. Instead, analytical co-              Figure 1 states the proposed chain. For predictions              050
+ 014     efficient influence and a local neural finite-response influence       fa = y + ea and fb = y + eb , output separation observes             051
+ 015     statistic predict error alignment and observable error frac-           ea − eb . Shared measurements can induce similar local es-           052
+ 016     tion more strongly than overlap count. The neural advantage            timator responses; similar responses can align ea and eb ;           053
+ 017     holds for HAT and SwinIR across all three broad context                aligned errors cancel in the difference. The elementary iden-        054
+ 018     grids; an exact fixed-count test confirms it on fastMRI and            tity is not our novelty. The scientific question is what de-         055
+ 019     115-case IXI but is null/mixed in the eight-patient NingXia            termines the error inner product. Our evidence identifies            056
+ 020     cohort. As a practical consequence, acquired-anchor cross-             shared local measurement influence as one determinant in             057
+ 021     validation ranks examination-level interpolation difficulty            MRI interpolation.                                                   058
+ 022     (ρ = .943/.955/.958) and retrospective densification bene-                 This formulation also explains why a tempting early hy-          059
+ 023     fit, while remaining statistically similar to simple adjacent-         pothesis failed. Integer anchor overlap has the right overall        060
+ 024     anchor differences. The result is a mechanism and design               trend but is not a monotone dose: one weak shared anchor             061
+ 025     principle, not calibrated uncertainty or a universally supe-           can matter less than another, and an exact four-anchor lad-          062
+ 026     rior score: disagreement is informative only to the extent that        der reverses at zero-to-one overlap. We therefore replace            063
+ 027     its generating measurements exert sufficiently independent             count by estimator influence. For analytical interpolation           064
+ 028     influence.                                                             this is derived from coefficients. For frozen HAT and SwinIR         065
+                                                                                networks it is approximated by the cosine between output re-         066
+                                                                                sponses to identical finite perturbations of the same physical       067
+
+ 029     1. Introduction                                                        anchor. The quantity is explicitly local to a target, context,       068
+                                                                                input, and plane.                                                    069
+ 030     Sparse through-plane MRI is routinely densified by inter-                  Our contributions are threefold. First, we establish             070
+ 031     polation or learned slice synthesis. A reconstruction can              and decompose consensus blindness with same-target,                  071
+ 032     look anatomically plausible while smoothing, displacing, or            measurement-controlled interventions across three MRI co-            072
+ 033     inventing structure, so a reliability signal is desirable when         horts and four estimator families. Second, we show that              073
+ 034     dense targets are absent. Ensembles, test-time transforma-             shared estimator influence explains error alignment and dis-         074
+ 035     tions, and cross-context consistency commonly use output               agreement observability more strongly than raw overlap               075
+
+
+                                                                            1
+CVPR                                                                                                                                              CVPR
+#*****                                                                                                                                            #*****
+                                CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 076     count, while retaining the NingXia fixed-count nonreplica-            Writing ē = (ea + eb )/2 and δ = (ea − eb )/2 gives                122
+ 077     tion and physical-plane dependence as boundaries. Third, we
+                                                                                            1       2       2        2     2
+ 078     show a lightweight consequence: withholding acquired an-                           2 (∥ea ∥ + ∥eb ∥ ) = ∥ē∥ + ∥δ∥ .              (2)     123
+ 079     chors yields an examination-level difficulty and retrospective
+ 080     densification-value signal without dense targets at scoring           We call the normalized terms shared and observable error            124
+ 081     time, additional training, or repeated neural inference. It           fractions. If ea = eb ̸= 0, disagreement is zero despite            125
+ 082     is useful but not uniquely superior to adjacent-anchor dif-           error; if ea = −eb , all paired error energy is observable.         126
+ 083     ferences. The main result is thus a mechanism for when                Equation 1 is a starting identity. The mechanism question is        127
+ 084     disagreement is trustworthy, rather than another uncertainty          what makes ⟨ea , eb ⟩ large.                                        128
+ 085     leaderboard.                                                              The same geometry gives a one-sided statement. By the           129
+                                                                               triangle inequality,                                                130
+
+ 086     2. Related Work                                                                     max(∥ea ∥, ∥eb ∥) ≥ 12 ∥fa − fb ∥.            (3)     131
+ 087     MRI reconstruction and uncertainty. Probabilistic,
+ 088     Bayesian, ensemble, and posterior-sampling methods quan-              Large separation therefore certifies that at least one recon-       132
+
+ 089     tify uncertainty in accelerated MRI [3, 9, 11, 13]. Training-         struction has nonzero error of a corresponding scale. No            133
+
+ 090     free posterior approximation also addresses uncertainty in            converse exists: the right side can vanish for arbitrarily large    134
+
+ 091     computational inverse problems [19]. These methods esti-              common error. This asymmetry is why we use observabil-              135
+
+ 092     mate predictive distributions or risk. Hu et al. showed that          ity rather than calibration terminology. Disagreement may           136
+
+ 093     uncertainty variation can miss systematic MRI reconstruc-             supply evidence of failure, but agreement cannot by itself          137
+
+ 094     tion error [7]. We study a narrower complementary question:           supply evidence of correctness.                                     138
+
+ 095     how dependence between the physical measurements gener-               3.2. Analytical and neural influence                                139
+ 096     ating two deterministic predictions changes the target error                                             P
+ 097     visible in their disagreement.                                        For a local linear estimator f = j cj xj , embed two con-           140
+                                                                               texts in the union of physical anchor positions, with zero          141
+                                                                               coefficients at unused anchors. Overlap count records com-          142
+ 098     Diversity, consistency, and dependence. Deep ensembles                mon nonzero locations but ignores their unequal weights.            143
+ 099     use predictive diversity for uncertainty [10]; diversity inter-       We use coefficient cosine, signed dot product, and common           144
+ 100     acts with individual error and generalization rather than re-         absolute mass                                                       145
+ 101     placing them [2, 15]. MRI self-consistency methods such as                                      X
+ 102     SPIRiT enforce compatibility with acquired measurements                             I∩ (a, b) =    min(|ca,j |, |cb,j |)      (4)         146
+ 103     [12]. Our intervention differs from both: we hold the miss-                                      j
+ 104     ing target fixed, explicitly manipulate reuse of physical slice
+ 105     measurements, and relate their estimator influence to target-         as analytical influence summaries.                                  147
+ 106     error alignment and observability.                                       For a frozen nonlinear interpolator Fc , we perturb the          148
+                                                                               same shared physical anchor j in contexts a and b with an           149
+                                                                               identical seeded field ϵξjs . The centered output response is       150
+ 107     Slice synthesis and acquisition design. SAINT and I3Net
+ 108     learn anisotropic medical slice synthesis [16, 17]; single-                          rcjs = Fc (x + ϵξjs ) − Fc (x).              (5)     151
+ 109     stack slice-to-volume reconstruction couples interpolation
+ 110     and motion [18]. Leave-one-slice-out interpolation checks             Neural shared influence is the mean response cosine between         152
+ 111     predate this work [6]. Shifted multi-slice super-resolution           rajs and rbjs over shared anchors and four frozen seeds. The        153
+ 112     and acquisition-design studies exploit complementary mea-             primary perturbation is a centered Rademacher field at 1% of        154
+ 113     surements for reconstruction accuracy [5, 14]. We neither             the globally normalized case range. This is a local response        155
+ 114     introduce a new interpolator nor claim the holdout operation          approximation, not a global coefficient, attribution theorem,       156
+ 115     as novel. Our distinction is using same-target physical depen-        or property of a network independent of target and plane.           157
+ 116     dence as a controlled variable for reliability observability.
+                                                                               4. Experimental Design                                              158
+ 117     3. From Disagreement to Shared Influence
+                                                                               4.1. Cohorts and frozen estimators                                  159
+ 118     3.1. Error observability                                              We use 24 held-out fastMRI brain T2 examinations [8], 115           160
+ 119     Let y be the missing target slice and fi = y + ei two deter-          held-out IXI brain T2 examinations [1], and 22 out-of-fold          161
+ 120     ministic reconstructions. Then                                        NingXia knee T2 series from eight patients. NingXia infer-          162
+                                                                               ence resamples patients with all subordinate series retained.       163
+ 121              ∥fa − fb ∥2 = ∥ea ∥2 + ∥eb ∥2 − 2⟨ea , eb ⟩.      (1)        Frozen HAT and SwinIR ×4 reconstructions test nonlinear             164
+
+
+                                                                           2
+CVPR                                                                                                                                                   CVPR
+#*****                                                                                                                                                 #*****
+                                 CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+
+             Disagreement is informative only to the extent that its generating information is independent
+
+                    Shared physical                   Shared local                Aligned reconstruction          Small disagreement
+                    measurements                  estimator influence                     errors                    can hide error
+
+           One-sided boundary: large separation is evidence that at least one estimate is wrong; small separation is not a correctness certificate.
+
+
+         Figure 1. Proposed mechanism and reliability boundary. Reusing a physical measurement is not itself decisive; what matters is how similarly
+         that measurement influences both local estimators. Aligned errors cancel in prediction differences. Large separation is one-sided evidence
+         that at least one estimate is inaccurate, but small separation cannot certify correctness.
+
+
+ 165     influence; linear and cubic interpolation provide analytical              345 IXI, and 66 NingXia planes per architecture. Partial             202
+ 166     cross-estimator support. fastMRI and IXI also support the                 rank analyses control examination, span, and asymmetry. A            203
+ 167     frozen retrospective ×4 → ×2 consequence. Dense slices                    cleaner subset keeps only four comparators with exactly one          204
+ 168     create retrospective anchors and evaluate errors but never                shared anchor, making overlap count constant.                        205
+ 169     enter a reliability score. All primary scores reduce to one
+ 170     value per examination before cohort analysis.                             4.3. Practical consequence and statistics                            206
+
+                                                                                   Given acquired anchors x0 , x4 , x8 , . . ., Anchor-CV with-         207
+ 171     4.2. Controlled measurement contexts                                      holds each interior x4j , predicts it linearly from x4(j−1) and      208
+ 172     The zero-overlap condition reconstructs the same miss-                    x4(j+1) , and returns the median masked residual. It uses only       209
+ 173     ing plane from phase-0 and phase-2 ×4 lattices. A clean                   acquired slices, no additional trained model, and zero neural        210
+ 174     maximal-sharing control applies horizontal flip equivariance              calls. We compare it with adjacent-anchor MAE/RMSE,                  211
+ 175     to identical anchors while preserving target, anchor identity,            output prediction consistency (PC), and other frozen scores.         212
+ 176     z order, distances, count, mask, and preprocessing. The pri-              The endpoint is examination-level ×4 error or retrospective          213
+ 177     mary endpoint is the Spearman correlation between masked                  ×4 → ×2 error reduction. Budgets are fixed at 10/20/30/50%           214
+ 178     prediction disagreement and paired reconstruction MAE.                    and report oracle-normalized gain.                                   215
+ 179     Intervals use 5,000 examination/patient-cluster bootstrap                    Independent units are 24 fastMRI examinations, 115 IXI            216
+ 180     replicates.                                                               examinations, and eight NingXia patients. Plane counts are           217
+ 181         An exact four-anchor ladder fixes target-relative absolute            descriptive. The mechanism chain is evaluated arrow by               218
+ 182     distances {1, 2, 3, 4} and compares a reference sign pattern              arrow: influence-to-alignment and influence-to-observable-           219
+ 183     with all valid patterns sharing k ∈ {0, 1, 2, 3, 4} positions.            fraction partial ranks control examination and geometry;             220
+ 184     Distance-weighted local linear regression predicts the same               alignment-to-normalized-disagreement additionally controls           221
+ 185     target. All valid configurations are averaged at each k; none             influence. Context-level ranking has only eight configura-           222
+ 186     is selected by outcome. This test asks whether count is a                 tions and is reported separately. We use association language        223
+ 187     sufficient monotone dose and provides exact coefficients for              and do not claim causal mediation.                                   224
+ 188     Eq. 4.
+ 189         The ladder is deliberately analytical. It isolates physical           5. Results                                                           225
+ 190     geometry and coefficient influence without attributing a neu-
+ 191     ral result to architecture-specific optimization. The nonlinear           5.1. Dependence exposes consensus blindness                          226
+
+ 192     experiment then asks whether the refined prediction transfers             Figure 2 shows the central intervention. Measurement-                227
+ 193     to the frozen networks. This analytical-to-neural sequence                disjoint contexts rank error better than clean shared con-           228
+ 194     is stronger than interpreting a post-hoc neural saliency map:             trols in every cohort. Disjoint-minus-shared ∆ρ is .092              229
+ 195     the count hypothesis is falsified under an exact estimator                [.043,.176] on fastMRI, .095 [.078,.126] on IXI, and .193            230
+ 196     before any neural response statistic is evaluated.                        [.111,.371] on NingXia. Clean-sharing error cosines are              231
+ 197         The neural grid uses a reference context (−2, +2) and                 .949, .968, and .995, leaving only 2.61%, 1.58%, and .25%            232
+ 198     eight target-preserving comparators. Target, input count,                 of paired error energy observable. Under thresholds fixed            233
+ 199     model, mask, and preprocessing are fixed; span, asymmetry,                from the disjoint condition, sharing raises high-error/low-          234
+ 200     overlap, and physical identity are recorded. Confirmation                 disagreement prevalence by 27.1, 20.9, and 28.2 percentage           235
+ 201     includes three physical planes per examination: 72 fastMRI,               points, respectively; every clustered interval excludes zero.        236
+
+
+                                                                              3
+CVPR                                                                                                                                              CVPR
+#*****                                                                                                                                            #*****
+                                CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 237         The effect is not tied to one learned estimator. Disjoint          amination, neural influence retains the expected association       289
+ 238     case-level error-ranking ρ is .961/.955 for HAT/SwinIR on              for every endpoint/model on fastMRI and IXI (|ρ| = .135–           290
+ 239     fastMRI and .910/.903 on NingXia. Analytical linear/cubic              .587; intervals exclude zero). NingXia does not replicate          291
+ 240     interpolation gives .977/.974 and .958/.967 on the same co-            it: error-alignment partial ρ is .014 for HAT and −.039 for        292
+ 241     horts. IXI supplies the largest clean-control replication rather       SwinIR, all endpoint intervals cross zero, and some direc-         293
+ 242     than a post-hoc favorable subset.                                      tions reverse. Thus the larger fastMRI/IXI cohorts support         294
+ 243         The dependence phenomenon also sits inside a broader               continuous influence beyond count; the eight-patient cohort        295
+ 244     shared-difficulty structure. Across 11 fastMRI neural model            supports only the broad descriptor and limits universal word-      296
+ 245     families, median pairwise examination-error rank correlation           ing.                                                               297
+ 246     is .961; across six IXI analytical/neural methods it is .991.
+ 247     In an earlier three-context decomposition, shared consensus            5.3. The local mechanism is stronger than a global                 298
+ 248     error accounts for 80.9% of fastMRI and 86.5% of NingXia                     ranking law                                                  299
+ 249     MSE, leaving only 19.1% and 13.5% as observable diver-                 The arrow-wise analysis supports the local chain in all six        300
+ 250     sity. These analyses do not isolate physical dependence as             strata. Influence-to-error-alignment partial ρ is .219–.410;       301
+ 251     cleanly as Fig. 2, so they are supporting rather than primary          alignment-to-normalized-disagreement is −.933 to −.889;            302
+ 252     evidence. They show why the blind spot matters: determin-              influence-to-observable-fraction is −.412 to −.211. All 18         303
+ 253     istic architectures frequently inherit the same examination            intervals exclude zero. The context-level consequence is           304
+ 254     difficulty, and output variation can represent only a minority         weaker: greater alignment predicts poorer disagreement–            305
+ 255     error component.                                                       error ranking in all strata, but intervals exclude zero in only    306
+ 256         Table 1 separates effect size from sample size. The small-         three of six. A local pair can have aligned errors because         307
+ 257     est cohort produces the largest point contrast but also the            common anchors influence both predictions, while the global        308
+ 258     widest patient-clustered interval; it is therefore a boundary          case-ranking effect also depends on anatomy, error magni-          309
+ 259     replication rather than the primary source of precision. The           tude, and the small set of contexts. This is evidence for a        310
+ 260     two brain cohorts independently support nearly identical ∆ρ            local mechanism, not causal mediation or a universal ranking       311
+ 261     despite different sample size and provenance.                          theorem.                                                           312
+                                                                                   This distinction resolves an apparent tension. The local        313
+ 262     5.2. Influence refines and survives falsification of                   cancellation arrow can be nearly deterministic after normal-       314
+ 263           count                                                            ization even when two context sets achieve similar examina-        315
+ 264     Raw count has the expected overall relationship with error             tion rankings. Ranking is invariant to monotone transforms         316
+ 265     geometry, but the exact compact ladder is not monotone.                and aggregates across heterogeneous cases; observability is        317
+ 266     Across all cohorts, overlap-count trends are +.9 for error             a per-pair energy property. A mechanism that changes which         318
+ 267     cosine/shared fraction and −.9 to −1.0 for observable frac-            error direction is exposed need not reorder every examina-         319
+ 268     tion/disagreement; nevertheless, the zero-to-one transition            tion when intrinsic case difficulty dominates both scores. We      320
+ 269     reverses. The early claim that every added common anchor               therefore treat local alignment/energy endpoints as the mech-      321
+ 270     must reduce observability is therefore rejected.                       anistic tests and context-level Spearman as a downstream           322
+ 271        Analytical influence resolves this exception. Common                consequence with lower power.                                      323
+ 272     coefficient mass correlates with error alignment at .815, .789,           A prespecified stability audit strengthens this interpreta-     324
+ 273     and .855 on fastMRI, IXI, and NingXia, versus .503, .466,              tion. All 42 amplitude, sign/field, and direction-count strata     325
+ 274     and .630 for count. Across alignment, shared fraction, ob-             pass the rank-stability gate (minimum ρ = .942). Physical-         326
+ 275     servable fraction, and disagreement, every clustered inter-            plane rank stability is .779–.954 and only one of three plane-     327
+ 276     val for the absolute-correlation advantage of influence over           pair gates passes. The response statistic is numerically stable    328
+ 277     count is above zero (.189–.283).                                       at a declared target/plane but not a plane-invariant global        329
+ 278        The nonlinear result is consistent across two architec-             property.                                                          330
+ 279     tures and three broad context grids (Fig. 3). For error
+ 280     alignment, neural influence/count correlations are .838/.799           5.4. Practical consequence without superiority                     331
+
+ 281     and .851/.796 on fastMRI, .797/.714 and .787/.712 on IXI,              Figure 4 evaluates acquired-anchor cross-validation as a           332
+ 282     and .786/.743 and .772/.735 on NingXia for HAT/SwinIR.                 consequence, not the central novelty. Anchor-CV ranks              333
+ 283     Across the 18 primary alignment/shared/observable end-                 ×4 examination error with ρ = .943/.955/.958 on                    334
+ 284     points, advantages range from .036 to .089 and every clus-             fastMRI/IXI/NingXia. Adjacent MAE gives .934/.956/.973             335
+ 285     tered interval excludes zero. Geometry- and examination-               and adjacent RMSE .942/.956/.959; paired differences are           336
+ 286     adjusted residual associations remain |ρ| = .185–.395.                 not consistently significant. Conditional association be-          337
+ 287        The exact-one-overlap subset is the decisive beyond-                yond adjacent MAE, scale, and spacing is .333/−.059/−.100.         338
+ 288     count boundary. After controlling span, asymmetry, and ex-             Anchor-CV is therefore an interpretable acquired-only diffi-       339
+
+
+                                                                            4
+CVPR                                                                                                                                                          CVPR
+#*****                                                                                                                                                        #*****
+                                    CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+         Table 1. Controlled measurement dependence. Stable-wrong ∆ is the increase in high-error/low-disagreement prevalence under thresholds
+         frozen from the disjoint condition.
+
+                      Cohort         Independent units ρdisjoint ρshared                ∆ρ [95% CI] Observable error / stable-wrong ∆
+                      fastMRI     24 examinations                    .959     .867 .092 [.043,.176]                           2.61% / +27.1 pp
+                      IXI        115 examinations                    .981     .886 .095 [.078,.126]                           1.58% / +20.9 pp
+                      NingXia 8 patients (22 series)                 .892     .698 .193 [.111,.371]                            .25% / +28.2 pp
+
+                                               Controlled same-target measurement dependence
+                               Disjoint contexts rank error better                                 Shared contexts hide 97.4--99.7% of error energy
+           fastMRI
+                                                                                    fastMRI                                                     2.61% obs.
+
+
+                IXI                                                                      IXI                                                    1.58% obs.
+
+
+                                                                                    NingXia                                                     0.25% obs.
+           NingXia
+                      0.00   0.05   0.10      0.15 0.20 0.25          0.30   0.35              0          20         40           60       80           100
+                                           : disjoint minus shared                                               Paired error energy (%)
+
+         Figure 2. Same-target controlled intervention. Left: error-ranking improvement of measurement-disjoint over clean dependence-preserving
+         contexts, with clustered 95% intervals. Right: shared (colored) and observable (gray) paired-error energy under clean sharing. NingXia
+         uncertainty is patient-clustered over eight patients.
+
+
+ 340     culty signal, not unique information.                                          strict dose law. Unequal coefficient mass explains analytical          365
+ 341         The retrospective densification endpoint remains prac-                     configurations, and paired neural finite responses transfer            366
+ 342     tically meaningful. Anchor-CV correlates with ×4 → ×2                          the idea to nonlinear interpolators. Plane dependence is not           367
+ 343     benefit at .871 on fastMRI and .948 on IXI. On IXI its oracle-                 a failed invariance theorem because the final claim is local:          368
+ 344     normalized gains are .920/.936/.972/.973 at the four frozen                    influence belongs to a target–context–input configuration.             369
+ 345     budgets. Adjacent MAE and output PC are comparable, and                        It would contradict a claim of one intrinsic global model              370
+ 346     output PC reaches .970 benefit correlation and .996 gain                       coefficient; we make no such claim.                                    371
+ 347     at the 50% IXI budget. The practical claim is availability                         The result also clarifies what is and is not actionable.           372
+ 348     and low cost: Anchor-CV requires already acquired anchors,                     Anchor-CV offers an inexpensive acquired-only examina-                 373
+ 349     zero dense targets at scoring, zero additional neural calls,                   tion signal and tracks retrospective densification value across        374
+ 350     and 0.42–3.97 ms CPU in the measured cases. It does not                        fastMRI and IXI. Yet adjacent differences carry essentially            375
+ 351     dominate every score.                                                          the same rank information, output PC can be stronger when              376
+                                                                                        outputs already exist, and neither score localizes the worst           377
+ 352     6. Discussion                                                                  physical plane. The mechanism therefore informs reliability-           378
+                                                                                        context design and examination triage without implying cal-            379
+ 353     The reviewer-memory message is simple: disagreement is                         ibrated uncertainty, autonomous reacquisition, or a univer-            380
+ 354     only as informative as the independence of the information                     sally superior scalar.                                                 381
+ 355     generating the compared predictions. MRI interpolation                             Several limitations are material. NingXia contains 22              382
+ 356     makes this testable because target position and physical an-                   series but only eight independent patients; its fixed-count            383
+ 357     chor identity are known. When contexts depend strongly                         result is null/mixed. HAT and SwinIR are related 2.5-D                 384
+ 358     on the same measurements, their local responses and tar-                       interpolators, and all evaluated data are MRI T2. The neural           385
+ 359     get errors align, causing disagreement to understate error.                    context grid varies span/asymmetry, although partial controls          386
+ 360     Measurement-disjoint contexts expose a larger error compo-                     and the fixed-count subset address this. Finite differences            387
+ 361     nent.                                                                          approximate local response under the chosen input fields               388
+ 362        The progression from overlap count to influence is sci-                     and cannot identify a global Jacobian. The final context-              389
+ 363     entifically important. Count is attractive because it is exact                 ranking arrow is underpowered with eight configurations.               390
+ 364     and acquisition-only, but the zero-to-one reversal falsifies a                 The ×2 consequence is retrospective and cross-estimator on             391
+
+
+                                                                                    5
+CVPR                                                                                                                                                                     CVPR
+#*****                                                                                                                                                                   #*****
+                                       CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+                                      Local neural shared influence explains error geometry better than overlap count
+                                             Error alignment                             Shared error fraction                      Observable error fraction
+             fastMRI · HAT
+
+           fastMRI · SwinIR
+
+                  IXI · HAT
+
+                IXI · SwinIR
+
+             NingXia · HAT
+
+           NingXia · SwinIR
+                               0.00   0.02          0.04       0.06   0.08   0.00     0.02       0.04       0.06     0.08   0.00   0.02       0.04       0.06     0.08
+                                             | influence| | count|                           | influence| | count|                        | influence| | count|
+
+         Figure 3. Neural shared influence improves absolute association over raw anchor-overlap count for error alignment, shared error fraction,
+         and observable error fraction in all six cohort–architecture strata. Points show |ρinfluence | − |ρcount | with examination/patient-clustered 95%
+         intervals.
+
+         Table 2. Broad-grid and fixed-one-overlap neural evidence. Broad columns compare error-alignment correlation for count and neural
+         influence; fixed columns give geometry/examination-adjusted influence correlation and clustered intervals.
+
+                Cohort            Model      Broad ρcount Broad ρinfluence Advantage [95% CI] Fixed-one-overlap partial ρ [95% CI]
+                fastMRI HAT                                 .799               .838              .039 [.028,.049]                            .169 [.053,.283]
+                        SwinIR                              .796               .851              .055 [.048,.061]                            .350 [.212,.464]
+                IXI     HAT                                 .714               .797              .082 [.076,.088]                            .346 [.259,.424]
+                        SwinIR                              .712               .787              .075 [.070,.080]                            .258 [.181,.335]
+                NingXia HAT                                 .743               .786              .043 [.027,.057]                          .014 [−.232,.223]
+                        SwinIR                              .735               .772              .036 [.016,.057]                         −.039 [−.175,.144]
+
+
+ 392     IXI; scanner time, motion, and clinical cost are absent. No                              Evidence hierarchy. We treat fastMRI and IXI as the pri-                414
+ 393     result establishes diagnostic safety.                                                    mary mechanism evidence because they provide 24 and 115                 415
+ 394        These boundaries also explain why several exploratory                                 independent examinations. NingXia changes anatomy and                   416
+ 395     Plan-7 ideas are not paper contributions. Minimum-influence                              site but contains eight patient clusters; it exposes hetero-            417
+ 396     context selection, multi-anchor jackknife dispersion, and co-                            geneity rather than contributing artificial pooled precision.           418
+ 397     variance residualization failed locked confirmation/transfer                             The same hierarchy is applied to favorable and unfavorable              419
+ 398     gates. Their failure prevents prescriptive claims but does not                           results: its broad influence direction is reported, and so is           420
+ 399     contradict the observed local relationship among measure-                                its exact fixed-count failure. This prevents both an under-             421
+ 400     ment influence, error alignment, and cancellation. Complete                              powered nonreplication from erasing the primary effect and              422
+ 401     exclusions and contradictions are audited in the supplement.                             selective omission from overstating universality.                       423
+                                                                                                      The broader relevance is a hypothesis rather than an em-            424
+                                                                                                  pirical result. Any reliability system comparing predictions            425
+                                                                                                  generated from shared measurements, features, priors, or                426
+ 402     Design implications. For a disagreement-based reliability
+                                                                                                  training lineage may exhibit the same blind spot. Extending             427
+ 403     study, merely increasing the number of predictions is insuffi-
+                                                                                                  the physical intervention to other inverse problems is a use-           428
+ 404     cient. Contexts should be audited for shared physical inputs
+                                                                                                  ful next step; this paper’s evidence remains scoped to MRI              429
+ 405     and, where possible, shared local response. A clean evalu-
+                                                                                                  slice interpolation.                                                    430
+ 406     ation should preserve the target while varying dependence,
+ 407     report paired error energy in addition to correlation, and                               7. Conclusion                                                           431
+ 408     include a simple acquired-data difficulty baseline. These are
+ 409     study-design implications, not a claim that every deployed                               Deterministic MRI interpolators can agree while being                   432
+ 410     system should compute neural influence. Here influence                                   jointly wrong because their errors share a component that pre-          433
+ 411     is primarily an explanatory research probe; measurement-                                 diction differences cannot observe. Controlled same-target              434
+ 412     disjoint contexts and Anchor-CV are cheaper operational                                  interventions show that dependence-preserving contexts hide             435
+ 413     options.                                                                                 substantially more error than measurement-disjoint contexts             436
+
+
+                                                                                             6
+CVPR                                                                                                                                                        CVPR
+#*****                                                                                                                                                      #*****
+                                 CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+         Table 3. Mechanism-chain partial Spearman ranges across HAT/SwinIR. Every local-arrow interval excludes zero. The final column counts
+         architecture strata with a context-ranking interval excluding zero.
+
+              Cohort      Influence→alignment Alignment→norm. disagreement Influence→observable Alignment→ranking
+              fastMRI                  .372–.410                           −.933–−.926                  −.412–−.370         −.333–−.143 (0/2)
+              IXI                      .321–.347                           −.893–−.890                  −.342–−.298         −.643–−.500 (2/2)
+              NingXia                  .219–.258                           −.898–−.889                  −.231–−.211         −.667–−.548 (1/2)
+
+         Table 4. Practical consequence and strong baselines. Benefit is the retrospective ×4 → ×2 error reduction. Dashes indicate that NingXia is
+         excluded from the frozen two-cohort consequence rule.
+
+              Cohort      Anchor-CV ρ vs. x4 error Adjacent MAE ρ Anchor-CV ρ vs. benefit                            Best competing benefit ρ
+              fastMRI                              .943                  .934                            .871 .846 adjacent MAE / .843 PC
+              IXI                                  .955                  .956                            .948                     .970 PC
+              NingXia                              .958                  .973                              —                           —
+
+
+ 437     across fastMRI, IXI, and NingXia. Integer overlap captures                  [9] Thomas Kuestner, Kerstin Hammernik, Daniel Rueckert, To-            472
+ 438     the trend but not the mechanism: analytical and local neural                    bias Hepp, and Sergios Gatidis. Predictive uncertainty in deep      473
+ 439     shared influence explain error alignment and observability                      learning-based mr image reconstruction using deep ensem-            474
+ 440     more precisely. Acquired-anchor cross-validation supplies                       bles. Magnetic Resonance in Medicine, 92(1):289–302, 2024.          475
+ 441     a lightweight examination-level consequence without being                       2                                                                   476
+ 442     universally best. The strongest supported claim is narrow                  [10] Balaji Lakshminarayanan, Alexander Pritzel, and Charles             477
+                                                                                         Blundell. Simple and scalable predictive uncertainty estima-        478
+ 443     but consequential: reliability from disagreement depends on
+                                                                                         tion using deep ensembles. In NeurIPS, 2017. 1, 2                   479
+ 444     the independence of the influential information behind the
+                                                                                    [11] Guanxiong Luo, Moritz Blumenthal, Martin Heide, and Mar-            480
+ 445     predictions.
+                                                                                         tin Uecker. Bayesian mri reconstruction with joint uncertainty      481
+                                                                                         estimation using diffusion models. Magnetic Resonance in            482
+ 446     References                                                                      Medicine, 90(1):295–311, 2023. 2                                    483
+                                                                                    [12] Michael Lustig and John M. Pauly. SPIRiT: Iterative self-           484
+ 447      [1] Biomedical Image Analysis Group, Imperial College London.
+                                                                                         consistent parallel imaging reconstruction from arbitrary k-        485
+ 448          IXI dataset, 2014. Accessed 2026-08-13. 2
+                                                                                         space. Magnetic Resonance in Medicine, 64(2):457–471,               486
+ 449      [2] Gavin Brown, Jeremy Wyatt, Rachel Harris, and Xin Yao.                     2010. 2                                                             487
+ 450          Diversity creation methods: A survey and categorisation. In-
+                                                                                    [13] Dominik Narnhofer, Alexander Effland, Erich Kobler, Kerstin         488
+ 451          formation Fusion, 6(1):5–20, 2005. 2
+                                                                                         Hammernik, Florian Knoll, and Thomas Pock. Bayesian un-             489
+ 452      [3] Vineet Edupuganti, Morteza Mardani, Shreyas Vasanawala,                    certainty estimation of learned variational mri reconstruction.     490
+ 453          and John M. Pauly. Uncertainty quantification in deep mri                  IEEE TMI, 41(2):279–291, 2022. 2                                    491
+ 454          reconstruction. IEEE TMI, 40(1):239–250, 2021. 1, 2
+                                                                                    [14] Michele Nicastro, Ben Jeurissen, Quinten Beirinckx, Celine          492
+ 455      [4] Yarin Gal and Zoubin Ghahramani. Dropout as a bayesian                     Smekens, Dirk H. J. Poot, Jan Sijbers, and Arnold J. den            493
+ 456          approximation: Representing model uncertainty in deep learn-               Dekker. To shift or to rotate? comparison of acquisition            494
+ 457          ing. In ICML, pages 1050–1059, 2016. 1                                     strategies for multi-slice super-resolution magnetic resonance      495
+ 458      [5] Hayit Greenspan, Gozde Oz, Nahum Kiryati, and Shlomo                       imaging. Frontiers in Neuroscience, 16:1044510, 2022. 2             496
+ 459          Peled. Mri inter-slice reconstruction using super-resolution.         [15] Luis A. Ortega, Rafael Cabanas, and Andres Masegosa. Di-            497
+ 460          Magnetic Resonance Imaging, 20(5):437–446, 2002. 2                         versity and generalization in neural network ensembles. In          498
+ 461      [6] Antal Horvath, Simon Pezold, Matthias Weigel, Katrin Par-                  AISTATS, pages 11720–11743, 2022. 2                                 499
+ 462          mar, and Philippe C. Cattin. High order slice interpolation for       [16] Cheng Peng, Wei-An Lin, Haofu Liao, Rama Chellappa, and             500
+ 463          medical images. In SASHIMI, pages 69–78, 2017. 2                           S. Kevin Zhou. SAINT: Spatially aware interpolation network         501
+ 464      [7] Shi Hu, Nicola Pezzotti, and Max Welling. Learning to predict              for medical slice synthesis. In CVPR, pages 7750–7759, 2020.        502
+ 465          error for mri reconstruction. In MICCAI, pages 604–613,                    2                                                                   503
+ 466          2021. 2                                                               [17] Haofei Song, Xintian Mao, Jing Yu, Qingli Li, and Yan Wang.         504
+ 467      [8] Florian Knoll, Jure Zbontar, Anuroop Sriram, et al. fastMRI:               I3net: Inter-intra-slice interpolation network for medical slice    505
+ 468          A publicly available raw k-space and dicom dataset of knee                 synthesis. IEEE TMI, 43(9):3306–3318, 2024. 2                       506
+ 469          images for accelerated mr image reconstruction using ma-              [18] Sean I. Young, Yael Balbastre, Bruce Fischl, Polina Gol-            507
+ 470          chine learning. Radiology: Artificial Intelligence, 2(1):                  land, and Juan Eugenio Iglesias. Fully convolutional slice-to-      508
+ 471          e190007, 2020. 2                                                           volume reconstruction for single-stack mri. In Proceedings of       509
+
+
+                                                                                7
+CVPR                                                                                                                                                                                                                                            CVPR
+#*****                                                                                                                                                                                                                                          #*****
+                                                           CVPR 2026 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+                                                              Practical consequence: examination triage from already acquired anchors
+                                            Acquired-only difficulty ranking                                           Retrospective densification consequence                                          Useful, not uniquely superior
+                                   1.00                                                                        1.000
+                                           Anchor-CV                                                                                                                                      1.00        Anchor-CV
+
+
+
+
+                                                                                 Spearman with x4 x2 benefit
+                                   0.98    Adjacent MAE                                                        0.975                                                                                  Adjacent MAE
+          Spearman with x4 error
+
+
+
+
+                                           Adjacent RMSE
+
+
+
+
+                                                                                                                                                                 Oracle-normalized gain
+                                                                                                                                                                                          0.98        Output PC
+                                                                                                               0.950
+                                   0.96                                                                        0.925                                                                      0.96
+                                   0.94                                                                        0.900                                                                      0.94
+                                   0.92                                                                        0.875
+                                                                                                                                                                                          0.92
+                                                                                                               0.850
+                                   0.90                                                                        0.825                                                                      0.90
+                                   0.88                                                                        0.800                                                                      0.88
+                                          fastMRI           IXI        NingXia                                              fastMRI                 IXI                                          10          20           30         40    50
+                                                                                                                                                                                                            IXI densification budget (%)
+
+         Figure 4. Practical consequence. Anchor-CV uses acquired anchors only and strongly ranks examination difficulty (left) and retrospective
+         ×4 → ×2 benefit (middle). The IXI allocation curves (right) show large gain above random but no universal winner. Output PC requires
+         existing reconstruction outputs; Anchor-CV requires none.
+
+
+ 510          the IEEE/CVF Conference on Computer Vision and Pattern
+ 511          Recognition, pages 11535–11545, 2024. 2
+ 512     [19] Jiaxin Zhang, Sirui Bi, and Victor Fung. On the quantifi-
+ 513          cation of image reconstruction uncertainty without training
+ 514          data. In Proceedings of the IEEE/CVF Winter Conference on
+ 515          Applications of Computer Vision, pages 2072–2081, 2024. 2
+
+
+
+
+                                                                                                                                      8
+

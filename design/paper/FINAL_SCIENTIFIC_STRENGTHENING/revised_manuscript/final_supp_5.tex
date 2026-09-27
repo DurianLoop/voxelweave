@@ -1,0 +1,55 @@
+\section{Negative Results and Boundaries}
+\subsection{Final-analysis boundaries}
+Every fastMRI fixed-reference ranking interval crosses zero; SAINT-to-I3Net has a negative point estimate. Four IXI fixed-reference intervals cross zero, all with I3Net as companion. The more favorable condition-specific paired-error endpoint is separately labeled and cannot replace fixed-reference inference. Near-orthogonal but no opposing neural sensitivities occur in the fixed-context sample, and individual approximation errors can exceed 100\%. Acquired-only brain influence does not repair the old NingXia null/mixed result or establish a cross-architecture finite-response claim. The final score-search branch is closed.
+
+\subsection{One Acquired-Only Guard: Full Negative Evaluation}
+This experiment uses stored phase-0 predictions from two fixed pairs, HAT/SwinIR and I3Net/CycleINR. Each pair is evaluated on five target planes per examination. A target's scoring mask is the union of its two closest acquired phase-0 1\% foregrounds. A single acquired nonzero-intensity Q99--Q1 range normalizes disagreement, error and acquired-anchor baselines. Both the mask and scale are computed without the missing target. Error evaluation then uses that same support. Model weights are dataset-specific historical checkpoints, not one cross-dataset model.
+
+The 24 fastMRI case IDs are ordered by SHA-256 of a fixed prefix plus ID; the first 12 form development and the others internal evaluation. All 115 IXI cases are an additional historically reused transfer cohort. No patient appears in both new fastMRI parts, but historical analysis reuse prevents an untouched-holdout claim.
+
+Only one candidate is tried: $G=\max(F_{\rm dev}(D_n),F_{\rm dev}(A_n))$, with right-continuous development empirical CDFs and acquired-range normalization. The dependency trigger is shared phase-0 evidence; no claim is made that the guard estimates neural influence. The thresholds are development Q75 of $\min(\mathrm{MAE}_a,\mathrm{MAE}_b)_n$ and Q25 of $D_n$. This requires both predictions to have high case-level error and low disagreement. Formula, CDF samples and thresholds are saved before the evaluation summary is computed. There is no threshold retuning or additional formula search.
+
+\input{p17_score_table.tex}
+
+The internal evaluation contains no positive cases for either pair; AUROC and AUPRC are undefined, not zero. IXI has two positives per pair. The guard's AP is .5087 and .0174 versus .5089 and .0144 for disagreement, and .5102 and .0181 for Anchor-CV. These point estimates are unstable with two positives and are not evidence of useful detection. No guard-minus-baseline interval excludes zero across the twelve comparisons (two pairs by six baselines) on IXI. Of 5,000 joint bootstrap draws, 3,918 retain both classes for both pairs; intervals are conditional on those nondegenerate draws and should not be treated as reliable rare-event coverage guarantees. The fastMRI family is undefined throughout. No further scoring family is searched.
+
+Secondary error-rank correlations, AUROC, top-20\% enrichment, all baseline scores, predictions and excluded bootstrap counts are in the machine-readable outputs. Acquired header spacing can be constant and is not a verified clinical spacing measure here. Missing or undefined metrics are retained as NA. The previous context-selection, jackknife and residualization failures below remain relevant; this candidate does not rescue a universal method claim.
+
+\subsection{New-Architecture Influence Stability and Boundary}
+SAINT uses all 24 fastMRI examinations and three deterministic interior planes. I3Net/CycleINR use the first 24 geometry-eligible cases in frozen IXI test-list order and one central plane. Their regular four-anchor reference is $(-5,-1,+3,+7)$, with two overlap-three and five zero-overlap contexts. Zero-overlap influence is zero by physical-measurement definition and is excluded from the stability gate.
+
+\begin{table*}[t]
+\centering
+\caption{Plan-9 influence audit. Stability entries are rank correlations with the $+1\%$ primary statistic. A model is claim eligible only if all are at least .90.}
+\label{tab:p9-influence}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+Model & $+.5\%$ & $+2\%$ & $-1\%$ & Broad $\rho(I,$alignment$)$ & $|\rho_I|-|\rho_{count}|$ [CI] & Fixed-count partial $\rho$ [CI]\\
+\midrule
+SAINT & .940 & .964 & .995 & .706 [.680,.734] & .014 [$-.002$,.029] & .063 [$-.021$,.149]\\
+I3Net & .859 & .737 & .939 & .776$^{\dagger}$ & $-.006^{\dagger}$ & .434$^{\dagger}$\\
+CycleINR & .779 & .857 & .876 & .789$^{\dagger}$ & .007$^{\dagger}$ & .229$^{\dagger}$\\
+\bottomrule
+\multicolumn{7}{l}{$^{\dagger}$Exploratory only after the documented stability gate failed; excluded from influence claims.}
+\end{tabular}
+\end{table*}
+
+SAINT's broad influence associations have the expected direction for alignment, shared fraction, observable fraction, and disagreement. Its fixed-count estimates also have the expected signs, but only disagreement excludes zero. This supports a stable local influence signal in a non-transformer while falsifying a universal beyond-count advantage. I3Net/CycleINR remain valid phenomenon experiments because their controlled predictions do not depend on the finite-response stability classification.
+
+\subsection{Material Negative and Boundary Results}
+\begin{enumerate}
+\item Integer overlap is not a monotone dose; the exact analytical ladder reverses at zero-to-one sharing.
+\item Fixed-count continuous influence is null/mixed on NingXia; all eight-patient intervals cross zero.
+\item Local response rankings are stable to tested perturbation parameters but not invariant across physical planes.
+\item The local cancellation chain is stronger than the global context-ranking chain; no causal mediation claim is supported.
+\item Anchor-CV is not uniquely informative or universally superior. Adjacent differences are statistically similar and can be stronger; output PC wins several IXI comparisons.
+\item Examination scores do not localize the worst plane and are not calibrated pixelwise uncertainty.
+\item Densification results are retrospective; the same-model audit retains a negative NingXia Res-SRDiff boundary and omits scanner-time, motion, and clinical utility.
+\item Minimum-influence context selection transfers below random/PC on IXI and is heterogeneous on NingXia.
+\item Multi-anchor jackknife IQR collapses from development to confirmation/transfer and is far below adjacent MAE.
+\item Covariance residualization gives negligible IXI gain with intervals crossing zero and mixed/tied results elsewhere.
+\end{enumerate}
+
+Items 8--10 test abandoned mechanism-derived methods. They are not main-paper contributions, but are retained here because they prevent the reader from inferring that the mechanism already yields an improved universal score.
+

@@ -1,47 +1,32 @@
-# MRI 层间插值论文项目总导航
+# MRI 层间插值双论文项目
 
-本目录保存从初始审计到 Plan 9 架构族证伪实验的研究协议、分析脚本、机器可读结果、论文分支和历史交付快照。当前最新科学版本是 **Plan 9 架构泛化分支**；所有稿件均未自动投稿。
+当前 CVPR 科学版本为 **Plan 17（2026-09-11）**：共享测量影响框架、条件协方差命题、Algorithm 1、真实误差图和完整证据审计。TMI 保持 Plan 15 科学证据与 Plan 16 图稿版本。
 
-## 从这里开始
+| 文档 | 当前 PDF | 内容 |
+|---|---|---|
+| CVPR 正文 | [main.pdf](CVPR/CVPR_ARCH_GENERALIZED/PAPER/main.pdf) | 8 页；技术内容止于第 7 页；4 张核心图、2 张主表 |
+| CVPR 补充 | [supplement.pdf](CVPR/CVPR_ARCH_GENERALIZED/PAPER/supplement.pdf) | 20 页；审计、推导、失败评分、完整 baseline 和预算分析 |
+| TMI 正文 | [main.pdf](TMI/TMI_ARCH_GENERALIZED/main.pdf) | 11 页；本轮未改动 |
+| TMI baseline 补充 | [baseline_supplement.pdf](TMI/TMI_ARCH_GENERALIZED/baseline_supplement.pdf) | 5 页；本轮未改动 |
 
-- [项目最终综合中文报告](FINAL_COMPREHENSIVE_REPORT_ZH.md)：覆盖研究演进、数据、方法、关键数字、正负结果、两篇论文状态和投稿治理。
-- [Plan 9 最终实验报告](PLAN9_ARCH_GENERALIZATION/FINAL_REPORT.md)：I3Net、SAINT、CycleINR 架构泛化实验的完整结果。
-- [TMI 分支说明](TMI/README.md)：各 TMI 稿件的用途和当前推荐版本。
-- [CVPR 分支说明](CVPR/README.md)：各 CVPR 稿件的用途和当前推荐版本。
-- [历史 ZIP 归档](ARCHIVE_PACKAGES/README.md)：Plan 6/7 阶段压缩包、清单和校验值。
+Plan 17 修正历史影响量公式描述、前瞻性措辞及排序估计对象，新增去自比较敏感性。唯一 acquired-only guard 未证实优越性；0 阳性内部评价与每配对仅 2 阳性的 IXI 结果完整保留，不声称真正未触及确认。没有新增训练或外部投稿。
 
-## 当前最终候选
+## 当前入口
 
-| 方向 | 源码 | PDF | 状态 |
-|---|---|---|---|
-| TMI | `TMI/TMI_ARCH_GENERALIZED/main.tex` | `TMI/TMI_ARCH_GENERALIZED/main.pdf` | 9 页，Plan 9 架构泛化版 |
-| CVPR 主文 | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/main.tex` | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/main.pdf` | 技术内容 8 页，参考文献第 9 页 |
-| CVPR 补充 | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/supplement.tex` | `CVPR/CVPR_ARCH_GENERALIZED/PAPER/supplement.pdf` | 5 页 |
+- [详细中文报告](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/FINAL_REPORT_ZH.md)
+- [三位严格审稿人、自评和最高价值后续实验](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/HOSTILE_REVIEW_ZH.md)
+- [证据审计](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/research_audit.md)、[研究台账](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/research_ledger.json)、[实验登记](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/experiment_registry.csv)
+- [主张证据矩阵](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/claim_evidence_matrix.md)、[运行说明](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/RUN_COMMANDS_ZH.md)
+- [保护和构建验证](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/outputs/final_verification.json)
+- [本地审阅包](PLAN17_MEASUREMENT_INFLUENCE_FRAMEWORK/delivery/CVPR_PLAN17_REVIEW_PACKAGE.zip)
 
-## 目录职责
+## 既有 baseline 和历史版本
 
-| 目录/文件组 | 内容 |
-|---|---|
-| `PLAN9_ARCH_GENERALIZATION/` | 最新架构族实验、协议、脚本、输出、图和最终报告 |
-| `PLAN7_ACCEPTANCE_OPTIMIZATION/` | 投稿前风险登记、失败方法门控、审稿模拟与 Plan 7 最终审计 |
-| `TMI/` | TMI 历史分支、研究 master、提交候选和 Plan 9 版本 |
-| `CVPR/` | CVPR 恢复稿、升级稿、Plan 7 final 和 Plan 9 版本 |
-| `plan2_outputs/`、`plan3_outputs/`、`plan4_outputs/` | 历史阶段的机器可读结果与图件 |
-| `audit_outputs/` | 初始独立审计输出 |
-| `ARCHIVE_PACKAGES/` | 本地历史 ZIP 及 Git 可见清单；ZIP 本体不进入版本库 |
-| `plan2_*.py`、`plan3_*.py`、`plan4_*.py` | 历史可复现实验脚本；为保持旧命令兼容而留在根目录 |
-| `goal.md`、`plan2.md` … `plan9.md` | 各阶段原始要求与决策约束 |
+13 模型、111 配置、555 指标值、3,735 行病例结果继续全部使用；CVPR 完整主表和 20 项预算分析现在位于补充材料，TMI 保持原位置。15 项预算 MAE 同时区间支持改善、5 项跨零；13 个重建 baseline 不等于 13 架构物理干预验证。原生全平面指标与共同支撑 QA 不混算。
 
-## 最稳健的当前结论
+- [Plan 15 完整 baseline 整合报告](PLAN15_BASELINE_INTEGRATION/FINAL_REPORT_ZH.md)、[逐方法使用情况](PLAN15_BASELINE_INTEGRATION/BASELINE_USE_MAP_ZH.md)
+- [Plan 16 历史图稿报告](PLAN16_RESEARCH_DIAGRAMS/FINAL_REPORT_ZH.md)
+- [Plan 14 报告](PLAN14_SCIENTIFIC_STRENGTHENING/FINAL_REPORT_ZH.md)、[Plan 13 报告](PLAN13_EVIDENCE_UPGRADE/FINAL_REPORT_ZH.md)
+- [Plan 12 报告](ARCHIVE/PLANS/PLAN12_STRICT_REVIEW_ITERATION/STRICT_REVIEW_ITERATION_REPORT_ZH.md)
 
-在已评估的 MRI 层间插值范式中，复用相同物理测量会改变局部误差对齐、抵消与分歧可观测性；但检查级排序收益以及有限差分影响相对共享计数的优势具有显著架构依赖性。因此可以说“在已评估的多种插值范式中观察到”，不能说“架构无关”或“影响度普适优越”。
-
-## 复现和安全边界
-
-初始只读审计仍可从 `D:\MRI` 运行：
-
-```powershell
-D:\conda\envs\MRI\python.exe -B .\design\paper\audit_evidence.py
-```
-
-历史实验脚本和输出未在本次整理中搬动。原始 MRI 数据、模型权重和环境不在历史 ZIP 内。投稿前仍需作者核对伦理、数据使用、匿名化、作者信息、计算报告、venue 政策以及 TMI/CVPR 的合并或错峰策略。
+所有新产物保存在 paper 内。Plan 17 改稿前的 162 个文件由快照保护，根 README、原始数据和 TMI 未改动。A 类提交资料由用户处理；当前仍是研究候选稿，不能给出可校准的录用概率。

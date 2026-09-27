@@ -1,0 +1,34 @@
+{
+  "variant": "i3net_repaired",
+  "best_sha256": "fc9252baad850becf9429c996a5981f35ba8523f700675ac5d8743211792110c",
+  "device": "NVIDIA GeForce RTX 5090 D v2",
+  "parameters": 23205197,
+  "conv_linear_gflops_interval": 906.984685568,
+  "conv_linear_gflops_slice": 302.3282285226667,
+  "flops_coverage": "Conv/Linear MAC x2 only; excludes DCT matmul, normalization, rearrangement and elementwise ops; NOT total FLOPs",
+  "latency_ms_interval_median": 30.86984995752573,
+  "latency_ms_slice_median": 10.28994998584191,
+  "latency_ms_interval_p95": 31.124734319746494,
+  "peak_forward_gib": 0.2257833480834961,
+  "contract": {
+    "shape": [
+      1,
+      3,
+      13,
+      256,
+      256
+    ],
+    "consumed_input_shape": [
+      1,
+      4,
+      1,
+      256,
+      256
+    ],
+    "amp": true,
+    "warmup": 10,
+    "repetitions": 30,
+    "scope": "forward only; generates 13 positions and returns 3 central missing slices; excludes IO/resize/metrics",
+    "torch": "2.11.0+cu128"
+  }
+}

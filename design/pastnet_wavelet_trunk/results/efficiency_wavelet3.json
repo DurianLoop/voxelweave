@@ -1,0 +1,26 @@
+{
+  "variant": "wavelet3",
+  "device": "NVIDIA GeForce RTX 5090 D v2",
+  "parameters": 992819,
+  "conv_linear_gflops_interval": 449.562372096,
+  "conv_linear_gflops_slice": 149.854124032,
+  "flops_coverage": "Conv/Linear MAC x2, including functional wavelet-band convolutions; excludes Haar, FFT and elementwise ops; not total FLOPs",
+  "latency_ms_interval_median": 159.7767500206828,
+  "latency_ms_slice_median": 53.25891667356094,
+  "latency_ms_interval_p95": 160.49302527680993,
+  "peak_forward_gib": 0.8587493896484375,
+  "contract": {
+    "shape": [
+      1,
+      3,
+      13,
+      256,
+      256
+    ],
+    "amp": true,
+    "warmup": 10,
+    "repetitions": 30,
+    "scope": "forward only, three missing slices, excludes IO/resize/metrics",
+    "torch": "2.11.0+cu128"
+  }
+}

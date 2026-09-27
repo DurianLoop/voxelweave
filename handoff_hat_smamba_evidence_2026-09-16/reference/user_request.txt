@@ -1,0 +1,318 @@
+你现在需要接手一个 MRI T2 x4 through-plane interpolation 项目的 baseline 结果审计与证据整理任务。
+
+请先在本机查找项目根目录。项目目录名称可能类似：
+
+transfer_package_t2x4_friend_2026-06-16_v2
+
+找到后，必须先完整读取：
+
+1. Handofff.md
+2. model/协议.md
+3. model/main_model/结果.md
+4. baseline_exposed_problems_for_model_design(1).md
+
+如果路径不同，请搜索这些文件名，不要因为路径不一致就停止。
+
+==================================================
+一、必须遵守的正式评估协议
+==================================================
+
+所有可以进入论文主表的结果必须满足 friend-protocol：
+
+1. MRI T2 x4 through-plane interpolation。
+2. 测试输入只能来自 eval_sparse。
+3. 使用 sparse-input min/max normalization：
+   lo = np.nanmin(eval_sparse)
+   hi = np.nanmax(eval_sparse)
+   norm = (eval_sparse - lo) / (hi - lo + 1e-8)
+4. 只评估 generated slices：
+   idx % 4 != 0
+5. 使用项目正式 metrics：
+   code/topcow_diffusion/metrics.py
+6. 报告五项指标：
+   PSNR / SSIM / MAE / MSE / NCC
+7. 正式测试 checkpoint 必须由 strict validation 选择。
+8. 正式测试只能加载：
+   best_strict_val_x4.pt
+   或 baseline 中含义完全等价、能够证明由 strict-val 选出的 best checkpoint。
+9. 不得使用 quick-val、last checkpoint或test结果选择checkpoint。
+10. 不得删除困难病例或事后选择表现好的fold。
+11. IXI n=25和IXI n=115必须分开，不得混合。
+12. NingXia正式统计必须保留完整8-fold、8个病例、22个series。
+13. 不得修改、覆盖或删除任何原始结果文件。
+
+本次任务首先是整理已有文件，不要擅自重新训练。如果确认某项结果不存在，只记录缺失情况和建议运行命令，等待用户授权。
+
+==================================================
+二、本次需要解决的问题
+==================================================
+
+目前论文比较集合排除I3Net后共有11个baseline：
+
+Linear
+Cubic
+ArSSR
+CycleINR
+ResUNet
+SwinIR
+HAT
+SMamba
+SAINT
+SA-INR
+CFFNet
+
+其中目前主要缺口集中在HAT和SMamba：
+
+1. HAT缺少IXI-T2 n=25正式结果。
+2. SMamba缺少IXI-T2 n=25正式结果。
+3. HAT虽然有NingXia 8-fold历史汇总值，但当前转移包中缺少独立可追溯的逐fold CSV、checkpoint和manifest。
+4. SMamba虽然有NingXia 8-fold历史汇总值，但当前转移包中缺少独立可追溯的逐fold CSV、checkpoint和manifest。
+5. HAT和SMamba因为缺少NingXia逐fold文件，当前无法计算指定四折：
+   fold01 + fold03 + fold04 + fold06
+
+请在本机完整搜索HAT和SMamba的原始训练、strict-val和test结果。
+
+可能出现的关键词包括：
+
+HAT
+hat_2p5d
+HAT-style
+SMamba
+smamba
+mamba
+SMamba-UNet
+ningxia_hat
+ningxia_smamba
+ixi_hat
+ixi_smamba
+best_strict_val_x4.pt
+strict_summary_compact.csv
+summary_metrics.csv
+per_case_metrics.csv
+run_manifest.json
+history.csv
+strict_val_history.csv
+
+搜索范围至少包括：
+
+- 当前项目根目录
+- model/runs
+- code
+- docs
+- logs
+- notebooks
+- D:\MRI
+- 用户文档目录中可能存在的旧项目副本
+- 其他明显与MRI实验有关的磁盘目录
+
+只能读取和复制，禁止删除、移动或覆盖原始文件。
+
+==================================================
+三、已知历史数值，仅用于交叉核对
+==================================================
+
+下面数值来自当前项目文档，只能作为搜索和一致性检查线索，不能代替原始证据。
+
+fastMRI n=24：
+
+HAT：
+PSNR 22.7858
+SSIM 0.7536
+MAE 49.6702
+MSE 10454.4878
+NCC 0.9079
+
+SMamba：
+PSNR 22.7322
+SSIM 0.7618
+MAE 49.4487
+MSE 10826.4468
+NCC 0.9051
+
+NingXia正式8-fold历史汇总：
+
+HAT：
+PSNR 23.9499
+SSIM 0.7519
+MAE 86.1449
+MSE 32226.9860
+NCC 0.8933
+
+SMamba：
+PSNR 23.9126
+SSIM 0.7500
+MAE 86.8152
+MSE 32498.3175
+NCC 0.8917
+
+请检查原始文件是否能复现这些数值。如果不一致，不要修改数值来强行匹配；应记录差异、来源文件和可能原因。
+
+==================================================
+四、需要核验的内容
+==================================================
+
+对HAT和SMamba分别建立以下审计矩阵：
+
+1. fastMRI n=24
+2. IXI n=25
+3. NingXia完整8-fold
+4. NingXia指定探索性4-fold
+
+每个“方法×数据集”至少核验：
+
+- 是否有训练配置；
+- 训练随机seed；
+- 数据划分seed；
+- 数据manifest；
+- 代码版本或代码SHA-256；
+- 环境信息；
+- 训练history；
+- strict-val history；
+- strict-val选出的best checkpoint；
+- checkpoint SHA-256；
+- final-test run manifest；
+- per-case CSV；
+- summary CSV/JSON；
+- 五项指标；
+- normalization_mode；
+- stride=4；
+- generated-slices-only；
+- 测试是否只运行在strict-val选择的checkpoint上。
+
+特别注意：
+
+- “数据划分seed=3407”不等于“训练seed=3407”。
+- 如果训练seed没有证据，请写“unknown/unrecorded”，不要猜测。
+- 如果只有论文文档中的汇总数值而没有原始CSV/checkpoint/manifest，状态应标记为“历史数值存在，但证据链不完整”。
+- 如果只有quick-val结果，不得标记为正式结果。
+- 如果test checkpoint不是strict-val选择的，不得进入正式主表。
+- 如果IXI结果使用n=115，不能冒充n=25结果。
+
+==================================================
+五、NingXia重新汇总要求
+==================================================
+
+如果找到了HAT或SMamba完整的8-fold逐fold结果，请生成：
+
+1. 完整8-fold fold-mean汇总；
+2. 每个fold的五项指标表；
+3. fold到病例的映射；
+4. 每fold包含的test series数量；
+5. 指定四折探索性汇总：
+   fold01 + fold03 + fold04 + fold06
+
+指定四折对应病例预计为：
+
+NX002 + NX004 + NX005 + NX007
+
+四折统计必须对4个fold等权平均，不能按series数量加权。
+
+指定四折结果必须明确标记：
+
+Post-hoc exploratory subset only.
+Not a replacement for the formal 8-fold result.
+
+不得用这四折结果覆盖完整8-fold结果。
+
+==================================================
+六、输出目录和文件
+==================================================
+
+请在项目根目录新建，不要覆盖现有结果：
+
+handoff_hat_smamba_evidence_2026-09-16/
+
+建议结构：
+
+handoff_hat_smamba_evidence_2026-09-16/
+  README.md
+  AUDIT_REPORT.md
+  evidence_matrix.csv
+  seed_audit.csv
+  source_file_inventory.csv
+  sha256_manifest.csv
+  missing_items.md
+  rerun_recommendations.md
+  HAT/
+    fastMRI/
+    IXI_n25/
+    NingXia_8fold/
+    NingXia_4fold_exploratory/
+  SMamba/
+    fastMRI/
+    IXI_n25/
+    NingXia_8fold/
+    NingXia_4fold_exploratory/
+
+只复制必要的结果、配置、日志、manifest和小型证据文件。
+
+checkpoint体积如果很大：
+
+- 不要默认复制进压缩包；
+- 在source_file_inventory.csv记录绝对路径、大小和SHA-256；
+- README中说明checkpoint仍留在本机的什么位置。
+
+如果压缩包体积允许，也可以包含best checkpoint，但必须在README中说明。
+
+==================================================
+七、最终审计状态
+==================================================
+
+对每个“方法×数据集”只能使用以下状态之一：
+
+FORMAL_COMPLETE
+- strict friend-protocol证据完整，可进入正式主表。
+
+NUMERIC_ONLY
+- 有汇总数值，但缺少checkpoint、manifest或逐病例证据。
+
+INCOMPLETE
+- 找到部分训练或评估文件，但不能形成完整正式结果。
+
+MISSING
+- 没有找到对应结果。
+
+INVALID
+- 违反协议、使用错误checkpoint、错误归一化、错误test subset或结果文件损坏。
+
+每一个状态必须附带证据文件路径，不能只给口头判断。
+
+==================================================
+八、不要执行的事情
+==================================================
+
+- 不要根据test结果选择seed、epoch或checkpoint。
+- 不要删除fold05、NX006或其他困难病例。
+- 不要挑选表现好的4个fold作为正式结果。
+- 不要把IXI n=115写成n=25。
+- 不要把历史文档里的数字伪装成重新核验结果。
+- 不要自写近似模型冒充HAT或SMamba。
+- 不要重新训练，除非用户后续明确授权。
+- 不要覆盖原始run目录。
+- 不要修改现有结果.md。
+
+==================================================
+九、最终交付
+==================================================
+
+完成后：
+
+1. 将整理目录压缩为：
+
+HAT_SMamba_missing_evidence_handoff_2026-09-16.zip
+
+2. 生成压缩包SHA-256。
+3. 在最终回复中打印：
+   - 压缩包绝对路径；
+   - 压缩包SHA-256；
+   - 找到了哪些正式结果；
+   - 哪些结果只有历史数值；
+   - 哪些完全缺失；
+   - HAT/SMamba是否能够进入三个数据集统一主表；
+   - 是否能够计算NingXia指定四折；
+   - 若仍需重跑，列出最小重跑任务清单和预计任务数量。
+4. 同时打印一张简洁矩阵：
+
+| Method | fastMRI | IXI n=25 | NingXia 8-fold | NingXia 4-fold | Training seed | Evidence status |
+
+开始执行搜索、核验、整理和打包。不要停留在给计划。

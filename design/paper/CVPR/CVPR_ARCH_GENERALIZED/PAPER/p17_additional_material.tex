@@ -1,0 +1,102 @@
+\section{Provenance, Implementation Correction, and Claim Levels}
+This revision is a retrospective synthesis, not a new preregistered confirmatory study. The research ledger inventories 1,623 paper source files, 832 CSV files, 64 workspace split files, 1,336 available checkpoint candidates, and 655 training configurations. Candidate availability does not establish checkpoint usage: the ten main five-architecture checkpoints are separately bound to inference code and SHA-256 hashes. Recorded manifests, source lines and unsuccessful analyses are preserved. The only recovered paper Git commit includes both Plan-9 protocols and results; it does not establish a pre-result commit sequence. Filesystem timestamps and protocol assertions cannot close that gap.
+
+The original Plan-9 ranking-primary hypothesis preceded the later narrative emphasis on local observability according to the documents, but a complete independently verifiable chronology is unavailable. The reversal-control amendment followed an unfavorable one-case smoke outcome. Its construct-validity rationale is recorded; it is not retroactively called outcome-independent. Plan-14 bright-anchor support was motivated after inspecting TopCoW results; CAS was a subsequent fixed-rule transfer to another public challenge training collection, not its hidden test set. All analyses now using these cohorts are aware of their historical results.
+
+The fastMRI split contains 112/24/24 training/validation/test series and 111/24/24 corresponding patient IDs. One patient overlaps training and validation; test IDs are disjoint. IXI has 404/58/115 disjoint IDs. Eight NingXia patient folds have no within-fold train/validation/test patient overlap. These checks verify local identifiers, not cross-dataset patient linkage.
+
+\paragraph{A corrected influence definition.}
+Earlier manuscript text described averaging response cosines. Both the main HAT/SwinIR implementation and the Plan-9 new-architecture implementation actually sum shared-anchor response inner products and normalize by \emph{all}-anchor response energy, as in the revised main equation. Historical values remain unchanged. For example, responses $(1,0)$ on a shared anchor and $(0,3)$ versus $(0,4)$ on two different unshared anchors give embedded cosine $1/\sqrt{170}$, whereas the shared-only response cosine is one. Omitting the unshared response energy would define a materially different statistic.
+
+The historical original clean HAT/SwinIR correlation pools plane/model observations against fixed phase-0 error while resampling examination/patient clusters. It must not be described as an examination-level point correlation. The five-architecture ranking analysis instead first aggregates within examinations. Those estimands remain separate in the revised figures.
+
+\paragraph{Reference self-pair sensitivity.}
+Final source review also found that the historical broad-grid summaries include the reference-versus-itself context, for which overlap count is two, influence is one, and error cosine is one. We retain those original tables below but add an explicitly post-hoc integrity sensitivity excluding all 966 such rows. The remaining 7,728 rows yield influence-minus-count alignment advantages .061/.085 on fastMRI, .128/.118 on IXI, and .070/.060 on NingXia (HAT/SwinIR). All six-stratum simultaneous intervals are positive. The bootstrap uses 5,000 examination/patient draws, shared across models within a cohort and independent streams across cohorts. Weighted-rank calculations are verified against direct repeated-row resampling. Main Figure 3 and Table 2 now use this non-self result; their fixed-one-overlap estimates are unchanged. This strengthens a scoped beyond-count association, not a prospective or causal claim.
+
+\paragraph{Claim hierarchy.}
+Level A is replicated local error-observability loss in the evaluated designs. Level B comprises influence beyond count where stable, case-ranking effects, and the matched-geometry interpretation. Level C comprises universal scalar superiority, prospective acquisition benefit, complete target-free neural mechanism validation, and non-MRI generalization. Level A denotes reproducibility in these data, not prespecification or clinical validation. Exact claim-to-experiment, unit, inference and figure mappings are supplied in \path{claim_evidence_matrix.md}.
+
+\section{Framework Diagram and Full Covariance Derivation}
+The accompanying NumPy implementation, \path{scripts/mira.py}, accepts a frozen estimator callable, physical anchor dictionaries, declared support and scale provenance, perturbation settings, and optional retrospective targets. It implements paired predictions, the all-anchor-energy influence statistic, and separate error evaluation. Model freezing and clustered aggregation remain caller responsibilities. Tests cover acquired-only target-mutation invariance, inconsistent shared-anchor rejection, energy closure, and a linear coefficient reference including perturbation-sign reversal. Reproduction instructions are in \path{RUN_COMMANDS_ZH.md}.
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{p17_framework.pdf}
+\caption{The reusable Measurement-Influence Reliability Audit. The estimator is frozen. Physical anchor identities, support, preprocessing and source of each quantity are part of the input contract. Targets enter retrospective error evaluation; historical GT-mask and full-examination-scale exceptions are disclosed rather than relabeled as deployment inputs. This is a framework diagram, not a proposed reconstruction architecture.}
+\label{fig:p17-framework}
+\end{figure*}
+
+Condition on fixed nominal inputs and a fixed target $y$. Write $e_a=b_a+J_a\xi_a$ and $e_b=b_b+J_b\xi_b$, where the perturbations have zero mean and finite second moments. Let $\Sigma_a=\mathbb E\xi_a\xi_a^\top$, $\Sigma_b=\mathbb E\xi_b\xi_b^\top$, and $C=\mathbb E\xi_a\xi_b^\top$, with the joint block covariance positive semidefinite. Then
+\begin{align}
+\mathbb E\langle e_a,e_b\rangle
+ &=\langle b_a,b_b\rangle+\operatorname{tr}(J_a C J_b^\top),\\
+\tau=\mathbb E T
+ &=\tfrac12\{\|b_a\|^2+\|b_b\|^2+\operatorname{tr}(J_a\Sigma_aJ_a^\top)\nonumber\\
+ &\hspace{28mm}+\operatorname{tr}(J_b\Sigma_bJ_b^\top)\}.
+\end{align}
+Changing $C$ from zero to a valid cross-covariance, with biases, Jacobians and marginals fixed, changes the first quantity by $\kappa=\operatorname{tr}(J_a C J_b^\top)$ and leaves $\tau$ unchanged. Therefore
+\begin{align}
+\Delta\mathbb E\|e_a-e_b\|^2&=-2\kappa,\\
+\Delta\mathbb E\|(e_a-e_b)/2\|^2&=-\kappa/2,\\
+\Delta\mathbb E\|(e_a+e_b)/2\|^2&=+\kappa/2.
+\end{align}
+For $\tau>0$, the ratio $\mathbb E\|(e_a-e_b)/2\|^2/\tau$ decreases by $\kappa/(2\tau)$ when $\kappa>0$. This ratio is not the expected samplewise fraction, and positive $\kappa$ does not establish a monotone change in each realized error cosine or each examination's rank.
+
+\paragraph{Physical-anchor interpretation.}
+If distinct physical anchors have independent perturbations and shared anchors reuse the same perturbation, $C$ has nonzero blocks only for shared identities. Thus $\kappa=\sum_{j\in c_a\cap c_b}\operatorname{tr}(J_{aj}\Sigma_jJ_{bj}^\top)$. Aligned sensitivities make these terms positive; orthogonal sensitivities can make sharing irrelevant, and opposing sensitivities can make it increase disagreement. Shared anchor count alone cannot determine the sign or magnitude. If the two contexts are perturbed by independent noise even on an identical anchor, this covariance mechanism is absent despite identical nominal anatomy. Common deterministic bias remains possible in either setting.
+
+\paragraph{Finite responses.}
+For $r_{cjs}=F_c(x+\epsilon\xi_{js})-F_c(x)$, local differentiability gives $r_{cjs}=\epsilon J_{cj}\xi_{js}+R_{cjs}$. Under the linear model and matched fields,
+\begin{equation}
+\mathbb E\left[\frac{1}{S\epsilon^2}\sum_{s,j}\langle r_{ajs},r_{bjs}\rangle\right]
+=\sum_j\operatorname{tr}(J_{aj}\Sigma_jJ_{bj}^\top).
+\end{equation}
+The empirical normalized ratio is neither this unnormalized trace estimate nor an unbiased covariance estimator. Centering a Rademacher field also changes its covariance from the exact identity to a mean-removal covariance; the trace formula applies to that actual covariance.
+
+For nonlinear outputs write $u_c=J_c\xi_c$. The discrepancy from the linearized inner product is bounded in expectation by
+\begin{align}
+&\sqrt{\mathbb E\|b_a+u_a\|^2\,\mathbb E\|R_b\|^2}
++\sqrt{\mathbb E\|b_b+u_b\|^2\,\mathbb E\|R_a\|^2}\nonumber\\
+&\hspace{28mm}+\sqrt{\mathbb E\|R_a\|^2\,\mathbb E\|R_b\|^2}.
+\end{align}
+The proposition is exact for the assumed linear model and approximate only where these remainder terms are controlled. Passing a rank-stability gate is not such a bound. Clipping and changes in active nonlinear regions can invalidate a global Jacobian interpretation. Actual phase changes need not preserve the proposition's biases or marginals; the experimental contrast remains necessary.
+
+Numerical verification covers aligned, orthogonal and opposing sensitivity matrices and cross-correlations $-.5,0,.5,1$, with 100,000 Gaussian draws per setting. All twelve predicted inner products and disagreement energies agree within five Monte Carlo standard errors. These checks verify factors and counterexamples, not new natural-image evidence or a clinical sampling distribution.
+
+\section{Objective Qualitative Selection and Precision Check}
+The main example is selected from the historical complete fastMRI SwinIR table. Rank examinations by their mean disjoint-minus-shared observable gain, tie by ID, and take the lower median (12th of 24). Within that case select the target whose gain is nearest its case mean, tie by $z$. This produces case 103425595595, $z=9$. A separate seed-20260911 random draw from the other examinations produces case 101089005814, $z=7$. The full ranking and selection file were saved before CPU inference. Neither visual appearance nor a newly optimized stable-wrong threshold selects the examples.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{p17_qualitative_random.pdf}
+\caption{Seeded random supplemental example under the same rendering rule as the main figure. All difference/error maps share a scale; there is no manually selected crop. The reference prediction and target are identical across rows. Shared and disjoint observable fractions are 3.34\% and 16.00\%. The schematic chain is conditional on aligned sensitivities and does not assert that every shared pair must fail.}
+\label{fig:p17-random}
+\end{figure*}
+
+Both cases use the hashed historical SwinIR checkpoint with direct target inference using the original wrapper's context normalization, resizing and residual prediction. CPU float32 reference outputs differ from stored GPU mixed-precision outputs by MAE .118/.153 and maximum absolute difference 2.694/2.442 in native units. Thus no exact reproduction claim is made for these new illustrations. Observable fractions differ by less than $4.6\times10^{-5}$ from the historical table. Cohort statistics remain the original values. Original arrays, masks, common display ranges and selection hashes are retained.
+
+\section{One Acquired-Only Guard: Full Negative Evaluation}
+This experiment uses stored phase-0 predictions from two fixed pairs, HAT/SwinIR and I3Net/CycleINR. Each pair is evaluated on five target planes per examination. A target's scoring mask is the union of its two closest acquired phase-0 1\% foregrounds. A single acquired nonzero-intensity Q99--Q1 range normalizes disagreement, error and acquired-anchor baselines. Both the mask and scale are computed without the missing target. Error evaluation then uses that same support. Model weights are dataset-specific historical checkpoints, not one cross-dataset model.
+
+The 24 fastMRI case IDs are ordered by SHA-256 of a fixed prefix plus ID; the first 12 form development and the others internal evaluation. All 115 IXI cases are an additional historically reused transfer cohort. No patient appears in both new fastMRI parts, but historical analysis reuse prevents an untouched-holdout claim.
+
+Only one candidate is tried: $G=\max(F_{\rm dev}(D_n),F_{\rm dev}(A_n))$, with right-continuous development empirical CDFs and acquired-range normalization. The dependency trigger is shared phase-0 evidence; no claim is made that the guard estimates neural influence. The thresholds are development Q75 of $\min(\mathrm{MAE}_a,\mathrm{MAE}_b)_n$ and Q25 of $D_n$. This requires both predictions to have high case-level error and low disagreement. Formula, CDF samples and thresholds are saved before the evaluation summary is computed. There is no threshold retuning or additional formula search.
+
+\input{p17_score_table.tex}
+
+The internal evaluation contains no positive cases for either pair; AUROC and AUPRC are undefined, not zero. IXI has two positives per pair. The guard's AP is .5087 and .0174 versus .5089 and .0144 for disagreement, and .5102 and .0181 for Anchor-CV. These point estimates are unstable with two positives and are not evidence of useful detection. No guard-minus-baseline interval excludes zero across the twelve comparisons (two pairs by six baselines) on IXI. Of 5,000 joint bootstrap draws, 3,918 retain both classes for both pairs; intervals are conditional on those nondegenerate draws and should not be treated as reliable rare-event coverage guarantees. The fastMRI family is undefined throughout. No further scoring family is searched.
+
+Secondary error-rank correlations, AUROC, top-20\% enrichment, all baseline scores, predictions and excluded bootstrap counts are in the machine-readable outputs. Acquired header spacing can be constant and is not a verified clinical spacing measure here. Missing or undefined metrics are retained as NA. The previous context-selection, jackknife and residualization failures below remain relevant; this candidate does not rescue a universal method claim.
+
+\section{A Practical Two-Member Ensemble Sharing Contrast}
+We additionally evaluate fixed linear and four-point Lagrange cubic interpolators on IXI. Pairs L$_0$--C$_0$ versus L$_0$--C$_2$, and C$_0$--L$_0$ versus C$_0$--L$_2$, preserve target and estimator composition while varying the companion phase. The score support comes from phase-0 acquired anchors. Complete four-point support is required in both phases, with residue-1/3 equal weighting within cases. In 16-slice fastMRI, only $z=7$ meets both support requirements, not both residue classes: all 24 cases are excluded by that geometric rule. The initial eligibility assertion and correction of the protocol's mistaken expected target count are logged before proxy summaries; no boundary anchor is fabricated.
+
+\input{p17_proxy_table.tex}
+
+Population two-member variance is $|A-B|^2/4$ per pixel, pooled on the common support. It and MAE disagreement are related constructions, not independent experiments. Against fixed reference-model error, variance ranking improves by .0313/.0361, and MAE-disagreement ranking by .0428/.0473. Two-direction simultaneous intervals are positive in this IXI analytic experiment. Paired-error endpoints have the same direction and are separately tabulated. The five-architecture shared control is the complementary deterministic two-view TTA construction. Neither result establishes failure or success of all trained ensembles, stochastic posterior samplers, or calibrated uncertainty systems.
+
+\section{Material Moved from the Main Paper}
+The full native baseline table and retrospective practical-consequence plot move here to keep the main paper centered on phenomenon, influence and falsification. All 13 methods and 111 configurations remain, as do 20 training-budget comparisons and every adverse result. The historical common-support table below is a different evaluation contract from the complete native master table.
+\input{table_p15_master_x4.tex}
+\begin{figure*}[t]
+\centering\includegraphics[width=.98\textwidth]{fig_same_model_consequence.pdf}
+\caption{Fixed-rule retrospective same-model consequence, moved intact from the main paper. All eligible models remain; red crosses preserve adverse directions. Model-IQR bands are not confidence intervals. Factor-specific checkpoints can differ, and controlling current error weakens the benefit association.}
+\label{fig:p17-moved-consequence}
+\end{figure*}

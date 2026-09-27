@@ -43,7 +43,7 @@ Design 3 RASI-Net 的 post-hoc uncertainty 版
 
 | 编号 | 新文件名 | 方向 |
 |---|---|---|
-| Design 1 | `design1_pastnet_sota.md` | PAST-Net，phase-aware structure transfer，冲三数据集 SOTA |
+| Design 1 | `../../design/design1_pastnet/README.md` | PAST-Net，phase-aware structure transfer；已完成 v1 收束，转入跨域验证与 v2 |
 | Design 2 | `design2_fastnet_efficient_sota.md` | FAST-Net，轻量高效，尽量接近 SOTA |
 | Design 3 | `design3_rasinet_reliability.md` | RASI-Net，可信不确定性感知插值 |
 | Design 4 | `design4_scpinet_scale_continuous.md` | SCPI-Net，连续尺度 / 任意 phase 插值 |
@@ -126,4 +126,3 @@ Design 3 RASI-Net 的 post-hoc uncertainty 版
 | Paper E | ECSI-Net：高效临床部署和 Pareto frontier |
 
 实际执行时，不建议同时开太多训练型论文。更稳的做法是先用低成本分析型方向扩大论文深度，再决定哪个模型方向值得投入 GPU。
-
