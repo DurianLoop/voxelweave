@@ -1,0 +1,46 @@
+Table 4: Comparison experiments results of different methods on simulated Brainweb dataset. For each
+metric, we mark the best in bold.
+Method CSF WM GM PSNR SSIM
+SegNetMRI 0.792 ± 0.044 0.915 ± 0.008 0.925 ± 0.021 41.48 ± 0.077 0.991 ± 0.001
+D5C5 - - - 39.68 ± 0.057 0.993 ± 0.001
+U-Net
+(full-sample) 0.862 ± 0.013 0.928 ± 0.002 0.933 ± 0.001 - -
+ours 0.869 ± 0.003 0.958 ± 0.001 0.960 ± 0.001 42.68 ± 0.044 0.997 ± 0.001
+Table 5: Comparison experiments results of different methods on in-house dataset. For each metric, we
+mark the best in bold.
+Method Dice precision recall PSNR SSIM
+ours 0.864 ± 0.001 0.880 ± 0.011 0.868 ± 0.031 32.65 ± 0.013 0.986 ± 0.001
+SegNetMRI 0.841 ± 0.004 0.814 ± 0.024 0.859 ± 0.033 32.52 ± 0.057 0.983 ± 0.006
+U-Net
+(Full-sample) 0.854 ± 0.015 0.830 ± 0.007 0.7887 ± 0.107 - -
+D5C5 - - - 32.49 ± 0.044 0.984 ± 0.008
+3.6 Evaluation and comparison on in
+vivo in-house Dataset
+To validate the effevtiveness of the proposed on in
+vivo data, we conduct experiments on in vivo in￾house dataset. Table 5 and Fig 10 shows the com￾parison of the image reconstruction and lesion seg￾mentation results. We can conclude that our ap￾proach achieved encouraging performance for both
+reconstruction and segmentation, with 0.864 in Dice,
+32.65 dB in PSNR and 0.983 in SSIM respectively.
+As we can see in Figure 10, all the methods achieves
+promising reconstruction error maps and segmenta￾tion masks. Compared with the error maps and seg￾mentation masks achieved by other methods, our ap￾proach was more effective in these two tasks.
+4 Discussion and Conclusion
+In this study, we propose a multi-task MR imaging
+framework with iterative teacher forcing scheme and
+dynamic re-weighted loss constraint. The promis￾ing reconstruction and segmentation results were
+achieved through our proposed re-weighted deep
+learning framework. As the comparison experiments
+showed, the proposed iterative teacher forcing scheme
+and dynamic re-weighted loss constraint co-prompt
+the quality of both the reconstruction task and seg￾mentation task. The main drawback of directly
+combing the loss function of the corresponding task
+is that may lead to an unbalance between the per￾formance of two modules. The proposed dynamic
+re-weighted loss constraint has the ability to control
+the training process of the network to take two con￾siderations on both reconstruction and segmentation
+tasks. It helps the network avoid the over-large or
+over-small value of gradient in the training process to
+make sure each task-specific loss effective. In other
+words, the core of the training process of the pro￾posed network was managed dynamically. Further￾more, the error of the reconstruction task may influ￾ence the quality of the segmentation task. Although
+we can leverage the teacher forcing scheme to solve
+the problem mentioned above, the incident exposure
+bias and over-correction may breakdown the perfor￾mance of the network. The proposed iterative teacher
+forcing scheme not only internally correct the predic￾tion of the low-level model but also help avoiding the
+13

@@ -1,0 +1,5 @@
+# 已取得原文的本地身份核验
+
+629237真实exit1：原fetch和HTTP receipt成功，解析假定citation_pmcid键存在，但两原PMC页没有该meta。原脚本/HTML/receipt/失败保留，不重GET。新解析核原HTTP requested/effective URL、canonical和citation_fulltext_html_url全等于指定PMC页、citation_doi、精确DOI索引归一题名；pmcid不由缺失meta伪造。原文章页首版本文字必须实际读取后才判作者稿/期刊版本。
+
+创建新extraction_attempt02，原空attempt01保留。复用之前标准库DOM，不执行原fetch main。提取blocks/原table cells仅是准备，实际逐段read另登记。原图像像素/PDF/外链supplement未读。目录3MB与原资源储备不变。

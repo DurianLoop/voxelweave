@@ -1,0 +1,471 @@
+                                                       NPB-REC: Non-parametric Assessment of
+                                                       Uncertainty in Deep-learning-based MRI
+                                                       Reconstruction from Undersampled Data?
+
+                                          Samah Khawaled1[0000−0002−3053−0876] and Moti Freiman2[0000−0003−1083−1548]
+                                              1
+                                                      Department of Applied Mathematics, Technion – Israel Institute of Technology
+arXiv:2208.03966v1 [eess.IV] 8 Aug 2022
+
+
+
+
+                                                  2
+                                                       Faculty of Biomedical Engineering, Technion – Israel Institute of Technology
+                                                          ssamahkh@campus.technion.ac.il, moti.freiman@technion.ac.il
+
+
+
+                                                        Abstract. Uncertainty quantification in deep-learning (DL) based im-
+                                                        age reconstruction models is critical for reliable clinical decision making
+                                                        based on the reconstructed images. We introduce “NPB-REC”, a non-
+                                                        parametric fully Bayesian framework for uncertainty assessment in MRI
+                                                        reconstruction from undersampled “k-space” data. We use Stochastic gra-
+                                                        dient Langevin dynamics (SGLD) during the training phase to character-
+                                                        ize the posterior distribution of the network weights. We demonstrated
+                                                        the added-value of our approach on the multi-coil brain MRI dataset,
+                                                        from the fastmri challenge, in comparison to the baseline E2E-VarNet
+                                                        with and without inference-time dropout. Our experiments show that
+                                                        NPB-REC outperforms the baseline by means of reconstruction accu-
+                                                        racy (PSNR and SSIM of 34.55, 0.908 vs. 33.08, 0.897, p < 0.01) in high
+                                                        acceleration rates (R = 8). This is also measured in regions of clinical
+                                                        annotations. More significantly, it provides a more accurate estimate of
+                                                        the uncertainty that correlates with the reconstruction error, compared
+                                                        to the Monte-Carlo inference time Dropout method (Pearson correla-
+                                                        tion coefficient of R = 0.94 vs. R = 0.91). The proposed approach has
+                                                        the potential to facilitate safe utilization of DL based methods for MRI
+                                                        reconstruction from undersampled data. Code and trained models are
+                                                        available in https://github.com/samahkh/NPB-REC.
+
+                                                        Keywords: MRI Reconstruction · Uncertainty estimation · Bayesian
+                                                        deep-learning
+
+
+                                          1           Introduction
+                                          Magnetic resonance imaging (MRI) is a noninvasive modality, which provides
+                                          multi-planar images in-vivo through its sensitivity to the inherent magnetic
+                                          properties of human tissue [13]. Although MRI is the modality of choice in many
+                                          clinical applications due to its excellent sensitivity to soft tissue contrast, its non-
+                                          invasiveness, and the lack of harmful ionizing radiation, long acquisition times
+                                          ?
+                                              To appear in the proceedings of the International Workshop on Machine Learning for
+                                              Medical Image Reconstruction (MLMIR 2022) https://sites.google.com/view/
+                                              mlmir2022
+2      S. Khawaled et al.
+
+are a major limiting factor to achieve high spatial and temporal resolutions,
+reduce motion artifacts, improve the patient experience and reduce costs [20].
+    Reducing MRI acquisition time by under-sampling the “k-space” (i.e. Fourier
+domain) constitutes a key necessity in enabling advanced MRI applications such
+as cardiac and fetal imaging. Further, acceleration of MRI will also reduce MRI
+vulnerability to patient motion during the acquisition process. However, the
+under-sampled data results in aliasing artefacts in the reconstructed images.
+Early approaches rely upon Parallel Imaging (PI) [7,14] to reduce the acqui-
+sition time. This is done by utilizing multiple receiver coils simultaneously to
+acquire multiple views and then combining them to construct the image. Other
+approaches reduce the acquisition time by sampling only a subset of measure-
+ments, i.e. under-sampling, and use a non-linear compressed sensing (CS) ap-
+proach to reconstruct the MRI image from the under-sampled data [3,11].
+    In the past few years, Deep-neural-networks (DNN) based models overcame
+classical reconstruction approaches in their ability to reconstruct high-quality
+MRI images from highly under-sampled data (i.e. 25% or less) [16,5,6,1,18,13].
+The Variational Network (VarNet) [8] solves an optimization problem by cas-
+caded design of multiple layers, each solves a single gradient update step. The
+End-to-End Variational Network (E2E-VarNet) approach [17], extends the Var-
+Net model by estimation of the sensitivity maps within the network, which, in
+turn improves the quality of the reconstruction significantly at higher accelera-
+tions. These models, however, do not provide posterior sampling neither enable
+uncertainty quantification, which are critical for clinical decision making based
+on the predicted images [16].
+     Bayesian methods, such as Variational autoencoders (VAEs) and Monte Carlo
+dropout, are able to provide probabilistic interpretability and uncertainty quan-
+tification in MRI reconstruction [5,2]. The VAE approach, however, is limited to
+specific DNN architectures. Further, it assumes a parametric distribution of the
+latent space in the form of a Gaussian distribution.
+    In this work, we propose a non-parametric Bayesian DNN-based approach
+[10,9] for MRI image reconstruction from under-sampled k-space data. Our
+method is able to provide quantitative measures of uncertainty of the predic-
+tion by fully characterizing the entire posterior distribution of the reconstructed
+high-quality MRI images. We achieve this by adopting the strategy of Stochastic
+gradient Langevin dynamics (SGLD) [19] to sample from the posterior distribu-
+tion of the network weights [4]. Specifically, we enable sampling by injecting
+Gaussian noise to the loss gradients during the training of the model. We save
+models with weights obtained after the “burn-in” iteration, in which the training
+loss curve exhibits only small variations around its steady-state. Then, at infer-
+ence time, we estimate the statistics of the reconstructed image by averaging
+predictions obtained by the model with the saved weights. Our contributions
+are: (1) the proposed approach can provide quantitative measures of uncertainty
+correlated with risk of failure in the MRI image predictions, and (2) can im-
+prove overall image reconstruction accuracy. These hypotheses were tested by
+       Assessment of Uncertainty in Deep-learning-based MRI Reconstruction                 3
+
+
+                                                                         x̄
+                                                                              Rec. Image
+          K-space   {k˜i }N c
+                                                {x̂t }N
+                          i=1                         tb
+                                                           Calculate
+           data                         Nets
+                                  Rec.Nets
+                                  Rec.
+                                 Rec.
+                                 Rec.
+                                  UNet Nets
+                                      Nets                 Statistics    Σ
+                                                                              Std. Map
+
+
+
+
+Fig. 1: Block diagram of the proposed NPB-REC system. The result of the
+SGLD-based training is a set of models with the same backbone network but dif-
+fident weights. At inference, the set of under-sampled k-space data,{k˜i }N  c
+                                                                           i=1 ,pass
+through each one of the backbone models. These models predict a set of recon-
+                        N
+structed images, {x̂t }tb . We then calculate the averaged reconstructed image and
+the pixel-wise std., x̄ and Σ, respectively. The average is used as the most prob-
+able reconstruction prediction and the Σ is utilized for uncertainty assessment.
+
+
+experiments that were conducted on the publicly available fastMRI dataset3 , for
+accelerated MRI reconstruction with the E2E-VarNet model [17] as the system’s
+backbone. It is important to note that specifically, our main backbone, the E2E-
+VarNet model, doesn’t provide posterior sampling neither enable uncertainty
+quantification.
+
+2     Methods
+2.1    MRI Reconstruction
+In multi-coil acquisition, the MRI scanner consists of multiple receiver coils,
+where each of them partially acquires measurements in the k-space (frequency
+domain) [12]. Each coil modulates the k-space samples according to its spatial
+sensitivity map to the MRI signal:
+                                ki = F (Si x) + i ∀i ∈ [1, .., Nc ]                     (1)
+where F is the Fourier transform, Si denotes the corresponding sensitivity map
+and Nc is the overall number of coils. To accelerate the acquisition time, k-space
+measurements are under-sampled by selecting only a set from the entire k-space
+data, k˜i = M ◦ ki , where M is the corresponding binary mask that encodes
+the under-sampling operator. Restoration of the MRI image from the under-
+sampled data by performing an inverse Fourier transform on the under-sampled
+data leads to aliasing artifacts.
+
+2.2    Non-parametric Bayesian MRI Reconstruction
+Our goal is to characterize the posterior distribution:
+                           n oNc               n oNc 
+             θ̂ ∼ P θ|x, x̂, k˜i       ∝ P x, x̂, k˜i   |θ P (θ)                         (2)
+                                          i=1                      i=1
+3
+    https://fastmri.org/
+4       S. Khawaled et al.
+
+where, x̂, x, and {k˜i }N c
+                        i=1 are the reconstructed image, the ground truth (fully
+sampled) and the under-sampled k-space measurements, respectively. θ are the
+network weights that we optimize. We treat the network weights as random
+variables and aim to sample the posterior distribution of the model prediction.
+To this end, we incorporate a noise scheduler that injects a time-dependent
+Gaussian noise to the gradients of the loss during the optimization process.
+At every training iteration, we add Gaussian noise to the loss gradients. Then,
+the weights are updated in the next iteration according to the "noisy" gradients.
+This noise schedule can be performed with any stochastic optimization algorithm
+during the training procedure. In this work we focused on the formulation of the
+method for the Adam optimizer.                   n o 
+                                                        Nc
+   The reconstruction network predicts: x̂ = fθ     k˜i      . We denote the loss
+                                                            i=1
+gradients by:                           n o 
+                                               Nc
+                           t 4    t
+                          g = ∇θ L x, fθ   k˜i                                     (3)
+                                                      i=1
+
+where Lt is the reconstruction loss at the training iteration (epoch) t. At each
+training iteration, a Gaussian noise is added to g:
+
+                                    g̃ t ← g t + Nt                                (4)
+
+where Nt ∼ N (0, st ), st is a user-selected parameter that controls the noise
+variance (can be time-decaying or a constant). We selected st equal to the Adam
+learning rate.
+     Lastly, we save the weights of the network that were obtained in iterations
+t ∈ [tb , N ], where N is the overall number of iterations and tb is the SGLD-
+parameter, which should be larger than the cut-off point of the burn-in phase.
+One should sample weights obtained in the last tb , .., N iterations, where the loss
+curve has converged.
+     We exploit the network weights that were obtained after the burn-in phase,
+                                           N
+i.e. in the last tb , .., N iterations, {θ}tb . Fig. 1 illustrates the operation of the
+NPB-REC system at the inference phase. We sample a set of reconstructed im-
+          N
+ages {x̂}tb , obtained by feed-forwarding the under-sampled k-space data {k˜i }N      c
+                                                                                    i=1
+                                                         N
+to the reconstitution models with the weights {θ}tb . Then, when we have a new
+image to reconstruct, we estimate the averaged posterior image:
+                                           PN
+                                                   x̂t
+                                      x̄ = t=tb                                     (5)
+                                            N − tb
+In addition, we quantify the std. of the reconstruction, which is used to charac-
+terize the uncertainty.
+
+2.3   The Reconstruction Network
+The backbone of our reconstruction system is based on the E2E-VarNet model
+[17]. E2E-Varnet contains multiple cascaded layers, each applies a refinement
+      Assessment of Uncertainty in Deep-learning-based MRI Reconstruction         5
+
+step in the k-space according to the following update:
+                                                
+                     k m+1 = k m − η t M k m − k̃ + G (k m )                    (6)
+
+where k m and k m+1 are the input and output to the m-th layer, respectively.
+G is the refinement module: G = F ◦ E ◦ CNN(R ◦ F −1 (k m ). CNN is a DNN-
+network, which maps a complex image input to a complex output, E and R
+are the expand and reduce operators. E computes the corresponding image seen
+by each coil: E(x) = (S1 x, ..., SNc x) andP its inverse operator, R, integrates the
+multiple coil images R(x1 , ..., xNc ) =     Si xi . Similarly to the design of E2E-
+VarNet [17], a U-Net is used for the CNN [15]. The sensitivity maps S1 , ..., SNc
+are estimated as part of the reconstruction using a CNN that has the same
+architecture as the CNN in the cascades. After applying a cascaded layers to the
+k-space input, as described in (6), we obtain the final reconstructed image, x̂, by
+                   qP reduction of the image-space representation of the final
+root-sum-squares (RSS)
+                        Nc     −1 k T |2 .
+layer output: x̂ =      i=1 |F     i
+
+
+3     Experiments
+3.1   Database
+In our experiments, we used multi-coil data of brain MRI images, adapted from
+the publicly available fastMRI databasefor training our system; we used the
+validation and training datasets for the brain multi-coil challenge. We excluded
+a subset from the validation set that contained clinical pathology annotations
+taken from fastMRI+ [21] and used it in the evaluation of our method, where
+no overlap between subjects belong to these sets. This is due to the fact that
+the ground truth of the test set is not publicly available and it is interesting to
+demonstrate our NPB-REC method on region of interest (ROIs) and to quantify
+both the reconstruction accuracy and uncertainty in these ROIs.
+    The training, validation, and inference sets include 4469, 113, and 247 images
+of size 16 × 320 × 320 and 20 coils. From these datasets, we generate 71504, 1808
+2D images and 2141 slices with annotations for the training, validation and the
+evaluation phases, respectively. The inputs of the network, k 0 in (6), are under-
+sampled k-space inputs that were generated from the fully-sampled datasets with
+two types of masks: equispaced and random. The former samples l low-frequency
+lines from the center of k-space and every R-th line from the higher frequencies,
+to make the acceleration rate equal to R. Whereas, the latter samples a fraction of
+the full width of k-space for the central k-space corresponding to low frequencies
+and selects uniformly at a subset of a higher frequency line such that the overall
+acceleration is R.
+
+3.2   Experimental Setup
+To conduct a quantitative comparison, we trained three models: (1) E2E-Varnet
+[17] trained with the proposed NPB-REC method (section 2.2), (2) The baseline
+6      S. Khawaled et al.
+
+E2E-VarNet model [17], and; (3) E2E-VarNet trained with Dropout of probabil-
+ity 0.001 and Monte Carlo averaging used at inference. Higher values of Dropout
+probabilities led to instabilities in the network loss during training. The three
+aforementioned models have the same architecture as described in [17] with
+T = 8 cascaded layers. Dropout layers were incorporated only to model (3),
+whereas the first two configurations where trained without adding it. For the
+three models, we used 1 − SSIM as a training loss and Adam optimizer with
+learning rate set to lr = 0.001. The total number of epochs (training iterations)
+was set to 40 and the batch size equal to 1. In our experiments, we selected a
+standard deviation, st = lr for the injected noise variance. The network param-
+eters are then updated according to the Adam update rule. In the training, we
+generated under-sampled inputs by multiplying with random masks of acceler-
+ation rate R = 4. At inference, we use both random and equispaced masks of
+acceleration rates R = 4 and R = 8, to evaluate the ability of the system to
+generalize.
+    Hyper-parameters Selection: At
+inference, we sample a set of reconstructed
+images obtained by passing the under-
+sampled k-space inputs to the models
+                     N
+with the weights {θ}tb , i.e. obtained in the
+last N −tb iterations. tb should be selected
+such that the training loss in the last
+N − tb is stable and has only slight vari-
+ations around its steady state value. In
+our experiments, we performed a hyper-
+parameter tuning on tb and selected the Fig. 2: MSE and SSIM vs. N − tb ,
+last N − tb that obtained the best quan- the number of models used in the
+titative reconstruction performance.          averaging, obtained on subset from
+    Fig. 2 presents the MSE and SSIM the inference set (32 images sampled
+metrics for a range of N − tb that varies randomly).
+from 1 to 10. Although this range of N −tb
+values show similar MSE and SSIM met-
+rics, we selected N − tb = 9. This is due to the fact that it shows a slight
+improvement and with having 9 samples we can calculate robust statistics.
+    The final reconstructed image is calculated by averaging these 9 samples,
+predicted from our model, as mentioned in (5). Additionally, we estimate a 2D
+uncertainty map by calculation of the pixel-wise std. of these predictions. For
+fair comparison, we used the same number of predictions in Monte Carlo sam-
+pling at the inference phase, but with enabled Dropout layers. We assessed the
+accuracy of the registration models by calculating PSNR and SSIM between the
+reconstructed and the ground truth, for all pairs of images in the test set.
+
+3.3   Results
+Fig. 3 presents examples of reconstruction results obtained by (1) our NPB-
+REC approach, (2) the baseline, and (3) Monte Carlo Dropout, for equispaced
+     Assessment of Uncertainty in Deep-learning-based MRI Reconstruction      7
+
+
+
+
+      (a) GT      (b) NPB-REC     (c) baseline   (d) Dropout      (e) Std.
+
+Fig. 3: Examples of Reconstruction Results. Rows 1 and 3: The Ground truth
+(GT) fully sampled image, the reconstructed images obtained by the three mod-
+els (1-3), NPB-REC, baseline, E2E-VarNet trained with Dropout, and the Std.
+map derived from our method for acceleration rates R = 4, R = 8, respectively.
+Rows 2 and 4: The corresponding annotated ROIS of the edema and resection
+cavity.
+
+
+
+masks with two different acceleration rates R = 4 and R = 8. Table 1 presents
+the mean PSNR and SSIM metrics, calculated over the whole inference set, for
+the three models. our NPB-REC approach achieved significant improvements
+over the other methods in terms of PSNR and SSIM (Wilcoxon signed-rank
+test, p1e-4). The improvement in the reconstruction performance can be noted
+both quantitatively from the metrics especially for masks with acceleration rate
+R = 8 and qualitatively via the images of annotations, where our results shows
+less smoothness than that obtained by Dropout.
+    Meaning of the uncertainty Measures: We calculated the mean value of
+the Std. maps, obtained by our method and Monte Carlo Dropout, for all images
+in the inference set and utilize it as uncertainty measure. The correlation be-
+tween these uncertainty measures and reconstruction error (MSE) are depicted
+8           S. Khawaled et al.
+
+
+Table 1: Reconstruction Accuracy. Rows top to bottom: PSNR and SSIM metrics
+calculated on the annotated anatomical ROIs (denoted by ’A’) with mask of
+acceleration rate R = 4, the whole physical images (denoted by ’W’) with masks
+of acceleration rate R = 4, R = 8, respectively. ’r’ and ’e’ stands for random and
+equispaced mask types.
+                            NPB-REC                          Baseline                     Dropout
+        R     M      PSNR            SSIM           PSNR                SSIM        PSNR            SSIM
+              r   30.04 ± 6.78     0.87 ± 0.18    29.91 ± 6.87    0.867 ± 0.182   29.5 ± 6.844   0.858 ± 0.19
+    A   4
+              e   32.22 ± 6.94    0.914 ± 0.143   32.02 ± 7.35    0.911 ± 0.143   31.57 ± 6.89   0.905 ± 0.151
+              r   40.24 ± 6.19    0.947 ± 0.081   40.17 ± 6.19    0.947 ± 0.081   39.86 ± 6.10   0.945 ± 0.082
+    W   4
+              e    41.61 ± 6.28   0.955 ± 0.073   41.64 ± 6.28    0.955 ± 0.074   41.22 ± 6.0    0.953 ± 0.074
+              r   32.23 ± 6.63    0.881 ± 0.11     31.21 ± 6.2     0.87 ± 0.108   30.63 ± 5.91   0.865 ± 0.11
+    W   8
+              e   34.55 ± 5.01    0.908 ± 0.09    33.08 ± 4.82    0.897 ± 0.092   32.25 ± 4.74   0.891 ± 0.09
+
+
+
+
+         (a) NPB-REC                         (b) Dropout                   (c) Uncertainty vs. R
+
+Fig. 4: Uncertainty Assessment. Scatter plots of the mean value of Std. estimate
+versus the MSE metric, calculated between the reconstructed and the ground
+truth, in log scale, for our NPB-REC method (a) and Monte Carlo Dropout (b).
+(c) Our measure of uncertainty versus the acceleration rate.
+
+
+in Fig. 4. Compared to Dropout, our NPB-REC uncertainty measure exhibits
+higher correlation with the Reconstruction error (Pearson correlation coefficient
+of R = 0.94 vs. R = 0.91). Further, Fig. 4(c) demonstrates that higher accelera-
+tion rates increases the uncertainty measure. These outcomes, in turn, indicate
+the ability of our uncertainty measure to detect unreliable reconstruction per-
+formance.
+
+
+4       Conclusions
+
+We developed NPB-REC, a non-parametric Bayesian method for the reconstruc-
+tion of brain MRI images from under-sampled k-space data with uncertainty
+estimation. Specifically, we used noise injection for the training loss gradients to
+efficiently sample the true posterior distribution of the network weights. We used
+the E2E-VarNet network as a baseline. However, the proposed technique is not
+limited to a specific architecture and can be incorporated to any existing net-
+work. The conducted experiments showed that our approach enables uncertainty
+quantification that exhibits higher correlation with the reconstruction error than
+that obtained by Monte Carlo Dropout. In addition, it shows a significantly bet-
+      Assessment of Uncertainty in Deep-learning-based MRI Reconstruction               9
+
+ter reconstruction quality over other methods, especially with acceleration rate
+higher than that used in training. This demonstrates its ability to improve the
+generalization of the reconstruction over the other methods.
+
+
+Acknowledgements Khawaled, S. is a fellow of the Ariane de Rothschild
+Women Doctoral Program. Freiman , M. is a Taub fellow (supported by the
+Taub Family Foundation, The Technion’s program for leaders in Science and
+Technology).
+
+
+References
+
+ 1. Akçakaya, M., Moeller, S., Weingärtner, S., Uğurbil, K.: Scan-specific robust
+    artificial-neural-networks for k-space interpolation (raki) reconstruction: Database-
+    free deep learning for fast imaging. Magnetic resonance in medicine 81(1), 439–453
+    (2019)
+ 2. Avci, M.Y., Li, Z., Fan, Q., Huang, S., Bilgic, B., Tian, Q.: Quantifying the un-
+    certainty of neural networks using monte carlo dropout for deep learning based
+    quantitative mri. arXiv preprint arXiv:2112.01587 (2021)
+ 3. Candès, E.J., et al.: Compressive sampling. In: Proceedings of the international
+    congress of mathematicians. vol. 3, pp. 1433–1452. Citeseer (2006)
+ 4. Cheng, Z., Gadelha, M., Maji, S., Sheldon, D.: A bayesian perspective on the deep
+    image prior. In: Proceedings of the IEEE Conference on Computer Vision and
+    Pattern Recognition. pp. 5443–5451 (2019)
+ 5. Edupuganti, V., Mardani, M., Vasanawala, S., Pauly, J.: Uncertainty quantification
+    in deep mri reconstruction. IEEE Transactions on Medical Imaging 40(1), 239–250
+    (2020)
+ 6. Eo, T., Jun, Y., Kim, T., Jang, J., Lee, H.J., Hwang, D.: Kiki-net: cross-domain
+    convolutional neural networks for reconstructing undersampled magnetic resonance
+    images. Magnetic resonance in medicine 80(5), 2188–2201 (2018)
+ 7. Griswold, M.A., Jakob, P.M., Heidemann, R.M., Nittka, M., Jellus, V., Wang,
+    J., Kiefer, B., Haase, A.: Generalized autocalibrating partially parallel acquisitions
+    (grappa). Magnetic Resonance in Medicine: An Official Journal of the International
+    Society for Magnetic Resonance in Medicine 47(6), 1202–1210 (2002)
+ 8. Hammernik, K., Klatzer, T., Kobler, E., Recht, M.P., Sodickson, D.K., Pock, T.,
+    Knoll, F.: Learning a variational network for reconstruction of accelerated mri
+    data. Magnetic resonance in medicine 79(6), 3055–3071 (2018)
+ 9. Khawaled, S., Freiman, M.: Unsupervised deep-learning based deformable image
+    registration: a bayesian framework. arXiv preprint arXiv:2008.03949 (2020)
+10. Khawaled, S., Freiman, M.: Npbdreg: Uncertainty assessment in diffeomorphic
+    brain mri registration using a non-parametric bayesian deep-learning based ap-
+    proach. Computerized Medical Imaging and Graphics p. 102087 (2022)
+11. Lustig, M., Donoho, D., Pauly, J.M.: Sparse mri: The application of compressed
+    sensing for rapid mr imaging. Magnetic Resonance in Medicine: An Official Journal
+    of the International Society for Magnetic Resonance in Medicine 58(6), 1182–1195
+    (2007)
+12. Majumdar, A.: Multi-Coil Parallel MRI Reconstruction, p. 86–119. Cambridge
+    University Press (2015). https://doi.org/10.1017/CBO9781316217795.005
+10      S. Khawaled et al.
+
+13. Morris, S.A., Slesnick, T.C.: Magnetic resonance imaging. Visual Guide to Neonatal
+    Cardiology pp. 104–108 (2018)
+14. Pruessmann, K.P., Weiger, M., Scheidegger, M.B., Boesiger, P.: Sense: sensitivity
+    encoding for fast mri. Magnetic Resonance in Medicine: An Official Journal of the
+    International Society for Magnetic Resonance in Medicine 42(5), 952–962 (1999)
+15. Ronneberger, O., Fischer, P., Brox, T.: U-net: Convolutional networks for biomedi-
+    cal image segmentation. In: International Conference on Medical image computing
+    and computer-assisted intervention. pp. 234–241. Springer (2015)
+16. Shaul, R., David, I., Shitrit, O., Raviv, T.R.: Subsampled brain mri reconstruction
+    by generative adversarial neural networks. Medical Image Analysis 65, 101747
+    (2020)
+17. Sriram, A., Zbontar, J., Murrell, T., Defazio, A., Zitnick, C.L., Yakubova, N.,
+    Knoll, F., Johnson, P.: End-to-end variational networks for accelerated mri re-
+    construction. In: International Conference on Medical Image Computing and
+    Computer-Assisted Intervention. pp. 64–73. Springer (2020)
+18. Tezcan, K.C., Baumgartner, C.F., Luechinger, R., Pruessmann, K.P., Konukoglu,
+    E.: Mr image reconstruction using deep density priors. IEEE transactions on med-
+    ical imaging 38(7), 1633–1642 (2018)
+19. Welling, M., Teh, Y.W.: Bayesian learning via stochastic gradient langevin dy-
+    namics. In: Proceedings of the 28th international conference on machine learning
+    (ICML-11). pp. 681–688 (2011)
+20. Zbontar, J., Knoll, F., Sriram, A., Murrell, T., Huang, Z., Muckley, M.J., De-
+    fazio, A., Stern, R., Johnson, P., Bruno, M., et al.: fastmri: An open dataset and
+    benchmarks for accelerated mri. arXiv preprint arXiv:1811.08839 (2018)
+21. Zhao, R., Yaman, B., Zhang, Y., Stewart, R., Dixon, A., Knoll, F., Huang, Z.,
+    Lui, Y.W., Hansen, M., Lungren, M.P.: fastmri+: Clinical pathology annotations
+    for knee and brain fully sampled multi-coil mri data. arXiv: Computer Vision and
+    Pattern Recognition arXiv:2109.03812 (September 2021)
+

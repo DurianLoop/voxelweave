@@ -1,0 +1,44 @@
+Learning to Sample and Reconstruct for Accelerated MRI 29
+Appendix C.3. Competing Methods
+Random. We train the reconstructor with random policy by Adam [36] optimizer
+for 50 epochs. Other hyperparameters inherit the fastMRI repository. We always use
+early stopping to get the best model on the validation dataset.
+PG-MRI. We use the best performing γ = 0.9 Non-Greedy method in [11].
+We train the sampler with its default hyperparameters. The fixed reconstructor is
+pre-trained by ”Random” heuristic sampling policy. Notice that the reconstructor
+pre-trained is different from [11], since the loss is negative SSIM instead of L1-norm
+and the training dataset is half of the volumes instead of full. In addition, we use
+early stopping based on the validation set rather than training for the full 50 epochs
+for better reconstruction performances.
+Greedy Oracle . The one-step greedy oracle policy has access to the ground
+truth for reference. We choose the action that increases similarity the most at test
+time with a fixed reconstructor the same as above.
+LOUPE. This method jointly trains the parametric probability mask p and the
+reconstructor end-to-end via BP without pre-training. We use the implementation
+by [35] and train with its default hyperparameters.
+τ -Step Seq . This method jointly trains the sampler and the reconstructor end-
+to-end via BP without pre-training. We use the default hyperparameters in [35].
+Appendix D. Supplemental Experimental Results
+Appendix D.1. RL Algorithms
+We have experimented with PPO [43], an advanced RL algorithm, to learn a better
+sampling policy. However, we have found that PPO has slow convergence in practice
+and only slightly improves the SSIM values (around 0 .001∼ 0.002). Therefore, we
+have decided not to use it in our proposed method.
+Appendix D.2. Training Cost
+Our proposed L2SR framework necessitates a longer training period for two primary
+reasons. Firstly, the employment of a sparse reward POMDP demands an extended
+exploration phase due to its complexity compared to the dense reward POMDP
+(of course it is more efficient in calculating rewards). Secondly, the alternating
+optimization strategy inherent in our approach, contrasting with simpler, one-step
+methods, further extends the training time. Taken together, our training time may
+be 3 to 5 times longer than existing dynamic methods. However, in practice we are
+more concerned with the inference time than the training cost.
+References
+[1] Emmanuel J Cand` es, Justin Romberg, and Terence Tao. Robust uncertainty principles: Exact
+signal reconstruction from highly incomplete frequency information. IEEE Transactions on
+information theory, 52(2):489–509, 2006.
+[2] Michael Lustig, David Donoho, and John M Pauly. Sparse mri: The application of compressed
+sensing for rapid mr imaging. Magnetic Resonance in Medicine: An Official Journal of the
+International Society for Magnetic Resonance in Medicine , 58(6):1182–1195, 2007.
+[3] Michael Lustig, David L Donoho, Juan M Santos, and John M Pauly. Compressed sensing mri.
+IEEE signal processing magazine , 25(2):72–82, 2008.

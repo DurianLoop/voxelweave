@@ -1,0 +1,7 @@
+# 保留原失败，使用已存在工具
+
+dbd62d实际exit1：prepare_primary.py在MRI环境直接import pypdfium2失败；尚未创建primary_attempt01。原脚本已执行，不改。前述TADT的extract_tadt_pdfium.py实际先加入项目既有tools/blindspot_pdf_reader_v3_2026_10_08/site_packages，不能假定模块已安装在MRI环境。
+
+V2 wrapper只加入该已存在便携目录，再调用原解析入口，另存primary_attempt02；不安装依赖，不改变环境，不修改PDF或旧源码。原receipt仍绑定真正提供解析函数的prepare_primary.py；本wrapper实际执行与SHA在本stage新增账中另绑定。下载/提取/渲染不当已读。
+
+定位时35b0c0旧笔记搜索截断，ab17fc未经充分限定的tools文件枚举产生大量截断输出和一个旧pip临时目录拒绝访问，均只作定位、不计论文阅读/实现验证，不重复访问该临时目录、不提出权限升级。711f69完整读出TADT extractor后明确便携路径，随后按真实文件修复。旧失败与截断记录保留。

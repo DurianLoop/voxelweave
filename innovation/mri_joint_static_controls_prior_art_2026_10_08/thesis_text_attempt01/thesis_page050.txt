@@ -1,0 +1,42 @@
+4.5. THE ADVENT OF DEEP LEARNING: LEARNING-BASED,
+DATA-DRIVEN APPROACHES
+However, the authors published a sequel to this work with Gözcü et al. (2018), that
+introduced a sequential optimization of the sampling pattern in a fully data-driven
+fashion. The principle consists, at each step, to evaluate the improvement for a given
+performance metric of including a candidate location in the final sampling pattern. Once
+all candidate locations have been evaluated, the algorithms picks the one that brings the
+largest improvement and moves to the next step. This method was shown to outperform
+existing approaches, such as the one of Lustig et al. (2007) and Knoll et al. (2011b) by a
+large margin, due to its approach being both learning-based and data-driven. Part of
+the improvement is due also to not solely adding sampling locations based on the current
+error, but computing how adding a location wouldactually decrease the error in the
+reconstruction. The distinction is important as the method of Gözcü et al. (2018) is
+able to take into account how the newly acquired location affects the behavior of the
+non-linear reconstruction algorithm, rather than acquiring locations based on the current
+reconstruction error. We will describe the setting of Gözcü et al. (2018) in greater depth
+in Chapter 5 as this is the basis upon which this thesis was built.
+At roughly the same time as Gözcü et al. (2018), Haldar and Kim (2019) published
+another work aiming at optimizing sampling, based on an experiment design approach
+to minimize the Cramér-Rao bound (CRB). The CRB provides a lower-bound to the
+covariance matrix that is based on the measurement matrixAω. This approach is
+independent on the reconstruction algorithm, and provides a different take on a learning-
+based, model-driven approach, aiming at minimizing the covariance of an estimator. In
+the context of MRI sampling, this amounts to finding the measurement matrix that will
+encode the most information about the original signalx.
+The last non-fully deep learning-based work that we will discuss is the one of Sherry
+et al. (2019), where a bilevel optimization procedure is proposed: the first level solves an
+empirical risk minimization problem for the mask, while the second level consists in an
+iterative algorithm to solve a Problem similar to 3.1. The work takes an original approach
+whereby relaxing the mask optimization problem into a continuous optimization problem,
+they are able to tackle the mask optimization and the reconstruction under a unified
+framework. While the reconstruction remains model-based, the mask stage is clearly
+learning-based and data-driven, as training data are used, and aim at minimizing some
+loss between the original image and the reconstruction.
+Due to the overwhelming performance of deep learning methods, most subsequent works
+focus exclusively on deep learning-based reconstruction methods, and all follow a learning-
+based, data-driven paradigm. All methods initialize the prior from which masks are
+drawn randomly, and aim at refining it throughout training in order to maximize some
+performance metric.
+There are however some trends that can be highlighted within these methods. Some
+of them aim atjointly train a reconstructor and a sampling pattern for some fixed
+37

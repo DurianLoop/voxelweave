@@ -1,0 +1,56 @@
+26 N. K. Hernashki and S. Chatterjee
+B Physical units and voxel volumes
+The method pipelines’ own files declared voxel volumes of 0.8786 mm3
+(one shared grid), 1.166 mm3
+(UCCD) and
+0.604 mm3
+(cDDPM) for grids whose true voxel was 1 mm3 or 0.8789 mm3
+(256 × 256 in-plane). The same masks
+therefore produced burdens that differed by a factor of 1.93 between UCCD and cDDPM, and a nominal 20 cm3
+meant 17.2 cm3
+for one and 33.1 cm3
+for the other. MIRTO recovers the true grid from voxel counts alone: the ratio
+of the tumour volume in those files, divided by the declared voxel volume, to the canonical voxel count is 1.0004 for
+the 240-pixel grid and 1.1380 ≈ (256/240)2 = 1.1378 for the 256-pixel grid. A round trip of the canonical reference
+through the UCCD/cDDPM native grid (2 mm in-plane, through-plane decimation) loses 57% of the 6-connected
+components, mostly sub-floor fragments, and 1.8% of tumour volume, whilst the REFLECT and AnomalyDINO
+grids lose 0.01–0.02% (Table 21). No MIRTO metric is computed on a method’s own resampled reference. Table 10
+describes the cohort, and Tables 11 and 12 give the voxel-count check and its consequence for the budget.
+Table 10. Cohort and canonical arrays.
+Split Canonical array (x × y × z voxels, 1 mm) Whole-tumour volume, median [IQR] (cm3
+) Range (cm3
+) Distinct reference hashes
+test (312) 240 × 240 × [98, 149], median 139 91.7 [53.2, 147.8] 7.3 to 361.8 312
+validation (24) 89.6 [43.2, 137.8] 12.5 to 180.7 24
+Table 11. Voxel-volume check from voxel counts: (tumour volume in the method’s files / declared voxel volume) / canonical
+voxel count.
+Legacy bundle (method grid) Median ratio legacy/canonical voxel count Range ≈ 1.0004 (same 240-px grid) ≈ 1.1380 = (256/240)2
+AnomalyDINO|fourway 1.0004 0.974 to 1.063 True False
+AnomalyDINO|pairA 1.0004 0.974 to 1.063 True False
+REFLECT|fourway 1.0188 0.974 to 1.146 False False
+REFLECT|pairA 1.0188 0.974 to 1.146 False False
+UCCD|fourway 1.0514 0.992 to 1.167 False False
+UCCD|pairB 1.1380 1.122 to 1.196 False True
+cDDPM|fourway 1.0514 0.992 to 1.167 False False
+cDDPM|pairB 1.1380 1.122 to 1.196 False True
+Table 12. Illustration with the uncorrected cDDPM mapping: the declared voxel volume changes the physical budget behind
+a nominal 20 cm3
+.
+Method (test-selected pairB grid) Voxel volume used Declared vox (mm3
+) Effective budget for ’nominal 20 cm3
+’ τ Dice Sensitivity (all comps.) Mean FP (cm3
+)
+UCCD as declared 1.166 17.2 0.600 0.360 0.049 15.3
+UCCD under B3 vox=1.0 1.166 20.0 0.575 0.382 0.051 18.4
+cDDPM as declared 0.604 33.1 0.600 0.029 0.003 30.5
+cDDPM under B3 vox=1.0 0.604 20.0 0.700 0.018 0.001 17.9
+C Extended results
+Table 13. Each method’s score across the 2,592 defensible universes of a metric: median [IQR] and share of universes in which
+it ranks first (descriptive; the spread is over evaluation choices, not sampling).
+Metric REFLECT UCCD cDDPM AnomalyDINO
+Dice 0.515 [0.428, 0.584]; 35.2% 0.543 [0.472, 0.577]; 38.9% 0.496 [0.420, 0.568]; 25.9% 0.097 [0.030, 0.157]; 0%
+voxel AUROC 0.945 [0.932, 0.951]; 100% 0.869 [0.865, 0.880]; 0% 0.877 [0.871, 0.889]; 0% 0.832 [0.826, 0.848]; 0%
+voxel AUPRC 0.642 [0.611, 0.689]; 50.0% 0.613 [0.590, 0.655]; 0% 0.636 [0.604, 0.686]; 50.0% 0.303 [0.286, 0.311]; 0%
+lesion sens. 0.341 [0.064, 0.699]; 35.3% 0.343 [0.077, 0.817]; 53.5% 0.333 [0.060, 0.793]; 11.3% 0.011 [0.000, 0.134]; 0%
+slice AUROC marg. 0.886 [0.878, 0.921]; 0% 0.909 [0.891, 0.940]; 100% 0.905 [0.890, 0.938]; 0% 0.598 [0.587, 0.625]; 0%
+slice AROC adj. 0.787 [0.754, 0.843]; 33.3% 0.800 [0.759, 0.837]; 0% 0.808 [0.762, 0.842]; 66.7% 0.650 [0.619, 0.661]; 0%

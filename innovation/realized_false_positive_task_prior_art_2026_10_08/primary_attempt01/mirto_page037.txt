@@ -1,0 +1,59 @@
+MIRTO 37
+Table 45. Label-informed upper bounds at 5, 20 and 40 cm3
+: Dice gain over the validation threshold. Every bound keeps
+FPi ≤ b; they use the reference labels and are ceilings, not methods.
+Method b (cm3
+) Dice at validation τ Gain: per-subject τ upper bound Gain: per-lesion τ upper bound Gain: component selection upper bound Gain: boundary replacement Within-lesion coverage at boundary rung
+REFLECT 5 0.241 +0.198 [0.182, 0.214] +0.353 [0.331, 0.373] −0.008 [−0.016, −0.001] +0.349 [0.309, 0.389] 0.231
+REFLECT 20 0.497 +0.042 [0.034, 0.050] +0.153 [0.138, 0.166] −0.002 [−0.017, 0.013] +0.400 [0.375, 0.425] 0.439
+REFLECT 40 0.554 +0.011 [0.006, 0.015] +0.108 [0.096, 0.119] +0.023 [0.002, 0.043] +0.395 [0.372, 0.417] 0.560
+UCCD 5 0.441 +0.081 [0.068, 0.094] +0.203 [0.191, 0.215] +0.001 [−0.009, 0.011] +0.527 [0.509, 0.544] 0.314
+UCCD 20 0.539 +0.029 [0.022, 0.036] +0.122 [0.113, 0.132] +0.015 [−0.003, 0.031] +0.452 [0.436, 0.467] 0.454
+UCCD 40 0.551 +0.028 [0.023, 0.033] +0.113 [0.102, 0.125] +0.037 [0.019, 0.055] +0.433 [0.416, 0.450] 0.516
+cDDPM 5 0.396 +0.151 [0.135, 0.168] +0.258 [0.243, 0.272] +0.003 [−0.005, 0.010] +0.510 [0.482, 0.536] 0.285
+cDDPM 20 0.519 +0.073 [0.063, 0.083] +0.157 [0.147, 0.168] +0.023 [0.008, 0.037] +0.462 [0.444, 0.479] 0.424
+cDDPM 40 0.530 +0.071 [0.062, 0.080] +0.151 [0.141, 0.161] +0.041 [0.029, 0.053] +0.458 [0.440, 0.475] 0.441
+AnomalyDINO 5 0.064 +0.040 [0.031, 0.051] +0.177 [0.160, 0.193] −0.001 [−0.005, 0.001] −0.003 [−0.023, 0.019] 0.185
+AnomalyDINO 20 0.166 +0.068 [0.054, 0.082] +0.164 [0.149, 0.179] −0.003 [−0.013, 0.006] +0.142 [0.104, 0.181] 0.241
+AnomalyDINO 40 0.230 +0.072 [0.058, 0.086] +0.126 [0.114, 0.137] +0.003 [−0.011, 0.015] +0.276 [0.236, 0.317] 0.296
+Table 46. Per-subject optimal threshold without a burden cap: the best Dice attainable by any single threshold per subject,
+its mean false-positive volume, and its gain over the validation threshold.
+Method best attainable Dice mean FP (cm3
+) gain over validation τ at 5 at 20 at 40
+REFLECT 0.580 51.6 +0.338 [0.326, 0.351] +0.083 [0.075, 0.091] +0.025 [0.021, 0.030]
+UCCD 0.585 31.0 +0.145 [0.134, 0.156] +0.046 [0.041, 0.052] +0.034 [0.030, 0.039]
+cDDPM 0.605 26.3 +0.209 [0.195, 0.223] +0.086 [0.077, 0.095] +0.076 [0.068, 0.084]
+AnomalyDINO 0.373 155.8 +0.309 [0.293, 0.326] +0.207 [0.191, 0.223] +0.143 [0.129, 0.158]
+Table 47. Determinants of detection: log-odds of a hit per standard deviation of each predictor under four estimators (472
+lesions in 312 subjects). The Laplace fit did not converge for REFLECT; its estimates are not interpretable.
+Method Model log volume (per SD) T2 contrast (per SD) relative z position (per SD)
+REFLECT Firth, profile likelihood +4.84 [3.73, 6.24] +1.98 [1.22, 2.82] −0.05 [−0.43, 0.34]
+REFLECT GEE exchangeable, robust SE +5.09 [3.65, 6.52] +2.02 [1.33, 2.72] −0.04 [−0.44, 0.36]
+REFLECT GLMM, variational Bayes +5.04 [4.28, 5.79] +1.94 [1.34, 2.54] −0.04 [−0.43, 0.36]
+REFLECT GLMM, lme4 glmer (Laplace) +24.52 [6.70, 42.35] +6.53 [−2.49, 15.55] +0.72 [−3.81, 5.25]
+UCCD Firth, profile likelihood +6.03 [4.53, 8.31] +0.76 [−0.65, 2.08] −0.33 [−1.01, 0.28]
+UCCD GEE exchangeable, robust SE +6.82 [4.30, 9.33] +0.74 [−0.13, 1.62] −0.35 [−0.84, 0.13]
+UCCD GLMM, variational Bayes +6.27 [4.85, 7.68] +0.69 [−0.25, 1.62] −0.32 [−0.90, 0.26]
+UCCD GLMM, lme4 glmer (Laplace) +6.82 [4.64, 8.99] +0.74 [−0.67, 2.15] −0.35 [−1.02, 0.32]
+cDDPM Firth, profile likelihood +4.97 [3.88, 6.48] +0.72 [−0.28, 1.70] −0.25 [−0.79, 0.26]
+cDDPM GEE exchangeable, robust SE +5.38 [3.75, 7.00] +0.72 [0.16, 1.28] −0.26 [−0.68, 0.16]
+cDDPM GLMM, variational Bayes +5.33 [4.20, 6.47] +0.71 [−0.09, 1.50] −0.26 [−0.76, 0.24]
+cDDPM GLMM, lme4 glmer (Laplace) +5.38 [3.97, 6.79] +0.72 [−0.29, 1.73] −0.26 [−0.79, 0.28]
+AnomalyDINO Firth, profile likelihood +1.57 [1.03, 2.26] +0.29 [0.03, 0.55] −0.28 [−0.58, 0.00]
+AnomalyDINO GEE exchangeable, robust SE +1.65 [1.11, 2.18] +0.29 [0.04, 0.54] −0.29 [−0.60, 0.02]
+AnomalyDINO GLMM, variational Bayes +1.72 [1.39, 2.06] +0.34 [0.09, 0.58] −0.31 [−0.61, −0.01]
+AnomalyDINO GLMM, lme4 glmer (Laplace) +1.68 [1.00, 2.36] +0.30 [0.02, 0.58] −0.30 [−0.60, 0.01]
+D.8 Model-free baselines
+Tables 48, 49 and 50 give the baseline contrasts at every budget and aggregation and the share of universes in which
+a baseline outranks a model. T2 intensity almost never outranks a residual model (at most 1.1% of universes) but
+outranks AnomalyDINO in 26 to 27%; FLAIR, which the models never see, outranks the residual models in 25 to
+38% and AnomalyDINO in 95 to 96%.
+Table 48. Model minus z-scored T2 intensity, Dice at matched realised burden, subject mean (unadjusted).
+Model − T2 intensity, Dice 5 cm3
+10 cm3
+20 cm3
+40 cm3
+REFLECT +0.283 [0.263, 0.302] +0.383 [0.361, 0.405] +0.437 [0.415, 0.460] +0.431 [0.408, 0.453]
+UCCD +0.401 [0.386, 0.417] +0.449 [0.431, 0.467] +0.461 [0.441, 0.481] +0.423 [0.401, 0.446]
+cDDPM +0.412 [0.395, 0.429] +0.452 [0.433, 0.470] +0.463 [0.441, 0.484] +0.430 [0.406, 0.454]
+AnomalyDINO +0.044 [0.031, 0.058] +0.070 [0.053, 0.088] +0.098 [0.076, 0.119] +0.113 [0.088, 0.138]

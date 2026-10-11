@@ -1,0 +1,57 @@
+MIRTO 31
+Table 26. Sum-of-squares shares, defensible and all universes.
+Sum-of-squares share Defensible universes All universes
+method share 0.162 [0.147, 0.177] 0.169 [0.153, 0.184]
+axis share 0.614 [0.595, 0.634] 0.595 [0.575, 0.614]
+remainder 0.223 [0.212, 0.235] 0.237 [0.226, 0.249]
+main effect: metric 0.539 [0.516, 0.561] 0.519 [0.497, 0.541]
+method × metric 0.033 [0.030, 0.037] 0.030 [0.028, 0.034]
+main effect: lesion definition 0.014 [0.012, 0.015] 0.014 [0.013, 0.016]
+method × lesion definition 0.002 [0.002, 0.002] 0.002 [0.001, 0.002]
+main effect: hit 0.011 [0.010, 0.012] 0.012 [0.011, 0.013]
+method × hit 0.002 [0.001, 0.002] 0.001 [0.001, 0.001]
+main effect: burden 0.004 [0.003, 0.005] 0.002 [0.002, 0.002]
+method × burden 0.000 [0.000, 0.001] 0.000 [0.000, 0.000]
+main effect: aggregation 0.004 [0.003, 0.005] 0.005 [0.003, 0.006]
+method × aggregation 0.002 [0.001, 0.003] 0.002 [0.002, 0.003]
+main effect: threshold 0.002 [0.001, 0.002] 0.003 [0.002, 0.003]
+method × threshold 0.000 [0.000, 0.001] 0.003 [0.003, 0.003]
+main effect: post-processing 0.000 [0.000, 0.000] 0.000 [0.000, 0.000]
+method × post-processing 0.001 [0.001, 0.001] 0.001 [0.001, 0.001]
+main effect: support 0.000 [0.000, 0.000] 0.000 [0.000, 0.000]
+method × support 0.000 [0.000, 0.001] 0.000 [0.000, 0.000]
+Table 27. Within-metric flip shares for the three residual-model pairs (defensible universes; post hoc).
+Metric REFLECT vs UCCD REFLECT vs cDDPM UCCD vs cDDPM
+voxel AUROC 0.000 [0.000, 0.000] 0.000 [0.000, 0.000] 0.000 [0.000, 0.000]
+voxel AUPRC 0.167 [0.000, 0.500] 0.500 [0.167, 0.500] 0.000 [0.000, 0.000]
+Dice 0.403 [0.264, 0.495] 0.491 [0.366, 0.500] 0.356 [0.125, 0.412]
+lesion sensitivity 0.261 [0.219, 0.302] 0.340 [0.282, 0.392] 0.286 [0.238, 0.398]
+slice AUROC, marginal 0.000 [0.000, 0.333] 0.167 [0.000, 0.333] 0.000 [0.000, 0.500]
+slice AROC, adjusted 0.333 [0.333, 0.500] 0.333 [0.333, 0.500] 0.000 [0.000, 0.500]
+Table 28. Distinct four-method orders per metric across the 2,592 defensible universes of each metric, with the three most
+frequent.
+Metric Distinct four-method orders Three most frequent orders (share of universes)
+Dice 6 REFLECT > UCCD > cDDPM > AnomalyDINO (25.5 %); UCCD > cDDPM > RE￾FLECT > AnomalyDINO (25.0 %); cDDPM > UCCD > REFLECT > AnomalyDINO
+(20.8 %)
+voxel AUROC 1 REFLECT > cDDPM > UCCD > AnomalyDINO (100.0 %)
+voxel AUPRC 3 REFLECT > cDDPM > UCCD > AnomalyDINO (50.0 %); cDDPM > REFLECT >
+UCCD > AnomalyDINO (33.3 %); cDDPM > UCCD > REFLECT > AnomalyDINO
+(16.7 %)
+lesion sensitivity 8 UCCD > cDDPM > REFLECT > AnomalyDINO (43.7 %); REFLECT > UCCD >
+cDDPM > AnomalyDINO (31.2 %); UCCD > REFLECT > cDDPM > AnomalyDINO
+(9.7 %)
+slice AUROC, marginal 2 UCCD > cDDPM > REFLECT > AnomalyDINO (83.3 %); UCCD > REFLECT >
+cDDPM > AnomalyDINO (16.7 %)
+slice AROC, adjusted 2 cDDPM > UCCD > REFLECT > AnomalyDINO (66.7 %); REFLECT > cDDPM >
+UCCD > AnomalyDINO (33.3 %)
+D.3 Operating points and risk control
+Table 29 gives the threshold-transfer gap with the thresholds involved and with the median of the per-subject
+differences, which agrees with the mean in sign at every budget and method except UCCD at 40 cm3
+, where both
+are indistinguishable from zero. Table 30 lists every threshold rule at 20 cm3
+, and Table 31 the exceedance and Dice
+of each rule at every budget. Conformal risk control (CRC) at α = 0.05 and RCPS at α = 0.10 select the same, very
+strict, thresholds and keep exceedance at or below 0.019, at a large Dice cost. The label-free CRC, which bounds
+the predicted volume rather than the false-positive volume, is the most conservative rule for UCCD and cDDPM.
+Table 32 gives the random-split results per method that Table 5 summarises. The 0.005 threshold grid limits burden
+matching to a relative mismatch of at most 5.7%.

@@ -1,0 +1,5 @@
+# 入口来源链修复，保留首跑
+
+真实首跑eb79d9 exit1，发生在任何MRI/GT加载前：旧real_development_entry receipt是上轮full_support receipt的间接binding，未直接列在上轮READING_PROVENANCE顶层，next查找因而StopIteration。未观察MRI/GT/model数组加载，attempt01目录为空；原脚本保留。
+
+V2先验证上轮READING_PROVENANCE顶层包含的两个直接receipt（full_support/label_support），然后从已经hash匹配的full_support receipt source_bindings验证旧real_development_entry。其余严格数值门槛/原geometry/完整患者分母不改，使用新attempt02而非覆盖首跑。该改动只修来源链，不改医学数据或算子；全部76field资格仍须实际完成后才成立。

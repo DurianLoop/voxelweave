@@ -1,0 +1,42 @@
+Conclusion and future works
+sLBCS and lLBCS, have been shown to provide strong mask designs for a range of
+clinically relevant MRI settings, including multicoil dynamic MRI and 3D MRI. These
+settings were previously not accessible to LBCS, due to the prohibitive cost of evaluating
+all candidate locations on the full dataset. sLBCS tackled this limitation by proposing a
+stochastic sampling of both candidate locations and data points, and achieved results on
+par with LBCS, and even sometimes outperforming the method. This method is easily
+implemented and broadly applicable, and we used it as a strong baseline throughout the
+rest of the thesis. lLBCS was proposed to address the case of multicoil and 3D MRI,
+where LBCS cannot be evaluated, due to its prohibitive computational cost. By using
+lazy evaluations, lLBCS can scale up to these problems. lLBCS presents very strong
+performances at high undersampling rates, but we hypothesized that its list of upper
+bounds becomes gradually worse as more sampling locations are added to the mask,
+making its performance gradually worse than baselines. However, several options were
+proposed to further improve its performance and scalability, and should be investigated
+as future work.
+Our work illustrates the benefit of a flexible learning-based, data-driven approach to the
+problem of optimizing sampling. Moreover, by focusing on the problem of optimizing
+sampling patterns on pre-trained reconstruction models, sLBCS and lLBCS integrate
+a future-proof dimension, as they will remain readily available to any reconstruction
+method that is applicable to a sequence of sampling rates.
+In Chapter 6, we aimed at resolving a seeming conflict between mask design methods
+that used deep reinforcement learning (Pineda et al., 2020; Bakker et al., 2020). These
+methods showed a potential to improve over sLBCS and lLBCS by integrating long-
+horizon sampling as well as patient-adaptive decisions. However, Pineda et al. (2020)
+and Bakker et al. (2020) reached seemingly contradictory conclusions. Pineda et al.
+(2020) suggested that long-term planning was the most important component, as their
+Dataset-Specific DDQN (non-adaptive) policy often matched the performance of their
+Subject-Specific DDQN (adaptive) policy. On the side of Bakker et al. (2020), it was
+found that agreedilytrained adaptive deep RL policy could match the performance of
+policies trained with a long-horizon dependency. In other words,does the ability to plan
+multiple steps ahead matter most, as suggested by Pineda et al. (2020), or is it rather the
+ability to adapt sampling to a given patient, as suggested by Bakker et al. (2020)?
+Our methodology was simply to consider a baseline policy that is greedily trained (no
+long-term planning) and non-adaptive, but that is trained to maximize the same reward
+function as considered by Pineda et al. (2020); Bakker et al. (2020). This baseline
+could then serve as the reference point from which one could observe what brings most
+performance improvement. However, it became quickly clear that our previously proposed
+algorithm, sLBCS, could exactly fulfill this role, and it was then natural to use it as the
+comparison baseline. Exhaustive experiments allowed us to bring elements of answers to
+this important question, albeit in a surprising way: it seems indeed thatneither long-term
+128

@@ -1,0 +1,44 @@
+out the drawbacks that come with these approaches. The section that follows (section 5)
+introduces the statistical view on inverse problems. More speciﬁcally, we consider Bayesian
+inversion (section 5.1) in which a reconstruction method is a statistical estimator (section 5.2).
+After pointing out some key challenges associated with Bayesian inversion (section 5.3), we
+introduce the learned iterative methods (section 5.4) that are later used in our applications
+of task adapted reconstruction (section 7.3). We then switch gears and consider tasks on the
+model parameter space that can be formulated as a statistical estimation problem (section 6).
+The ﬁrst step is to provide an abstract framework (section 6.1) with a plug-and-play structure
+for adapting to a speciﬁk task. To further illustrate the wide applicability of this framework,
+section 6.2 describes a number of tasks that are worked out in detail followed by further
+examples in section 6.3.
+Section 7 introduces task adapted reconstruction in an abstract setting (section 7.1). It
+assumes that both the reconstruction (section 5.2) and task (section 6.1) are given by appro-
+priate decision rules. An important part is the computational implementation (section 7.2)
+that is based on neural networks. This is followed by two applications that are worked out
+in detail in section 7.3. In section 8 we provide some theoretical considerations regarding
+regularizing properties and the potential advantage that comes with using a joint approach.
+The ﬁnal section (section 9) contains a discussion and outlook on future research in this area.
+3. Speciﬁc contributions. The paper oﬀers a generic, yet highly adaptable, framework
+for task adapted reconstruction that is based on considering both the reconstruction and the
+task as statistical estimation problems. The implementation uses neural networks for both
+these steps, which is essential for both performance in terms of quality and computational
+feasibility as shown in the example for joint tomographic reconstruction and segmentation.
+Both networks are trained jointly using a joint loss function (20) that “interpolates” between
+sequential and end-to-end approaches. Here, sequential refers to a setting where the neural
+network for reconstruction is trained separately and its output is used in the training of the
+neural network for the task. End-to-end is when a neural network for the task is trained
+directly against data without explicitly introducing a reconstruction step.
+To the best of our knowledge, this is the ﬁrst paper that oﬀers an approach to task adapted
+reconstruction that uniﬁes reconstruction with such a diverse set of tasks in a computationally
+feasible manner under the guiding principles of statistical decision theory, learning, and eﬃ-
+cient inference algorithms. This allows for re-using algorithmic components thereby opening
+up new ways of thinking about machine learning and inverse problems that may ultimately
+lead to deeper understanding of the possibilities for integrating elements of decision making
+into the reconstruction. Furthermore, introducing the joint loss in (20) and investigating its
+properties (section 8) are novel contributions. Our work also leaves many open questions
+and future research directions for the inverse problems and machine learning communities as
+outlined in section 9.
+4. Survey of task adapted tomographic reconstruction. There is an ongoing eﬀort
+within the inverse problems community to include signal processing steps associated with
+performing a task jointly with the reconstruction step. In tomographic imaging, most of the
+tasks considered this far correspond to feature extraction, e.g., segmentation or extraction of
+features expressed through sparse representations as in compressed sensing. In such case, task
+3

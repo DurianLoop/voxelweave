@@ -1,0 +1,54 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+Evaluating Equation 7.10 requires only asingle reconstruction, and then selection is
+performed by masking in the Fourier space in order to find the location with the largest
+current error.
+As we will see in the results,0-step methods do not outperform1-step methods, and we
+hypothesize that this is because they do not incorporate any feedback in the design of
+their policy, contrarily to1-step methods. 0-step methods simply they pick the location
+with the largest current error, but do not incorporate thea posterioriinformation on
+how good their actionactually was. This is mainly because0-step approaches use a
+heuristic that was not explicitly trained to be a policy, but to perform a surrogate task,
+such as estimating the variance of the posterior distribution in Fourier (in our case), or
+estimating the line-wise Fourier MSE (Zhang et al., 2019b).
+7.3 Comparison with Zhang et al. (2019b)
+We have mentioned several times until now the conceptual similarities with the approach
+of Zhang et al. (2019b) with our approach. We have shown in Section 7.1.4 that their
+approach isnot generative, but aims at learning the mean and variance of the posterior
+distribution by minimizing a NLL (Equation 7.8). These statistics do not allow to directly
+perform adaptive sampling, as we show in Appendix B.2.2.
+This is why, in order to perform adaptive sampling, Zhang et al. (2019b) also train
+with their reconstructor an additional model, called anevaluator eϕ(ˆx,ω ), that tries to
+predict the line-wise error in Fourier domain. The role of the evaluator is not only to
+provide guidance for adaptive sampling, similarly to the variance in Fourier space in our
+case, but it also helps to refine the reconstruction, by adding an adversary that aims at
+discriminate between real reconstructed lines and reconstructed ones.
+The idea of the evaluator is to provide an individual prediction of whether a line in k-space
+is likely to be real or reconstructed. Consider thek-th vk∈ [P ]2, and a reconstruction
+ˆx. Zhang et al. (2019b) define thek-th spectral mapas mk(ˆx) = F−1(PvkF ˆx), mi
+represents the inverse Fourier transform of a single k-space line, and has dimension
+mi∈ CP. The evaluator then aims at fitting target scores using the following kernel
+t(ˆx,x)k = exp
+(
+−γ∥mk(ˆx)−mk(x)∥2
+2
+)
+(7.12)
+where γ is a scalar hyperparameter. Note thatt(ˆx,x)∈ [0, 1], where it is1 when the
+spectral maps of ˆx andx perfectly match. The evaluatoreϕ(ˆx,ω ) is then trained to
+minimize
+min
+ϕ
+ℓE
+E(ϕ) = min
+ϕ
+1
+m
+m∑
+i=1
+P∑
+k=1
+|eϕ(ˆxi,ω )k−t(ˆxi,xi)k|2. (7.13)
+2For simplicity, we simply rewrite here the set of all pixels{1, . . . , P}, as the argument is the same
+whether pixels or lines are considered.
+112

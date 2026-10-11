@@ -1,0 +1,56 @@
+4 Y.Du et al.
+are used as the criterion rt =r(yt,g ) to supervise the S. While in inferece stage,
+there is no ground truth diagnostic label g provided.
+Classification Network and Image Operator : To improve stability, the
+classification network is pre-trained with undersampled k-space data, ensuring
+an advantageous reward for the active sampler during training. This network also
+functions as the feature extractor in our setting. In the classification network, the
+earlier layers tend to learn low-level features such as edges, textures, and simple
+patterns, while deeper layers learn more complex and high-level features that
+are useful for discriminating between different classes. Therefore, utilising the
+feature maps from the model, the high-level features are selected and processed
+by the feature operator as further inputs.
+Active k-space Sampler with Greedy Policy : Inspired by [2, 11], the se-
+quential selection ofk-space can be formalised as a Partially Observable Markov
+Decision Process (POMDP) [16]. Greedy Policy is used to maximise the ex-
+pected return J(ϕ) of a policy pϕ parameterised by ϕ in such a POMDP. At
+each step, the classification improvement can be calculated using R(rt,rt+1) =
+r(yt+1,g )−r(yt,g ), where the criterion r is the cross-entropy.
+During inference, the agent will be sampling one-line at a time. However,
+this will slow during training. Hence, the policy network is trained by sampling
+several lines in parallel the rewards of which are averaged [6]. Formally, we sample
+q lines at every time step, for a reward Ri,t as the reward obtained from sample
+i at time step t, to obtain the following estimator:
+∇ϕJ(ϕ)≈ 1
+q−1 Ex
+Pq
+i=1
+PT −1
+t=L
+h
+∇ϕ logpϕ (ht)
+
+Ri,t− 1
+q
+Pq
+j=1Rj,t
+i
+. (1)
+Evaluation Metrics : To assess the network’s classification performance, we
+employ metrics such as Recall, Area Under Curve (AUC), and Specificity.
+4 Experiments
+4.1 Dataset and Pre-processing
+Dataset: We used single-coilk-space data and slice-level labels from the publicly
+available fastMRI dataset [19] and fastMRI+ dataset [21]. Randomly selecting
+1100 annotated volumes (39125 slices) from the fastMRI Knee dataset. Our
+diagnostic task is to identification Meniscus Tear (MT) in each slice. Thereby,
+there are 32035 train slices (11.8% with MT), 5249 validation slices (9 .3% with
+MT), and 1841 test slices (11.1% with MT).
+Data Pre-processing : Since the k-space data have various sizes, we first use
+inverse Fourier transform to the fully sampled k-space data to get the ground
+truth image and crop it to size (320×320) for computation convenience. Thereby,
+the fully sampled k-space data of uniform size can be obtained by applying
+Fourier transform to the ground truth image. Notably, there is a severe class
+imbalance regarding the MT identification task. During training the classification
+network, we oversample the data to avoid overfitting on the majority class and
+poor generalisation on the minority class.

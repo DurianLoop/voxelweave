@@ -1,0 +1,30 @@
+8 Kim et al.
+Low-field ESRGANU-Net Ours + U-Net Ours + ESRGAN Ground Truth
+Fig.2: Visual comparisons on OOD data. Zoomed-in regions are marked with
+red boxes, and red arrows indicate hallucinated areas.
+Low-field ESRGAN Ours + ESRGAN High-Field
+(a) Visual results each conditioned on
+real low-field (top) and high-field (bot-
+tom) MR scans.
+(b) Relative volume error for brain tissues
+using FastSurfer [11]
+Fig.3: Comparisons against baselines on (a) real low-field and high-field MR
+scans with zoomed-in regions are marked with red boxes, (b) volume estimation
+for hallucination evaluation.
+Global image quality metrics (e.g. PSNR, SSIM) often fail to capture halluci-
+nations, as they prioritize global image fidelity and thus under-penalize such lo-
+calized features. Instead, we estimated brain tissue volumes using FastSurfer [11]
+and computed the relative volumetric error (RVE) following [16], defined as
+RVE = 2|Vpred−Vgt|
+Vpred+Vgt
+, whereV denotes the volume of a tissue. This metric suits
+hallucination evaluation, as hallucinations can distort tissue boundaries and vol-
+ume estimates. Figure 3b shows that our method significantly reduces volume
+error by more than 15% in critical tissues such as the thalamus, hippocampus,
+putamen, and hypointensity across all conditional models. These structures are
+prone to hallucination due to their small, variable size and lower SNR compared
+to the cortex in some sequences, yet crucial for applications such as Alzheimer’s
+diagnosis. While hallucination metrics [3,22] were discussed earlier, we opted
+volume estimation to provide a clinically relevant assessment due to the un-
+availability of implementations. In future work, we plan to incorporate these
+established metrics into our evaluation framework.

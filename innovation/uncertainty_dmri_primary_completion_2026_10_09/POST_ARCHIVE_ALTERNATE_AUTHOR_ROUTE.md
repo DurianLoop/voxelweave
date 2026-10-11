@@ -1,0 +1,5 @@
+# 正文另一代码声明的一次独立定位
+
+数据声明中的SaferNeuroimageEnhancement实际f788c0返回404，未取得作者文件。正文91同时给出另一URL：rtanno21609/UncertaintyNeuroimageEnhancement。仅为这个明确原文URL另建attempt02并取一次metadata，成功后按其官方identity的default branch取commit/tree。不重复404 URL，不推断两个名称是同repo。原404结果保留。
+
+使用与attempt01相同的公共HTTPS/TLS/30秒/200kB/不重试/不开权重与模型执行约束。若官方repo fullname不同，先保留metadata失败后再判断来源，不能默默使用陌生仓库。新增文件均在6823归档后，下一index再纳入。

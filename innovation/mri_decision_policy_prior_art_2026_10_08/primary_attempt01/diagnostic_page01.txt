@@ -1,0 +1,40 @@
+The MRI Scanner as a Diagnostic:
+Image-less Active Sampling
+Yuning Du1, Rohan Dharmakumar 2, and Sotirios A.Tsaftaris 1,3
+1 School of Engineering, The University of Edinburgh, Edinburgh, EH9 3FG, UK
+2 Krannert Cardiovascular Research Center, Indiana University School of Medicine,
+Indianapolis, Indiana, USA
+3 The Alan Turing Institute, London, NW1 2DB, UK
+Abstract. Despite the high diagnostic accuracy of Magnetic Resonance
+Imaging (MRI), using MRI as a Point-of-Care (POC) disease identifica-
+tion tool poses significant accessibility challenges due to the use of high
+magnetic field strength and lengthy acquisition times. We ask a sim-
+ple question: Can we dynamically optimise acquired samples, at the pa-
+tient level, according to an (automated) downstream decision task, while
+discounting image reconstruction? We propose an ML-based framework
+that learns an active sampling strategy, via reinforcement learning, at
+a patient-level to directly infer disease from undersampled k-space. We
+validate our approach by inferring Meniscus Tear in undersampled knee
+MRI data, where we achieve diagnostic performance comparable with
+ML-based diagnosis, using fully sampled k-space data. We analyse task-
+specific sampling policies, showcasing the adaptability of our active sam-
+pling approach. The introduced frugal sampling strategies have the po-
+tential to reduce high field strength requirements that in turn strengthen
+the viability of MRI-based POC disease identification and associated pre-
+liminary screening tools.
+Keywords: Point-of-Care Diagnosis · Active Sampling Strategy · Rein-
+forcement Learning · Magnetic Resonance Imaging.
+1 Introduction
+Despite the proliferation of Magnetic Resonance Imaging (MRI), its role as a
+Point-Of-Care (POC) diagnostic tool is muted due to poor accessibility caused
+by long acquisition time and cumbersome equipment [4]. Consequently, advance-
+ments have been made in assisting the diagnostic process with machine learning
+methods to sample less k-space data and reduce acquisition time in turn [8].
+We first illustrate how learning-based strategies can help to reduce acquisi-
+tion time by considering the depiction of conventional MRI-based diagnostic pro-
+cesses. In Figure 1a. an MRI scanner samples the full k-space, resulting in high-
+fidelity images, which are further interpreted by professional radiologists to iden-
+tify biomarkers and provide a diagnosis. Alternatively, machine-learning (ML)
+based diagnostic processes can enable acquisition time savings by reconstruct-
+ing a high-fidelity image from undersampled k-space (Figure 1b). Previous work
+arXiv:2406.16754v1  [cs.LG]  24 Jun 2024

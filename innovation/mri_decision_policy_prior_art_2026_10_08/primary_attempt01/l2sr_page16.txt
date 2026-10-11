@@ -1,0 +1,57 @@
+Learning to Sample and Reconstruct for Accelerated MRI 16
+T able 2. Main results: reconstruction results (mean and standard deviation) in
+terms of SSIM and PSNR values on the test dataset. For ‘Fixed (Reconstructor)’,
++R means the heuristic sampling policy for pre-training. The best results (highest
+mean) for a specific acceleration factor and initial acceleration factor among the
+compared algorithms are shown in bold numbers. The best results for a specific
+acceleration factor are shown in blue numbers.
+(a) Knee dataset ×4-acceleration
+Base-horizon Long-horizon
+SSIM PSNR SSIM PSNR
+Fixed
+Random+Rsparse 0.7222± 0.0405 26 .27± 1.78 0 .715± 0.0329 25 .16± 1.78
+PG-MRI+Rdense [11] 0 .7523± 0.0375 26 .54± 1.74 0 .7674± 0.0299 25 .23± 1.59
+L2S+Rsparse (Ours) 0.7543 ± 0.0372 26 .93 ± 1.79 0 .7838 ± 0.0286 26 .86 ± 1.68
+Greedy Oracle +Rdense 0.7658± 0.035 26 .74± 1.75 0 .7837± 0.0264 25 .79± 1.7
+Joint
+LOUPE [25] 0 .7243± 0.0387 26 .2± 1.75 0 .72± 0.0314 25 .09± 1.79
+τ -Step Seq [35] 0 .7649± 0.0408 27 .26± 1.85 0 .8025± 0.0315 27 .69± 1.81
+L2SR (Ours) 0.7681 ± 0.0416 27 .38 ± 1.9 0 .8097 ± 0.0333 28 .15 ± 1.83
+(b) Knee dataset ×8-acceleration
+Base-horizon Long-horizon
+SSIM PSNR SSIM PSNR
+Fixed
+Random+Rsparse 0.6039± 0.0492 24 .17± 1.71 0 .5915± 0.0442 22 .86± 2.01
+PG-MRI+Rdense [11] 0 .623± 0.0504 24 .21± 1.69 0 .633± 0.0446 23 .51± 1.74
+L2S+Rsparse (Ours) 0.6258 ± 0.0505 24 .65 ± 1.72 0 .6441 ± 0.0453 24 .28 ± 1.71
+Greedy Oracle +Rdense 0.6376± 0.0488 24 .44± 1.71 0 .6509± 0.043 23 .41± 1.74
+Joint
+LOUPE [25] 0 .6002± 0.0474 23 .96± 1.7 0 .5876± 0.0413 22 .64± 1.97
+τ -Step Seq [35] 0.6359 ± 0.0572 25 .07 ± 1.73 0.6614± 0.0508 25 .26± 1.76
+L2SR (Ours) 0.6332± 0.053 24 .98± 1.74 0.6712 ± 0.0511 25 .61 ± 1.79
+(c) Brain dataset ×8-acceleration
+Base-horizon Long-horizon
+PSNR SSIM PSNR SSIM
+Fixed
+Random+Rsparse 0.8643± 0.053 30 .66± 4.35 0 .8405± 0.0668 28 .65± 4.68
+PG-MRI+Rdense [11] 0 .8771± 0.0473 31 .37± 4.18 0.8766 ± 0.0476 31 .31 ± 4.17
+L2S+Rsparse (Ours) 0.8782 ± 0.0475 31 .54 ± 4.17 0.8686± 0.0529 30 .25± 4.23
+Greedy Oracle +Rdense 0.8822± 0.0453 31 .64± 4.15 0 .8771± 0.0532 31 .17± 4.31
+Joint
+LOUPE [25] 0 .8553± 0.0555 30 .15± 4.32 0 .8211± 0.0691 27 .34± 3.99
+τ -Step Seq [35] 0 .8862± 0.041 31 .93± 3.98 0 .8921± 0.0397 32 .07± 3.88
+L2SR (Ours) 0.8899 ± 0.043 32 .57 ± 4.09 0 .8969 ± 0.0417 32 .87 ± 4.02
+(d) Brain dataset ×16-acceleration
+Base-horizon Long-horizon
+SSIM PSNR SSIM PSNR
+Fixed
+Random+Rsparse 80.31± 0.0825 27 .56± 5.03 0 .7837± 0.0921 26 .28± 5.02
+PG-MRI+Rdense [11] 0 .821± 0.0722 28 .25± 4.71 0.8218 ± 0.0721 28 .36 ± 4.68
+L2S+Rsparse (Ours) 0.8263 ± 0.0703 28 .59 ± 4.73 0.819± 0.0738 27 .65± 4.71
+Greedy Oracle +Rdense 0.8312± 0.0677 28 .75± 4.64 0 .8251± 0.0734 28 .36± 4.86
+Joint
+LOUPE [25] 0 .8003± 0.0821 27 .55± 4.977 0 .7855± 0.0894 26 .29± 4.748
+τ -Step Seq [35] 0 .8314± 0.0652 29 .05± 4.636 0 .8384± 0.0631 29 .34± 4.59
+L2SR (Ours) 0.8404 ± 0.066 29 .39 ± 4.69 0 .8456 ± 0.0652 29 .37 ± 4.74
+factor. With this focus, the initial acceleration factor is treated as a tunable
+hyperparameter, with its optimal value determined through empirical analysis. Table 4

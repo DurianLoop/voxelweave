@@ -1,0 +1,945 @@
+
+=== PDF PAGE 1 ===
+                                                              IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024                                   1
+
+   I3Net: Inter-Intra-slice Interpolation Network for
+                                        Medical Slice Synthesis
+
+                                      Haofei Song, Xintian Mao, Jing Yu, Qingli Li, Yan Wang
+
+
+
+
+
+   Abstract—Medical imaging is limited by acquisition time
+and  scanning  equipment.  CT  and  MR  volumes,  recon-
+structed  with  thicker  slices,  are  anisotropic  with  high  in-
+plane resolution and low through-plane resolution. We re-
+veal an intriguing phenomenon that due to the mentioned
+nature  of  data,  performing  slice-wise  interpolation  from
+the  axial  view  can  yield  greater  benefits  than  performing
+super-resolution from other views. Based on this observa-
+tion, we propose an Inter-Intra-slice Interpolation Network                               (a)                                    (b)
+(I3Net), which fully explores information from high in-plane
+resolution  and  compensates  for  low  through-plane  reso-                    Fig.  1:   (a)   CTs   being   anisotropic   with   thick   slices.   (b)
+lution. The through-plane branch supplements the limited                        The  comparisons  of  using  typical  SR  backbones  from  three
+information contained in low through-plane resolution from                      views and ours. “coronal”, “sagittal” and “axial” mean super-
+high in-plane resolution and enables continual and diverse                      resolution  from  coronal/sagittal  view  and  interpolation  from
+feature learning. In-plane branch transforms features to the
+frequency  domain  and  enforces  an  equal  learning  oppor-                   axial  view.  “fuse”  means  fusing  the  results  from  multiple
+tunity for all frequency bands in a global context learning                     views.  In  contrast,  our  method  directly  applies  interpolation
+paradigm.  We  further  propose  a  cross-view  block  to  take                 from  the  axial  view.  Evidently,  interpolation  from  the  axial
+advantage  of  the  information  from  all  three  views  online.               view  outperforms  SR  from  the  other  two  views.  The  fusion
+Extensive experiments on two public datasets demonstrate                        strategy  has  a  slight  improvement,  but  at  a  higher  cost.  We
+the  effectiveness  of  I3Net,  and  noticeably  outperforms
+state-of-the-art super-resolution, video frame interpolation                    attempt to deal with the medical slice synthesis task via slice-
+and  slice  interpolation  methods  by  a  large  margin.  We                   wise interpolation from the axial view.
+achieve 43.90dB in PSNR, with at least 1.14dB improvement
+under the upscale factor of ×2 on MSD dataset with faster
+inference.  Code  is  available  at  https://github.com/
+DeepMed-Lab-ECNU/Medical-Image-Reconstruction.                                  for lesions, or posing big challenges for designing 3D medical
+   Index   Terms—Computed   Tomography,   Medical   Slice                       image analysis methods.
+Synthesis, Slice-wise Interpolation                                                 Medical  slice  synthesis  is  a  rising  research  topic  in  recent
+                                                                                years,  which  upsamples  anisotropic  volumes  along  the  low
+                          I.  INTRODUCTION                                      inter-slice  resolution  to  deal  with  the  mentioned  problem.
+                                                                                But,  the  nature  of  the  data,  i.e.,  high  intra-slice  resolution,
+         EDICAL images, such as Computed Tomography (CT)                        and  low  through-plane  resolution  shown  in  Fig.  1  (a)  have
+M        and  Magnetic  Resonance  (MR)  volume  data,  provide                 not  been  fully  explored  [1]–[3].  In  general,  two  strategies
+essential details for disease diagnosis and treatment planning.                 are  applied  to  deal  with  the  slice  synthesis  problem:  (1)
+To  suppress noise  and reduce  the  amount of  data,  some CTs                 slice-wise  interpolation  from  the  axial  view,  which  usually
+are reconstructed with thicker slices. This results in most CT                  considers learning features from the high in-plane resolution.
+volumes  being  anisotropic  with  high  in-plane  resolution  and              Yu  et  al.  [1]  focuses  on  recovering  in-plane  slice  based  on
+low  through-plane  resolution  [1]–[3].  Due  to  faster  acquisi-             long-range  dependencies.  (2)  pixel-wise  interpolation  (super-
+tions,  MR  volumes  also  have  higher  in-plane  resolution  in               resolution)  from  coronal  and  sagittal  views,  which  usually
+clinical  practice  [2],  [4].  Such  inconsistent  resolutions  cause          considers  learning  features  from  the  low  through-plane  res-
+many issues in clinical applications, e.g., losing critical details             olution.  Peng  et  al.  [2]  directly  respectively  adopt  super-
+  Manuscript submitted on Sep, 2023. This work was supported by the             resolution through plane from coronal and sagittal views, and
+National  Natural  Science  Foundation  of  China  (Grant  No.  62101191),      fuse them. Although a recent work designs both a slice-wise
+Shanghai Natural Science Foundation (Grant No. 21ZR1420800), and                interpolation  branch  (from  axial  view)  and  two  pixel-wise
+the  Science  and  Technology  Commission  of  Shanghai  Municipality           interpolation  branches  (from  coronal  and  sagittal  views)  to
+(Grant No. 22DZ2229004).                                                        provide complementary knowledge for medical slice synthesis
+  H. Song, X. Mao, J. Yu, and Q. Li and Y. Wang are with Shanghai
+Key Laboratory of Multidimensional Information Processing, East China           [3], the global information in high in-plane resolution has not
+Normal University, Shanghai, China (e-mail: hfsong@stu.ecnu.edu.cn,             been explored, not even in the slice-wise interpolation branch.
+52265904010@stu.ecnu.edu.cn,          51255904036@stu.ecnu.edu.cn,                  We  observe  an  intriguing  phenomenon:  thanks  to  the  high
+qlli@cs.ecnu.edu.cn, ywang@cee.ecnu.edu.cn).
+  Corresponding author: Y. Wang                                                 in-plane  resolution,  the  slice-wise  interpolation  task  alone
+
+=== PDF PAGE 2 ===
+2                                                                                                                                            IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024
+
+
+already has the ability to dominate slice synthesis results if in-                   enforces an equal learning opportunity for all frequency bands
+plane  and  through-plane  features  are  fully  excavated.  Due  to                 in  a  global  context  learning  paradigm.  Cross-channel  feature
+the low through-plane resolution, the pixel-wise interpolation                       learning  in  the  frequency  domain  yields  an  improved  perfor-
+task  can  not  make  a  huge  difference.  As  shown  in  Fig.                      mance with better structural and fine-grained information.
+1  (b),  we  apply  three  super-resolution  methods,  i.e.,  EDSR                      We further propose a cross-view block to take advantage of
+[5],  RDN  [6]  and  RCAN  [7]  on  the  slice-wise  interpolation                   the  information  from  all  three  views.  It  is  worth  mentioning
+task  from  the  axial  view  (green  bars)  and  super-resolution                   that unlike existing methods [2], [3], which process different
+tasks from coronal and sagittal views (blue and orange bars).                        views  separately,  our  cross-view  block  extracts  complemen-
+Predictions from three views can be fused to obtain the final                        tary  information  from  three  views  by  making  features  from
+results  (yellow  bars).  We  also  show  the  inference  time  in                   different  views  interact  with  each  other  in  real  time  without
+Fig. 1 (b). Slice-wise interpolation from the axial view yields                      increasing too much computation.
+favorable  outcomes.  The  addition  of  super-resolution  tasks                        The main contributions can be summarized as follows:
+from coronal and sagittal views does not result in a significant                        •  We  are  the  first  to  look  into  a  reasonable  solution  for
+boost  in  performance  gain  in  terms  of  PSNR.  But,  it  does                         medical  slice  synthesis  by  considering  the  nature  of
+lead  to  noticeable  time  costs.  This  suggests  that  performing                       sparsely-sampled  CT  and  MR  (high  in-plane  resolution
+slice-wise interpolation from the axial view can yield greater                             and low through-plane resolution).
+benefits  than  performing  super-resolution  from  other  views.                       •  We propose I3Net with an inter-slice branch and an intra-
+Thus, instead of equally treating three views and fusing them                              slice  branch.  The  inter-slice  branch  compensates  for  the
+afterward  like  [3]  or  applying  super-resolution  on  coronal                          limited information available in low through-plane reso-
+and  sagittal  views  like  SAINT  [2],  a  more  reasonable  way                          lution by utilizing the high in-plane resolution. The intra-
+is  to  focus  on  slice-wise  interpolation  from  the  axial  view                       slice  branch  ensures  equal  learning  across  all  frequency
+by  taking  the  advantage  of  high  in-plane  resolution,  and                           bands in a global learning context while improving struc-
+leverage  super-resolution  from  other  views  as  supplementary                          tural and fine-grained information reconstruction.
+information. It is worth mentioning that although the use of 3D                         •  We  verify  the  effectiveness  of  our  method  on  Medi-
+networks  for  processing  3D  medical  images  is  intuitive  [8]–                        cal  Segmentation  Decathlon  (MSD),  KiTS19  and  IXI
+[11], a significant challenge arises due to the large number of                            datasets.  The  PSNR  of  our  method  exceeds  all  state-of-
+parameters.                                                                                the-arts with at least 1.14dB improvement on MSD under
+   To address the above issues, we focus on slice-wise interpo-                            the upscale factor of×2.
+lation  and  propose  an  Inter-Intra-slice  Interpolation  Network
+(I3Net).  Specifically,  from  the  perspective  of  the  axial  view,                                         II.  RELATED WORK
+inter-slice  describes  the  interaction  between  adjacent  slices                     Due  to  the  requirement  for  fast  acquisition  and  storage
+along  the  through-plane  direction  and  intra-slice  describes                    efficiency,  CT  and  MR  volume  are  often  characterized  by
+the  local  variations  observed  within  the  slice  along  the  in-                anisotropy  with  the  higher  in-plane  resolution  and  the  lower
+plane direction. While maintaining fast computation speed, it                        through-plane resolution. To improve the through-plane resolu-
+outperforms  other  methods  with  three-view  fusion,  as  shown                    tion, various approaches can be employed to synthesize slices,
+in  Fig.  1  (b).  To  explore  information  from  high  in-plane                    including  super-resolution  from  coronal  or  sagittal  views,
+resolution  and  compensate  for  low  through-plane  resolution,                    super-resolution  based  on  implicit  neural  representation  and
+two branches, an inter-slice branch and an intra-slice branch,                       interpolation from axial view.
+are  designed.  The  inter-slice  branch  exploits  the  PixelShuffle
+operations   [12] before and after feature extraction to supple-                     A.  Image Super-resolution
+ment  the  limited  information  contained  in  low  through-plane
+resolution  from  high  in-plane  resolution.  Since  it  increases                     As a basic task in image processing, super-resolution has a
+the  number  of  feature  channels  whose  spatial  information  is                  large number of research works around this, and various image
+similar,  it  maintains  continuity  among  slices.  Features  with                  reconstruction  tasks  can  be  borrowed  and  realized  from  the
+more  channels  enable  the  learning  of  diverse  information.                     method of image super-resolution. Original SISR tasks super-
+Note  that  PixelShuffle  operations  are  widely  used  in  the                     resolve  in  the  spatial  dimension.  SRCNN  [15]  was  the  first
+head/tail of SISR models to reduce the feature size for efficient                    network proposed for Super-Resolution (SR), followed by a se-
+computation  or  to  reconstruct  final  outputs.  However,  our                     ries of classical convolutional network [5]–[7], [12]. HAN [16]
+purpose  is  to  leverage  PixelShuffle  operations  to  instantiate                 introduces  holistic  attention  to  explore  dependencies  across
+continual  and  diverse  feature  learning  considering  the  nature                 locations,  channels,  and  layers  to  improve  super-resolution
+of the sparsely-sampled CT.                                                          performance. With the application of transformer frameworks
+   Considering  that  feature  learning  in  the  frequency  domain                  in  image  processing,  SwinIR  [17]  was  the  first  designed  for
+can   easily   learn   global   context   [13]   and   different   organ             super-resolution  based  on  an  attention  mechanism.  Recently,
+contents  are  emphasized  within  different  frequency  ranges                      implicit neural representation (INR) is popular with continuous
+in  a  CT  slice,  our  intra-slice  branch  divides  the  features                  representation  ability  to  map  the  coordinates  in  the  latent
+in  the  frequency  domain  into  non-overlapping  windows,  and                     space. Chen et al. [18] present a local implicit representation
+learns features in a cross-frequency and cross-channel manner                        in  the  self-supervised  paradigm,  which  can  reconstruct  the
+through  MLP-Mixer  [14].  Cross-frequency  feature  learning                        extremely high resolution. Sub-pixel convolution layer [12] is
+
+=== PDF PAGE 3 ===
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING                                                                                                            3
+
+
+usually used for upsampling at the end of the model. Guo et                        to  the  axial  view,  it  provides  limited  information  contained
+al. [19] adopt PixelUnshuffle and PixelShuffle at the beginning                    in  low  through-plane  resolution.  Additionally,  it  overlooks
+and end of the network as an efficient design. Zhang et al. [20]                   the  anatomical  information  from  other  views.  Ge  et  al.  [8]
+use PixelShuffle and PixelUnshuffle at the beginning and end                       propose  consecutive  3D  multi-scale  residual  blocks  and  uti-
+of each block to enlarge the receptive field.                                      lize  a  stereo-correlation  constraint  and  an  image-expression
+   Medical  slice  synthesis  can  be  achieved  by  image  super-                 constraint as training guidance. Most current methods conduct
+resolution  from  coronal  and  sagittal  views,  while  only  one                 super-resolution or interpolation on three views separately and
+dimension  is  enlarged,  other  dimensions  remain  unchanged.                    fuse them all. Peng et al. [2] super-resolve from coronal and
+However,  slices  from  the  axial  view  are  not  involved  in                   sagittal  views  separately,  with  physical  distance  between  the
+this  process.  As  suggested  by  our  intriguing  observation,                   voxels to provide desirable levels of details, and then fuse them
+performing  slice  interpolation  from  the  axial  view  is  a  more              in  the  second  stage.  Fang  et  al.  [3]  design  a  self-supervised
+reasonable solution for medical slice synthesis.                                   framework based on a cross-view mutual distillation process,
+                                                                                   which  conducts  super-resolution  from  coronal  and  sagittal
+B.  Video Frame Interpolation                                                      views,  interpolation  from  axial  view  and  merging  all  three
+   Video Frame Interpolation is similar to the slice-wise inter-                   views results in the final. Yu et al. [1] apply pure transformer
+polation. Both tasks involve interpolating frames/slices in the                    architecture  with  MAE-like  method  to  increase  the  number
+third dimension. But, our task involves interpolating slices in                    of  slices  from  axial  view.  Although  some  methods  [2]–[4]
+the  third  spatial  dimension,  where  objects’  shape  expands  or               fuse information from multiple views, they have drawbacks in
+contracts  between  slices  and  objects’  textures  change.  There                efficiency. Moreover, when performing multi-view processing,
+is no explicit correspondence and motion relationship between                      it is crucial to ensure the consistency of fusion across different
+adjacent  slices.  For  video  frame  interpolation,  the  variations              views.
+observed between consecutive frames primarily arise from the
+movement  of  objects  within  the  scene  or  the  motion  of  the                D.  Frequency Domain in Computer Vision
+camera  capturing  the  footage.  The  differences  in  dynamic                       Frequency transformation transfers images from spatial do-
+changes  between  frames  can  be  presented  by  optical  flow.                   main to frequency domain. In this way, each part in frequency
+Thus,  most  previous  study  predicts  these  differences  by  esti-              domain can map global information into spatial domain. Lama
+mating optical flow [21], [22]. Other methods interpolate inter-                   [30] applies Fast Fourier Convolution [31] for image inpaint-
+mediate frames from time-adjacent frames based on adaptive                         ing. After that, DeepRFT [13] proposes Res-FFT-ReLU block
+kernel [23] and flow-based adaptive kernel [24].                                   for  image  deblurring  because  of  the  ability  of  global  feature
+C.  Medical Image Reconstruction                                                   extraction.  FourierUp  [32]  rethinks  the  relationships  between
+                                                                                   spatial  and  Fourier  domains,  revealing  the  transform  rules  of
+   It   is   known   that   medical   image   has   unique   properties            different  resolutions  in  the  Fourier  domain.  Xie  et  al.  [33]
+compared  with  natural  images.  Due  to  balance  factors  such                  proposed a frequency-aware dynamic network for SR, which
+as  sampling  time,  coat  and  health  risk,  there  is  a  trade-off             gives  different  processing  resources  for  different  frequency
+that leads to a reduction in quality and anisotropy of sampled                     bands.  Zhong  et  al.  [34]  design  a  frequency  enhancement
+medical  image.  Exclusive  research  efforts  have  been  tailored                module  and  fuse  feature  from  frequency  and  spatial  domain
+towards medical images rather than directly applying methods                       with a feature alignment.
+based on natural images in order to reconstruct these diverse
+low-quality medical images. Here are some works on medical                                                        III.  METHOD
+image upsampling, including SR and slice synthesis. S´anchez
+et  al.  [9]  adopt  an  adversarial  learning  approach  with  3D                    Mathematically,  we  define  a  sparsely-sampled  3D  medical
+convolutions based on the SRGAN [25] to extract volumetric                         image  (e.g.,  CT  volume)  as V ∈  RS×H×W ,  where S, H
+information. You et al. [26] leverage a cycle-consistency with                     and W  indicate  the  resolution  for  axial,  coronal  and  sagittal
+the  Wasserstein  distance  for  feature  mapping  in  the  semi-                  axes. In general, the resolution of the axial axis is lower than
+supervised paradigm. Apart from these methods that explicitly                      the  other  two  axes,  i.e., S < H,  and S < W .  Decomposed
+predict each pixel value, there are also some works based on                       from  axial,  sagittal,  and  coronal  views,  the  set  of  obtained
+INR. Wu et al. [27] achieve arbitrary upsampling by mapping                        2D  images  can  be  denoted  as Vaxial ∈  RH×W ,Vcor ∈
+the  discrete  voxels  to  a  continuous  implicit  space.  McGinnis               RS×W ,Vsag∈ RS×H, respectively. The goal of medical slice
+et  al.  [28]  integrate  two  different  contrast  MR  images  from               synthesis  is  finding  a  transformation  from  sparsely-sampled
+different  views  and  establish  a  continuous  spatial  function                 CT volume V along the axial axis to its densely-sampled CT
+to  comprehensively  capture  the  anatomical  information.  In                    volume counterpart  ˆV∈ R ˆS×H×W , where  ˆS = (S−1)·R+1
+addition  to  enhancing  in-plane  resolution,  slice  synthesis  to               andR is the upsampling factor along the axial axis, indicating
+improve  the  through-plane  resolution  of  anisotropic  volumes                  interpolating R− 1  slices  between  every  two  adjacent  slices
+in the axial view is also crucial. Bae et al. [29] adopt a fully                   along the axial axis.
+residual  convolutional  neural  network  with  the  input  image                     The overall architecture of the proposed I3Net is shown in
+only  from  coronal  view.  Super-resolution  from  a  single  view                Fig.  2.  A  CT  volume V ∈ RS×H×W  is  fed  into  the  head
+(i.e.,  coronal  and  sagittal  view)  is  intuitive,  but  compared               of  the  network  to  produce  a  feature  volume Z∈ RC×H×W .
+
+=== PDF PAGE 4 ===
+4                                                                                                                                            IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              Fig. 2: The architecture of I3Net. Our I3Net consists of several I2  Blocks and three Cross-view Blocks.
+
+
+
+
+
+
+
+
+
+
+                                                                                    Fig.  4:  The  processing  of  PixelShuffle  and  PixelUnshuffle
+                                                                                    within the inter-slice branch.
+
+
+Fig. 3: The architecture of I2Block, which consists of an inter-                    to  discern  in  this  frequency  range.  In  fact,  they  are  better
+slice branch and an intra-slice branch.                                             represented in the high-frequency components. This indicates
+                                                                                    that  different  organ  contents  are  emphasized  within  different
+Then Z  is fed into several I2  Blocks (Sec. III-A) and Cross-                      frequency ranges.
+view Blocks (Sec. III-B), followed by the tail of the network                          But, due to the nature of the image, high- and low-frequency
+to generate the interpolated CT volume  ˜V∈ R ˆS×H×W .                              information  does  not  have  equivalent  learning  opportunities.
+                                                                                    The low-frequency part usually dominates the feature extrac-
+                                                                                    tion process, and in practice, the high-frequency component is
+A.  I2 Block                                                                        typically more challenging to process when learned alongside
+   To extract features from high in-plane resolution and com-                       the  lower-frequency  component  [33].  The  fine  details  in  in-
+pensate  for  low  through-plane  resolution,  we  propose  an  I2                  terpolated slices are unsatisfactory, e.g., the blood vessels and
+Block,  consisting  of  an  intra-slice  branch  and  an  inter-slice               airways are out of order, and the contour of organs or spines
+branch.  The  intra-slice  branch  helps  equal  learning  of  all                  is missing. Besides, feature learning in the frequency domain
+frequency  bands  to  ensure  essential  high-frequency  details                    can  easily  acquire  global  context.  Thus,  we  consider  feature
+when  capturing  global  features,  while  the  inter-slice  branch                 learning from the frequency domain.
+takes  advantage  of  abundant  yet  redundant  [35]  intra-slice                      We employ the Discrete Cosine Transform (DCT) to trans-
+features to compensate for the axial axis.                                          form  each  channel  of  the  input  feature Z  from  the  spatial
+   1)  Inter-slice  Branch:          As  shown  in  Fig.  3,  our  inter-slice      domain to the frequency domain, and acquire feature volume
+branch consists of three types of simple operations: PixelUn-                       Zdct∈ RC×H×W .  Since  the  intensity  of  the  low-frequency
+shuffle,  convolution,  ReLU,  and  PixelShuffle.  More  specifi-                   region is much greater than that of the high-frequency region,
+cally,  the  input  feature  volume Z  goes  through  the  PixelUn-                 we  apply  LayerNorm  [36]  on Zdct,  which  is  invariant  to
+shuffle operation to obtain Zpu∈ R4C×H/2×W/2, as illustrated                        per  training-case  feature  shifting  and  scaling.  After  that,  to
+in  Fig.  4.  Thus,  the  low  through-plane  resolution  can  be                   enforce an equal learning opportunity for all frequency bands,
+compensated by the high in-plane resolution while maintaining                       we  divide  the  frequency  feature  along H×W  dimensions
+continuity. Zpu   enables  more  information  learned  for  the                     into distinct, non-overlapping windows, whose sizes are C×
+axial  axis  via  the  subsequent  convolution-ReLU-convolution                     p×p.  Then,  the  feature  in  each  window  can  be  reshaped  to
+operations. PixelShuffle is adopted to transform the feature to                     Zwi ∈ RC×p2  as  a  sequence  of  frequency  bands  with  hidden
+its  original  size.  In  this  branch,  we  aim  at  learning  enriched            dimensionC. In order to further reduce the intensity disparities
+and diverse information between different slices.                                   across different frequencies and enhance the continuity of fea-
+   2)  Intra-slice  Branch:          For  CT  slices  from  the  axial  view,       ture  integration,  we  exploit  MLP-Mixer  [14],  i.e.,  two  MLPs
+low-frequency components always roughly represent the over-                         including two fully connected layers and an activation function
+all  morphology  of  large  organs.  Small  tissues  such  as  blood                (GELU [37]). Note that our MLP-Mixer is applied within non-
+vessels and airways are blurred and their orientation is difficult                  overlapping  windows  in  the  frequency  domain,  which  makes
+
+=== PDF PAGE 5 ===
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING                                                                                                            5
+
+
+                                                                                   learned by the axial view. Thus, the morphological position of
+                                                                                   the organ will be corrected in the interpolated slice. Existing
+                                                                                   methods  [2],  [3]  process  three  views  separately,  and  then
+                                                                                   followed by feature fusion in the final operation, where these
+                                                                                   features do not interact with each other in real time.
+                                                                                      For this reason, we design a cross-view block shown in Fig.
+                                                                                   6  to  unite  the  information  of  three  views  simultaneously  in
+Fig. 5: Fusing adjacent slices from spatial domain and spectral                    one  step  within  a  single  network.  Given  features Zaxial ∈
+domain. The left shows the ground truth of the current slice.                      RC×H×W   from  the  axial  view, Znorm   is  obtained  from
+The middle is the direct weighted sum of adjacent slices. The                      Zaxial  through  LayerNorm.  Features  from  the  sagittal  view
+right is the weighted sum of the same frequency from adjacent                      Zsag  are  extracted  along  the  channel  and  height  dimensions,
+slices.                                                                            while  features  from  coronal  view Zcor  are  extracted  along
+                                                                                   the channel and width dimensions. The process of cross-view
+                                                                                   block can be represented as follows and Zenhance  is obtained
+                                                                                   as the output:
+                                                                                             Zsag∗,∗,i = Down(ConvUnit(Up(WsagZnorm∗,∗,i  ))),        (3)
+                                                                                             Zcor∗,j,∗ = Down(ConvUnit(Up(WcorZnorm∗,j,∗  ))),        (4)
+                                                                                                    Zenhance = Zsag +Zcor +Zaxial,                 (5)
+                                                                                   where i  =  1,...,W   and j   =  1,...,H. Wsag   and Wcor
+       Fig. 6: The architecture of the Cross-view Block.                           are  two  1× 1  convolution  operations.  ConvUnit  indicates
+                                                                                   Conv3× 3-ReLU-Conv3× 3. Up and Down are PixelShuffle
+                                                                                   and PixelUnshuffle, respectively.
+it very different from traditional ones. Compared to the global                    C.  Optimization
+frequencies,  the  frequencies  within  the  non-overlapping  win-
+dow have comparatively reduced intensity disparities, and still                       Following prior works [1], [2], [5], we adopt a standardL1
+keep  the  global  information.  Therefore,  one  MLP  is  applied                 Loss between prediction  ˜V and ground truth  ˆV as follows: ˆV−  ˜V1                                 (6)
+along  the  frequency  dimension,  mapping Rp2 →  Rp2.  As                                                      L =
+shown in Fig. 5, directly fusing adjacent slices from the spatial
+domain  results  in  image  discretization  and  indistinctness  of
+tubular  structures  and  edges,  while  fusing  the  frequencies  of                                         IV.  EXPERIMENTS
+adjacent slices will prevent this situation. So, the other MLP                     A.  Experiments setting
+is applied along the channel dimension, mapping RC→ RC.                               1)  Datasets:                Both  CT  and  MR  are  considered  in  our  ex-
+In each MLP-Mixer layer, the transformation can be expressed                       periments.  The  3D  CT  volumes  are  collected  from  Medical
+as follows for the input tensor Zwi :                                              Segmentation Decathlon (MSD) [41], which is publicly avail-
+                   Zwi,I = Zwi  +ω2σ(ω1LN(Zwi )),                    (1)           able.  The  datasets  we  use  contain  201,  433,  190  volumes  of
+                  Zwi,II = Zwi,I +ω4σ(ω3LN(Zwi,I)),                  (2)           liver,  hepatic  vessels  and  colon,  respectively.  We  follow  the
+                                                                                   setting in [2] to split the dataset for training and testing. All the
+where i = 0, 1,...,HW/p2− 1, ω1∼ ω4  are  parameters  of                           volumes have the size of 512×512 within the axial-view slice,
+fully  connected  layers, σ  is  GELU  and LN  is  LayerNorm.                      and the number of slices per volume ranges from 24 to 1046.
+Zwi,I  and Zwi,II  represent  the  outputs  after  applying  the  two              The in-plane resolution ranges from 0.58mm to 1.0mm, while
+MLPs, respectively. Then, after applying the window reverse                        the through-plane resolution ranges from 0.8mm to 8.0mm. It
+operation  to  transpose  the  feature  back  to  size C×H×W ,                     is evident that the 3D CT volume exhibits anisotropy, with gen-
+we  utilize  1× 1  convolutions  to  combine  the  cross-channel                   erally  poor  through-plane  resolution.  Furthermore,  following
+context.                                                                           [2], in order to verify the cross-dataset generalization ability of
+                                                                                   our model, we select 32 kidney volumes from the 2019 Kidney
+B.  Cross-view Block                                                               Tumor Segmentation Challenge (KiTS19) [42] as the test set.
+   As  shown  in  Fig.  1,  the  axial  view  contains  much  more                 These volumes, in comparison to those from MSD, have higher
+information than other views. Our interpolation network pro-                       in-plane  resolution.  The  3D  MR  volumes  are  collected  from
+cesses  slices  from  the  axial  view.  But,  sometimes  even  if                 public  dataset  IXI1,  containing  three  modalities  (PD,  T1  and
+the  cross-section  of  the  spine  is  realistic  and  complete  from             T2).  We  choose  185  volumes  from  Hammersmith  Hospital
+each  slice  in  the  axial  view,  the  morphological  results  of  the           scanned  by  a  Philips  3T  system,  which  are  split  into  150
+spine from the coronal or sagittal view may be off the correct                     volumes for training and 35 volumes for testing. The in-plane
+orientation.  Therefore,  it  is  necessary  to  take  advantage  of               dimensions of each volume are 256× 256, with the majority
+the  information  from  all  three  views  and  refine  the  features                 1https://brain-development.org/ixi-dataset/
+
+=== PDF PAGE 6 ===
+               6                                                                                                                                            IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024
+
+               TABLE I: Comparison with existing SR and interpolation methods under×2,×4 and×6 upsacle factors, on the CT dataset,
+               including colon, liver and hepatic vessels.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+               of  volumes  containing  130  slices.  Almost  all  volumes  have                                      ground truth are 256×256×S , whereS = (4−1)×R+1 . In
+               the  in-plane  resolution  of  0.9375mm  and  the  through-plane                                       order to address the issue of excessive memory consumption,
+               resolution of 1.25mm.                                                                                  the low-resolution patches are set to the size of 64× 64× 16
+                   In our experiment, following [2], we set the downsampling                                          for 3D CNN network.
+         Method                                             Colon                                                             Liver                                                     Hepatic Vesselsfactor along the axial axis asR = 2, 4, 6. The original volumePSNR      SSIMa      SSIMc      SSIMs      PSNR      SSIMa      SSIMc      SSIMs      PSNR      SSIMa      SSIMc      SSIMsDuring  training,  we  randomly  sample  4  slices  from  each
+         EDSR2D [5]         42.40       0.9841      0.9820      0.9821       41.46       0.9806      0.9742      0.9744       43.23       0.9858      0.9843      0.9844is  considered  as  the  high-resolution  volume,  while  the  low-volume  within  one  epoch,  while  comparison  models  such  as
+         EDSR3D [5]         42.75       0.9845      0.9831      0.9832       41.97       0.9817      0.9764      0.9765       43.39       0.9860      0.9849      0.9850resolution  volume  is  obtained  through  direct  downsampling[2], [24], [40] require traversing all slices within each volume,
+         RDN [6]                41.21       0.9811      0.9777      0.9778       40.78       0.9783      0.9709      0.9711       41.89       0.9830      0.9800      0.9800of the original volume.which takes more training resources than ours. To account for
+         RCAN [7]             41.83       0.9827      0.9801      0.9802       41.11       0.9769      0.9691      0.9693       43.14       0.9856      0.9841      0.98422)  Implementation Details:             The  framework  is  implementedthis, we train their models on both our setting and their default
+         SwinIR [17]          41.86       0.9826      0.9802      0.9803       41.09       0.9795      0.9727      0.9728       42.86       0.9850      0.9834      0.9834in PyTorch. The model is optimized by Adam [43] and trainedsetting, and report their results with the BEST performance.
+         HAT [38]               42.01       0.9832      0.9809      0.9810       41.20       0.9801      0.9732      0.9734       43.25       0.9858      0.9845      0.9845for 1500 epochs with a batch size of 6, using NVIDIA GeForce3)  Evaluate  Metrics:       Two  metrics  are  applied  to  measure
+×2       ArSSR [27]           42.73       0.9848      0.9830      0.9831       41.75       0.9814      0.9755      0.9756       43.59       0.9865      0.9853      0.9853RTX  3090.  The  learning  rate  is  initially  set  to  3e-4  andthe interpolated results quality, including Peak Signal-to-Noise
+         AdaCoF [24]        42.49       0.9845      0.9827      0.9828       41.65       0.9819      0.9759      0.9761       42.77       0.9850      0.9832      0.9833adjusted by a cosine learning rate decay scheduler. We centerRatio  (PSNR)  and  Structural  Similarity  Index  (SSIM).  SSIM
+         RSTT [39]            42.09       0.9831      0.9813      0.9814       40.98       0.9788      0.9720      0.9722       43.28       0.9858      0.9846      0.9847crop  256× 256  region  in  each  slice  and  use  it  for  trainingis  calculated  on  slices  from  each  view  independently,  where
+         IFRNet [40]          42.68       0.9854      0.9834      0.9835       41.85       0.9821      0.9769      0.9771       42.88       0.9856      0.9838      0.9838and testing. To effectively utilize all training data, we adopt aSSIMa,  SSIMc,  SSIMs  are  obtained  from  axial,  coronal  and
+         TVSRN [1]           41.37       0.9809      0.9782      0.9783       40.37       0.9755      0.9681      0.9683       42.28       0.9834      0.9812      0.9814strategy of training on 4 consecutive slices randomly sampled
+         SAINT [2]            42.76       0.9845      0.9836      0.9837       42.24       0.9823      0.9784      0.9785       43.35       0.9858      0.9850      0.9851sagittal views, respectively.
+         I33Net (ours)      43.90      0.9871      0.9863      0.9864      42.68      0.9838      0.9796      0.9798      44.60      0.9883      0.9877      0.9878from each training volume, which means 256× 256× 4 cubes
+         EDSR2D [5]         35.63       0.9544      0.9939      0.9395       35.18       0.9499      0.9232      0.9236       36.50       0.9592      0.9461      0.9465serve as the low-resolution patches. While the corresponding
+         EDSR3D [5]         35.85       0.9551      0.9422      0.9426       35.43       0.9514      0.9265      0.9270       35.46       0.9529      0.9362      0.9368
+         RDN [6]                34.56       0.9469      0.9269      0.9274       34.55       0.9444      0.9152      0.9157       35.48       0.9437      0.9355      0.9361
+         RCAN [7]             35.08       0.9510      0.9331      0.9330       34.65       0.9458      0.9165      0.9170       35.55       0.9540      0.9361      0.9367
+         SwinIR [17]          35.32       0.9522      0.9361      0.9365       34.98       0.9483      0.9212      0.9216       36.48       0.9588      0.9462      0.9467
+×4       HAT [38]               35.61       0.9540      0.9392      0.9395       35.17       0.9507      0.9240      0.9243       37.00       0.9618      0.9511      0.9515
+         ArSSR [27]           35.77       0.9551      0.9405      0.9409       35.28       0.9504      0.9242      0.9247       36.83       0.9612      0.9496      0.9500
+         RSTT [39]            35.35       0.9517      0.9364      0.9369       34.81       0.9461      0.9187      0.9192       36.71       0.9598      0.9485      0.9489
+         IFRNet [40]          36.46       0.9612      0.9495      0.9497       35.92       0.9552      0.9342      0.9346       36.65       0.9616      0.9504      0.9507
+         TVSRN [1]           35.75       0.9541      0.9404      0.9407       35.01       0.9483      0.9210      0.9214       36.85       0.9606      0.9498      0.9502
+         SAINT [2]            35.87       0.9552      0.9440      0.9442       35.95       0.9550      0.9355      0.9358       35.70       0.9560      0.9423      0.9423
+         I3Net (ours)        37.21      0.9632      0.9545      0.9547      36.31      0.9575      0.9369      0.9373      37.90      0.9670      0.9588      0.9592
+         EDSR2D [5]         33.09       0.9352      0.9091      0.9100       32.70       0.9310      0.8889      0.8896       34.15       0.9443      0.9198      0.9208
+         EDSR3D [5]         32.71       0.9320      0.9062      0.9071       32.85       0.9321      0.8916      0.8924       32.94       0.9343      0.9043      0.9054
+         RDN [6]                32.24       0.9270      0.8964      0.8974       32.13       0.9245      0.8792      0.8800       33.28       0.9385      0.9085      0.9097
+         RCAN [7]             33.12       0.9358      0.9102      0.9111       32.03       0.9237      0.8774      0.8783       33.43       0.9398      0.9102      0.9114
+         SwinIR [17]          32.79       0.9317      0.9050      0.9059       32.60       0.9298      0.8873      0.8880       34.18       0.9443      0.9208      0.9218
+×6       HAT [38]               33.03       0.9341      0.9088      0.9096       32.77       0.9322      0.8904      0.8911       34.70       0.9479      0.9279      0.9288
+         ArSSR [27]           33.13       0.9355      0.9101      0.9110       32.74       0.9316      0.8898      0.8905       34.32       0.9455      0.9234      0.9243
+         RSTT [39]            32.94       0.9331      0.9077      0.9086       32.71       0.9311      0.8899      0.8906       34.62       0.9472      0.9273      0.9282
+         IFRNet [40]          33.88       0.9443      0.9231      0.9237       33.23       0.9374      0.9010      0.9016       34.20       0.9245      0.9245      0.9245
+         TVSRN [1]           33.28       0.9355      0.9122      0.9130       32.84       0.9321      0.8910      0.8921       34.62       0.9471      0.9274      0.9283
+         SAINT [2]            32.76       0.9327      0.9099      0.9107       33.26       0.9366      0.9029      0.9034       33.03       0.9376      0.9116      0.9126
+         I3Net (ours)        34.42      0.9459      0.9291      0.9296      33.84      0.9406      0.9067      0.9072      35.28      0.9530      0.9365      0.9372
+
+=== PDF PAGE 7 ===
+               AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING                                                                                                            7
+
+               TABLE II:  Comparison  with  existing  SR  and  interpolation  methods  under×2,×4  and×6  upsacle  factors,  on  IXI  dataset,
+               including three modalities (T1,T2 and PD).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+               B.  Comparison between I3Net and Other Methods                                                        methods,  our  I3Net  always  performs  best  under  different
+                                                                                                                     scale  factors.  Table  VI  demonstrates  that  our  I3Net  achieves
+                   1)  Performance Comparison:        As  shown  in  Tables  I-II,  we                               higher PSNR of 2.51 dB, 2.04 dB, and 1.32 dB, respectively,
+               summarize  the  PSNR  and  SSIM  from  each  view  of  CT                                             compared to RDN, RCAN, and EDSR when performing slice
+        Method                                                T1                                                                  T2                                                                  PDvolume from MSD and MR volume from IXI under×2,×4PSNR      SSIMa      SSIMc      SSIMs      PSNR      SSIMa      SSIMc      SSIMs      PSNR      SSIMa      SSIMc      SSIMsinterpolation  from  the  axial  view  in  the  absence  of  cross-
+        EDSR2D [5]         47.59       0.9912      0.9914      0.9913       49.75       0.9938      0.9935      0.9937       47.41       0.9925      0.9919      0.9922and×6  upscale  factors,  respectively.  We  compare  our  I3Netview  blocks.  Furthermore,  these  methods  exhibit  improved
+        EDSR3D [5]         47.95       0.9918      0.9920      0.9919       50.08       0.9940      0.9938      0.9940       47.52       0.9915      0.9915      0.9918with  three  types  of  methods:  (1)  super-resolution  methods,performance  when  fusing  multiple  views,  whereas  our  I3Net
+        RDN [6]                47.10       0.9902      0.9904      0.9903       49.53       0.9935      0.9932      0.9935       47.16       0.9921      0.9915      0.9918including  EDSR  [5],  RDN  [6],  RCAN  [7],  SwinIR  [17],does not show a significant performance boost after the fusion
+        RCAN [7]             47.35       0.9907      0.9909      0.9908       49.63       0.9937      0.9934      0.9936       47.23       0.9922      0.9916      0.9920HAT [38], ArSSR [27] (similar to the pixel-wise interpolation),strategy.  This  indicates  that  our  I3Net  effectively  extracts
+        SwinIR [17]          47.35       0.9907      0.9909      0.9908       49.65       0.9937      0.9934      0.9936       47.25       0.9923      0.9917      0.9921(2) video frame interpolation methods, including AdaCoF [24],relevant  information  from  the  axial  view,  highlighting  its
+        HAT [38]               47.44       0.9909      0.9911      0.9910       49.78       0.9938      0.9936      0.9938       47.43       0.9924      0.9919      0.9922RSTT  [39],  IFRNet  [40]  (similar  to  the  slice-wise  interpola-efficacy.
+×2      ArSSR [27]           47.80       0.9916      0.9918      0.9917       49.96       0.9940      0.9937      0.9939       47.46       0.9926      0.9921      0.9924tion), and (3) typical slice interpolation methods TVSRN [1],As  a  3D  method,  EDSR3D  shows  superior  performance
+        AdaCoF [24]        47.34       0.9907      0.9909      0.9908       49.25       0.9934      0.9930      0.9932       46.99       0.9921      0.9915      0.9918SAINT  [2].  The  corresponding  visualizations  are  shown  inover  some  2D  methods  under×2  upscale  factor.  However,
+        RSTT [39]            47.12       0.9903      0.9905      0.9903       49.43       0.9935      0.9932      0.9934       46.92       0.9919      0.9912      0.9916Fig. 7 and Fig. 9.as  the  upscale  factor  increases,  the  performance  of  EDSR3D
+        IFRNet [40]          47.52       0.9910      0.9913      0.9912       49.40       0.9935      0.9931      0.9934       46.97       0.9921      0.9914      0.9917Tables  I-II  show  that  our  I3Net  is  much  better  than  thosegradually  declines  compared  to  2D  methods.  In  comparison
+        TVSRN [1]           46.60       0.9887      0.9889      0.9888       49.29       0.9928      0.9925      0.9928       46.93       0.9915      0.9908      0.9912typical  SR  methods  based  on  convolution  (i.e.,  EDSR,  RDNto  the  PSNR  of  EDSR3D,  our  I3Net  achieves  an  average
+        SAINT [2]            47.17       0.9904      0.9906      0.9904       50.10       0.9941      0.9939      0.9941       47.59       0.9927      0.9923      0.9926
+        I33Net (ours)      48.26      0.9923      0.9926      0.9925      50.25      0.9943      0.9940      0.9942      47.79      0.9929      0.9925      0.9928and RCAN) and some other SR methods based on transformerimprovement  of  2.39%,  4.39%  and  5.12%  on  MSD  dataset
+        EDSR2D [5]         41.83       0.9708      0.9702      0.9701       43.39       0.9787      0.9773      0.9778       41.18       0.9751      0.9732      0.9738(i.e.,  SwinIR  and  HAT).  Compared  with  those  typical  SRunder the upscale factors of×2,×4, and×6, respectively. The
+        EDSR3D [5]         42.35       0.9732      0.9733      0.9733       43.90       0.9802      0.9792      0.9797       41.52       0.9765      0.9749      0.9755
+        RDN [6]                41.09       0.9659      0.9646      0.9645       42.95       0.9771      0.9754      0.9759       40.77       0.9734      0.9710      0.9717
+        RCAN [7]             41.58       0.9693      0.9684      0.9682       43.22       0.9782      0.9767      0.9771       41.05       0.9747      0.9725      0.9732
+        SwinIR [17]          41.59       0.9693      0.9686      0.9685       43.11       0.9778      0.9763      0.9767       40.95       0.9741      0.9721      0.9727
+×4      HAT [38]               41.74       0.9703      0.9697      0.9696       43.81       0.9802      0.9791      0.9796       41.05       0.9746      0.9726      0.9732
+        ArSSR [27]           41.86       0.9710      0.9704      0.9704       43.73       0.9798      0.9787      0.9792       41.28       0.9757      0.9739      0.9745
+        RSTT [39]            41.28       0.9673      0.9663      0.9662       43.09       0.9777      0.9761      0.9766       40.76       0.9732      0.9709      0.9716
+        IFRNet [40]          42.65       0.9749      0.9749      0.9749       43.70       0.9796      0.9784      0.9789       41.30       0.9757      0.9739      0.9745
+        TVSRN [1]           41.53       0.9689      0.9681      0.9680       43.19       0.9776      0.9762      0.9767       40.92       0.9739      0.9719      0.9726
+        SAINT [2]            41.45       0.9686      0.9676      0.9675       43.14       0.9780      0.9765      0.9770       40.87       0.9742      0.9720      0.9727
+        I3Net (ours)        43.03      0.9765      0.9768      0.9768      44.39      0.9818      0.9810      0.9814      42.02      0.9783      0.9770      0.9776
+        EDSR2D [5]         39.31       0.9519      0.9495      0.9495       41.40       0.9699      0.9679      0.9685       39.48       0.9664      0.9639      0.9648
+        EDSR3D [5]         39.96       0.9564      0.9556      0.9556       42.18       0.9735      0.9723      0.9729       40.15       0.9695      0.9680      0.9689
+        RDN [6]                38.54       0.9439      0.9403      0.9402       40.63       0.9655      0.9628      0.9633       38.82       0.9621      0.9587      0.9595
+        RCAN [7]             39.19       0.9505      0.9479      0.9479       41.30       0.9693      0.9673      0.9678       39.41       0.9657      0.9631      0.9640
+        SwinIR [17]          39.22       0.9507      0.9484      0.9484       41.14       0.9684      0.9664      0.9669       39.20       0.9645      0.9618      0.9626
+×6      HAT [38]               39.46       0.9528      0.9510      0.9510       41.35       0.9696      0.9677      0.9683       39.50       0.9663      0.9641      0.9650
+        ArSSR [27]           39.37       0.9523      0.9502      0.9502       41.81       0.9721      0.9705      0.9710       39.66       0.9673      0.9651      0.9660
+        RSTT [39]            39.33       0.9519      0.9498      0.9498       41.51       0.9705      0.9688      0.9694       39.18       0.9645      0.9617      0.9627
+        IFRNet [40]          40.73       0.9625      0.9621      0.9622       42.44       0.9748      0.9735      0.9741       40.32       0.9708      0.9691      0.9700
+        TVSRN [1]           39.52       0.9531      0.9514      0.9514       41.70       0.9713      0.9698      0.9704       39.67       0.9664      0.9642      0.9651
+        SAINT [2]            38.86       0.9474      0.9444      0.9444       40.83       0.9674      0.9641      0.9647       38.88       0.9629      0.9589      0.9597
+        I3Net (ours)        40.84      0.9628      0.9627      0.9628      43.35      0.9786      0.9780      0.9785      41.24      0.9748      0.9739      0.9747
+
+=== PDF PAGE 8 ===
+                8                                                                                                                                            IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                Fig. 7:  Visual  comparison  against  different  methods  on  colon  dataset.  Every  two  rows,  from  top  to  bottom,  represent  the
+                experimental results and the error maps with the error bars for×2,×4, and×6 upscale factors, respectively. The lighter the
+                color, the smaller the error.
+
+
+                TABLE  III:  Comparison  with  existing  SR  and  interpolation                                        TABLE  V:  Effectiveness  of  different  modules  in  the  whole
+                methods  under ×2, ×4  and ×6  upscale  factor,  which  is                                             network.  All  experiments  are  conducted  using  colon  dataset
+                training on the colon, hepatic vessels and colon datasets, and                                         with×2 upscale factor.
+                testing on KiTS19.                                                                                       Intra-slice Branch   Inter-slice Branch   Cross-view Block   PSNR   SSIMa
+                                                                                                                                                                                                     42.40   0.9841
+                                                                                                                                    ✓                                                                                42.89   0.9851
+                                                                                                                                    ✓                 ✓                                                43.72   0.9857
+                                                                                                                                    ✓                 ✓                 ✓               43.90   0.9871
+
+                                                                                                                       TABLE VI:  Performing  slice  synthesis  from  different  views.
+                                                                                                                       We summarize the results of slice interpolation from coronal
+                                                                                                                       and sagittal views via super-resolution, results from the axial
+                                                                                                                       view via slice-wise interpolation, and results via fusing predic-
+                                                                                                                       tions  from  three  views.  All  experiments  are  conducted  using
+                                                                                                                       colon dataset with×2 upscale factor. CVB stands for Cross-
+                                                                                                                       view Block.
+
+                                                                                                                                     Method                   Coronal         Sagittal         Axial         Fuse
+                            TABLE IV: Inference time (ms) comparisons.                                                              RDN [6]                    40.83            40.80          41.21         41.50
+                                                                                                                                   RCAN [7]                   41.16            41.14          41.68         41.88
+                            Method                Inference Time           PSNR           SSIMa                                     EDSR [5]                   41.52            41.57          42.40         42.73
+                         EDSR3D [5]                     122                     32.71            0.9320                      I3Net         w/o CVB              -                    -              43.72         43.69
+                           HAT [38]                        208                     33.03            0.9341                                  w CVB                -                    -             43.90            -
+                         ArSSR [27]                      233                     33.13            0.9355
+                          RSTT [39]                       275                     32.94            0.9331
+                        IFRNET [40]                     168                     33.88            0.9443                    Another  SR  method,  ArSSR,  is  based  on  INR.  Indeed,
+                          TVSRN [1]                      164                     33.28            0.9355
+                          SAINT [2]                     3,289                    32.76            0.9327               ArSSR  excels  in  performing  arbitrary  upsampling.  However,
+                         I3Net (ours)                    95                     34.42           0.9459                 as  the  upscale  factor  increases,  the  computation  of  ArSSR
+                                                                                                                       also  escalates  rapidly,  while  other  regular  SR  methods  and
+Method      ×2      ×4      ×6                                                                                         our I3Net do not.
+                direct  adaptation  of  the  transformer-based  SwinIR  and  HATPSNR      SSIMa      PSNR      SSIMa      PSNR      SSIMaCompared  to  methods  for  video  frame  interpolation,  Ada-
+EDSR2D [5]       42.84       0.9769       35.62       0.9401       32.61       0.9173into slice interpolation does not have optimal performance.CoF, RSTT and IFRNet have mainly achieved above-average
+EDSR3D [5]       43.16       0.9773       35.62       0.9397       32.47       0.9136
+RDN [6]             42.05       0.9744       34.98       0.9370       30.97       0.9111
+RCAN [7]           42.04       0.9743       35.12       0.9369       31.81       0.9132
+SwinIR [17]        42.41       0.9757       35.48       0.9394       32.15       0.9167
+HAT [38]            42.31       0.9758       35.53       0.9406       35.52       0.9178
+ArSSR [27]        42.73       0.9767       35.58       0.9397       32.35       0.9143
+AdaCoF [24]      42.28       0.9759          -               -               -               -
+RSTT [39]          42.35       0.9749       35.30       0.9362       32.67       0.9137
+IFRNet [40]        42.36       0.9771       35.63       0.9440       32.74       0.9204
+TVSRN [1]         41.58       0.9702       35.16       0.9330       31.94       0.9065
+SAINT [2]          42.79       0.9766       35.60       0.9395       32.43       0.9117
+I3Net (ours)      43.54      0.9787      36.04      0.9444      32.95      0.9207
+
+=== PDF PAGE 9 ===
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING                                                                                                            9
+
+                                                                                      TABLE VII:  Effectiveness  of           TABLE VIII: Replacing intra-
+                                                                                      each component in the intra-            slice branch with typical non-
+                                                                                      slice branch. All experiments           local   methods.   All   experi-
+                                                                                      are   conducted   using   colon         ments   are   conducted   using
+                                                                                      dataset with×2 upscale fac-             colon  dataset  with ×2  up-
+                                                                                      tor.                                    scale factor.
+
+                                                                                                                                   Method       PSNR      SSIMa
+                                                                                       DCT   Win   MLP   PSNR   SSIMa             MAXIM       42.46      0.9841
+                                                                                                            42.36   0.9839         CCNet        42.42      0.9842
+                                                                                        ✓           ✓          -            -       Twins         41.95      0.9829
+                                                                                               ✓    ✓      41.57   0.9817           Swin         42.34      0.9837
+                                                                                        ✓    ✓    ✓     42.89   0.9851              Ours         42.89      0.9851
+Fig. 8: Performance (PSNR) comparison in box plots of dif-
+ferent methods using colon, liver and hepatic vessels datasets
+under×2 upscale factor.                                                              The  inference  time  is  computed  on  NVIDIA  GeForce  RTX
+                                                                                     3090  GPUs.  As  shown  in  Table  IV,  I3Net  takes  the  lowest
+performance  results  due  to  the  similarity  of  the  tasks,  espe-               inference time while obtaining the best synthesis results.
+
+cially when the through-slice resolution is low. However, since                      C.  Ablation Study
+AdaCoF was originally designed for×2 upscaling, we do not
+include it in the comparison under the upscale factors of×4                             In this section, each component of our method is evaluated
+and×6 in Tables I-II. Nevertheless, its results are visualized                       to demonstrate its effectiveness in improving the performance,
+in Fig. 7and Fig. 9, which shows that using AdaCoF directly                          which  is  shown  in  Table  V.  For  different  components,  we
+under larger upscale factors makes it challenging to accurately                      analyze their respective effects in the following.
+predict  the  organ  variation  trends  in  the  interpolated  slices.                  1)  Intra-slice Branch:          We  conduct  ablation  experiments  to
+RSTT  ,  without  utilizing  the  optical  flow,  generally  achieves                analyze  the  influence  of  different  components  for  our  intra-
+lower performance compared to IFRNet. In Fig. 7and Fig. 9,                           slice branch. As shown in Table VII, without DCT operation,
+the  results  of  IFRNet  show  its  capability  to  predict  local                  window  partition  +  MLP  results  in  0.50  dB  drop  in  PSNR.
+information such as edges effectively. However, since IFRNet                         This  is  because  only  local  information  is  learned.  Moreover,
+applies  optical  flow,  it  seems  to  overly  rely  on  the  content               Fig.  11  (a)  shows  adding  the  intra-slice  branch  can  result  in
+from  adjacent  slices,  which  results  in  better  prediction  of                  increased focus on high-frequency contents. Fig. 11 (b) shows
+organ structures with minimal morphological changes between                          that  when  involving  more  frequency  bands  starting  from  the
+the preceding and succeeding slices. However, it struggles to                        high frequency (|H|/|L+H| in Fig. 11 (b)), the high-frequency
+accurately predict the scaling of organs.                                            energy ratio curve of the intra-slice branch is closer to that of
+   Our I3Net outperforms the pure transformer-based TVSRN,                           the  Uniform  than  the  inter-slice  branch  and  EDSR  (a  plain
+especially  under  lower  upscale  factors.  In  comparison  to  the                 network).  This  shows  our  intra-slice  branch  ensures  a  more
+PSNR,  ours  achieves  an  average  improvement  of  5.78%,                          equal  learning  opportunity  for  different  frequency  bands.  To
+3.54%  and  2.79%  on  MSD  dataset  under  the  upscale  factors                    further  show  our  intra-slice  branch  i.e.,  learning  high-  and
+of×2,×4,  and×6,  respectively.  SAINT  only  performs  SR                           low-frequency independently, is a more effective method than
+from coronal and sagittal views, without directly analyzing the                      other global context modeling methods, we replace the intra-
+axial  view.  As  shown  in  Fig.  7  and  Fig.  9,  our  I3Net  shows               slice  branch  with  some  typical  non-local  methods,  including
+better  performance  in  the  prediction  of  organ  boundaries.                     MAXIM [44], CCNet [45], Twins [46], Swin [47]. Table VIII
+Fig. 8 illustrates the superior performance of our I3Net across                      shows intra-slice branch has the best performance and achieves
+all  datasets,  with  substantial  improvements.  The  p-values  are                 0.44  dB  higher  than  MAXIM,  which  is  also  based  on  MLP-
+lower  than  1e−4,  indicating  significantly  better  performance                   Mixer. Furthermore, an additional design is tested in Table IX.
+compared to the second-best methods, IFRNet and SAINT.                               We find increasing the size of the window to 16 has the best
+   To enhance contrast and highlight differences, we apply HU                        performance,  yet  excessively  large  window  sizes  result  in  a
+windows  to  CT  results  shown  in  Fig.  10.  [-125,+275]  is  set                 decline in performance.
+for  the  abdominal  region  and  [-900,+100]  is  set  for  the  lung                  2)  Inter-slice Branch:         Instead of performing PixelUnShuffle,
+region.  It  can  be  observed  that  our  method  can  reconstruct                  convolution,   ReLU   and   PixelShuffle   operations   to   extract
+organs  with  greater  clarity  and  accuracy,  as  well  as  capture                enriched  and  diverse  information  between  different  slices,
+complex variations of vessels.                                                       we also explore other feature extraction strategies. Given the
+   To  verify  the  robustness,  we  conduct  the  experiments  on                   feature  map Z ∈  RC×H×W ,  after  applying  PixelUnshuffle
+unseen  KiTS19  data  using  the  well-trained  model  on  colon,                    operation,  we  obtain  the  feature  map Zpu∈ R4C×H/2×W/2.
+hepatic vessels and liver. As indicated in Table III, I3Net still                    Subsequently, convolution with a kernel size of 3 is performed.
+achieves the best results.                                                           This  process,  convolution  after  PixelUnshuffle,  is  denoted
+   2)  Inference  Time  Comparison:         We  select  some  methods                by  PC.  The  calculated  pixels  correspond  to  spatial  locations
+with  the  best  overall  performance  and  measure  their  speed                    in Z  that  are  spaced  1  pixel  apart,  just  like  performing  a
+when processing 4 input slices to synthesize 19 output slices.                       convolution  calculation  in Z  with  a  kernel  size  of  3  and
+
+=== PDF PAGE 10 ===
+10                                                                                                                                          IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig.  9:  Visual  comparison  against  different  methods  on  IXI  dataset.  Every  two  rows,  from  top  to  bottom,  represent  the
+experimental results and the error maps with the error bars for×2,×4, and×6 upscale factors, respectively. The lighter the
+color, the smaller the error.
+
+
+                                                                                         TABLE IX: Different sizes of              TABLE  X:  Different  feature
+                                                                                         non-overlapping  windows  in              extraction  strategies  for  the
+                                                                                         the intra-slice branch. All ex-           inter-slice branch. All exper-
+                                                                                         periments  are  conducted  us-            iments  are  conducted  using
+                                                                                         ing   colon   dataset   with ×2           colon  dataset  with ×2  up-
+                                                                                         upscale factor.                           scale factor.
+
+                                                                                             Win size      PSNR      SSIMa             Strategy        PSNR      SSIMa
+                                                                                                 4             43.89      0.9871       Baseline         42.89      0.9839
+                                                                                                 8             43.88      0.9871         Dilate           42.77      0.9848
+                                                                                                16           43.90      0.9871          Conv5          43.00      0.9853
+                                                                                                24            43.83       0.9870          S-T             43.66      0.9866
+                                                                                                32            43.66       0.9868      PC (Ours)      43.72      0.9867
+
+Fig. 10: The visualization results after applying HU windows.
+The  window  for  the  first  two  rows  is  set  to  [-125,  +275],                    use  convolution  with  stride  for  downsampling  and  transpose
+while the window for the last two rows is set to [-900, +100].                          convolution  for  upsampling,  which  process  is  represented  as
+Green boxes and blue boxes are GT and our method, respec-                               S-T.  It  can  be  observed  from  Table  X  that  our  PC  achieves
+tively. Other methods (i.e., EDSR2D, EDSR3D, RDN, RCAN,                                 the  best  performance,  surpassing  the  performance  of  the  pa-
+SwinIR, HAT, ArSSR, AdaCoF, RSTT, IFRNet, TVSRN and                                     rameterized  upsampling  and  downsampling  method  S-T  by
+SAINT) are drawn in block boxes.                                                        0.06 dB, and it outperforms other methods by at least 0.7 dB.
+                                                                                        Furthermore, according to the redundancy reduction principle,
+                                                                                        high  feature  redundancy  limits  the  generalization  of  neural
+a  dilation  of  1,  which  is  denoted  by  Dilate.  Due  to  the                      networks  [48].  We  show  our  PC  leads  to  the  lowest  feature
+presence of dilation, adjacent points in Z will not be calculated                       redundancy, compared with other strategies in Fig. 12. Besides,
+together during Dilate, but they can be learned together across                         with  the  increasing  of  the  network  depth,  our  PC  exhibits  a
+different  channels  during  our  PC.  To  ensure  that  adjacent                       clear decreasing trend.
+pixels  can  be  simultaneously  activated  while  maintaining  the                        3)  Cross-view Block:    To  verify  the  effectiveness  of  cross-
+same receptive field, we directly adopt a convolution with the                          view  block,  we  conduct  experiments  by  placing  cross-view
+kernel  size  of  5  to  replace  Dilate,  representing  this  process                  blocks  at  different  positions  in  the  network.  The  specific
+as  Conv5.  To  demonstrate  the  superior  ability  to  preserve                       strategy for the experiments is illustrated in Fig. 13, with the
+original  information  by  PixelUnshuffle  and  PixelShuffle,  we                       corresponding results presented below. In Fig. 13, strategy (a)
+
+=== PDF PAGE 11 ===
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING                                                                                                          11
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   (a)                                      (b)                        Fig.  12:  Feature  redundancy  vs.  network  depth  on  colon
+                                                                                       dataset using different strategies for the inter-slice branch.
+
+
+
+
+
+
+                                        (c)
+
+
+
+
+
+
+
+
+                                        (d)
+Fig. 11: (a) shows the high-frequency energy across each stage
+of  each  method.  “Base”  only  contains  inter-slice  branch  in
+the  I2Block.  “+Intra”  means  adding  the  intra-slice  branch  to
+I2Block. (b) shows the proportion of the high-frequency energy                         Fig. 13: Effectiveness of Cross-view Block at different posi-
+ratio of each branch in the I2Block and EDSR. “Uniform” has                            tions  in  the  network.  The  last  two  rows  of  metrics  represent
+the equal intensity of every frequency band, showing IDEAL                             the PSNR and SSIMa  for different strategies, respectively.
+equal learning ability for high- and low-frequency bands (see
+Sec. III-A.2). The horizontal axis represents the range of the
+defined  high-frequency  region  ratio.  (c)  shows  the  horizontal                   enhancing  the  performance.  However,  simply  increasing  the
+axis of (a): increasing depth as the blocks (ResBlocks in EDSR                         number  of  cross-view  blocks  does  not  guarantee  an  effective
+and I2Blocks in Base) are added. (d) shows the horizontal axis                         improvement  in  performance  as  shown  in  Table  XII.  The
+of  (b):  high-frequency  region  ratio.  High-frequency  energy                       appropriate  number  of  Cross-view  Blocks  can  provide  valu-
+ratio  of  (b)  is  computed  as P(i,j)∈HI2i,j/P(i,j)∈LSHI2i,j,                        able  through-plane  information.  Due  to  the  typically  lower
+where I  is the intensity of corresponding frequency.                                  through-plane resolution compared to the in-plane resolution,
+                                                                                       excessive integration of through-plane information will cause
+                                                                                       interference.
+shows the backbone of the network consists of 16 I2  blocks,                              5)  Complementary to Each Module:             In the previous subsec-
+serving as the baseline. Strategy (d), our method, inserts three                       tions, we have discussed the individual characteristics of each
+cross-view  blocks  into  the  network.  To  show  that  the  perfor-                  module.  We  then  demonstrate  the  complementarity  among
+mance enhancement is not due to an increase in the parameter                           these modules to enhance the overall network performance. As
+numbers, we implement strategy (b), which adds three extra I2                          shown  in  Fig.  14,  each  module  focuses  on  different  aspects.
+blocks. Additionally, strategy (c) replaces three I2 blocks with
+three  cross-view  blocks,  which  preserves  the  overall  number                     TABLE XI: Different number of I2Blocks. All experiments are
+of  blocks  compared  with  (a).  We  observe  performance  gains                      conducted using colon dataset with×2 upscale factor.
+between  (a)  and  (c),  (b)  and  (d),  showing  the  effectiveness
+of  our  cross-view  block.  With  fewer  parameters,  strategy  (c)                              I2Block                 8            12           16           20           24
+even outperforms strategy (b) in terms of PSNR by 0.04 dB,                                         w CVB              43.52      43.76      43.90      43.95      44.02
+which indicates that the cross-view block effectively integrates                                  w/o CVB             43.38      43.62      43.72      43.72      43.84
+the  features  from  sagittal  and  coronal  views.  Our  cross-view                                  ∆                  +0.14      +0.14      +0.18      +0.23      +0.18
+block finally leads to an increase of 0.18 dB in PSNR.                                 TABLE XII:  Different  number  of  Cross-view  Blocks.  All  ex-
+   4)  Number of Each Module:              To  explore  the  impact  of  the           periments are conducted using colon dataset with×2 upscale
+I2Block and Cross-view Block on performance enhancement,                               factor.
+we  conduct  experiments  on  different  numbers  of  these  two
+modules.  Table  XI  illustrates  digging  deeply  into  axial-view                                  CVB                    0             1             3             5             9
+(increasing  the  number  of  I2Blocks)  helps  improve  the  per-                                  PSNR               43.72      43.85      43.90      43.86      43.83
+formance.   Fusing   through-plane   information   can   assist   in
+
+=== PDF PAGE 12 ===
+12                                                                                                                                          IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2024
+
+                                                                                           TABLE XIII: PSNR results of two contrastive learning stratgies
+                                                                                           with different wight w.
+
+                                                                                                       w              0             0.05           0.10           0.20           0.50
+                                                                                                      Lc,1        43.90         43.88         43.92         43.88         43.75
+                                                                                                      Lc,2        43.90         41.38         41.04         40.73         40.18
+Fig. 14: Reception field of each module with the origin as the
+input data. ResBlock is the baseline for comparison.                                       variations  among  adjacent  slices  and  potential  similarities
+                                                                                           among distant slices in some cases, applying contrastive loss
+                                                                                           may provide erroneous guidance. Thus, we only adoptL1 Loss
+                                                                                           following prior works [1], [2], [5].
+
+                                                                                                                          V.  CONCLUSION
+Fig. 15: Feature variations after passing through the module.                                  When  synthesizing  thicker  slices  of  the  anisotropic  CT
+ResBlock is the baseline for comparison.                                                   volumes,  we  observe  that  directly  adopting  slice-wise  inter-
+                                                                                           polation  from  the  axial  view  outperforms  super-resolution
+                                                                                           from  other  views,  and  it  is  a  more  concise  way  compared
+Compared  to  the  baseline  ResBlock,  inter-slice  branch  has  a                        to  fusing  from  multiple  views.  In  this  paper,  we  propose
+larger  local  reception  field  through  all  channels.  However,  it                     an  I3Net  to  explore  the  in-plane  information  from  the  axial
+still fails to capture global information within the plane. intra-                         view  with  high  resolution  and  get  compensation  from  other
+slice branch, due to its property of equal learning for different                          views  for  medical  slice  synthesis.  Inter-slice  branch  takes
+frequency  bands,  is  capable  of  extracting  global  information                        high  in-plane  resolution  information  to  enrich  through-plane
+effectively,  while  it  primarily  focuses  on  in-plane  informa-                        features.  Intra-slice  branch  ensures  long-range  dependencies
+tion  from  neighbouring  channels.  Thus,  these  two  branches                           equal  learning  of  every  frequency  bands,  while  preventing
+complement each other by compensating for the in-plane and                                 spatial discretization. To fully explore CT volumes, the cross-
+through-plane  information,  respectively.  The  reception  field                          view  block  is  proposed  to  compensate  for  information  from
+of  the  Cross-view  Block  indicates  its  capability  to  acquire                        omni  directions.  Experiments  on  within-datasets  and  cross-
+anatomical  information  from  the  coronal  and  sagittal  views,                         datasets verify the effectiveness of our method.
+providing  different  perspectives  to  assist  the  inter-  and  intra-
+slice branches.                                                                                                                 REFERENCES
+   To provide an intuitive understanding of the impact of each                               [1]P. Yu, H. Zhang, H. Kang, W. Tang, C. W. Arnold, and R. Zhang, “Rplhr-
+module,  we  show  the  feature  variation  after  passing  through                               ct dataset and transformer baseline for volumetric super-resolution from
+each  module,  as  shown  in  Fig.  15.  Obviously,  inter-slice                                  ct scans,” in International Conference on Medical Image Computing and
+                                                                                                  Computer-Assisted Intervention (MICCAI), 2022.
+branch  appears  to  perceive  more  effective  information  than                            [2]C.  Peng,  W.-A.  Lin,  H.  Liao,  R.  Chellappa,  and  S.  K.  Zhou,  “Saint:
+ResBlock, but it lacks some details. On the other hand, intra-                                    spatially  aware  interpolation  network  for  medical  slice  synthesis,”  in
+slice branch can pay more attention to high-frequency details.                                    Proceedings  of  the  IEEE  Conference  on  Computer  Vision  and  Pattern
+                                                                                                  Recognition (CVPR), 2020.
+The  integration  of  these  two  branches  further  ensures  the                            [3]C. Fang, L. Wang, D. Zhang, J. Xu, Y. Yuan, and J. Han, “Incremental
+overall feature extraction. The inclusion of Cross-view Block                                     cross-view mutual distillation for self-supervised medical ct synthesis,”
+assists in feature adjustment, alleviating unnecessary variation                                  in Proceedings of the IEEE Conference on Computer Vision and Pattern
+                                                                                                  Recognition (CVPR), 2022.
+in  smooth  regions  (e.g.,  red  arrows  shown  in  Fig.  15)  and                          [4]Z. Lu, Z. Li, J. Wang, J. Shi, and D. Shen, “Two-stage self-supervised
+highlighting  regions  with  rapid  and  high-frequency  variation                                cycle-consistency network for reconstruction of thin-slice mr images,” in
+(e.g.,  the  blue  arrow  shown  in  Fig.  15),  which  leads  to  an                             International Conference on Medical Image Computing and Computer-
+improved contrast in feature variation.                                                           Assisted Intervention (MICCAI), 2021.
+                                                                                             [5]B.  Lim,  S.  Son,  H.  Kim,  S.  Nah,  and  K.  Mu  Lee,  “Enhanced  deep
+   6)  Optimization:                     Intuitively, neighboring patches often share             residual  networks  for  single  image  super-resolution,”  in  Proceedings
+similar semantic information [49]. To fully exploit the prior of                                  of  the  IEEE  Conference  on  Computer  Vision  and  Pattern  Recognition
+                                                                                                  (CVPR) Workshops, 2017.
+similarity among adjacent slices, we investigate the impact of                               [6]Y.  Zhang,  Y.  Tian,  Y.  Kong,  B.  Zhong,  and  Y.  Fu,  “Residual  dense
+contrastive learning on medical slice synthesis. Following [50],                                  network for image super-resolution,” in Proceedings of the IEEE Con-
+we design a contrastive lossLc,1 by treating neighboring slices                                   ference on Computer Vision and Pattern Recognition (CVPR), 2018.
+                                                                                             [7]Y. Zhang, K. Li, K. Li, L. Wang, B. Zhong, and Y. Fu, “Image super-
+of  predicted  results  as  positive  samples  and  distant  slices  as                           resolution  using  very  deep  residual  channel  attention  networks,”  in
+negative  samples,  then  pull  positive  samples  closer  and  push                              Proceedings of the European Conference on Computer Vision (ECCV),
+negative  samples  farther  away.  The  results  of  applyingLc,1                                 2018.
+                                                                                             [8]R. Ge, G. Yang, C. Xu, Y. Chen, L. Luo, and S. Li, “Stereo-correlation
+with different weights are presented in Table XIII, illustrating                                  and  noise-distribution  aware  resvoxgan  for  dense  slices  reconstruction
+that  it  has  almost  no  effect,  even  leads  to  a  decline  in                               and noise reduction in thick low-dose ct,” in International Conference on
+performance.  We  also  design  a  dense  contrastive  loss Lc,2                                  Medical  Image  Computing  and  Computer-Assisted  Intervention  (MIC-
+                                                                                                  CAI), 2019.
+in  the  same  way,  by  selecting  neighboring  channels  in  the                           [9]I. S     ´anchez and V. Vilaplana, “Brain mri super-resolution using 3d gen-
+feature  volume  from  I2Block  as  positive  samples  and  distant                               erative adversarial networks,” arXiv preprint arXiv:1812.11440, 2018.
+channels as negative samples. However, it results in a decline                             [10]J.  Zhang,  Y.  Xie,  Y.  Wang,  and  Y.  Xia,  “Inter-slice  context  residual
+                                                                                                  learning  for  3d  medical  image  segmentation,”  IEEE  Transactions  on
+in  performance  as  shown  in  Table  XIII.  Due  to  significant                                Medical Imaging, vol. 40, no. 2, pp. 661–672, 2020.
+
+=== PDF PAGE 13 ===
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING                                                                                                          13
+
+
+
+[11]A.  Hatamizadeh,  Y.  Tang,  V.  Nath,  D. Yang,  A.  Myronenko,  B.  Land-                         [31]L.  Chi,  B.  Jiang,  and  Y.  Mu,  “Fast  fourier  convolution,”        Advances  in
+       man,  H.  R.  Roth,  and  D.  Xu,  “Unetr:  Transformers  for  3d  medical                              Neural Information Processing Systems, 2020.
+       image  segmentation,”  in  Proceedings  of  the  IEEE  Winter  Conference                        [32]H.  Yu,  J.  Huang,  F.  Zhao,  J.  Gu,  C.  C.  Loy,  D.  Meng,  C.  Li        et  al.,
+       on Applications of Computer Vision (WACV), 2022.                                                        “Deep fourier up-sampling,” Advances in Neural Information Processing
+[12]W.  Shi,  J.  Caballero,  F.  Husz       ´ar,  J.  Totz,  A.  P.  Aitken,  R.  Bishop,                     Systems, 2022.
+       D.  Rueckert,  and  Z.  Wang,  “Real-time  single  image  and  video  super-                     [33]W.  Xie,  D.  Song,  C.  Xu,  C.  Xu,  H.  Zhang,  and  Y.  Wang,  “Learning
+       resolution using an efficient sub-pixel convolutional neural network,” in                               frequency-aware  dynamic  network  for  efficient  super-resolution,”  Pro-
+       Proceedings  of  the  IEEE  Conference  on  Computer  Vision  and  Pattern                              ceedings  of  the  International  Conference  on  Computer  Vision  (ICCV),
+       Recognition (CVPR), 2016.                                                                               2021.
+[13]X. Mao, Y. Liu, F. Liu, Q. Li, W. Shen, and Y. Wang, “Intriguing findings                           [34]Y.  Zhong,  B.  Li,  L.  Tang,  S.  Kuang,  S.  Wu,  and  S.  Ding,  “Detecting
+       of frequency selection for image deblurring,” in Proceedings of the AAAI                                camouflaged object in frequency domain,” in Proceedings of the IEEE
+       Conference on Artificial Intelligence, 2023.                                                            Conference on Computer Vision and Pattern Recognition (CVPR), 2022.
+[14]I. O. Tolstikhin, N. Houlsby, A. Kolesnikov, L. Beyer, X. Zhai, T. Un-                              [35]K. Han, Y. Wang, Q. Tian, J. Guo, C. Xu, and C. Xu, “Ghostnet: More
+       terthiner, J. Yung, A. Steiner, D. Keysers, J. Uszkoreit et al., “Mlp-mixer:                            features from cheap operations,” in Proceedings of the IEEE Conference
+       An  all-mlp  architecture  for  vision,”  Advances  in  Neural  Information                             on Computer Vision and Pattern Recognition (CVPR), 2020.
+       Processing Systems, 2021.                                                                        [36]J.  L.  Ba,  J.  R.  Kiros,  and  G.  E.  Hinton,  “Layer  normalization,”        arXiv
+[15]C. Dong, C. C. Loy, K. He, and X. Tang, “Learning a deep convolutional                                     preprint arXiv:1607.06450, 2016.
+       network  for  image  super-resolution,”  in  Proceedings  of  the  European                      [37]D. Hendrycks and K. Gimpel, “Gaussian error linear units (gelus),”        arXiv
+       Conference on Computer Vision (ECCV), 2014.                                                             preprint arXiv:1606.08415, 2016.
+[16]B. Niu, W. Wen, W. Ren, X. Zhang, L. Yang, S. Wang, K. Zhang, X. Cao,                               [38]X.  Chen,  X.  Wang,  J.  Zhou,  Y.  Qiao,  and  C.  Dong,  “Activating  more
+       and  H.  Shen,  “Single  image  super-resolution  via  a  holistic  attention                           pixels  in  image  super-resolution  transformer,”  in  Proceedings  of  the
+       network,”  in  Proceedings  of  the  European  Conference  on  Computer                                 IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+       Vision (ECCV), 2020.                                                                                    2023.
+[17]J.  Liang,  J.  Cao,  G.  Sun,  K.  Zhang,  L.  Van  Gool,  and  R.  Timofte,                       [39]Z. Geng, L. Liang, T. Ding, and I. Zharkov, “Rstt: Real-time spatial tem-
+       “Swinir:  Image  restoration  using  swin  transformer,”  in  Proceedings  of                           poral transformer for space-time video super-resolution,” in Proceedings
+       the  International  Conference  on  Computer  Vision  (ICCV)  Workshops,                                of  the  IEEE  Conference  on  Computer  Vision  and  Pattern  Recognition
+       2021.                                                                                                   (CVPR), 2022.
+[18]Y.  Chen,  S.  Liu,  and  X.  Wang,  “Learning  continuous  image  represen-                        [40]L.  Kong,  B.  Jiang,  D.  Luo,  W.  Chu,  X.  Huang,  Y.  Tai,  C.  Wang,  and
+       tation  with  local  implicit  image  function,”  in  Proceedings  of  the  IEEE                        J. Yang, “Ifrnet: Intermediate feature refine network for efficient frame
+       Conference on Computer Vision and Pattern Recognition (CVPR), 2021.                                     interpolation,”  in  Proceedings  of  the  IEEE  Conference  on  Computer
+[19]J. Guo, X. Zou, Y. Chen, Y. Liu, J. Liu, Y. Yan, and J. Hao, “Asconvsr:                                    Vision and Pattern Recognition (CVPR), 2022.
+       Fast and lightweight super-resolution network with assembled convolu-                            [41]M.  Antonelli,  A.  Reinke,  S.  Bakas,  K.  Farahani,  A.  Kopp-Schneider,
+       tions,” in Proceedings of the IEEE Conference on Computer Vision and                                    B. A. Landman, G. Litjens, B. Menze, O. Ronneberger, R. M. Summers
+       Pattern Recognition (CVPR), 2023.                                                                       et al., “The medical segmentation decathlon,” Nature Communications,
+[20]M.  Zhang,  C.  Zhang,  Q.  Zhang,  J.  Guo,  X.  Gao,  and  J.  Zhang,                                    vol. 13, no. 1, p. 4128, 2022.
+       “Essaformer:   Efficient   transformer   for   hyperspectral   image   super-                    [42]N.   Heller,   N.   Sathianathen,   A.   Kalapara,   E.   Walczak,   K.   Moore,
+       resolution,” arXiv preprint arXiv:2307.14010, 2023.                                                     H.  Kaluzniak,  J.  Rosenberg,  P.  Blake,  Z.  Rengel,  M.  Oestreich  et  al.,
+[21]X.  Wang,  K.  C.  Chan,  K.  Yu,  C.  Dong,  and  C.  Change  Loy,  “Edvr:                                “The kits19 challenge data: 300 kidney tumor cases with clinical context,
+       Video restoration with enhanced deformable convolutional networks,” in                                  ct   semantic   segmentations,   and   surgical   outcomes,”   arXiv   preprint
+       Proceedings  of  the  IEEE  Conference  on  Computer  Vision  and  Pattern                              arXiv:1904.00445, 2019.
+       Recognition (CVPR) Workshops, 2019.                                                              [43]D. P. Kingma and J. Ba, “Adam: A method for stochastic optimization,”
+[22]J.   Lin,   Y.   Huang,   and   L.   Wang,   “Fdan:   Flow-guided   deformable                             arXiv preprint arXiv:1412.6980, 2014.
+       alignment    network    for    video    super-resolution,”    arXiv    preprint                  [44]Z. Tu, H. Talebi, H. Zhang, F. Yang, P. Milanfar, A. Bovik, and Y. Li,
+       arXiv:2105.05640, 2021.                                                                                 “Maxim:  Multi-axis  mlp  for  image  processing,”  in  Proceedings  of  the
+[23]S. Niklaus, L. Mai, and F. Liu, “Video frame interpolation via adaptive                                    IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+       convolution,”  in  Proceedings  of  the  IEEE  Conference  on  Computer                                 2022.
+       Vision and Pattern Recognition (CVPR), 2017.                                                     [45]Z. Huang, X. Wang, L. Huang, C. Huang, Y. Wei, and W. Liu, “Ccnet:
+[24]H.  Lee,  T.  Kim,  T.-y.  Chung,  D.  Pak,  Y.  Ban,  and  S.  Lee,  “Adacof:                             Criss-cross attention for semantic segmentation,” in Proceedings of the
+       Adaptive   collaboration   of   flows   for   video   frame   interpolation,”   in                      International Conference on Computer Vision (ICCV), 2019.
+       Proceedings  of  the  IEEE  Conference  on  Computer  Vision  and  Pattern                       [46]X.  Chu,  Z.  Tian,  Y.  Wang,  B.  Zhang,  H.  Ren,  X.  Wei,  H.  Xia,  and
+       Recognition (CVPR), 2020.                                                                               C.  Shen,  “Twins:  Revisiting  the  design  of  spatial  attention  in  vision
+[25]C. Ledig, L. Theis, F. Husz       ´ar, J. Caballero, A. Cunningham, A. Acosta,                             transformers,”  Advances  in  Neural  Information  Processing  Systems,
+       A.  Aitken,  A.  Tejani,  J.  Totz,  Z.  Wang  et  al.,  “Photo-realistic  single                       2021.
+       image   super-resolution   using   a   generative   adversarial   network,”   in                 [47]Z.   Liu,   Y.   Lin,   Y.   Cao,   H.   Hu,   Y.   Wei,   Z.   Zhang,   S.   Lin,   and
+       Proceedings  of  the  IEEE  Conference  on  Computer  Vision  and  Pattern                              B. Guo, “Swin transformer: Hierarchical vision transformer using shifted
+       Recognition (CVPR), 2017.                                                                               windows,” in Proceedings of the International Conference on Computer
+[26]C.  You,  G.  Li,  Y.  Zhang,  X.  Zhang,  H.  Shan,  M.  Li,  S.  Ju,  Z.  Zhao,                          Vision (ICCV), 2021.
+       Z.  Zhang,  W.  Cong  et  al.,  “Ct  super-resolution  gan  constrained  by                      [48]J.  Zbontar,  L.  Jing,  I.  Misra,  Y.  LeCun,  and  S.  Deny,  “Barlow  twins:
+       the identical, residual, and cycle learning ensemble (gan-circle),” IEEE                                Self-supervised  learning  via  redundancy  reduction,”  in  International
+       Transactions on Medical Imaging, vol. 39, no. 1, pp. 188–203, 2019.                                     Conference on Machine Learning (ICML), 2021.
+[27]Q. Wu, Y. Li, Y. Sun, Y. Zhou, H. Wei, J. Yu, and Y. Zhang, “An arbitrary                           [49]S. Yun, H. Lee, J. Kim, and J. Shin, “Patch-level representation learning
+       scale  super-resolution  approach  for  3d  mr  images  via  implicit  neural                           for  self-supervised  vision  transformers,”  in  Proceedings  of  the  IEEE
+       representation,”  IEEE  Journal  of  Biomedical  and  Health  Informatics,                              Conference on Computer Vision and Pattern Recognition (CVPR), 2022.
+       vol. 27, no. 2, pp. 1004–1015, 2022.                                                             [50]Q.  Yi,  J.  Liu,  L.  Hu,  F.  Fang,  and  G.  Zhang,  “Contrastive  learn-
+[28]J. McGinnis, S. Shit, H. B. Li, V. Sideri-Lampretsa, R. Graf, M. Dan-                                      ing  for  local  and  global  learning  mri  reconstruction,”  arXiv  preprint
+       necker, J. Pan, N. Stolt-Ans´o, M. M¨uhlau, J. S. Kirschke et al., “Single-                             arXiv:2111.15200, 2021.
+       subject multi-contrast mri super-resolution via implicit neural represen-
+       tations,” in International Conference on Medical Image Computing and
+       Computer-Assisted Intervention (MICCAI), 2023.
+[29]W. Bae, S. Lee, G. Park, H. Park, and K.-H. Jung, “Residual cnn-based
+       image  super-resolution  for  ct  slice  thickness  reduction  using  paired  ct
+       scans: preliminary validation study,” 2018.
+[30]R.  Suvorov,  E.  Logacheva,  A.  Mashikhin,  A.  Remizova,  A.  Ashukha,
+       A.   Silvestrov,   N.   Kong,   H.   Goka,   K.   Park,   and   V.   Lempitsky,
+       “Resolution-robust  large  mask  inpainting  with  fourier  convolutions,”
+       in  Proceedings  of  the  IEEE  Winter  Conference  on  Applications  of
+       Computer Vision (WACV), 2022.

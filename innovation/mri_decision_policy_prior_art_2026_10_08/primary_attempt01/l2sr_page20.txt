@@ -1,0 +1,32 @@
+Learning to Sample and Reconstruct for Accelerated MRI 20
+(a) Random
+ (b) PG-MRI
+ (c) L2S
+ (d) LOUPE
+ (e) τ-Step Seq
+ (f) L2SR
+ (g) GT
+Figure 7. Visualisation of an example of the knee dataset for our methods and
+other competing methods under ×4-acceleration. From left to right, the columns
+display various accelerated MRI methods: Random, PG-MRI, L2S, LOUPE, τ-
+Step Seq, and L2SR, with the final column showing the ground truth (GT) and
+fully sampled k-space. From top to bottom, The rows represent: Base-horizon
+reconstruction images, Base-horizon masks, Long-horizon reconstruction images,
+and Long-horizon masks. An enlarged specific region is presented at the bottom
+left of each reconstruction image, along with its corresponding error map at the
+bottom right. The blue marks indicate measurements sampled from the low-
+frequency part of k-space in the first state.
+images generated through L2SR exhibit fewer artifacts and bear a closer visual
+resemblance to the ground truth compared to those created by competing methods.
+6. Conclusion and Discussion
+In this paper, we proposed a novel alternating training framework to jointly learn a
+personalized sampling policy and a corresponding reconstruction model for accelerated
+MRI. Specifically, we formulated the MRI sampling trajectory as a sparse-reward
+POMDP to learn a personalized sampler. Compared to existing dynamic sampling
+methods that utilize dense-reward POMDP, our proposed sparse-reward POMDP is
+more computationally efficient and avoids the distributional mismatch. Furthermore,
+the proposed framework, called L2SR, solve the joint optimization problem of learning
+a pair of samplers and reconstructors, thus eliminating the training mismatch.
+Our empirical results on the fastMRI dataset demonstrate that the sparse-reward
+POMDP improves reconstruction quality by eliminating the distributional mismatch.
+Moreover, L2SR achieves the best acceleration-quality trade-off and inferences much

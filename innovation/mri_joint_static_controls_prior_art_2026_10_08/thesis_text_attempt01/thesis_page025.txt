@@ -1,0 +1,39 @@
+CHAPTER 2. MRI BACKGROUND
+interaction of the spins with their surroundings. The process is formally described as
+Mz(t) =M0
+(
+1− exp (−t/T1)
+)
++Mz (0) exp (−t/T1) (2.2)
+whereMz(t)is the longitudinal magnetization,Mz(0)describes the amount of longitudinal
+magnetization left after the RF pulse, andT1 is a constant that depends on the type of
+tissue considered. We see that the longitudinal magnetization will be recovered at an
+exponential speed, and the speed will be determined byT1.
+T2 Relaxation. The T2 relaxation process describes how clusters of spins gradually
+lose phase with each other after excitation. This dephasing will cause the transverse
+magnetizationMˆx′,ˆy′ orM⊥ to progressively disappear, as the equilibrium state is reached
+(cf. middle of Figure 2.1). We have
+M⊥(t) =M0 exp (−t/T2) (2.3)
+where T2 is a tissue-dependent time constant that describes how fast the transverse
+magnetization vanishes. In practice,T2≪ T1, making theT2 relaxation much faster.
+Also, in practice, the signal is likely to suffer additional suppression due to dephasing
+from inhomogeneities in the external fieldB0.
+As T1 and T2 are tissue dependent constants, constructing images by performing mea-
+surements at different steps of the relaxation allows to highlight different characteristics
+of tissues. They are one of the key components of the flexibility of MR imaging.
+2.1.4 Image acquisition
+Until now, we have discussed the global response of a sample to an RF pulse, but we
+have not addressed how to encode spatial information into the signal, in order to be able
+to construct an image. As previously discussed, the signal will be recorded by a receive
+coil, where an electric current is induced depending on the relaxation of the spins.
+But the question of localizing the signal remains whole so far. To solve this issue, we will
+try to give to each location in the body a unique combination of phase and frequency, in
+order to be able to retrieve its contribution from the signal in the receive coil. This is
+achieved by introducing three additional coils to the scanner, known as gradient coils,
+whose role will be to produce some spatially varying magnetic fields in theˆx, ˆ yand
+ˆ zdirections respectively. As a result, the tissues of specific areas of the object will
+be excited, and this will allow to observe their local responses. Then, by repeating
+a measurement with different gradients, we will be able to sequentially construct a
+map of how the tissue responds to the RF pulses depending on its location. This is
+why an acquisition is often referred to as apulse sequence, as we gather a sequence of
+12

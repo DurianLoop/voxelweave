@@ -1,0 +1,7 @@
+# 作者实现的定向公开读取
+
+主文与内嵌AppendixA已按4段完整文本读流覆盖158blocks，25table nodes全是公式布局，零结果数据表；没有图像像素/supp/final PDF读取。论文block71/73给posterior sampling与covariance记号，block118区分noisy restoration与noiseless observation。需要判断公开实现实际支持哪些行为，避免把理论提及当经过量化的uncertainty/动作收益。
+
+只取作者主文明确链接adalca/papago的公开GitHub元数据、固定commit tree及相关源文件，不clone、不安装、不执行作者实现/权重，不发消息。最多8个新增HTTPS GET，每请求30s/500KB，TLS验证开启，direct客户端路径沿用既有项目方法；分目录保留HTTP失败和固定SHA。仓库当前commit不自动等于论文发布版本，license/README也需读取。只有全文实际读过的文件才记code_read，不用tree/搜索片段替代。
+
+本目录总2MB，磁盘/RAM8GB另留原医学3MB/full2MB，CPU1/below-normal。任何医学评价真实终态优先走原capture/summary，现有两个live句柄不重启/迁移，GPU和确认边界不改。代码核查用于准备强先例控制和厘清条件协方差，不自动构成独立医学claim。

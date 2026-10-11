@@ -1,0 +1,764 @@
+[
+  {
+    "id": "T1",
+    "text": "Table 1Dataset information and train/test splits as used in experimental evaluation.Source/subsetVendorFSAMTrainTestWMH/seenPhilips3T2D2030Siemens3T2D2030WMH/unseenPhilips3T3D10GE3T3D30GE1.5T3D10MSSEG/unseenPhilips3T3D15Siemens3T3D15Siemens1.5T3D14†GE3T3D8MSLJ/unseenSiemens3T3D30ISBI/unseenPhilips3T2D21FS, field strength; AM, acquisition mode.†Originally 15, but one case (msseg-test-center07-08) was removed due to incorrect reference mask.",
+    "rows": [
+      [
+        "Source/subset",
+        "Vendor",
+        "FS",
+        "AM",
+        "Train",
+        "Test"
+      ],
+      [
+        "WMH/seen",
+        "Philips",
+        "3T",
+        "2D",
+        "20",
+        "30"
+      ],
+      [
+        "Siemens",
+        "3T",
+        "2D",
+        "20",
+        "30"
+      ],
+      [
+        "WMH/unseen",
+        "Philips",
+        "3T",
+        "3D",
+        "",
+        "10"
+      ],
+      [
+        "GE",
+        "3T",
+        "3D",
+        "",
+        "30"
+      ],
+      [
+        "GE",
+        "1.5T",
+        "3D",
+        "",
+        "10"
+      ],
+      [
+        "MSSEG/unseen",
+        "Philips",
+        "3T",
+        "3D",
+        "",
+        "15"
+      ],
+      [
+        "Siemens",
+        "3T",
+        "3D",
+        "",
+        "15"
+      ],
+      [
+        "Siemens",
+        "1.5T",
+        "3D",
+        "",
+        "14†"
+      ],
+      [
+        "GE",
+        "3T",
+        "3D",
+        "",
+        "8"
+      ],
+      [
+        "MSLJ/unseen",
+        "Siemens",
+        "3T",
+        "3D",
+        "",
+        "30"
+      ],
+      [
+        "ISBI/unseen",
+        "Philips",
+        "3T",
+        "2D",
+        "",
+        "21"
+      ]
+    ]
+  },
+  {
+    "id": "T2",
+    "text": "Table 2Ablation study results on the 2017 WMH segmentation challenge's unseen test split.Unlearning stagesLURUnseen data - not used for model training: Philips 3T 3D, GE 3T 3D, GE 1.5T 3D123456DSC↑TPR↑LTPR↑LFDR↓RVE↓RS↓✓1–10.719 ±0.1000.794 ± 0.1160.717 ± 0.0970.251 ±0.1130.262 ±0.2353.0✓Adaptive0.712 ± 0.0990.805 ± 0.1150.759 ± 0.1030.294 ± 0.1360.308 ± 0.2723.2✓✓✓5–10.674 ± 0.1200.832 ± 0.1010.813 ± 0.0950.474 ± 0.1850.527 ± 0.4493.4✓✓✓Adaptive0.715 ± 0.1050.814 ± 0.1200.764 ± 0.0950.313 ± 0.1360.316 ± 0.250 2.8 ✓✓✓✓✓✓3–10.642 ± 0.1320.856 ±0.0960.741 ± 0.1040.347 ± 0.1850.763 ± 0.5894.2✓✓✓✓✓✓Adaptive0.629 ± 0.1220.813 ± 0.1140.792 ± 0.1100.453 ± 0.1720.687 ± 0.5974.4Values are mean ± standard deviation, while bold indicates the best result for a particular evaluation metric. LUR is the ratio of the number of learning steps to unlearning steps.",
+    "rows": [
+      [
+        "Unlearning stages",
+        "LUR",
+        "Unseen data - not used for model training: Philips 3T 3D, GE 3T 3D, GE 1.5T 3D"
+      ],
+      [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "DSC↑",
+        "TPR↑",
+        "LTPR↑",
+        "LFDR↓",
+        "RVE↓",
+        "RS↓"
+      ],
+      [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "✓",
+        "1–1",
+        "0.719 ±0.100",
+        "0.794 ± 0.116",
+        "0.717 ± 0.097",
+        "0.251 ±0.113",
+        "0.262 ±0.235",
+        "3.0"
+      ],
+      [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "✓",
+        "Adaptive",
+        "0.712 ± 0.099",
+        "0.805 ± 0.115",
+        "0.759 ± 0.103",
+        "0.294 ± 0.136",
+        "0.308 ± 0.272",
+        "3.2"
+      ],
+      [
+        "",
+        "",
+        "",
+        "✓",
+        "✓",
+        "✓",
+        "5–1",
+        "0.674 ± 0.120",
+        "0.832 ± 0.101",
+        "0.813 ± 0.095",
+        "0.474 ± 0.185",
+        "0.527 ± 0.449",
+        "3.4"
+      ],
+      [
+        "",
+        "",
+        "",
+        "✓",
+        "✓",
+        "✓",
+        "Adaptive",
+        "0.715 ± 0.105",
+        "0.814 ± 0.120",
+        "0.764 ± 0.095",
+        "0.313 ± 0.136",
+        "0.316 ± 0.250",
+        "2.8"
+      ],
+      [
+        "✓",
+        "✓",
+        "✓",
+        "✓",
+        "✓",
+        "✓",
+        "3–1",
+        "0.642 ± 0.132",
+        "0.856 ±0.096",
+        "0.741 ± 0.104",
+        "0.347 ± 0.185",
+        "0.763 ± 0.589",
+        "4.2"
+      ],
+      [
+        "✓",
+        "✓",
+        "✓",
+        "✓",
+        "✓",
+        "✓",
+        "Adaptive",
+        "0.629 ± 0.122",
+        "0.813 ± 0.114",
+        "0.792 ± 0.110",
+        "0.453 ± 0.172",
+        "0.687 ± 0.597",
+        "4.4"
+      ]
+    ]
+  },
+  {
+    "id": "T3",
+    "text": "Table 3Domain classifier accuracy, post warm-up and post-unlearning, per stage of the nnU-Net AMDU on the 2017 WMH dataset's seen train split, comparing first- and last-three and unlearning of all stages.ModelClassifier accuracy, AcciUnlearning stagesStepi = 1i = 2i = 3i = 4i = 5i = 6nnU-Net*100%100%100%100%100%100%nnU-Net* AMDUPost warm-up100%100%100%100%100%99%Unlearning stages: 1 –3Post unlearning 85% 77% 80% 98%99%91%nnU-Net* AMDUPost warm-up100%99%99%99%99%99%Unlearning stages: 4–6Post unlearning100%100%100% 67% 48% 50% nnU-Net* AMDUPost warm-up100%99%99%99%99%99%Unlearning stages: 1–6 (all)Post unlearning 99% 90% 76% 65% 67% 52% Values in bold indicate stages actively unlearned.*Predefined default trainer in nnU-Net.",
+    "rows": [
+      [
+        "Model",
+        "",
+        "Classifier accuracy, Acci"
+      ],
+      [
+        "Unlearning stages",
+        "Step",
+        "i = 1",
+        "i = 2",
+        "i = 3",
+        "i = 4",
+        "i = 5",
+        "i = 6"
+      ],
+      [
+        "nnU-Net*",
+        "",
+        "100%",
+        "100%",
+        "100%",
+        "100%",
+        "100%",
+        "100%"
+      ],
+      [
+        "nnU-Net* AMDU",
+        "Post warm-up",
+        "100%",
+        "100%",
+        "100%",
+        "100%",
+        "100%",
+        "99%"
+      ],
+      [
+        "Unlearning stages: 1 –3",
+        "Post unlearning",
+        "85%",
+        "77%",
+        "80%",
+        "98%",
+        "99%",
+        "91%"
+      ],
+      [
+        "nnU-Net* AMDU",
+        "Post warm-up",
+        "100%",
+        "99%",
+        "99%",
+        "99%",
+        "99%",
+        "99%"
+      ],
+      [
+        "Unlearning stages: 4–6",
+        "Post unlearning",
+        "100%",
+        "100%",
+        "100%",
+        "67%",
+        "48%",
+        "50%"
+      ],
+      [
+        "nnU-Net* AMDU",
+        "Post warm-up",
+        "100%",
+        "99%",
+        "99%",
+        "99%",
+        "99%",
+        "99%"
+      ],
+      [
+        "Unlearning stages: 1–6 (all)",
+        "Post unlearning",
+        "99%",
+        "90%",
+        "76%",
+        "65%",
+        "67%",
+        "52%"
+      ]
+    ]
+  },
+  {
+    "id": "T4",
+    "text": "Table 4Segmentation evaluation on seen (WMH) and three unseen (MSSEG, MSLJ, ISBI) datasets, using respective seen and unseen test splits (Table 1).ModelDSC↑TPR↑LTPR↑LFDR↓RVE↓RS↓WMH-seen test datasetnnU-Net no DA0.750 ± 0.120†0.775 ± 0.132†0.680 ± 0.160†0.390 ± 0.160†0.220 ± 0.3533.2nnU-Net*0.773 ±0.1080.785 ± 0.129†0.679 ± 0.103†0.210 ±0.1310.205 ± 0.3882.0nnU-Net* preprocessing**0.732 ± 0.123†0.748 ± 0.149†0.630 ± 0.105†0.219 ± 0.137†0.232 ± 0.3713.8Dinsdale et al. (36)0.724 ± 0.149†0.793 ± 0.123†0.624 ± 0.108†0.426 ± 0.187†0.304 ± 0.4774.4nnU-Net AMDU (ours)0.772 ± 0.0970.810 ±0.1240.718 ±0.0970.262 ± 0.1600.197 ±0.228 1.6 MSSEG-unseen test datasetnnU-Net no DA0.515 ± 0.198†0.468 ± 0.145†0.628 ± 0.188†0.684 ± 0.227†0.877 ± 2.042†4.2nnU-Net*0.588 ± 0.169†0.479 ± 0.163†0.619 ± 0.188†0.281 ±0.1970.516 ± 0.668†2.6nnU-Net* preprocessing**0.548 ± 0.185†0.442 ± 0.168†0.584 ± 0.186†0.337 ± 0.229†0.493 ± 0.330†3.6Dinsdale et al. (36)0.564 ± 0.204†0.548 ± 0.1500.740 ±0.1790.708 ± 0.204†0.828 ± 2.189†3.0nnU-Net AMDU (ours)0.635 ±0.1640.563 ±0.1560.700 ± 0.1710.384 ± 0.1990.420 ±0.785 1.6 MSLJ-unseen test datasetnnU-Net no DA0.475 ± 0.183†0.357 ± 0.146†0.375 ± 0.108†0.476 ± 0.262†0.519 ± 0.141†4.8nnU-Net*0.523 ± 0.194†0.403 ± 0.178†0.389 ± 0.120†0.151 ±0.1510.507 ± 0.180†2.4nnU-Net* preprocessing**0.507 ± 0.181†0.384 ± 0.156†0.431 ± 0.100†0.194 ± 0.183†0.512 ± 0.149†3.0Dinsdale et al. (36)0.501 ± 0.171†0.389 ± 0.137†0.401 ± 0.111†0.492 ± 0.264†0.468 ± 0.145†3.4nnU-Net AMDU (ours)0.574 ±0.1700.475 ±0.1610.479 ±0.1080.273 ± 0.1960.371 ±0.165 1.4 ISBI - unseen test datasetnnU-Net no DA0.535 ± 0.149†0.398 ± 0.154†0.500 ± 0.157†0.353 ± 0.178†0.554 ± 0.169†4.6nnUnet*0.609 ± 0.137†0.477 ± 0.165†0.543 ± 0.131† 0.154 ± 0.098 0.472 ± 0.190†2.2nnU-Net preprocessing**0.540 ± 0.139†0.393 ± 0.143†0.574 ± 0.1190.191 ± 0.1150.578 ± 0.149†3.4Dinsdale et al. (36)0.588 ± 0.130†0.471 ± 0.150†0.522 ± 0.158†0.437 ± 0.146†0.428 ± 0.210†3.4nnU-Net AMDU (ours)0.674 ±0.1150.560 ±0.1540.575 ±0.1380.203 ± 0.1040.366 ±0.191 1.4 Values are mean ± standard deviation, while bold indicates best results for each performance metric for methods in direct comparison.DA, data augmentation; AMDU, adaptive multi-stage domain unlearning.*Predefined default trainer in nnU-Net.**Preprocessing done on train and test splits with denoise and N4 bias correction.†Mean significantly different (adj. p < 0.05; Bonferroni correction) from nnU-Net AMDU, per Wilcoxon signed-rank test.",
+    "rows": [
+      [
+        "Model",
+        "DSC↑",
+        "TPR↑",
+        "LTPR↑",
+        "LFDR↓",
+        "RVE↓",
+        "RS↓"
+      ],
+      [
+        "WMH-seen test dataset"
+      ],
+      [
+        "nnU-Net no DA",
+        "0.750 ± 0.120†",
+        "0.775 ± 0.132†",
+        "0.680 ± 0.160†",
+        "0.390 ± 0.160†",
+        "0.220 ± 0.353",
+        "3.2"
+      ],
+      [
+        "nnU-Net*",
+        "0.773 ±0.108",
+        "0.785 ± 0.129†",
+        "0.679 ± 0.103†",
+        "0.210 ±0.131",
+        "0.205 ± 0.388",
+        "2.0"
+      ],
+      [
+        "nnU-Net* preprocessing**",
+        "0.732 ± 0.123†",
+        "0.748 ± 0.149†",
+        "0.630 ± 0.105†",
+        "0.219 ± 0.137†",
+        "0.232 ± 0.371",
+        "3.8"
+      ],
+      [
+        "Dinsdale et al. (36)",
+        "0.724 ± 0.149†",
+        "0.793 ± 0.123†",
+        "0.624 ± 0.108†",
+        "0.426 ± 0.187†",
+        "0.304 ± 0.477",
+        "4.4"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.772 ± 0.097",
+        "0.810 ±0.124",
+        "0.718 ±0.097",
+        "0.262 ± 0.160",
+        "0.197 ±0.228",
+        "1.6"
+      ],
+      [
+        "MSSEG-unseen test dataset"
+      ],
+      [
+        "nnU-Net no DA",
+        "0.515 ± 0.198†",
+        "0.468 ± 0.145†",
+        "0.628 ± 0.188†",
+        "0.684 ± 0.227†",
+        "0.877 ± 2.042†",
+        "4.2"
+      ],
+      [
+        "nnU-Net*",
+        "0.588 ± 0.169†",
+        "0.479 ± 0.163†",
+        "0.619 ± 0.188†",
+        "0.281 ±0.197",
+        "0.516 ± 0.668†",
+        "2.6"
+      ],
+      [
+        "nnU-Net* preprocessing**",
+        "0.548 ± 0.185†",
+        "0.442 ± 0.168†",
+        "0.584 ± 0.186†",
+        "0.337 ± 0.229†",
+        "0.493 ± 0.330†",
+        "3.6"
+      ],
+      [
+        "Dinsdale et al. (36)",
+        "0.564 ± 0.204†",
+        "0.548 ± 0.150",
+        "0.740 ±0.179",
+        "0.708 ± 0.204†",
+        "0.828 ± 2.189†",
+        "3.0"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.635 ±0.164",
+        "0.563 ±0.156",
+        "0.700 ± 0.171",
+        "0.384 ± 0.199",
+        "0.420 ±0.785",
+        "1.6"
+      ],
+      [
+        "MSLJ-unseen test dataset"
+      ],
+      [
+        "nnU-Net no DA",
+        "0.475 ± 0.183†",
+        "0.357 ± 0.146†",
+        "0.375 ± 0.108†",
+        "0.476 ± 0.262†",
+        "0.519 ± 0.141†",
+        "4.8"
+      ],
+      [
+        "nnU-Net*",
+        "0.523 ± 0.194†",
+        "0.403 ± 0.178†",
+        "0.389 ± 0.120†",
+        "0.151 ±0.151",
+        "0.507 ± 0.180†",
+        "2.4"
+      ],
+      [
+        "nnU-Net* preprocessing**",
+        "0.507 ± 0.181†",
+        "0.384 ± 0.156†",
+        "0.431 ± 0.100†",
+        "0.194 ± 0.183†",
+        "0.512 ± 0.149†",
+        "3.0"
+      ],
+      [
+        "Dinsdale et al. (36)",
+        "0.501 ± 0.171†",
+        "0.389 ± 0.137†",
+        "0.401 ± 0.111†",
+        "0.492 ± 0.264†",
+        "0.468 ± 0.145†",
+        "3.4"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.574 ±0.170",
+        "0.475 ±0.161",
+        "0.479 ±0.108",
+        "0.273 ± 0.196",
+        "0.371 ±0.165",
+        "1.4"
+      ],
+      [
+        "ISBI - unseen test dataset"
+      ],
+      [
+        "nnU-Net no DA",
+        "0.535 ± 0.149†",
+        "0.398 ± 0.154†",
+        "0.500 ± 0.157†",
+        "0.353 ± 0.178†",
+        "0.554 ± 0.169†",
+        "4.6"
+      ],
+      [
+        "nnUnet*",
+        "0.609 ± 0.137†",
+        "0.477 ± 0.165†",
+        "0.543 ± 0.131†",
+        "0.154 ± 0.098",
+        "0.472 ± 0.190†",
+        "2.2"
+      ],
+      [
+        "nnU-Net preprocessing**",
+        "0.540 ± 0.139†",
+        "0.393 ± 0.143†",
+        "0.574 ± 0.119",
+        "0.191 ± 0.115",
+        "0.578 ± 0.149†",
+        "3.4"
+      ],
+      [
+        "Dinsdale et al. (36)",
+        "0.588 ± 0.130†",
+        "0.471 ± 0.150†",
+        "0.522 ± 0.158†",
+        "0.437 ± 0.146†",
+        "0.428 ± 0.210†",
+        "3.4"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.674 ±0.115",
+        "0.560 ±0.154",
+        "0.575 ±0.138",
+        "0.203 ± 0.104",
+        "0.366 ±0.191",
+        "1.4"
+      ]
+    ]
+  },
+  {
+    "id": "T5",
+    "text": "Table 5Segmentation evaluation on three public datasets (MSSEG, MSLJ, ISBI; cf. test splits in Table 1).ModelDSC↑TPR↑LTPR↑LFDR↓RVE↓MSSEG - unseen test datasetnnUNet*0.537 ± 0.1900.409 ± 0.188†0.519 ± 0.204†0.365 ± 0.2020.548 ± 0.217LST-AI*0.659 ± 0.1590.675 ± 0.172†0.815 ±0.170†0.452 ± 0.1890.094 ± 0.568samseg-7.3.2*0.574 ± 0.1770.518 ± 0.1790.369 ± 0.171†0.425 ± 0.2050.041 ±1.677nnUNet FT 10.62 ± 0.060.63 ± 0.06†———nnUNet FT 30.68 ± 0.060.67 ± 0.06†———nnUNet FT 50.70 ±0.050.72 ±0.06†———nnU-Net AMDU (ours)0.635 ± 0.1640.563 ± 0.150.700 ± 0.1710.384 ± 0.1990.420 ± 0.785MSLJ - unseen test datasetnnUNet*0.443 ± 0.242†0.325 ± 0.200†0.215 ± 0.116†0.367 ± 0.2740.647 ± 0.216†LST-AI*0.743 ±0.104†0.703 ±0.138†0.617 ±0.126†0.175 ±0.1110.122 ±0.154†samseg-7.3.2*0.480 ± 0.2500.393 ± 0.2310.192 ± 0.145†0.494 ± 0.255†0.496 ± 0.289DeepLesionBrain*0.554 ± 0.2140.476 ± 0.2230.283 ± 0.102†0.370 ± 0.2220.337 ± 0.254nnU-Net AMDU (ours)0.574 ± 0.1700.475 ± 0.1610.479 ± 0.1080.273 ± 0.1960.371 ± 0.165ISBI - unseen test datasetnnUNet*0.515 ± 0.122†0.381 ± 0.123†0.365 ± 0.144†0.315 ± 0.148†0.545 ± 0.130†LST-AI*0.610 ± 0.1260.541 ± 0.1510.552 ± 0.1500.391 ± 0.132†0.248 ± 0.174†samseg-7.3.2*0.610 ± 0.1110.556 ± 0.1130.402 ± 0.140†0.374 ± 0.099†0.167 ± 0.290†nnUNet FT 10.63 ± 0.150.34 ± 0.19†———nnUNet FT 30.82 ± 0.02†0.73 ± 0.05†———nnUNet FT 50.76 ±0.07†0.60 ±0.11———One-shot DA (61 test)***0.58 ± 0.16†0.48 ± 0.19———DeepLesionBrain*0.607 ± 0.1280.518 ± 0.1650.475 ± 0.127†0.343 ± 0.139†0.328 ± 0.209nnU-Net AMDU (ours)0.674 ± 0.1150.560 ± 0.1540.575 ± 0.1380.203 ± 0.1040.366 ± 0.191Values are mean ± standard deviation, while bold indicates the best results for each performance metric.AMDU, adaptive multi-stage domain unlearning.*Results were sourced from Supplementary Data 1 in Wiltgen et al. (19).**Results were sourced from Table 2 in Coppola et al. (35).**Results were sourced from Table 4 in Valverde et al. (57).†Mean significantly different (p < 0.05) from the nnU-Net AMDU, as per independent sample t-test.",
+    "rows": [
+      [
+        "Model",
+        "DSC↑",
+        "TPR↑",
+        "LTPR↑",
+        "LFDR↓",
+        "RVE↓"
+      ],
+      [
+        "MSSEG - unseen test dataset"
+      ],
+      [
+        "nnUNet*",
+        "0.537 ± 0.190",
+        "0.409 ± 0.188†",
+        "0.519 ± 0.204†",
+        "0.365 ± 0.202",
+        "0.548 ± 0.217"
+      ],
+      [
+        "LST-AI*",
+        "0.659 ± 0.159",
+        "0.675 ± 0.172†",
+        "0.815 ±0.170†",
+        "0.452 ± 0.189",
+        "0.094 ± 0.568"
+      ],
+      [
+        "samseg-7.3.2*",
+        "0.574 ± 0.177",
+        "0.518 ± 0.179",
+        "0.369 ± 0.171†",
+        "0.425 ± 0.205",
+        "0.041 ±1.677"
+      ],
+      [
+        "nnUNet FT 1",
+        "0.62 ± 0.06",
+        "0.63 ± 0.06†",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "nnUNet FT 3",
+        "0.68 ± 0.06",
+        "0.67 ± 0.06†",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "nnUNet FT 5",
+        "0.70 ±0.05",
+        "0.72 ±0.06†",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.635 ± 0.164",
+        "0.563 ± 0.15",
+        "0.700 ± 0.171",
+        "0.384 ± 0.199",
+        "0.420 ± 0.785"
+      ],
+      [
+        "MSLJ - unseen test dataset"
+      ],
+      [
+        "nnUNet*",
+        "0.443 ± 0.242†",
+        "0.325 ± 0.200†",
+        "0.215 ± 0.116†",
+        "0.367 ± 0.274",
+        "0.647 ± 0.216†"
+      ],
+      [
+        "LST-AI*",
+        "0.743 ±0.104†",
+        "0.703 ±0.138†",
+        "0.617 ±0.126†",
+        "0.175 ±0.111",
+        "0.122 ±0.154†"
+      ],
+      [
+        "samseg-7.3.2*",
+        "0.480 ± 0.250",
+        "0.393 ± 0.231",
+        "0.192 ± 0.145†",
+        "0.494 ± 0.255†",
+        "0.496 ± 0.289"
+      ],
+      [
+        "DeepLesionBrain*",
+        "0.554 ± 0.214",
+        "0.476 ± 0.223",
+        "0.283 ± 0.102†",
+        "0.370 ± 0.222",
+        "0.337 ± 0.254"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.574 ± 0.170",
+        "0.475 ± 0.161",
+        "0.479 ± 0.108",
+        "0.273 ± 0.196",
+        "0.371 ± 0.165"
+      ],
+      [
+        "ISBI - unseen test dataset"
+      ],
+      [
+        "nnUNet*",
+        "0.515 ± 0.122†",
+        "0.381 ± 0.123†",
+        "0.365 ± 0.144†",
+        "0.315 ± 0.148†",
+        "0.545 ± 0.130†"
+      ],
+      [
+        "LST-AI*",
+        "0.610 ± 0.126",
+        "0.541 ± 0.151",
+        "0.552 ± 0.150",
+        "0.391 ± 0.132†",
+        "0.248 ± 0.174†"
+      ],
+      [
+        "samseg-7.3.2*",
+        "0.610 ± 0.111",
+        "0.556 ± 0.113",
+        "0.402 ± 0.140†",
+        "0.374 ± 0.099†",
+        "0.167 ± 0.290†"
+      ],
+      [
+        "nnUNet FT 1",
+        "0.63 ± 0.15",
+        "0.34 ± 0.19†",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "nnUNet FT 3",
+        "0.82 ± 0.02†",
+        "0.73 ± 0.05†",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "nnUNet FT 5",
+        "0.76 ±0.07†",
+        "0.60 ±0.11",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "One-shot DA (61 test)***",
+        "0.58 ± 0.16†",
+        "0.48 ± 0.19",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "DeepLesionBrain*",
+        "0.607 ± 0.128",
+        "0.518 ± 0.165",
+        "0.475 ± 0.127†",
+        "0.343 ± 0.139†",
+        "0.328 ± 0.209"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "0.674 ± 0.115",
+        "0.560 ± 0.154",
+        "0.575 ± 0.138",
+        "0.203 ± 0.104",
+        "0.366 ± 0.191"
+      ]
+    ]
+  },
+  {
+    "id": "T6",
+    "text": "Table 6Overview of state-of-the-art lesion segmentation methods.ModelArchitectureInput modalitiesTrain set (#patients/#scans)Domain shift compensation strategynnUNet Isensee et al. (43)3D U-NetT1w, FLAIRPrivate (491/491)Image and space standardization, intensity augmentationLST-AI Wiltgen et al. (19)Ensemble of 3D U-NetsT1w, FLAIRPrivate (491/491)Image and space standardization, intensity augmentation, ensemble averagingsamseg-7.3.2 Cerri et al. (34)Generative Bayesian model with deformable atlas + EMT1w, FLAIRSAMSEG Atlas + UH Basel dataset (20+54/20+108)Space standardization and test-time MRI sequence adaptationDeepBrainLesion Kamraoui et al. (22)Ensemble of compact 3D CNNs + AssemblyNetT1w, FLAIRPrivate + MSSEG2016train (43+15/43+15)Distributed regional network voting (akin to ensemble averaging) and low-resolution artifact simulation via augmentationOne-shot DA Valverde et al. (57)11-layer CNNT1w, FLAIRMICCAI2008+MSSEG2016 + 1 target domain scan (20/15+X)One-shot test-time adaptation of ultimate three FC layers of pre-trained 11-layer CNN to target domainnnUNet FT X Coppola et al. (35)3D U-netT1w, T2w, FLAIRICPR2024 + X target domain scans (90+X/114+X)X-shot test-time adaptation of pre-trained nnUnet to target domainnnU-Net AMDU (ours)3D U-netFLAIRWMH2017 (40/40)Source-only train-time adaptation via domain feature suppressionUH, University Hospital; EM, expectation maximization; CNN, convolutional neural network; ICPR2024-Rondinella et al. (59);WMH2017-Kuijf et al. (24); FC, fully connected; AMDU, adaptive multi-stage domain unlearning.",
+    "rows": [
+      [
+        "Model",
+        "Architecture",
+        "Input modalities",
+        "Train set (#patients/#scans)",
+        "Domain shift compensation strategy"
+      ],
+      [
+        "nnUNet Isensee et al. (43)",
+        "3D U-Net",
+        "T1w, FLAIR",
+        "Private (491/491)",
+        "Image and space standardization, intensity augmentation"
+      ],
+      [
+        "LST-AI Wiltgen et al. (19)",
+        "Ensemble of 3D U-Nets",
+        "T1w, FLAIR",
+        "Private (491/491)",
+        "Image and space standardization, intensity augmentation, ensemble averaging"
+      ],
+      [
+        "samseg-7.3.2 Cerri et al. (34)",
+        "Generative Bayesian model with deformable atlas + EM",
+        "T1w, FLAIR",
+        "SAMSEG Atlas + UH Basel dataset (20+54/20+108)",
+        "Space standardization and test-time MRI sequence adaptation"
+      ],
+      [
+        "DeepBrainLesion Kamraoui et al. (22)",
+        "Ensemble of compact 3D CNNs + AssemblyNet",
+        "T1w, FLAIR",
+        "Private + MSSEG2016train (43+15/43+15)",
+        "Distributed regional network voting (akin to ensemble averaging) and low-resolution artifact simulation via augmentation"
+      ],
+      [
+        "One-shot DA Valverde et al. (57)",
+        "11-layer CNN",
+        "T1w, FLAIR",
+        "MICCAI2008+MSSEG2016 + 1 target domain scan (20/15+X)",
+        "One-shot test-time adaptation of ultimate three FC layers of pre-trained 11-layer CNN to target domain"
+      ],
+      [
+        "nnUNet FT X Coppola et al. (35)",
+        "3D U-net",
+        "T1w, T2w, FLAIR",
+        "ICPR2024 + X target domain scans (90+X/114+X)",
+        "X-shot test-time adaptation of pre-trained nnUnet to target domain"
+      ],
+      [
+        "nnU-Net AMDU (ours)",
+        "3D U-net",
+        "FLAIR",
+        "WMH2017 (40/40)",
+        "Source-only train-time adaptation via domain feature suppression"
+      ]
+    ]
+  }
+]

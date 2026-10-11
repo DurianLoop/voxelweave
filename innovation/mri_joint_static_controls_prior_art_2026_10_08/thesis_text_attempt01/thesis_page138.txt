@@ -1,0 +1,35 @@
+7.7. CONCLUSION
+not provide any analysis or guarantees on how well the generator captures the tails of
+the posterior distribution. Our observations suggest that unusual images, that far away
+from the mean of the learned distribution, might not be accurately captured, i.e. the
+estimated variance is lower than expected. This could be due to the limited training data
+available, but might also an artifact of the cWGAN approach which tends to struggle with
+capturing weaker modes of their distributions. Specifically, the problematic examples
+might be an indication that while the loss shown in Equation 7.6 avoids mode collapse,
+there might still be some modes that are underrepresented.
+Adaptivity in image domain.Contrarily to our conclusions in Chapter 6 and Section
+7.4.1, adaptive sampling seems to be greatly beneficial in image domain sampling. In
+particular, in a simple task such as MNIST, one can clearly see the benefit of adaptive
+policies, that tailor the sampling pattern to the relevant locations of the image (in the
+case of MNIST, the digit itself). This is also concurrent with our results on CIFAR10
+(Appendix B.2.4). This raises the question of predictingwhen adaptive sampling would
+be beneficial over fixed sampling. Does it depend on the structure of the sampling domain
+itself, or would the distribution of images considered impact this as well? Does the
+adaptivity of the model depend on the distribution of masks used for training? All of
+these questions should be further investigated.
+7.7 Conclusion
+We presented a novel approach for reconstruction and adaptive sampling, rooted in
+Bayesian modeling. We showed that, in line with recent advances (Belghazi et al., 2019;
+Adler and Öktem, 2018a), GANs perform well at this task and yield useful posteriors
+for Fourier domain reconstruction as well as image domain, allowing both high quality
+reconstructions and derivation of a sampling heuristic. This natural sampling heuristic
+achieved surprisingly strong sampling results, without ever training to act as a policy,
+and is competitive with the state-of-the-art on the fronts of reconstruction, uncertainty
+quantification and adaptive sampling.
+Bibliographic note
+Zhaodong Sun provided initial results in the work. Igor Krawczuk helped with the code,
+implemented and provided the results for the methods of Zhang et al. (2019b) and Bakker
+et al. (2020), and carried out the CIFAR10 experiments. Volkan Cevher provided the
+initial motivation to look into the Deep Bayesian Inversion approach of Adler and Öktem
+(2018a) which started this project.
+125

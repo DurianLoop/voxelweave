@@ -1,0 +1,73 @@
+U-Net 
+block
+U-Net 
+block
+U-Net 
+block
+U-Net 
+block
+T1w MMAR Seg
+F
+L MMAR
+T1w
+F
+L
+T2w F
+L
+FLAIR F
+L
+DWI
+F
+0
+T1w
+F
+0
+T2w F
+0
+FLAIR F
+0
+DWI
+Conv
+(k=p, s=p)
+Conv
+(k=p, s=p)
+Conv
+(k=p, s=p)
+Pos emb
+Mod emb
+Pos emb
+Mod emb
+Pos emb
+Mod emb
+Conv
+(k=1, s=1)
+Conv
+(k=1, s=1)
+Conv
+(k=1, s=1)
+Upsample Upsample Upsample
+×
+Transformer block
+Softmax
+× L
+Sum
+×
+×
+A) Overview
+B) MMAR blockShared
+FT1w F′T1w F″T1w
+FT2w F′T2w F″T2w
+FFLAIR
+FDWI F′DWI F″DWI GN (G=1) GN (G=1) GN (G=1) GN (G=1)
+F
+Figure 3: Multimodal Attention Router (MMAR)-based architecture. A)
+Overview of the multi-encoder, shared-decoder model (showing highest (F
+0
+) and lowest
+(F
+L) resolution levels for one encoder). MMAR blocks fuse features from each modality
+encoder prior to decoding. B) Detailed MMAR block illustrating fusion with one miss￾ing and three available modalities. Available features are normalised then patchified via
+a shared convolution and injected with positional and modality embeddings. Following
+processing by windowed self-attention transformer blocks, features are reshaped to their
+original dimensions. Finally, a softmax operation across the modality dimension generates
+spatial- and channel-wise attention maps, which are used to fuse the features via element￾wise multiplication. 10

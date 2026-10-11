@@ -1,0 +1,36 @@
+Wohlrapp Bubeck Rueckert Lotter
+Original
+Input
+Grad-CAM
+U-Net Pix2Pix SDE
+: 0.89
+PSNR:  29.6
+: 0.89
+PSNR:  26.8
+: 0.89
+PSNR:  25.3
+Difference
+Figure 8: Reconstruction example from photon count 10,000 for the different models. Grad-
+CAM (Selvaraju et al., 2017) and logit score correspond to the lung lesion pre-
+diction of the pre-trained classifier, indicating similar predictions on the recon-
+structed images.
+used to improve robustness to outliers. All UCSF-PDGM diagnostic models were trained
+using images pre-processed using min-max normalization to the 0-1 range and resized to
+256x256. The CheXpert DenseNet classifier was trained using TorchXRayVision (Cohen
+et al., 2021). The default image preprocessing was used, with an input size of 224x224
+pixels and normalization to a range of -1024 to 1024. The model was trained without data
+augmentation for 50 epochs using the Adam optimizer with a learning rate of 1e-3 and a
+weight decay of 1e-5.
+Reconstruction Hyperparameters.No data augmentation was applied to any of the
+reconstruction pipelines. A U-Net was trained for 20 epochs on both UCSF-PDGM and
+CheXpert, using Adam with MSE loss, a learning rate of 0.001, and a batch size of 16. The
+GAN (Pix2Pix) was trained for 200 epochs on each dataset with Adam, a learning rate
+0.0002, and a batch size of 32 to compensate for the smaller data volume. For the SDE
+model, we employed Adam with a learning rate of 0.0001, a cosine learning-rate schedule,
+and a batch size of 8; training ran for 40 epochs on CheXpert and 300 epochs on UCSF-
+PDGM. We note that the number of epochs varied between models because the different
+approaches take longer to converge (e.g., GANs are inherently less stable than a standard
+MSE loss), but in each case, the final weights were selected via validation loss monitoring,
+consistent with standard practice. During mitigation with the EODD-constraint, we em-
+ployedτ= 0.5 for the threshold,T= 0.3 for the temperature, and a momentum value of
+22

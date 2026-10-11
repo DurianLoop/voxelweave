@@ -1,0 +1,27 @@
+APPENDIX A. APPENDIX FOR CHAPTER 6
+A.3 LBCS vs long-range adaptivity
+Using the setting of Pineda et al. (2020), we studied qualitatively how the different
+policies yield different mask designs. As can be seen in fig. A.2a., d. and e, LBCS puts
+more emphasis on the center frequencies, but acquires similar sections of k-space as the
+SS-DDQN. It also creates a more symmetric mask, which is in line with Pineda et al.
+(2020) observations that SSIM creates more asymmetric masks. More interestingly, as can
+be seen in fig. A.2c., most of the variation is concentrated at the early sampling rates (left
+of the plot) with the std and especially the coefficient of variation (σ
+µ) decaying towards
+zero in most locations. This implies that while SS-DDQN is indeed adapting to each
+image individually, this mainly affects ordering early on and after 20 -40 samples (6−12%
+sampling rate) LBCS starts to catch up. This is also supported by two observations:
+1. LBCS underperforms SSDQN by a larger margin than on the full evaluation, which
+we interpret as the mask being goodon averageand with a smaller sample there is
+a higher chance of individual suboptimality.
+2. the per-image difference between LBCS and SSDQN grows in favor of SS-DDQN
+until about 40 samples where LBCS starts to slowly recover. The distribution
+of the difference however becomes much wider, implying there are images where
+LBCS performs wildly different from SS-DDQN.
+(a) LBCS-SS-DDQN
+ (b) LBCS-LtH
+ (c) SS-DDQN-LtH
+Figure A.1: Per Image distribution of SSIM differences between sampling methods across the
+sampling process. Each shade corresponds to a10 percent region, with the lightest shade indicating
+max and min regions.
+140

@@ -1,0 +1,27 @@
+The MRI Scanner as a Diagnostic: Image-less Active Sampling 7
+Fig. 4. k-space behaviour of the two policies. The horizontal axis indicates the cumu-
+lative lines acquired while sampling.The initial 16 lines are randomly sampled.
+Fig. 5. k-space preference as a function of sample rate (vertical axis downward) and
+for 3 center fraction scenarios. Colorbar indicates the possibility of being sampled.
+behave when asking each policy to progressively make decisions on which line
+to acquire in a line-by-line manner. The results of this exercise are shown in
+Figure 4. The behaviour of the two methods is evidently different. Taking Recall
+and AUC as examples, the Policy Classifier plateaus quickly, reaching excellent
+performance with 22 sampled lines and continuing to make, small, improvements.
+The Policy Reconstruction over the same interval makes sub-optimal (to classifi-
+cation) decisions before it plateaus. This behaviour can be explained by the fact
+that a reconstruction policy may not favour lines useful for classification. The
+Policy Classifier appears to change behaviour between 19 and 21 lines acquired.
+This can be attributed to a drift from how the classifier was pre-trained with
+randomly sampled lines. We discuss solutions to this later.
+Task-specific ‘Coarse-to-Fine’ Sampling Policy
+It would be interesting to see which k-space lines are favoured by our policy
+and how altering the starting point (namely different percentage of center frac-
+tion which represents the amount of low-frequencyk-space intentionally sampled
+from the center of the k-space) modulates this behaviour. Figure 5 illustrates
+the average masks provided by three policy networks. Comprared with the sam-
+pling policy for reconstruction in supplementary, this analysis reveals that early
+on the policy favours both low-frequency and some high-frequency data. How-
+ever, later on the policy favours specific diagnostically-relevant k-space lines
+of high-frequency. Hence we see the policy capturing ‘Coarse’ features such as
+anatomical structures or essential patterns first and later ‘Fine’ details from the

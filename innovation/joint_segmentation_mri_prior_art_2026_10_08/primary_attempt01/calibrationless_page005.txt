@@ -1,0 +1,110 @@
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING 5
+where 0 ≤ α < 1 is the weight term that controls the
+strength of each term and Nt is the total number of training
+datasets. Here, Lrec and Lseg are specified by (12) and (13),
+respectively.
+C. Few-Shot Learning for Semantic Segmentation
+Current DL models for medical image segmentation are
+often trained with large amounts of training data. However,
+obtaining accurate segmentation labels is often a challenging
+task, requiring high computation time and expert supervision.
+On the other hand, using a few datasets to train current
+networks is often associated with the risk of over-fitting.
+In order to address the limited availability of labelled data,
+we propose a semi-supervised learning approach capitalizing
+on our shared network shown in Fig. 2. In particular, we
+utilize the reconstruction as an auxiliary task for spatial feature
+learning. We are motivated by [27], where an image denoising
+block is added as an auxiliary task to keep the generalization
+error of the segmentation task low.
+The proposed multi-task network is trained end-to-end in a
+supervised fashion with few labelled subjects (10% of training
+data) for segmentation. We use the combined loss function
+specified by (14) for datasets with segmentation labels, while
+we use the reconstruction loss specified by (12) for datasets
+without segmentation labels. The shared encoder facilitates
+the learning of latent features that are useful for both tasks.
+The latent variables derived by the shared encoder are learned
+from all the datasets. Because the segmentation task relies on
+these latent variables, a few labelled segmentation datasets are
+sufficient to obtain good generalization performance.
+IV. IMPLEMENTATION DETAILS
+A. Datasets
+The publicly available Calgary Campinas (CCP) Dataset
+[29] is used for all the experiments. It consists of raw k-space
+for T1-weighted brain MRI datasets from 117 subjects ac￾quired using a 12-channel coil with a gradient-echo sequence.
+The data was collected on a General Electric (GE) 3T scanner
+(Discovery MR750). The acquisition parameters are either TR
+(repetition time) = 6.3 ms, TE (echo time) = 2.6 ms, TI
+(inversion time) = 650 ms or TR = 7.4 ms, TE = 3.1 ms, TI =
+400 ms. The acquisition matrix size is 256 x 208 x 170 or 256
+x 208 x 180 at a slice thickness of 1 mm with 170/180 being
+the slice-encoding direction. We chose a subset of subjects
+where fully sampled reconstruction references are available
+for training and performance analysis. The dataset is split into
+40 subjects for training, 7 for validation and 15 for testing.
+CCP does not provide reference segmentation corresponding
+to the raw k-space data for any subject. We generated reference
+segmentation using FMRIB’s Automated Segmentation Tool
+(FAST) software [30]. It uses a hidden Markov random field
+model and solves an associated Expectation-Maximization
+algorithm to classify the image pixels into CSF, GM and
+WM. This segmentation task was chosen to demonstrate
+the technical feasibility of the proposed framework mainly
+because of the availability of well-established software that
+is directly applicable to the above dataset with raw multi￾channel k-space data. We note that, while several segmentation
+datasets with more challenging tasks are publicly available,
+most of them rely on post-processed DICOM images that are
+not appropriate for our setting.
+B. Quality Evaluation Metric
+We quantitatively evaluate reconstruction quality using the
+signal-to-noise ratio (SNR) and structural similarity [31]
+(SSIM) metrics. The SNR of an image is computed as
+SNR(dB) = 20 · log10 
+kxorgk2
+kxorg−xreck2
+
+, where xrec is the
+predicted image and xorg denotes the corresponding ground
+truth image. The segmentation performance is evaluated using
+Dice coefficients [32].
+C. Architecture of the CNNs and Training Details
+The IDSLR network in Fig. 2 takes a multi-channel raw
+k-space γb as input. It goes through an inverse fast Fourier
+transform (IFFT) operation before entering the DI residual
+block. The DI block consists of a residual UNET NI
+, which
+consists of 20 layers with four max pooling and unpooling
+operations. The number of filters per layer of NI grows from
+36 to a maximum of 512. A convolution layer with filter
+size 3 x 3 is followed by ReLU non-linearity. Similar to the
+standard UNET, there are skipped connections between the
+encoder NIE and decoder NID. The segmentation decoder SID
+is attached to NIE from the final iteration of the unrolled
+IDSLR network. There are also skipped connections to SID
+from NIE, similar to the standard UNET architecture.
+The IDSLR network is unrolled and trained end-to-end for
+K = 5 iterations. We also fix K = 5 for all other iterative DL
+models of the k-space deep-SLR (KDSLR), JRS, and proposed
+and cascade architectures to make the comparisons fair. The
+weighting parameter α is chosen empirically for the proposed
+methods. For six-fold and eight-fold accelerations, we chose
+α = 10−4
+and α = 10−6
+, respectively. The CNN weights
+are Xavier initialized and trained for 1000 epochs with the
+Adam optimizer at a learning rate of 10−4
+. The training data
+from one subject at a time is used in every epoch. All the DL
+methods are implemented using the Pytorch library.
+D. State-of-the-art Methods for Comparison
+1) Calibrationless PMRI methods: The spatial domain deep￾SLR (IDSLR) is compared against KDSLR [17], k-space
+UNET [24] and KIKI-Net [33] to demonstrate reconstruction
+performance. The K-UNET approach is a direct inversion
+scheme that uses a multi-channel UNET in k-space without
+any DC step. KIKI-Net relies on a cascade of k-space and
+spatial domain CNNs with a DC step embedded between
+them. Since the original KIKI-Net framework was designed for
+single-channel MRI, we implemented a multi-channel version
+by replacing the single-channel CNNs with multi-channel
+ones, together with the DC block in (11). KDSLR is a deep￾SLR approach exploiting annihilation relations in k-space.

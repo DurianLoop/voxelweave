@@ -1,0 +1,89 @@
+, VOL. XX, NO. XX, XXXX 2020 9
+Fig. 7. t-SNE visualizations of the last hidden layer’s features of segmentation
+networks, trained using different domain generalization techniques, for the
+Abdominal CT-MR segmentation scenario. Suffixes S or T denote the
+source (CT) or the target domain (MRI).
+TABLE IV
+EFFECTS OF DIFFERENT MECHANISMS FOR INCORPORATING ORIGINAL
+IMAGES IN TRAINING BATCHES, EVALUATED ON ABDOMINAL CT TO MRI
+SEGMENTATION. UPPER: THE EFFECT OF DIFFERENT INTERPOLATION
+MECHANISMS BETWEEN ORIGINAL AND NETWORK-AUGMENTED IMAGES.
+LOWER: THE EFFECT OF ADDING ORIGINAL IMAGES TO THE TRAINING
+BATCHES.
+GIN configuration Average
+Dice Score
+No interp. (α = 1) 5.41
+Interp. w α ∼ U(0, 1) (default, proposed) 86.04
+Interp. w α ∼ Beta(0.2, 0.2) 85.84
+Interp. w α ∼ Beta(0.4, 0.4) 85.69
+Interp. w α ∼ Beta(2.0, 2.0) 85.61
+Default (proposed) 86.04
+Default w. 25% orig. image 85.87
+Default w. 50% orig. image 84.20
+Default w. 75% orig. image 80.05
+1) Configurations of GIN: To investigate the effect of
+configurations of GIN on generalization performance, we first
+conducted ablation studies on two key design choices: the
+number of convolutional layers and the number of channels
+in hidden layers. Intuitively, only one or two layers may be
+insufficient for simulating non-linear transformations across
+domains in real world, while a too-large number of layers may
+lead to unrealistically aggressive augmentations that deviate
+from reality. The effect of numbers of channels in hidden
+layers is difficult to postulate, due to the non-linearity of GIN.
+We show quantitative results in Table III by varying the
+number of layers, and the number of channels in hidden layers
+from the default setting (4 layers and 2 channels). These ex￾periments were conducted under the abdominal segmentation
+scenario, with IPA turned off for the ease of analysis. The left
+column of Table III agrees with our intuition regarding the
+number of convolutional layers.
+We also investigated the importance of the interpolation
+mechanism between the original image and the network￾augmented image in GIN, as described in Sec. III-B and
+Eq. 4. As discussed in Sec. III-B, interpolating with original
+images allows to preserve essential semantic information in the
+augmented training samples, avoiding to generate too many
+over-aggressively augmented examples that may break the
+training process. Specifically, we removed the interpolation
+part, or varied the distribution of the interpolation coefficient
+α in Eq. 4 from a uniform distribution U(0, 1) to Beta
+distributions, as suggested in [44]. As shown in the upper
+part of Table IV, without interpolating with original images,
+the method would fail, while replacing uniform distribution to
+Beta distributions does not lead to significant improvement.
+We also replace {25%, 50%, 75%} of our default interpolated
+training images with original images. As shown in the lower
+part in Table IV, once the default interpolation mechanism has
+been applied, adding extra original images would not yield
+significant extra benefit.
+2) Configurations of IPA: To examine the benefit of in￾terventional pseudo-correlation augmentation, we performed
+ablation studies on IPA. These results are summarized in Table
+V. By comparing the results of GIN-only (the second row)
+with those of GIN + IPA (the last row) we can observe
+the benefit of mitigating the shifted-correlation effect using
+IPA, especially for the cardiac and the prostate settings. The
+benefit of introducing IPA has been further verified by the
+fact that simply mixing-up two GIN-augmented images in
+using a random global scalar coefficient [44], does not lead to
+comparable performance gains, as reflected by the third row
+of Table V.
+Fig. 8. An alternative configuration of pseudo-correlation maps: randomly
+sampled superpixels.
+As a further exploration, we also examined an alternative
+design of pseudo-correlation maps: superpixels that are ran￾domly sampled at each iteration [73], as depicted in Fig. 8. We
+present its results in the last row of Table V. We postulate that
+the sub-optimal performance of the superpixel-based maps is
+due to the fact that superpixels often coincide with real ground￾truth masks y’s, making xf ’s unnaturally stand out and thus
+become shortcuts for the network.
+3) Domain invariance condition: The domain invariance
+condition proposed by [55], which is instantiated as the
+Kullback-Leibler divergence term in Eq. 3, provides an ad￾ditional supervision signal for enforcing domain invariance in
+together with the segmentation loss on augmented images. To
+examine its utility we performed ablation study by dropping
+this divergence term, for the abdominal CT to MRI setting. We
+observe that without this term, the average Dice score drops
+from 86.31 to 85.67.
+E. Performance in the source domain
+Although the focus of our work is to improve performance
+in unseen target domains, we also investigated the performance
+in source domains. Intuitively, suppressing domain-specific
+features might hurt the source-domain performance. As shown

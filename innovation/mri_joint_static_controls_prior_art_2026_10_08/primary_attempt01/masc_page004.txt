@@ -1,0 +1,80 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+Inference
+…
+…
+Full metal 
+k-space
+Initial mask 
+(i=2)
+Current mask
+State𝑺𝒕
+IFFT
+Current
+recon image
+PPO Agent
+Next sample 
+action
+MARU-Net
+Rollout
+PPO update
+MAR U-net update
+Reward
+Update
+Train
+Per step
+Per rollout
+Metal & clean 
+image pairs
+Pre-train
+Pre-train
+Artifact-reduced 
+image
+Full metal 
+k-space
+Initial mask 
+(i=2)
+Current mask
+State 𝑺𝒕
+IFFT
+Current
+recon image
+MARU-Net
+…
+…PPO Agent
+Artifact-reduced 
+image
+Budget 
+exhausted
+No Yes
+Next sample 
+action
+Select
+Select
+Nextstate
+Nextstate
+Joint training
+Figure 2:MASC training and inference pipeline.Top (Train):Starting from full
+metal-corrupted k-space, the current mask selects acquired lines for IFFT re-
+construction. The MAR U-Net processes the reconstruction to produce artifact-
+reduced images, which the artifact-aware PPO agent observes to determine the
+next sampling action. Color-coded arrows indicate operation frequency: purple
+for pre-training (MAR U-Net on paired metal-clean images), blue for per-step
+operations (sequential k-space acquisition), and orange for per-rollout updates
+(reward computation, PPO policy update, and MAR U-Net fine-tuning). Fire
+icons denote trainable networks.Bottom (Inference):Both networks are frozen
+(snowflake icons). The agent iteratively selects k-space lines until the acquisition
+budget is exhausted.
+2. Methods
+2.1. Problem Formulation
+We formulate active MRI acquisition as a Markov Decision Process (MDP) (Sutton and
+Barto, 2018). As shown in Figure 2, the state at time steptis defined ass t = (It,Mt),
+whereI t∈R H×W represents the current magnitude reconstruction obtained from partially
+sampled k-space, andM t∈{0,1} Npe is a binary mask indicating acquired phase-encoding
+lines. The reconstruction is computed via inverse Fourier transform asI t =|F−1(K⊙M t)|,
+whereK∈C H×W denotes the full k-space data (Liang and Lauterbur, 2000; Moratal et al.,
+2008).
+The action space consists of selecting a single unacquired phase-encoding line. Upon
+selecting actiona t, the mask is updated asM t+1[at] = 1, and the agent receives a reward
+based on reconstruction quality improvement:
+rt =α·(Q(I t+1,I∗)−Q(I t,I∗)) (1)
+4

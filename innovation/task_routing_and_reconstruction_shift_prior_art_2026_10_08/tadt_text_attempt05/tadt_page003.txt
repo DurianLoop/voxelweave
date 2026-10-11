@@ -1,0 +1,79 @@
+(a) Architecture of Our ASSR Network
+(b) Multi-Scale Transformer Block (MSTB) (c) Task-Aware Routing Controller
+Figure 3. Illustration of our ASSR network. (a) Architecture of our ASSR network containing our Task-Aware Dynamic Transformer and an arbitrary-scale
+upsampler. (b) Our Multi-scale Transformer Block (MSTB). “LSA” indicates local self-attention with a window size of mj for the j-th branch. “GSA” indicates
+global self-attention with a window size of m. (c) Our Task-Aware Routing Controller is a two-branch module aware of the input image I
+LR and SR scale s.
+3.2 Network Overview
+The overall pipeline of our ASSR network is illustrated in Figure 3 (a).
+It takes our Task-Aware Dynamic Transformer (TADT) as the feature
+extractor and an arbitrary-scale upsampler to output the magnified
+image. Our TADT extractor comprises a main multi-scale feature
+extraction backbone and a Task-Aware Routing Controller (TARC).
+The feature extraction backbone first utilizes a convolution layer to
+obtain the shallow feature. It then learns scale-aware deep feature,
+with the routing vector provided by our TARC, by N cascaded Multi￾Scale Transformer Groups (MSTGs) appended by a convolution layer.
+Each MSTG group contains two Multi-Scale Transformer Blocks
+(MSTBs) and a convolution layer, and each MSTB learns multi-scale
+representation by four self-attention branches. A skip connection
+is used to fuse the shallow feature and the extracted feature by N
+MSTG groups. Our TARC controller predicts the routing vector of our
+TADT feature extraction backbone, i.e., the selection of self-attention
+branches, for different input LR images and SR scales. More detailed
+structure of our TADT will be presented in §3.3.
+For the arbitrary-scale upsampler, we employ the off-the-shelf
+methods such as MetaSR [18], LIIF [9], and LTE [27], etc.
+3.3 Proposed Task-Aware Dynamic Transformer
+In this work, we propose a task-aware feature extractor based on trans￾formers [30, 52] for image ASSR. The proposed extractor can adjust
+its computational graph according to different LR images and up￾sampling scales, to achieve dynamic feature extraction with adaptive
+computational costs. Since each set of input LR image and upsampling
+scale constitute the inputs of an inference task in ASSR, our feature
+extractor is termed as Task-Aware Dynamic Transformer (TADT).
+Given an inference task consisting of an LR image I
+LR and an up￾sampling scale factor s, our Task-Aware Routing Controller (TARC)
+first predicts a binary routing vector r ∈ {0, 1}
+4N . Here, 4N is
+the number of controllable self-attention branches in the feature ex￾traction backbone, since each MSTB block has four self-attention
+branches and the two MSTBs in each MSTG group use the same
+branches. The backbone then encodes the LR image I
+LR of an input
+task and determine its computational graph according to the routing
+vector r. Specifically, the routing vector r consists of N sets of 4-
+dimensional routing sub-vectors as r =
+
+r
+1
+, · · · , r
+i
+, · · · r
+N
+
+, where
+r
+i =
+
+r
+i
+1, ri
+2, ri
+3, ri
+4
+
+. Here, r
+i
+(i = 1, ..., N) is the sub-vector of the
+i-th MSTG and r
+i
+j = 0 or 1 (j ∈ {1, 2, 3, 4}) is the routing index
+of the j-th self-attention branch. r
+i
+j = 1 means that the j-th branch
+of two MSTBs in the i-th MSTG is used. Otherwise, this branch
+will be bypassed. Our experiments show that using separate routing
+sub-vectors for the two MSTBs in each MSTG achieves similar ASSR
+performance. Thus, we share the same routing sub-vectors on the two
+MSTBs in each MSTG for model simplicity.
+3.3.1 Multi-Scale Transformer Block
+By leveraging the power of multi-scale learning [29, 51, 52] and
+global learning [48, 39], we also propose a new Multi-Scale Trans￾former Block (MSTB) for comprehensive representation learning.
+Take the MSTB in the i-th MSTG as an example. As shown in Fig-

@@ -1,0 +1,44 @@
+5.3.1. Designing good priors. The diﬃculty in selecting an appropriate prior lies in cap-
+turing the relevant a priori information. Many of the results from the statistical community
+focus on characterizing priors that lead to Bayesian inference methods with desirable asymp-
+totic properties, like consistency and good contraction rates.
+Bayesian non-parametric theory provides a large class of handcrafted priors, see, e.g., [30,
+chapter 2], [18, section 2], and [48, 13]. These however only capture a fraction of the a priori
+information that is available. To illustrate this claim, a natural a priori information in medical
+imaging is that the object being imaged is a human being. It is very diﬃcult, if not impossible,
+to explicitly construct a prior that encodes this information.
+An alternative approach is to consider a prior that is learned from examples in X through
+some predictive generative model. A simplistic way is to select a Gaussian density that matches
+the ﬁrst two sample moments [12]. More elaborate approaches can be based on generative
+adversarial networks that are trained on unsupervised data, e.g., a generative adversarial
+network can be used to learn a Gibbs type of prior in a MAP estimator [63].
+5.3.2. Computational feasibility. Exploring the posterior requires sampling from a high
+dimensional probability distribution. It is not possible to directly simulate from the posterior
+distribution in the inﬁnite dimensional setting unless the model parameter is decomposed into
+more elementary ﬁnite-dimensional components. This quickly becomes computationally chal-
+lenging in large scale problems, like in imaging where the posterior is a probability distribution
+over the set of images.
+Computational methods used for Bayesian inversion often combine analytic approxima-
+tions of the posterior with various Markov chain Monte Carlo (MCMC) techniques, see [18,
+section 5] for a nice survey. There is an extensive theory that guarantees that these tech-
+niques are statistically consistent, but it comes with two critical drawbacks that has prevented
+widespread usage of MCMC techniques in imaging. First, many approaches require access to
+the prior in closed form, and as already argued for (section 5.3.1), such handcrafted priors
+are woefully inadequate in representing natural images. Second, these methods are still not
+suﬃciently scalable for exploring the posterior in an eﬃcient manner in large scale inverse
+problems, such as those that arise in 2D/3D tomographic imaging [8, chapter 1]. Alter-
+natively, one can approximate the posterior with more tractable distributions (deterministic
+inference), which includes variational Bayes [28] and expectation propagation [69]. Variational
+Bayes methods have in particular emerged as a popular alternative to the classical MCMC
+methods, see [9] for some guidance (on p. 860) on when to use MCMC or variational Bayes.
+To summarise, one can sometimes with reasonable eﬃciency compute point estimators
+that do not involve any integration over the model parameter space, like a MAP estimator.
+Estimators requiring such integration, like the estimator that minimize Bayes risk, are however
+computationally unfeasible. This also includes computational steps relevant for uncertainty
+quantiﬁcation.
+5.4. Learned iterative methods. As outlined in section 5.3, there are two challenges
+associated with using Bayesian inversion: selecting a “good” prior (section 5.3.1) and provid-
+ing a computationally feasible approach for computing suitable estimators, like the one that
+minimizes Bayes risk (section 5.3.2).
+As we outline here, learned iterative methods address both these challenges . It makes use
+8

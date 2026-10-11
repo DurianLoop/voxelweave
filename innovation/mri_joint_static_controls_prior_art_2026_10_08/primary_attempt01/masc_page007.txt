@@ -1,0 +1,45 @@
+Accelerated MRI with Metal Implants
+MRI Simulation.We employ the open-source MRI simulator developed by Zochowski
+et al. (Zochowski et al., 2024) to generate k-space data at 3T field strength. For metal ar-
+tifact simulation, we use the total hip arthroplasty model provided in the simulator (Edels-
+brunner et al., 1983; M¨ odinger et al., 2023), which comprises a femoral stem, femoral head,
+acetabular liner, and acetabular cup generated as spherical shells. The implant is modeled
+with cobalt-chromium (CoCr) alloy with magnetic susceptibility of 900 ppm, while tissue
+susceptibility values follow the simulator defaults:−9.05 ppm for soft tissues and water,
+−8.86 ppm for cortical bone, and−5.55 ppm for fat (Schenck, 1996; Smith et al., 2015;
+M¨ odinger et al., 2023). We manually fit the implant model into each subject’s hip region
+with position adjustments to ensure anatomically realistic placement. The simulator mod-
+els susceptibility-induced field inhomogeneities, signal dephasing, and geometric distortions.
+We simulate a Turbo Spin Echo (TSE) sequence with the following parameters: TR = 4050
+ms, TE = 32 ms, readout bandwidth = 710 Hz/pixel, RF bandwidth = 1 kHz and slice
+thickness = 3 mm (Zochowski et al., 2024).
+For each phantom, we generate: (1) clean k-space without metal, (2) metal-corrupted
+k-space with the virtual implant, and (3) a binary implant mask. Inverse Fourier transform
+yields paired reconstructions where each metal-corrupted image has an exactly matched
+clean reference serving as the ground truth target.
+Final Hip MRI Metal Artifacts Dataset.The resulting dataset contains 200 sub-
+jects with 36 slices each, where edge slices are excluded to retain only the region affected by
+metal artifacts. This paired structure is critical for our framework: the clean reconstruc-
+tions provide supervision for MAR network training, while the matched pairs enable reward
+computation during policy learning.
+FastMRI-based Metal Artifacts Dataset.To enable cross-dataset generalization
+evaluation, we construct an additional test set using the FastMRI knee dataset (Zbontar
+et al., 2018; Knoll et al., 2020), which contains realistic clinical MRI scans from NYU Lan-
+gone Health. Metal artifacts are synthesized following the physics-based simulation method
+of Kwon et al. (Kwon et al., 2018), modeling off-resonance field distortion of a simplified hip
+implant (Shi et al., 2017) different from the training TSE hip dataset, RF profile modulation
+(FWHM = 2.25 kHz), and geometric pile-up/void artifacts from Jacobian-based intensity
+modulation. Random implant rotation (±45°) and translation (±80 pixels) are applied to
+create diverse artifact patterns. This dataset provides an independent test distribution for
+evaluating generalization beyond our primary training data.
+3.2. Experimental Setup
+We partition the 200 subjects into training (160 subjects), validation (20 subjects), and
+test (20 subjects) sets, ensuring no subject overlap between splits. Each subject contains
+36 slices, yielding 5,760 training, 720 validation, and 720 test slices. All experiments are
+conducted on an NVIDIA RTX 5090 GPU with 32 GB memory.
+Training Configuration.The MAR network is pretrained for 100 epochs on paired
+metal-corrupted and clean images using the loss defined in Equation 3. For end-to-end
+training, we use Adam optimizer (Kingma and Ba, 2015) with learning rate 3×10 −4 for
+the artifact-aware PPO agent and 1×10 −5 for the MAR network. PPO hyperparameters
+include: rollout length of 512 steps, 4 optimization epochs per update, clip range of 0.2,
+7

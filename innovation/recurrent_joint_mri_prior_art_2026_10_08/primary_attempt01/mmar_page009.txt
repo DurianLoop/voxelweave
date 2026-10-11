@@ -1,0 +1,29 @@
+3.2. Multi-channel U-Net
+A multi-channel U-Net serves as the most straightforward hetero-modal
+method. Missing modalities are handled via zero-imputation (passed as chan￾nels of zeros), requiring the network to handle extreme distribution shifts
+within its very first layers. To ensure a fair comparison and provide the
+model with sufficient capacity to learn robustness to missing channels, we
+matched the parameter counts of the other hetero-modal methods (91M pa￾rameters) by configuring a large U-Net with 32, 64, 128, 256, 512, and 1024
+channels at each respective resolution level.
+3.3. U-HeMIS
+As introduced in Section 1, HeMIS utilises an independent convolutional
+encoder for each modality. U-HeMIS extends this logic to the skip connec￾tions at every level of a U-Net architecture. At each resolution level, the
+network calculates the mean and variance across the feature maps extracted
+from the available modalities. These statistical representations are then con￾catenated along the channel dimension and processed by a single, shared
+convolutional decoder. For our experiments, we configured each independent
+encoder with 16, 32, 64, 128, 256, and 512 channels.
+3.4. Multimodal Attention Router (MMAR)
+Motivated by the challenge presented by corrupted modalities which are
+not marked as missing, we propose the Multimodal Attention Router (MMAR)
+block. Our method, shown in Figure 3, is inspired by U-HeMIS and SFusion
+(Liu et al., 2023).
+3.4.1. Overview
+Our MMAR-based model replaces the statistical feature aggregation of U￾HeMIS with a learnable dynamic feature router over the spatial and channel
+dimensions. The output is a single fused feature representation, with the
+important channels and spatial locations of each modality amplified, while
+irrelevant features are suppressed. This allows the MMAR to learn to down￾weight features generated from corrupted modalities.
+3.4.2. MMAR block
+The MMAR block takes as input the encoded features from the N modal￾ity encoders, ignoring the M missing modalities. We denote the available, al￾ready encoded, input features as {Fi}
+N−M
+i=1 , where each feature has C channels
+9

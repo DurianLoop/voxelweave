@@ -1,0 +1,39 @@
+A Segmentation-aware Deep Fusion Network for Compressed Sensing MRI 3
+Recently, the deep neural network models are introduced in the field of CS￾MRI to overcome the above limitations. where the information from massive
+training MRI datasets can be encoded in the network architecture in training
+phase with large model capacity. Once the network is well-trained, the forward
+reconstruction for test MRI data is much faster compared with methods based on
+conventional sparse priors because no iteration is required. More importantly, the
+deep neural network models enjoy the benefit of modeling the semantic informa￾tion in the image, providing an appropriate approach to integrate information for
+different visual tasks, however, which is rarely considered in the existing models
+for inverse problem, leaving high-level supervision information poorly utilized,
+causing negative effect on the later automatic analysis phase.
+We take segmentation information for example to prove the benefits of intro￾ducing high-level supervision information into reconstruction. Usually different
+tissues in the MR image not only have different diagnostic information, but also
+show different statistical properties. In Figure 1(a) and Figure 1(b), we show
+a full-sampled and corresponding under-sampled T1-weighted brain MR image
+which contains three different labeled tissues: gray matter (GM), white matter
+(WM) and cerebrospinal fluid (CSF). The corresponding GM, WM and CSF la￾bels are shown in green, yellow and red in the segmentation label map in Figure
+1(c). Clearly, different regions show different intensity scales. To further quantify
+this phenomenon, we give the statistical histograms of the three tissues, back
+ground (BG) and the whole images of the under-sampled/full-sampled MRI data
+in the second/third row in Figure 1 on all the training MRI data. We observe
+each of the GM, WM and CSF tissues has simple single-mode distribution on
+the full-sampled and under-sampled MRI data. Since the deep neural network
+usually learns the function mapping from the under-sampled MR images to their
+full-sampled counterparts. The function mapping can be significantly simplified
+by learning the corresponding relations between the single-mode distributions.
+However, the distributions of the whole under-sampled and full-sampled MRI in
+Figure 1(d) and 1(i) are much more complicated, making the learning of function
+mapping more difficult.
+In this paper, we propose a segmentation-aware deep fusion network (SADFN)
+architecture for compressed sensing MRI to fuse the semantic supervision infor￾mation in the different depth from the segmentation label and propagate the
+semantic features to each layer in the reconstruction network. The main contri￾bution can be summarized as follows:
+– The proposed SADFN model can effectively fuse the information from tasks
+and depths in different levels. Both the MRI reconstruction and segmentation
+accuracies are significantly improved under the proposed framework.
+– The semantic information from the segmentation network is provided to
+reconstruction network using a feature fusion strategy, helping the recon￾struction network be aware of the content it reconstructs and simplifying
+the function mapping.
+– We adopt the multilayer feature aggregation to effectively collect and extract
+the information from different depth in the segmentation network.

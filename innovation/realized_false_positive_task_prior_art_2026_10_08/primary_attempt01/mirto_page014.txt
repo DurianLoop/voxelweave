@@ -1,0 +1,112 @@
+14 N. K. Hernashki and S. Chatterjee
+0.0 0.2 0.4 0.6 0.8 1.0
+share of total sum of squares
+voxel AUROC
+voxel AUPRC
+slice AUROC, marginal
+Dice
+slice AROC, adjusted
+lesion sensitivity
+pooled over metrics
+(a) variance shares within each metric
+method
+evaluation axes (incl. × method)
+of which metric main effect (scale)
+0.0 0.1 0.2 0.3 0.4 0.5
+within-metric flip share ϕ
+voxel AUROC
+voxel AUPRC
+slice AUROC, marginal
+Dice
+slice AROC, adjusted
+lesion sensitivity
+(b) how often a residual-model pair swaps places
+REFLECT vs UCCD REFLECT vs cDDPM UCCD vs cDDPM
+Fig. 6. What decides a ranking, metric by metric. (a) Share of the variance across defensible universes explained by
+the method and by the evaluation axes (main effects plus interactions with method), within each metric and pooled over
+metrics; the hatched bar is the main effect of the metric axis, which reflects scale. (b) Within-metric flip shares of the three
+residual-model pairs with 95% bootstrap intervals; ϕ = 0.5 means that the pair is ordered each way equally often. Read (b)
+together with the size of each difference (Section 3.2).
+5 10 20 40
+nominal budget (cm³)
+0
+10
+20
+30
+40
+mean realised FP (cm³)
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+5 10 20 40
+nominal budget (cm³)
+0.10
+0.15
+0.20
+0.25
+0.30
+share above budget
+5 10 20 40
+nominal budget (cm³)
+0.00
+0.02
+0.04
+0.06
+0.08
+transfer gap (Dice)
+H6 decision criterion (0.02)
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+Fig. 7. Threshold transfer. (a) Mean realised burden on
+test against the nominal budget (left) and share of subjects
+above the budget (right) at the validation threshold. (b)
+Threshold-transfer gap g¯(b) with 95% intervals; the dashed
+line is the decision criterion of H6.
+DPM) (Appendix D.3, Table 30). All 128 calibrated com￾binations (4 methods × 4 budgets × 8 calibrated rules)
+stayed within α + 0.02, as H8 required; in fact none
+exceeded α, the largest excess being −0.004. RCPS at
+α = 0.05 is infeasible with n = 24. Over 1,000 random
+calibration splits the realised exceedance followed the law
+of Lemma 1 closely (Table 5): with 24 calibration sub￾jects the mean exceedance was 0.078–0.082 against a pre￾dicted 0.080, the share of splits at or below α was 69.5–
+71.2% against 70.8%, and the 97.5th percentile 0.205–
+0.222 against 0.211. The guarantee holds on average; at
+n = 24 it fails for roughly three calibration sets in ten,
+and Eq. (16) gives the spread from n and α alone.
+Verdict. H6 is not supported: the transfer gap behaves
+as Identity 1 predicts, not as a uniform optimism, and
+the secondary hypothesis on UCCD failed for the same
+reason. H8 is supported, and the spread of the exceedance
+over calibration sets matches Lemma 1.
+3.4 Comparison of methods
+Hypothesis (exploratory). With geometry gated and op￾erating points explicit, the residual models should still
+differ in ways that hold across operating points for some
+metrics but not others. Where pooled and subject-mean
+Dice disagree, Identity 2 predicts that the method gaining
+more from pooling is the one whose Dice is concentrated
+in subjects with large pi +Gi
+. The contrasts are tested in
+declared families with Holm adjustment.
+With the evaluation made explicit the residual mod￾els can be compared (Fig. 8; Appendix D.4, Table 33).
+At small budgets UCCD and cDDPM achieve higher
+Dice than REFLECT, also at equal burden: REFLECT
+− UCCD was −0.200 [−0.219, −0.180] at 5 cm3 and
+−0.118 [−0.209, −0.048] at equal burden (both pH <
+0.005). At 20 cm3
+the sign depended on the aggregation
+(mean −0.042, median −0.008, pooled +0.020). At 40 cm3
+pooled, REFLECT led by +0.056 [0.038, 0.073] at the
+validation threshold and +0.060 at equal burden (both
+pH < 0.005). Identity 2 gives the mechanism: pooling
+raises a method’s Dice above its subject mean in pro￾portion to the covariance between Di and the weight
+pi + Gi (Eq. 17). At 20 cm3 pooling lifted REFLECT
+by 0.071 (0.497 → 0.568) but UCCD by only 0.009
+(0.539 → 0.548), so REFLECT’s Dice is concentrated in
+the subjects that carry the most weight. For a typical sub￾ject, as measured by the median, REFLECT and UCCD
+were not distinguishable at 20 or 40 cm3 after adjustment
+(pH from 0.14 to 1.00), whereas REFLECT − cDDPM at
+40 cm3 was +0.055 [0.029, 0.079] in the median as well.
+Threshold-free metrics gave a stable order (Table 6).
+REFLECT had the highest voxel AUROC in every

@@ -1,0 +1,41 @@
+3) An iterative teacher forcing scheme is devised
+to stabilize the training process and reduce the
+training difficulty.
+4) The proposed method has been evaluated on two
+open datasets and one in vivo in-house dataset
+and compared to six state-of-the-art methods.
+Results show that the proposed method pos￾sesses encouraging capabilities for simultaneous
+and accurate MR reconstruction and segmenta￾tion.
+The reminder of this paper is organized as follows:
+Section 2 describes our proposed method, Section 3
+presents the experimental results and relevant analy￾sis, and Section 4 gives the discussion and conclusion.
+2 Method
+2.1 Overview
+The overall workflow of the proposed multi-task MR
+imaging framework is shown in Fig. 1. It consists
+of reconstruction and segmentation modules. We se￾lected D5C5 [26] as the reconstruction module and
+U-Net [21] as the segmentation module respectively.
+D5C5 [26] is a convolutional neural network (CNN)
+with a deep cascade structure. It integrated data con￾sistency layers with convolutional layers in an end-to￾end training manner for reconstruction. U-Net [21]
+with encoder-decoder structure based fully convolu￾tional network (FCN) is a popular choice for med￾ical image segmentation. The encoder and decoder
+were used to capture high-level semantic information
+and recover the spatial information respectively. In
+addition, multiple skip-connections were introduced
+between the encoder layer and the corresponding de￾coder layer to recover the information loss caused by
+down-sampling. The reason for selecting the pub￾Reconstruction Module Segmentation Module
+Iterative Teacher Forcing Scheme
+𝐿 t !"#$% 𝐿&"'
+Data Flow
+Loss Flow
+Gradient Flow
+Dynamic Re-weighted Loss Constraint
+𝐿!"#$% 𝐿&"'
+t
+Adaptive Weighted Loss 
+by Training Epoch
+Figure 1: The overall workflow of the proposed multi-task MR imaging method. It consists of reconstruction
+and segmentation modules, which are D5C5 and U-Net respectively. Based on it, dynamic re-weighted
+loss constraint is designed to keep the contribution balance between reconstruction and segmentation tasks.
+Besides, an improved iterative teacher forcing scheme is devised to stabilize the training process and reduce
+the training difficulty of the dual-task network.
+3

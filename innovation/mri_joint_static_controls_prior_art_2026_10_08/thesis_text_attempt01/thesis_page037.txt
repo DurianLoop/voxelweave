@@ -1,0 +1,41 @@
+CHAPTER 3. RECONSTRUCTION METHODS
+In their seminal works, Donoho (2006); Candès et al. (2006) introduced the formalism of
+Compressed Sensing (CS), where they proved that by leveraging the structure present
+in natural images, such as sparsity or low-rankness, one can perfectly reconstruct a
+signal sampled much below the Nyquist rate. Achieving this required using a non-linear
+reconstruction method, framed as the following prototypical problem
+ˆx = arg min
+x
+1
+2∥Aωx−yω∥2
+2 +λR(x) (3.1)
+where the first term, known asdata-fidelity, enforces consistency with the measurement,
+and the second term, calledregularization, defines a statistical model, capturing the
+desired structure of the signal. In the literature,R(x) has taken various forms, but
+typical models include sparsity in the wavelet domain,R(x) =∥Wx∥1 (Candès et al.,
+2006; Donoho, 2006; Lustig et al., 2007), or sparsity with Total Variation (TV) kind
+of constraints (Block et al., 2007; Knoll et al., 2011a). An alternative approach would
+rather impose a low-rank structure on the resulting image, typically usingR(x) =∥x∥∗
+(Lingala et al., 2011), or more sophisticated structures such as the Hankel matrix (Jin
+et al., 2016). The common trend in all of these methods is the idea thatthe structure
+of the signal implies a redundancy that can be exploited to represent the signal in a
+compact fashionwhen transforming it appropriately. As expressing the structure in a
+mathematical fashion is not a straightforward task, these methods are the expression of
+various attempts to capture this idea.
+Note that all these approaches typically introduce a trade-off between acquisition speed
+(by lowering the number of k-space lines acquired) and reconstruction speed. Solving
+Equation 3.1 requires using an iterative method, and while the computation is carried out
+offline, the reconstruction can last up to hours for specific settings with large accelerations
+(Feng et al., 2016a).
+We note also for completeness that CS relies not only on leveraging additional structure
+in the image to be reconstructed, but also on incoherent sampling (Lustig et al., 2008).
+In practice, this often involves random-like sampling strategies, which enable the aliasing
+to be incoherent, i.e. to feature a noise-like structure, as illustrated on Figure 3.1. We
+will defer a more complete discussion of sampling to the next chapter.
+Overall, it is clear that such approaches rely on statistical models, constructed to
+implement the designer’s assumptions, rather than being learned from data. While such
+methods enabled great progress in the last decade, the statistical models restrict the
+expressivity of the approach: they express abstract mathematical structures encoding
+our assumptions rather than focusing on the real data distribution expressed through
+the training set. This is why we will refer such approaches asmodel-driven.
+24

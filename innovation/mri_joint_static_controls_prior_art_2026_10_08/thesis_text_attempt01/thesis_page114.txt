@@ -1,0 +1,36 @@
+6.5. RELATION TO OTHER WORKS
+that the variability between samples is concentrated at very early sampling rates.
+6.5 Relation to other works
+While we focused strictly on RL trained sampling policies leveraging pre-trained re-
+constructors, there are other paradigms for accelerated MRI sampling present in the
+literature.
+The first line is that of using end-to-end training of masks using stochastic relaxations
+of the sampling mask to be able to differentiate it and optimize the reconstructor and
+sampling method jointly. Bahadir et al. (2019); Huijben et al. (2020) directly optimize
+for a single sampling rate and sampling mask. More recent work extend this technique
+for jointly training an adaptive policy, doing away with the pretraining and making more
+efficient use of the capacity of the reconstructor (Yin et al., 2021; Van Gorp et al., 2021).
+Another line of joint training relies on self-supervised learning using Monte-Carlo Tree
+Search, as was done in Deepmind’s AlphaGo (Silver et al., 2017; Jin et al., 2019)
+An open question regarding this line of research is whether the joint training enables
+to achieve a better sampling policy or simply serves as a curriculum and a way to
+specialize the sampling policy and reconstructor onto each other. To our knowledge,
+neither Van Gorp et al. (2021) nor Yin et al. (2021) investigated this. An interesting
+experiment could be to train a LBCS sampling mask on the co-trained reconstructor to
+see whether it can recover the sampling performance of the co-trained sampling network.
+More similar to the spirit of our work, the recent study of Shimron et al. (2021) tackles
+subtle biases induced by the use of stored data and improper processing, Edupuganti
+et al. (2020) investigated specifically uncertainty methods for MRI reconstruction.
+For works focusing on RL, Henderson et al. (2018) performed extensive ablation studies
+showing the sensitivity of RL methods to even minute variations in parameters. Engstrom
+et al. (2020); Gronauer et al. (2021) showed that the improvements of SotA RL methods
+can be traced to the exploitation of a subset of implementation details and algorithmic
+improvements and that even simple algorithms leveraging this subset can achieve SotA
+performance, similar to our work. This showcases that adapting to the data distribution
+seems to be sufficient to reach SotA in accelerated MRI sampling.
+6.6 Conclusion
+Taken together, our observations lead us to conclude the apparent conflict between the
+works of Bakker et al. (2020) and Pineda et al. (2020) is simply because at leastin
+their current state, neither of the RL SotA methods do not offer significant benefits over
+fixed, greedily trained masks. Since greedy algorithms tend to perform near optimal
+101

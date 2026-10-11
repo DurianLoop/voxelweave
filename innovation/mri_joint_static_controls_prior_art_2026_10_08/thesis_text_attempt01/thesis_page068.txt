@@ -1,0 +1,45 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+Lazy LBCS proposes a solution to this limitation by leveraging another approach to
+speed up LBCS. It useslazy evaluations (Minoux, 1978) which is equivalent to but faster
+than the greedy algorithm for submodular functions, and possess optimization guarantees
+for such functions (Nemhauser et al., 1978). While in our present setting, verifying
+submodularity is difficult because writing the performance of reconstructions in a closed
+form is generally not possible, we were motivated by the fact that Algorithm 3 works
+well in practice even if the objective function is not exactly submodular. Indeed, as we
+will observe in the experiments, lazy evaluations also perform well for mask optimization.
+The implementation of lazy evaluations for LBCS is described in Algorithm 3. We see that
+a list of upper bounds is initially computed (l.2), and that we sequentially traverse the
+list of upper bounds until we find a candidate sampleS that brings a larger improvement
+than any of the upper bounds inρ (ll.8-9).
+Algorithm 3Lazy Learning-based Compressive Sensing (lLBCS)
+Input: Training datax1,..., xm, decoderf, sampling subsetsS, cost
+function c, maximum costΓ
+Output: Sampling patternω
+1: ω←∅
+2: ρ(S)← +∞∀ S∈S s.t. c(ω∪S)≤ Γ
+3: while c(ω)≤ Γ do
+4: ω′←ω∪S,where S = arg max
+S′∈S :c(ω∪S′)≤Γ
+ρ(S′)
+5: For eachj, setyj←Pω′Fxj, ˆxj←fθ(yj,ω′)
+6: η(ω′)← 1
+m
+m∑
+j=1
+η(xj, ˆxj)
+7: ρ(S)←η(ω′)−η(ω)
+8: if ρ(S)≥ρ(S′)∀S′∈S s.t. c(ω∪S′)≤ Γ then
+9: ω =ω∪S
+10: end if
+11: end while
+12: return ω
+5.4 Experiments - Stochastic LBCS
+In this Section, we validate the performance of sLBCS, and will discuss lLBCS in Section
+5.5. We carry out extensive experiments to validate our stochastic LBCS method. We
+first compare sLBCS against the vanilla LBCS methods of Gözcü et al. (2018), paying
+particular attention to how it compares to the original method in terms of performance
+and computational complexity. We study the influence on the batch sizesk and l on
+performance and on the design of the mask. Then, we carry out experiments on both
+single coil and multicoil data, as well as noise free and noisy data. Finally, we show the
+benefit of our method on large scale datasets, for which LBCS is prohibitively expensive.
+55

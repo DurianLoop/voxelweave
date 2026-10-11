@@ -1,0 +1,26 @@
+4 Optimizing sampling patterns
+In the previous chapter, we discussed the evolution of reconstruction methods for accel-
+erated MRI, where a shift from model-driven approaches to data-driven approaches was
+observed. A similar shift can be observed in the design of sampling patterns.
+4.1 A taxonomy of mask design methods
+While the evolution of reconstruction methods can generally be described along the axis
+of moving from model-based approaches towards learning-based ones, the picture is less
+clear for the mask design methods. It is nonetheless to consider two axes of discussion
+that run in parallel to the evolution witnessed in reconstruction methods.
+These two axes pertain to the two main components needed to optimize sampling patterns
+(or masks or trajectories). One needs i) a prior distribution from which candidates
+patterns are drawn, andii) a criterion, a metric to quantify its performance. We will see
+that at the onset of compressed sensing, sampling patters were drawn from heuristically
+designed parametric distributions, a setting widely known asvariable density sampling,
+and gradually moved towards distributions tailored for a specific dataset. Similarly, the
+criteria used to establish the quality of a mask initially were mathematical quantities
+such ascoherence, but the criteria became increasingly related to the reconstruction
+performance enabled by subsampling data using a given mask. One can clearly see a shift
+from i) model-based approaches towardslearning-based ones, and fromii) model-driven
+criteria towardsdata-driven ones.
+Remark. We chose to denote the distribution from which candidate sampling
+patterns are drawn as thebase for the sampling optimization procedure, while the
+criterion used as whatdrives it.
+In the rest of this chapter, we will survey the literature from the first application of
+compressed sensing to MRI onwards to show how mask design evolved from model-
+31

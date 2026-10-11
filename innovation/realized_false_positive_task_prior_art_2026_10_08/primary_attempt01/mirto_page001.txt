@@ -1,0 +1,74 @@
+MIRTO: a registration-gated, multiverse-tested evaluation protocol for
+unsupervised anomaly segmentation in brain MRI
+Negin Kafee Hernashki1,2[0009−0004−9006−5234] and Soumick Chatterjee3,4[0000−0001−7594−1188]
+1 Università degli Studi di Milano, Milan, Italy
+2 Politecnico di Milano, Milan, Italy
+3 Human Technopole, Milan, Italy
+4 Otto von Guericke University Magdeburg, Germany
+negin.kafeehernashki@studenti.unimi.it ; contact@soumick.com
+Abstract. Unsupervised anomaly detection
+(UAD) methods for brain MRI are ranked by
+a single score, yet that score rests on choices
+that are rarely reported: how each anomaly
+map is aligned with the reference, how and on
+which data the threshold is set, and which false￾positive budget, metric, aggregation and lesion
+definition are used. We present MIRTO, an eval￾uation protocol that makes these choices ex￾plicit and measures their effect. It gates the ge￾ometry of every comparison with a registration
+check and label-free diagnostics of known power,
+sets thresholds on validation data alone and re￾ports the false-positive volume actually realised
+on test, repeats each comparison over 15,552
+defensible evaluation pipelines, and attaches
+paired subject-bootstrap intervals with multi￾plicity control. Applied to four UAD methods
+trained on the same healthy data and tested on
+312 BraTS 2020 subjects, MIRTO showed that
+an axis-order mismatch between stored maps
+and the reference lowered a diffusion model’s
+voxel AUROC from 0.873 to 0.583 whilst barely
+moving its slice-level AUROC. Within each met￾ric, the method explained at least 0.95 of the
+variance in voxel AUROC and AUPRC and 0.77
+in Dice, but only 0.14 in lesion sensitivity, where
+the lesion definition and hit criterion domi￾nated. A Dice advantage that was significant at
+validation thresholds vanished at equal realised
+false-positive burden, and an exact identity at￾tributes it to threshold transfer. A training-free
+change to REFLECT’s latent aggregation raised
+Dice at equal burden by 0.052. Nine hypotheses
+were tested against explicit criteria; because the
+same cohort served to develop the protocol, all
+inference is exploratory.
+Keywords: Unsupervised anomaly detection ·
+Brain MRI · Evaluation protocol · Multiverse
+analysis · Conformal risk control · Reproducibil￾ity
+1 Introduction
+Unsupervised anomaly detection (UAD) in brain MRI
+learns what healthy anatomy looks like and flags whatever
+departs from it, so that pathology can be localised with￾out lesion annotations [9,40]. The field has moved quickly,
+from variational and context-encoding autoencoders, in￾cluding our own StRegA [9,21], to diffusion models con￾ditioned on the input [11,54,14,15], rectified flows that
+correct an image in one step [12], and frozen foundation￾model features [24,31]. New methods are usually intro￾duced with a table in which they rank first.
+Such a table is the end of a long chain of decisions,
+most of which a reader never sees. Every anomaly map
+lives on the grid of its own preprocessing and must be
+brought into the space of a common reference; a thresh￾old has to be chosen, on some data, to meet some false￾positive budget; Dice can be averaged over subjects, taken
+as a median, or pooled over voxels; a lesion must be de￾fined before it can be counted as found; and the models
+were trained on particular healthy data with particular
+budgets. Each decision is defensible on its own. Together
+they span a large space of analysis paths, and it is well
+documented outside imaging that a reasonable change of
+path can change the conclusion [60,58,59]. In biomedical
+image analysis, rankings of challenge entries are known
+to be fragile to the metric and the aggregation [45,56],
+and choices made with sight of the test data bias the es￾timate of performance [62,20]. UAD adds failure modes
+of its own. Thresholds are often tuned on the test cohort;
+slice-level detection scores reward any map that tracks
+how much brain a slice contains; and simply thresholding
+FLAIR intensity has been reported to give better Dice
+than several learnt models [48].
+We asked two questions, and framed each component
+of the answer as a hypothesis to be tested. How much
+of a UAD leaderboard is decided by the evaluation rather
+than by the model? And can a protocol make that depen￾dence visible, catch the errors it hides, and still say some￾thing definite about the models? Our answer is MIRTO
+(M ultiverse-tested, I nterval-based, Registration-gated,
+Threshold-transfer-aware evaluatiOn; Fig. 1). Where
+possible, each of its four components was checked on cases
+in which the right answer is known (synthetic volumes, in￾jected corruptions, random calibration splits), and each
+changed at least one conclusion when applied to four cur￾rent UAD families trained on the same healthy data and
+tested on 312 BraTS 2020 subjects.
+arXiv:2610.02136v1 [cs.CV] 1 Oct 2026

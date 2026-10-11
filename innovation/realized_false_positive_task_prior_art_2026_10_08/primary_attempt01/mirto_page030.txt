@@ -1,0 +1,52 @@
+30 N. K. Hernashki and S. Chatterjee
+Table 23. Spatial randomisation controls: subject-mean Dice at 20 cm3
+, validation threshold, for the unshifted map, through￾plane shifts of the map by the given number of slices, and slice permutation within or map exchange across subjects.
+Method unshifted −2 +2 −5 +5 −10 +10 perm. within perm. across
+REFLECT 0.497 0.493 0.494 0.472 0.476 0.406 0.413 0.183 0.066
+UCCD 0.539 0.530 0.537 0.497 0.514 0.418 0.442 0.192 0.068
+cDDPM 0.519 0.511 0.517 0.481 0.495 0.404 0.425 0.183 0.063
+AnomalyDINO 0.166 0.166 0.167 0.161 0.164 0.141 0.149 0.069 0.026
+A 2
+4 geometry factorial (Table 24) switched four binary factors one at a time: the export transform (legacy or
+canonical), the reference (the method’s own reference or the canonical one), the evaluation support (the method’s
+own slices or the full canonical support) and the threshold (legacy or refitted on validation data). Apart from the
+threshold rule, every main effect on Dice was below 0.011 and every effect on voxel AUROC below 0.027 in absolute
+value; the threshold rule has no effect on AUROC by construction, which is a built-in check. The largest interactions
+were support × threshold (+0.042) and grid × threshold (+0.022), both for AnomalyDINO’s Dice.
+Table 24. Geometry factorial: main effects with 95% intervals on subject-mean Dice and voxel AUROC (second level minus
+first).
+Method quantity F1 export grid F2 reference source F3 support F4 threshold
+REFLECT Dice +0.0008 [0.0007, 0.0010] +0.0002 [0.0000, 0.0003] +0.0002 [0.0001, 0.0002] −0.0605 [−0.0662, −0.0547]
+REFLECT voxel AUROC +0.0002 [0.0001, 0.0004] +0.0003 [0.0002, 0.0004] −0.0000 [−0.0001, 0.0000] +0.0000 [0.0000, 0.0000]
+UCCD Dice −0.0017 [−0.0023, −0.0012] −0.0016 [−0.0022, −0.0011] +0.0001 [0.0001, 0.0001] +0.2358 [0.2187, 0.2527]
+UCCD voxel AUROC +0.0029 [0.0016, 0.0040] −0.0038 [−0.0050, −0.0027] −0.0262 [−0.0311, −0.0216] +0.0000 [0.0000, 0.0000]
+cDDPM Dice −0.0017 [−0.0023, −0.0011] −0.0017 [−0.0023, −0.0012] +0.0000 [0.0000, 0.0000] +0.1926 [0.1731, 0.2123]
+cDDPM voxel AUROC +0.0037 [0.0023, 0.0049] −0.0041 [−0.0054, −0.0029] −0.0210 [−0.0251, −0.0171] +0.0000 [0.0000, 0.0000]
+AnomalyDINO Dice +0.0011 [−0.0003, 0.0025] −0.0001 [−0.0001, −0.0000] +0.0109 [0.0081, 0.0138] −0.0137 [−0.0296, 0.0026]
+AnomalyDINO voxel AUROC +0.0021 [0.0019, 0.0023] −0.0005 [−0.0006, −0.0004] +0.0049 [0.0035, 0.0063] +0.0000 [0.0000, 0.0000]
+D.2 Evaluation multiverse
+Tables 25 and 26 give every pairwise flip share and the full variance decomposition, for the defensible set and for
+all 155,520 universes. Including the non-defensible levels (the method’s own reference, the round-trip reference, the
+declared voxel volume, the fixed threshold and the per-subject optimal threshold) changes neither verdict: ϕmax =
+0.450 [0.398, 0.498] and the axis share is 0.595 against a method share of 0.169. REFLECT versus UCCD and
+REFLECT versus cDDPM have the same point flip share (7,337 of 15,552 universes each) by coincidence of counts.
+Within metrics (Table 27) voxel AUROC never changes order, whereas Dice and lesion sensitivity change it for every
+pair. Agreement with the reference universe was low: mean Kendall τb 0.486 [0.409, 0.549], median 0.667, identical
+four-method order in 24.3% [9.9, 32.4] of universes. Table 28 lists the distinct orders per metric.
+Table 25. Pairwise flip shares (share of universes in which a pair takes its minority order) with 1,000-replicate bootstrap
+intervals; defensible set (15,552 universes) and all universes (155,520).
+Quantity Universe set Flip share [95 % CI]
+ϕmax defensible 0.472 [0.414, 0.499]
+REFLECT vs UCCD defensible 0.472 [0.389, 0.499]
+REFLECT vs cDDPM defensible 0.472 [0.386, 0.498]
+REFLECT vs AnomalyDINO defensible 0.010 [0.009, 0.014]
+UCCD vs cDDPM defensible 0.393 [0.250, 0.493]
+UCCD vs AnomalyDINO defensible 0.009 [0.008, 0.011]
+cDDPM vs AnomalyDINO defensible 0.011 [0.011, 0.013]
+ϕmax all 0.450 [0.398, 0.498]
+REFLECT vs UCCD all 0.450 [0.388, 0.497]
+REFLECT vs cDDPM all 0.401 [0.350, 0.493]
+REFLECT vs AnomalyDINO all 0.016 [0.014, 0.018]
+UCCD vs cDDPM all 0.340 [0.180, 0.436]
+UCCD vs AnomalyDINO all 0.016 [0.015, 0.020]
+cDDPM vs AnomalyDINO all 0.016 [0.015, 0.021]

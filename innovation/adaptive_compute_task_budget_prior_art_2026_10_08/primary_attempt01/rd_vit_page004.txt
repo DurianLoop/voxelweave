@@ -1,0 +1,40 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+4
+long-horizon recurrence. Depth-wise LoRA provides per-loop adaptation through a shared low-rank 
+decomposition with loop-indexed scaling, enabling the shared block to behave differently at different 
+depths without duplicating the full parameter set. These innovations make RDT’s recurrence more 
+principled and stable than previous weight-sharing approaches.
+2.3 Mixture of Experts
+Mixture of Experts (MoE) layers [9, 10] route different tokens to different expert subnetworks, enabling 
+conditional computation where total model capacity exceeds active computation per token. The router is 
+typically a learned linear projection that selects the top-k experts for each token based on a gating score. 
+Switch Transformers [10] simplified MoE to top-1 routing and scaled to trillion-parameter models. GShard 
+[16] introduced expert parallelism for efficient distributed training of MoE models.
+In vision, V-MoE [11] demonstrated MoE in ViT for image classification, showing that experts can 
+specialize for different image regions or semantic concepts. Soft MoE [17] replaced hard token-to-expert 
+routing with a differentiable weighted combination, improving training stability. Our work applies MoE 
+within a recurrent block for segmentation, where the router must learn to associate spatial patches with 
+class-specific expert sub-models—a form of implicit spatial routing that we show leads to spontaneous 
+category specialization.
+2.4 Medical Image Segmentation
+U-Net [12] and its encoder-decoder architecture with skip connections remains the dominant paradigm for 
+medical image segmentation. nnU-Net [14] provides a self-configuring framework that automatically 
+adapts preprocessing, architecture, and training strategies to new datasets, achieving strong baselines across 
+diverse medical segmentation tasks. TransUNet [13] combined a CNN encoder with a ViT for global 
+context and a CNN decoder with skip connections, showing that transformer features complement 
+convolutional features for medical segmentation.
+For cardiac segmentation specifically, the ACDC challenge has driven development of specialized 
+architectures. State-of-the-art methods achieve Dice scores above 0.90 for individual cardiac structures, 
+typically using 3D architectures with extensive data augmentation and self-supervised pre-training. Our 
+work does not aim to match these highly optimized pipelines; instead, we investigate whether the recurrent￾depth architectural principle can reduce data dependence in a controlled experimental setting.
+2.5 Adaptive Computation and Dynamic Inference
+Adaptive Computation Time (ACT) [18] was originally proposed for recurrent neural networks, allowing 
+the network to dynamically adjust the number of computational steps per input. Graves [18] showed that 
+ACT enables the model to “ponder” on difficult examples while quickly processing easy ones. Universal 
+Transformers [7] applied ACT to transformers, demonstrating improved generalization on tasks requiring 
+variable-depth reasoning.
+In vision, early exit strategies allow classification models to stop at intermediate layers when confidence is 
+sufficient. Depth-adaptive transformers [19] extend this to dense prediction by allowing different spatial 
+locations to exit at different depths. Our ACT implementation in RD-ViT is analogous: each patch token 
+has its own halting probability, creating a spatial compute map that allocates more iterations to boundaries 
+and challenging regions.

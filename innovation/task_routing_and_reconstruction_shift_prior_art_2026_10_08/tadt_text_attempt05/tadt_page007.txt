@@ -1,0 +1,92 @@
+MetaSR [18] LIIF [9] LTE [27]
+DIV2K, s = 3 LR
+PSNR / FLOPs 28.02 dB / 12111.11 G
+NLSA [38]
+28.05 dB / 3568.53 G
+SwinIR [30]
+28.07 dB / 3695.97 G
+CAT-R-2 [11]
+28.21 dB / 2803.89 G
+TADT (Ours) GT
+Manga109, s = 6 LR
+PSNR / FLOPs 26.51 dB / 920.94 G
+NLSA [38]
+26.48 dB / 291.50 G
+SwinIR [30]
+26.51 dB / 305.61 G
+CAT-R-2 [11]
+26.59 dB / 254.08 G
+TADT (Ours) GT
+Urban100, s = 12 LR
+PSNR / FLOPs 22.49 dB / 521.01 G
+NLSA [38]
+22.47 dB / 152.09 G
+SwinIR [30]
+22.44 dB / 152.81 G
+CAT-R-2 [11]
+22.55 dB / 120.79 G
+TADT (Ours) GT
+Figure 6. Visual comparison of different ASSR networks for natural image ASSR. The ASSR networks are made up of different feature extractors and
+arbitrary-scale upsamplers, i.e., MetaSR [18] (1-st row), LIIF [9] (2-nd row), and LTE [27] (3-rd row). The highlighted regions are zoomed in for better view.
+Table 3. Parameter amounts (M) and FLOPs (G) of different
+feature extractors working with LIIF [9], for ASSR at scale s = 2,
+3, or 4 on the DIV2K validation set. “-”: the result is unavailable due
+to out-of-memory.
+Feature Extractor Params (M) FLOPs (G)
+×2 ×3 ×4
+RDN [54] 21.97 15567.48 6918.88 3891.87
+RCAN [53] 15.33 10774.88 4788.83 2693.72
+SwinIR [30] 11.60 8832.28 3923.36 2227.08
+NLSA [38] 39.58 - 13357.80 7513.77
+CAT-R-2 [11] 11.63 8760.82 4038.19 2274.76
+Baseline (Ours) 9.17 7454.65 3407.59 1952.41
+TADT (Ours) 9.18 6986.92 3207.16 1845.57
+β
+Scale s
+Figure 7. The predicted β in our TADT w.r.t. different SR scales s.
+Figure 8 β in our TADT basically grows with the SR scale in ASSR,
+which is consistent with our intent on its role of intensity indicator.
+2) The influence of penalty loss Lβ to our ASSR network. We
+investigate this point by comparing our ASSR networks trained with
+or without using Lβ. In Figure 8, we visualize the curves of predicted
+β v.s. SR scales after training our TADT based ASSR network with
+Lβ and without Lβ. We observe that„ without using Lβ in training,
+our ASSR networks are prone to predict saturated β when the SR scale
+increases, with higher computational costs. As summarized in Table 5,
+training our TADT without Lβ obtains a minor PSNR increase of
+0.02dB for ×2 SR tasks on the DIV2K validation set, but also leads
+to a 388.75G FLOPs growth on computational costs. Therefore, it is
+necessary to use our intensity penalty loss Lβ in training our ASSR
+networks for computational efficiency.
+Table 4. PSNR (dB) results of our ASSR network with different designs
+of intensity indicator β on Urban100 [22].
+β
+In-scale Out-of-scale
+×2 ×3 ×4 ×6 ×8
+β = 0.5 33.66 29.53 27.33 24.72 23.23
+β = 0.25s 33.57 29.53 27.34 24.74 23.24
+Our TARC 33.65 29.58 27.37 24.75 23.27
+Table 5. Results of PSNR (dB) and FLOPs (G) by our TADT
+trained with (w) or without (w/o) the intensity loss Lβ on the
+DIV2K validation set.
+Feature Extractor ×2 ×3 ×4
+PSNR FLOPs PSNR FLOPs PSNR FLOPs
+TADT, w Lβ 35.28 6986.91 31.55 3207.16 29.54 1845.57
+TADT, w/o Lβ 35.30 7375.66 31.56 3378.02 29.55 1936.01
+5 Conclusion
+In this paper, we proposed an efficient feature extractor, i.e., the Task￾Aware Dynamic Transformer (TADT), for image ASSR. The proposed
+TADT contains cascaded multi-scale transformer groups (MSTGs) as
+the feature extraction backbone and a task-aware routing controller
+(TARC). Each MSTG group consists of two multi-scale transformer
+blocks (MSTBs). Each MSTB block has three local self-attention
+branches to learn useful multi-scale representations and a global self￾attention branch to extract distant correlations. Given an inference
+task, i.e., an input image and an SR scale, our TARC routing con￾troller predicts the inference paths within the self-attention branches
+of our TADT backbone. With task-aware dynamic architecture, our
+TADT achieved efficient ASSR performance when compared to the
+mainstream feature extractors.
+Acknowledgements
+This research is supported in part by The National Natural Science
+Foundation of China (No. 12226007 and 62176068) and the Open
+Research Fund from the Guangdong Provincial Key Laboratory of Big
+Data Computing, The Chinese University of Hong Kong, Shenzhen,
+under Grant No. B10120210117-OF03.

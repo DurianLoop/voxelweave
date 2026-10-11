@@ -1,0 +1,33 @@
+54 M. Acar et al.
+high-quality images consistent with fully-sampled acquisitions given as input
+undersampled acquisitions. Training is typically performed with a global loss
+function expressed over the entire image. However, such global loss functions are
+often dominated by diagnostically-irrelevant background tissues.
+Self-attention mechanisms have been proposed to help focus the model’s
+attention on subregions where there is greater tendency for introducing recon￾struction errors [5]. Note that vanilla attention mechanisms are not explicitly
+informed regarding the underlying anatomy. Other studies have considered more
+direct guidance from segmentation maps to focus on reconstruction performance
+in regions of interest [6–8]. Pre-trained segmentation models have been trans￾ferred to mitigate problems associated with joint training of the reconstruction￾segmentation network. Few recent studies have considered joint training of
+reconstruction-segmentation models, where an alternating optimization is per￾formed between the two networks [9]. However, such alternative optimization is
+prone to premature stopping of learning where one of the networks performs unac￾ceptably poorly.
+In this work, we propose a segmentation-aware reconstruction method. The
+proposed method is based on a sequential architecture containing two networks
+for reconstruction and segmentation. To avoid premature stopping of learning,
+a stabilization approach is introduced for end-to-end training of the model. In
+particular, the undersampling rate is gradually decreased during the course of
+training. A composite reconstruction-segmentation loss is used, and errors back￾propagated from the segmentation stage are used to focus the reconstruction
+on critical image regions. Experiments were conducted on a public cardiac MRI
+dataset [10]. Our results clearly indicate that the proposed segmentation-aware
+reconstruction improves focal image quality over solo reconstruction methods
+and unstabilized joint reconstruction-segmentation methods.
+2 Methods
+2.1 Proposed Framework
+We propose an end-to-end training of reconstruction and segmentation net￾works to enable high reconstruction quality for a target region of interest (ROI).
+Figure 1 illustrates the proposed framework for segmentation-aware reconstruc￾tion for cardiac MRI reconstruction. Our framework is general in the sense that
+many different state-of-the-art architecture for reconstruction and segmentation
+modules can be utilized. The specific pairs of architectures that we examine in
+the current study are described in implementation details.
+2.2 Stabilization
+Our framework rests on the key notion of employing segmentation loss to focus
+the reconstruction process on tissues of high diagnostic interest. Accordingly,
+we perform end-to-end training of a sequential cascade of reconstruction and

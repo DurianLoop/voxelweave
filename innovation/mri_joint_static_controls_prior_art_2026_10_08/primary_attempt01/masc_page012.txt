@@ -1,0 +1,42 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+Table 3:Cross-dataset generalization at10×acceleration.All methods are trained
+on our physics-based simulation dataset and evaluated on the FastMRI-based
+Metal Artifacts Dataset. The baselines are post-processed with MAR for fair
+comparison. Results are mean±std on the test set. Best results inbold. MASC
+significantly outperforms all baselines (p<0.001, paired t-test).
+Method (with MAR) SSIM↑PSNR↑MSE↓NMSE↓MAE↓
+Random 0.5562±0.0434 20.41±2.73 0.0111±0.0079 0.0642±0.0762 0.0773±0.0282
+Random-LowBias 0.5636±0.0428 20.41±2.56 0.0108±0.0064 0.0558±0.0305 0.0767±0.0245
+Equispaced 0.5402±0.0465 20.12±2.57 0.0116±0.0071 0.0663±0.0652 0.0790±0.0262
+Center-out 0.5072±0.0552 17.79±2.67 0.0199±0.0119 0.0994±0.0417 0.1096±0.0373
+DQN 0.5376±0.0483 19.52±2.36 0.0129±0.0068 0.0686±0.0375 0.0851±0.0255
+SS-DDQN 0.5305±0.0487 19.55±2.36 0.0127±0.0066 0.0682±0.0389 0.0842±0.0244
+MASC (Ours)0.5803±0.0341 21.41±2.25 0.0083±0.0052 0.0497±0.0548 0.0682±0.0217
+Interestingly, Center-out shows the worst generalization despite performing competi-
+tively on the training dataset, suggesting that its low-frequency bias does not transfer well
+across different data distributions. MASC also exhibits the lowest variance across all met-
+rics, demonstrating consistent performance across diverse artifact patterns.
+5. Conclusion
+We presented MASC, a unified reinforcement learning framework that jointly optimizes
+metal-aware k-space sampling and artifact correction for accelerated MRI. Our approach
+contributes a physics-based paired MRI dataset with simulated metal artifacts from 200 sub-
+jects, enabling supervised training for artifact reduction and reward computation for policy
+learning, along with an end-to-end co-adaptive training scheme where the PPO-based ac-
+quisition policy and U-Net-based MAR network mutually adapt to each other. Experiments
+demonstrate that MASC substantially outperforms both conventional and learned acquisi-
+tion strategies, as well as two-stage pipelines that apply MAR as post-processing. Compared
+to the best two-stage baseline, MASC achieves 4.0% improvement in SSIM and 20.7% reduc-
+tion in MSE; compared to the best conventional baseline without MAR, the improvements
+are 43.9% in SSIM and 77.3% reduction in MSE at 10×acceleration. Cross-dataset eval-
+uation on the FastMRI-based Metal Artifacts Dataset, which uses a different hip implant
+geometry than training, demonstrates that MASC generalizes effectively across both data
+distributions and implant variations. These results demonstrate that joint optimization
+outperforms sequential approaches where acquisition and reconstruction are treated inde-
+pendently. Ablation studies confirm that end-to-end training provides measurable benefits
+over using a frozen pre-trained MAR network, validating the importance of joint optimiza-
+tion.
+The current limitation of our work is the focus on hip implants at one anatomical
+region. Future work will extend MASC to diverse implant materials with varying magnetic
+susceptibilities, different anatomical regions such as spine and knee, and multi-coil settings
+where parallel imaging can be combined with learned acquisition policies.
+12

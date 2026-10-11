@@ -1,0 +1,161 @@
+{
+  "record_kind": "actual_post_archive_tool_returns",
+  "entries": [
+    {
+      "store_key": "turn26_completion_preflight",
+      "available": true,
+      "actual_tool_result": {
+        "chunk_id": "ca35d5",
+        "wall_time_seconds": 2.4377109,
+        "exit_code": 0,
+        "original_token_count": 50,
+        "output": "syntax_ok register_full_schedule_completion.py\r\nsyntax_ok archive_full_schedule_completion.py\r\nsyntax_ok analyze_whole_patch_eligibility.py\r\n{\"stage_bytes\": 3796209, \"disk_free_bytes\": 8028631040}\r\n"
+      }
+    },
+    {
+      "store_key": "turn26_medical_entry_recheck_and_polls_0",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "24be97",
+          "wall_time_seconds": 2.2898026,
+          "exit_code": 0,
+          "original_token_count": 3516,
+          "output": "\"\"\"Require a real managed-tool exit, then audit all last2992 states and 11968 journal rows.\"\"\"\r\nimport gzip,json,math,sys,time\r\nfrom pathlib import Path\r\nHERE=Path(__file__).resolve().parent;ROOT=HERE.parent\r\nsys.path.insert(0,str(ROOT/'experiments'))\r\nfrom mc_rc_3d_19series_common_init_2026_10_07 import read,sha,state_hash,torch,np,resource_guard,array_sha\r\nfrom datetime import datetime,timezone\r\nSTEPS=2992;NAMES=['native_reference_intensity','native_reference_spatial','raw_pchip_intensity','raw_pchip_spatial']\r\n\r\ndef main():\r\n    sys.stdout.reconfigure(encoding='utf-8');resource_guard();started=time.perf_counter()\r\n    terminal=HERE/'ACTUAL_TRAINING_TERMINAL_TOOL.json';obs=read(terminal)\r\n    assert obs['exit_code']==0 and 'session_id' not in obs\r\n    assert obs['observed_unified_exec_session']==29823\r\n    assert not (HERE/'ACTUAL_TRAINING_EXIT.json').exists()\r\n    path=HERE/'training_attempt01/receipt.json';r=read(path)\r\n    assert r['complete'] and r['status']=='completed' and not r['errors']\r\n    assert r['new_cpu_updates']+r['new_GPU_updates']==11968 and [a['name'] for a in r['arms']]==NAMES\r\n    assert r['mother_labels_geometry_and_augmentation_primitives_paired'] and r['cross_input_spatial_labels_paired']\r\n    frozen=HERE/'training_attempt01/frozen_config.json';q=read(frozen);assert sha(frozen)==r['frozen_config_sha256']\r\n    assert q['steps_per_branch']==STEPS and q['branches']==NAMES\r\n    sources={terminal,path,frozen,Path(__file__)}\r\n    for b in r['source_bindings']:assert sha(ROOT/b['path'])==b['sha256'];sources.add(ROOT/b['path'])\r\n    original=ROOT/'experiments/mc_rc_3d_19series_common_init_cpu_2026_10_07'\r\n    config=read(original/'frozen_config.json');schedule=np.load(original/config['schedule_file'],allow_pickle=False)[:STEPS]\r\n    assert array_sha(schedule)==q['schedule_prefix_sha256']\r\n    assert all(int(np.count_nonzero(schedule[:,0]==i))==272 for i in range(11))\r\n    histories={};arms=[]\r\n    for a in r['arms']:\r\n        resource_guard();assert time.perf_counter()-started<180\r\n        assert a['complete'] and a['updates_completed']==STEPS and a['starting_original_updates']==19998 and a['optimizer_reset']\r\n        cpfile=ROOT/a['checkpoint_path'];log=ROOT/a['history_path'];sources.update([cpfile,log])\r\n        assert sha(cpfile)==a['checkpoint_sha256'] and sha(log)==a['history_sha256'] and log.stat().st_size==a['history_bytes']\r\n        cp=torch.load(cpfile,map_location='cpu',weights_only=True)\r\n        assert state_hash(cp['state_dict'])==cp['final_weights_sha256']==a['final_weights_sha256']\r\n        assert cp['kind']==a['kind'] and cp['augmentation']==a['augmentation'] and cp['updates']==STEPS\r\n        assert cp['starting_original_updates']==19998 and cp['starting_weights_sha256']==a['starting_weights_sha256']\r\n        assert cp['history_sha256']==sha(log) and cp['frozen_config_sha256']==sha(frozen) and cp['protocol_sha256']==sha(HERE/'PROTOCOL.md')\r\n        assert cp['final_weights_sha256']!=cp['starting_weights_sha256'] and all(torch.isfinite(v).all() for v in cp['state_dict'].values())\r\n        with gzip.open(log,'rt',encoding='utf-8') as f:rows=[json.loads(line) for line in f]\r\n        assert len(rows)==STEPS and [h['step'] for h in rows]==list(range(1,STEPS+1))\r\n        exposures={p:0 for p in config['patient_ids']}\r\n        for step,h in enumerate(rows,1):\r\n            pi,ci=map(int,schedule[step-1]);assert h['patient']==config['patient_ids'][pi] and h['uid']==config['series'][ci]['uid']\r\n            assert h['lr']==1e-4 and math.isfinite(h['loss']) and h['total_step_seconds']>0;exposures[h['patient']]+=1\r\n            if a['augmentation']=='intensity':\r\n                assert h['theta_normalized_xyz'] is None and h['training_label_sha256']==h['mother_label_sha256']\r\n            else:assert h['theta_normalized_xyz'] is not None\r\n        assert set(exposures.values())=={272};histories[a['name']]=rows\r\n        arms.append(dict(name=a['name'],kind=a['kind'],augmentation=a['augmentation'],updates=STEPS,patient_exposures=exposures,\r\n            checkpoint_path=a['checkpoint_path'],checkpoint_sha256=sha(cpfile),history_path=a['history_path'],history_sha256=sha(log),\r\n            starting_weights_sha256=a['starting_weights_sha256'],final_weights_sha256=a['final_weights_sha256']))\r\n        del cp\r\n    fields=('step','patient','uid','mother_label_sha256','geometry','spatial_primitives','intensity_primitives','pivots_zrc','lr')\r\n    reference=histories[NAMES[0]]\r\n    for rows in histories.values():assert all({k:a[k] for k in fields}=={k:b[k] for k in fields} for a,b in zip(reference,rows))\r\n    for kind in ['native_reference','raw_pchip']:\r\n        ia=histories[kind+'_intensity'];sa=histories[kind+'_spatial']\r\n        assert all(a['base_input_sha256']==b['base_input_sha256'] for a,b in zip(ia,sa))\r\n        aa=[a for a in arms if a['kind']==kind];assert aa[0]['starting_weights_sha256']==aa[1]['starting_weights_sha256']\r\n    assert all(a['training_label_sha256']==b['training_label_sha256'] and a['theta_normalized_xyz']==b['theta_normalized_xyz']\r\n        for a,b in zip(histories['native_reference_spatial'],histories['raw_pchip_spatial']))\r\n    out=dict(created_utc=datetime.now(timezone.utc).isoformat(),complete=True,errors=[],observed_tool_exit=0,\r\n        observed_tool_session=29823,observed_tool_chunk=obs['chunk_id'],result_file=path.relative_to(ROOT).as_posix(),result_sha256=sha(path),\r\n        checkpoint_and_journal_audits_passed=True,all11968_history_rows_verified=True,all2992_paired_steps_verified=True,\r\n        arms=arms,new_cpu_updates=r['new_cpu_updates'],new_GPU_updates=r['new_GPU_updates'],actual_device=r['device'],\r\n        medical_effects_scored=False,neural_forwards_this_audit=0,confirmation_patients_opened=False,lockedIXI_opened=False,\r\n        publication_claim_confirmed=False,goal_status='active',resources=resource_guard(),elapsed_seconds=time.perf_counter()-started,\r\n        source_bindings=[dict(path=p.relative_to(ROOT).as_posix(),sha256=sha(p)) for p in sorted(sources)])\r\n    with (HERE/'ACTUAL_TRAINING_EXIT.json').open('x',encoding='utf-8') as f:json.dump(out,f,indent=2);f.write('\\n')\r\n    print(json.dumps({k:v for k,v in out.items() if k not in ['arms','source_bindings']}),flush=True)\r\nif __name__=='__main__':main()\r\n\"\"\"Final matched2992 states only, 36 full FOVs with independent functional replays.\"\"\"\r\nimport gc,json,sys,time,traceback\r\nfrom pathlib import Path\r\nHERE=Path(__file__).resolve().parent;ROOT=HERE.parent\r\nsys.path.insert(0,str(ROOT/'lossless_final_evaluation_entry_2026_10_08'))\r\nsys.path.insert(0,str(ROOT/'final_training_medical_execution_2026_10_08'))\r\nimport final_eval_lossless_v3 as g\r\nimport verify_final_lossless_v3 as independent\r\nfrom production_probability_mapping_v4 import infer_full_fov_v4\r\ntorch,np=g.torch,g.np;TRAIN=HERE/'training_attempt01';OUT=HERE/'evaluation_attempt01'\r\nSTEPS=2992;MAX_BYTES=45_000_000;EVALUATION_ALLOWANCE=3_000_000\r\nNAMES=['native_reference_intensity','native_reference_spatial','raw_pchip_intensity','raw_pchip_spatial']\r\n\r\ndef main():\r\n    sys.stdout.reconfigure(encoding='utf-8');torch.set_num_threads(4);started=time.perf_counter()\r\n    # Gate all terminal states and provenance BEFORE any validation image/GT loading.\r\n    ex=g.read(HERE/'ACTUAL_TRAINING_EXIT.json');fit=g.read(TRAIN/'receipt.json')\r\n    assert ex['observed_tool_exit']==0 and ex['observed_tool_session']==29823 and ex['result_sha256']==g.sha(TRAIN/'receipt.json')\r\n    assert ex['all11968_history_rows_verified'] and ex['all2992_paired_steps_verified']\r\n    assert fit['complete'] and not fit['errors'] and [a['name'] for a in fit['arms']]==NAMES\r\n    assert fit['new_cpu_updates']+fit['new_GPU_updates']==11968\r\n    for b in ex['source_bindings']+fit['source_bindings']:assert g.sha(ROOT/b['path'])==b['sha256']\r\n    before_bytes=sum(p.stat().st_size for p in HERE.rglob('*') if p.is_file());res=g.resource_guard()\r\n    assert before_bytes+EVALUATION_ALLOWANCE<MAX_BYTES and res['workspace_free_bytes']-8_000_000_000>=EVALUATION_ALLOWANCE\r\n    OUT.mkdir(exist_ok=False);dest=OUT/'receipt.json'\r\n    r=dict(created_utc=g.now(),complete=False,errors=[],arms=[],numerical_failures=[],new_training_updates=0,new_GPU_updates=0,\r\n        confirmation_patients_opened=False,lockedIXI_opened=False,publication_claim_confirmed=False,goal_status='active',\r\n        cross_process_independent_reexecution=False,development_series_scored_this_stage=0,\r\n        actual_updates_per_branch=STEPS,threshold=.5,intermediate_checkpoint_selection=False,primary_contrast='spatial-minus-intensity',\r\n        initial_stage_bytes=before_bytes,evaluation_allowance_bytes=EVALUATION_ALLOWANCE)\r\n    def save():g.atomic_json(dest,r)\r\n    def check():\r\n        assert time.perf_counter()-started<=3600;res=g.resource_guard()\r\n        assert torch.get_num_threads()==4 and torch.get_num_interop_threads()==1 and not torch.cuda.is_initialized()\r\n        size=sum(p.stat().st_size for p in HERE.rglob('*') if p.is_file());assert size<MAX_BYTES\r\n        assert size-before_bytes<EVALUATION_ALLOWANCE\r\n        res.update(cpu_threads=4,matched_stage_saved_bytes=size);return res\r\n    g.dump_new(dest,r)\r\n    try:\r\n        r['resources_before']=check();cases=[(role,c,row) for role,c,row in g.roles() if role=='validation']\r\n        assert len(cases)==9 and {c['patient'] for role,c,row in cases}==g.VALIDATORS\r\n        sources={Path(__file__),HERE/'EVALUATION_PROTOCOL.md',HERE/'ACTUAL_TRAINING_EXIT.json',TRAIN/'receipt.json',\r\n            Path(g.__file__),Path(independent.__file__),ROOT/'final_training_medical_execution_2026_10_08/production_probability_mapping_v4.py'}\r\n        sources.update(ROOT/b['path'] for b in ex['source_bindings']+fit['source_bindings'])\r\n        initial_bindings=[dict(path=p.relative_to(ROOT).as_posix(),sha256=g.sha(p)) for p in sorted(sources)]\r\n        r['initial_source_bindings']=initial_bindings;save()\r\n        for a in fit['arms']:\r\n            assert a['complete'] and a['updates_completed']==STEPS\r\n            cpfile=ROOT/a['checkpoint_path'];assert g.sha(cpfile)==a['checkpoint_sha256'];sources.add(cpfile)\r\n            cp=torch.load(cpfile,map_location='cpu',weights_only=True);assert g.state_hash(cp['state_dict'])==a['final_weights_sha256']\r\n            assert cp['updates']==STEPS and cp['kind']==a['kind'] and cp['augmentation']==a['augmentation']\r\n            assert cp['history_sha256']==g.sha(ROOT/a['history_path'])==a['history_sha256'];sources.add(ROOT/a['history_path'])\r\n            model=g.TaskUNet3D();model.load_state_dict(cp['state_dict']);model.eval();wrapped=g.GuardedModel(model,check)\r\n            arm=dict(name=a['name'],kind=a['kind'],augmentation=a['augmentation'],complete=False,series=[]);r['arms'].append(arm);save()\r\n            for i,(role,c,row) in enumerate(cases):\r\n                check();image,stats=g.source_image(c,row,a['kind']);grid=g.lattice(c);image=g.physical_mr(image,grid)\r\n                probability,meta=infer_full_fov_v4(wrapped,image,grid,c['native_shape'])\r\n                replay,imeta=independent.functional_fov(cp['state_dict'],image,grid,c['native_shape'],check)\r\n                error=float(np.max(np.abs(probability-replay)));binary=int(np.count_nonzero((probability>=.5)!=(replay>=.5)))\r\n                strict=error<=3e-6 and binary==0 and imeta['float64_coordinate_gate_passed']\r\n                assert meta['total_tiles']==imeta['total_tiles'] and meta['axis_starts']==imeta['axis_starts']\r\n                pred=probability>=.5;predfile=OUT/(a['name']+'_'+str(i).zfill(2)+'.npz');g.pack_prediction(predfile,pred)\r\n                assert np.array_equal(g.unpack_prediction(predfile),pred)\r\n                gt=g.read_reference_label(c);metrics=g.metrics(pred,gt);counts=independent.independent_counts(pred,gt)\r\n                assert independent.trees_close(metrics,counts)\r\n                record=dict(patient=c['patient'],uid=c['uid'],role=role,metrics=metrics,physical_input_sha256=g.array_sha(image),\r\n                    probability_sha256=g.array_sha(probability),label_sha256=g.array_sha(gt),production_inference=meta,\r\n                    independent_inference=imeta,strict_gate_passed=strict,max_probability_error=error,binary_disagreements=binary,\r\n                    prediction_file=predfile.relative_to(ROOT).as_posix(),prediction_file_sha256=g.sha(predfile))\r\n                if not strict:r['numerical_failures'].append(dict(branch=a['name'],uid=c['uid'],max_probability_error=error,binary=binary))\r\n                arm['series'].append(record);sources.add(predfile);save()\r\n                print(json.dumps(dict(branch=a['name'],series_done=len(arm['series']),strict_gate_passed=strict)),flush=True)\r\n                del image,probability,replay,pred,gt;gc.collect();check()\r\n            agg=g.aggregate(arm['series'],g.VALIDATORS);iagg=independent.independent_aggregate(arm['series'],g.VALIDATORS)\r\n            assert independent.trees_close(agg,iagg);arm.update(complete=True,validation_aggregate=iagg,validation_gates=g.gates(iagg))\r\n            assert g.state_hash(model.state_dict())==a['final_weights_sha256'];del model,wrapped,cp;gc.collect();save()\r\n        for b in initial_bindings:assert g.sha(ROOT/b['path'])==b['sha256']\r\n        r.update(complete=True,all36_strict_gates_passed=not r['numerical_failures'],\r\n            all_four_branches_medical_gates_passed=all(all(a['validation_gates'].values()) for a in r['arms']),\r\n            source_bindings=[dict(path=p.relative_to(ROOT).as_posix(),sha256=g.sha(p)) for p in sorted(sources)],resources_after=check())\r\n    except Exception as e:r['errors'].append(type(e).__name__+': '+str(e));r['traceback']=traceback.format_exc()\r\n    r.update(finished_utc=g.now(),elapsed_seconds=time.perf_counter()-started);save()\r\n    print(json.dumps({k:r.get(k) for k in ['complete','errors','all36_strict_gates_passed','all_four_branches_medical_gates_passed','elapsed_seconds']}),flush=True)\r\n    return int(not r['complete'] or bool(r['errors']) or not r.get('all36_strict_gates_passed',False))\r\nif __name__=='__main__':raise SystemExit(main())\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_medical_entry_recheck_and_polls_1",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "64fbda",
+          "wall_time_seconds": 5.0146648,
+          "session_id": 56132,
+          "original_token_count": 86,
+          "output": "{\"geometry_patches_completed\": 5700, \"active\": 1698, \"FG_incomplete\": 18, \"elapsed_seconds\": 1873.4159908000147}\r\n{\"geometry_patches_completed\": 5800, \"active\": 1734, \"FG_incomplete\": 18, \"elapsed_seconds\": 1909.311054199934}\r\n{\"geometry_patches_completed\": 5900, \"active\": 1762, \"FG_incomplete\": 18, \"elapsed_seconds\": 1938.5085659999168}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_medical_entry_recheck_and_polls_2",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "00c1c5",
+          "wall_time_seconds": 5.0145698,
+          "session_id": 29823,
+          "original_token_count": 43,
+          "output": "{\"branch\": \"raw_pchip_intensity\", \"updates\": 330, \"loss\": 0.1164042204618454, \"branch_median_step_seconds\": 2.145173349941615, \"cumulative_seconds\": 13498.439826300018}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_full_schedule_poll_before_terminal",
+      "available": true,
+      "actual_tool_result": {
+        "chunk_id": "a4b6f8",
+        "wall_time_seconds": 0.0000129,
+        "exit_code": 0,
+        "original_token_count": 51,
+        "output": "{\"complete\": true, \"status\": \"completed\", \"errors\": [], \"geometry_patches_completed\": 5984, \"active_patches_completed\": 1785, \"FG_incomplete_exposure_voxels\": 18, \"elapsed_seconds\": 1964.5482499999925}\r\n"
+      }
+    },
+    {
+      "store_key": "turn26_full_schedule_audit_start",
+      "available": true,
+      "actual_tool_result": {
+        "chunk_id": "e195de",
+        "wall_time_seconds": 5.4554476,
+        "exit_code": 1,
+        "original_token_count": 397,
+        "output": "Traceback (most recent call last):\r\n  File \"D:\\MRI\\innovation\\real_context_and_author_code_followup_2026_10_08\\audit_full_schedule_terminal.py\", line 12, in <module>\r\n    from mc_rc_3d_19series_common_init_2026_10_07 import development_cases,lattice,physical_label,read_reference_label,sample_batch,batch_rng,array_sha\r\n  File \"D:\\MRI\\innovation\\experiments\\mc_rc_3d_19series_common_init_2026_10_07.py\", line 4, in <module>\r\n    from mc_rc_3d_baseline_v2_2026_10_07 import (\r\n        ROOT,read,sha,array_sha,resource_guard,fixed_cases,source_image,lattice,physical_mr,\r\n        physical_label,read_reference_label,sample_batch,TaskUNet3D,loss,SEED,PATCH,torch,np)\r\n  File \"D:\\MRI\\innovation\\experiments\\mc_rc_3d_baseline_v2_2026_10_07.py\", line 2, in <module>\r\n    from mc_rc_3d_baseline_2026_10_07 import *\r\n  File \"D:\\MRI\\innovation\\experiments\\mc_rc_3d_baseline_2026_10_07.py\", line 9, in <module>\r\n    from mc_rc_true_native_reference_v2_2026_10_07 import ROOT, read, sha, array_sha, fixed_cases, read_reference, read_reference_label, require_reference_role, resource_guard\r\n  File \"D:\\MRI\\innovation\\experiments\\mc_rc_true_native_reference_v2_2026_10_07.py\", line 2, in <module>\r\n    from mc_rc_true_native_reference_2026_10_07 import (\r\n        ROOT, resource_guard, read, sha, array_sha, read_reference, require_reference_role,\r\n        fixed_cases, DEVELOPERS, VALIDATORS, NativeReference, np, nib)\r\n  File \"D:\\MRI\\innovation\\experiments\\mc_rc_true_native_reference_2026_10_07.py\", line 8, in <module>\r\n    import nibabel as nib\r\nModuleNotFoundError: No module named 'nibabel'\r\n"
+      }
+    },
+    {
+      "store_key": "turn26_audit_runtime_diagnostic_0",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "d26ee6",
+          "wall_time_seconds": 2.0927518,
+          "exit_code": 1,
+          "original_token_count": 124,
+          "output": "D:\\conda\\envs\\CoughKD\r\nD:\\conda\\envs\\gmx\r\nD:\\conda\\envs\\MRI\r\nD:\\conda\\envs\\urlb\r\nname: MRI\r\nchannels:\r\n  - conda-forge\r\n  - defaults\r\ndependencies:\r\n  - python=3.12\r\n  - pip\r\n  - numpy<2\r\n  - scipy\r\n  - scikit-image\r\n  - matplotlib\r\n  - pandas\r\n  - openpyxl\r\n  - tqdm\r\n  - opencv\r\n  - nibabel\r\n  - pip:\r\n      - --index-url https://download.pytorch.org/whl/cu128\r\n      - torch\r\n      - torchvision\r\n      - torchaudio\r\n      - --extra-index-url https://pypi.org/simple\r\n      - pytorch-msssim\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_audit_runtime_diagnostic_1",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "a6b89b",
+          "wall_time_seconds": 2.1305608,
+          "exit_code": 0,
+          "original_token_count": 109,
+          "output": "{\"complete\": true, \"status\": \"completed\", \"geometry_patches_completed\": 5984, \"GT_arrays_loaded\": 19, \"active_patches_completed\": 1785, \"inactive_identity_patches\": 4199, \"patches_entirely_supported\": 3398, \"FG_incomplete_exposure_voxels\": 18, \"FG_exposure_voxels\": 90636500, \"max_support_error\": 9.836575998178887e-14, \"max_coordinate_error\": 1.1368683772161603e-13, \"journal_bytes\": 1222383, \"elapsed_seconds\": 1964.5482499999925}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_full_schedule_audit_existing_runtime_start",
+      "available": true,
+      "actual_tool_result": {
+        "chunk_id": "fb3cc5",
+        "wall_time_seconds": 10.0054114,
+        "session_id": 56539,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "store_key": "turn26_audit_poll_and_training_0",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "8d9da9",
+          "wall_time_seconds": 5.0067899,
+          "session_id": 56539,
+          "original_token_count": 0,
+          "output": ""
+        }
+      }
+    },
+    {
+      "store_key": "turn26_audit_poll_and_training_1",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "c8c820",
+          "wall_time_seconds": 5.0068235,
+          "session_id": 29823,
+          "original_token_count": 0,
+          "output": ""
+        }
+      }
+    },
+    {
+      "store_key": "turn26_audit_poll_and_training_2",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "7356c9",
+          "wall_time_seconds": 2.374069,
+          "exit_code": 0,
+          "original_token_count": 57,
+          "output": "{\"stage_bytes\": 3843161, \"disk_free_bytes\": 8028483584}\r\nAPPEND_INDEX.json 4674cffe9b66e6a41707c3acf83ae5b9a7df70549c7df71d0eebc1ca2d4135b5\r\nAPPEND_PROOF.json 2cca61ee4e1bab5c49a5172dfb57dd5f009dac58ff361e1acb953872d8c87826\r\n"
+        }
+      }
+    }
+  ]
+}

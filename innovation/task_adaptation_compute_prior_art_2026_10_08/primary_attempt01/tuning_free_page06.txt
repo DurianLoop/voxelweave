@@ -1,0 +1,104 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+Table 2. Comparisons of different policies used in PnP-ADMM
+algorithm for CS-MRI on seven widely used medical images under
+various acceleration factors (x2/x4/x8) and noise level 15. We
+show both PSNR and the number of iterations (#IT.) used to induce
+results. * denotes to report the best PSNR over all iterations (i.e.
+with optimal early stopping). The best results are indicated by
+orange color and the second best results are denoted by blue color.
+×2 ×4 ×8
+POLICIES PSNR #IT. PSNR #IT. PSNR #IT.
+handcrafted 30.05 30.0 27.90 30.0 25.76 30.0
+handcrafted∗ 30.06 29.1 28.20 18.4 26.06 19.4
+ﬁxed 23.94 30.0 24.26 30.0 22.78 30.0
+ﬁxed∗ 28.45 1.6 26.67 3.4 24.19 7.3
+ﬁxed optimal 30.02 30.0 28.27 30.0 26.08 16.7
+ﬁxed optimal∗ 30.03 6.7 28.34 12.6 26.16 30.0
+oracle 30.25 30.0 28.60 30.0 26.41 30.0
+oracle∗ 30.26 8.0 28.61 13.9 26.45 21.6
+model-free 28.79 30.0 27.95 30.0 26.15 30.0
+Ours 30.33 5.0 28.42 5.0 26.44 15.0
+4. Experiments
+In this section, we detail the experiments and evaluate our
+proposed algorithm. We mainly focus on the tasks of Com-
+pressed Sensing MRI (CS-MRI) and phase retrieval (PR),
+which are the representative linear and nonlinear inverse
+imaging problems respectively.
+4.1. Implementation Details
+Our algorithm requires two training processes for: the de-
+noising network and the policy network (and value network).
+For training the denoising network, we follow the common
+practice that uses 87,000 overlapping patches (with size
+128× 128) drawn from 400 images from the BSD dataset
+(Martin et al., 2001). For each patch, we add white Gaussian
+noise with noise level sampled from [1, 50]. The denoising
+networks are trained with 50 epoch usingL1 loss and Adam
+optimizer (Kingma & Ba, 2014) with batch size 32. The
+base learning rate is set to 10−4 and halved at epoch 30,
+then reduced to 10−5 at epoch 40.
+To train the policy network and value network, we use the
+17,125 resized images with size128×128 from the PASCAL
+VOC dataset (Everingham et al., 2014). Both networks are
+trained using Adam optimizer with batch size 48 and 1500
+iterations, with a base learning rate of 3× 10−4 for the
+policy network and 10−3 for the value network. Then we
+set these learning rates to 10−4 and 3× 10−4 at iteration
+1000. We perform 10 gradient steps at every iteration.
+For the CS-MRI application, a single policy network is
+trained to handle multiple sampling ratios (with x2/x4/x8
+acceleration) and noise levels (5/10/15), simultaneously.
+Similarly, one policy network is learned for phase retrieval
+under different settings.
+4.2. Compressed sensing MRI
+The forward model of CS-MRI can be mathematically
+described as y = Fpx + ω, where x ∈ CN is the un-
+derlying image, the operator Fp : CN → CM , with
+M <N , denotes the partially-sampled Fourier transform,
+andω∼N (0,σnIM ) is the additive white Gaussian noise.
+The data-ﬁdelity term isD(x) = 1
+2‖y−Fpx‖2 whose prox-
+imal operator is given in (Eksioglu, 2016).
+Denoiser priors. To show how denoiser priors affect the
+performance of the PnP, we train three state-of-the-art CNN-
+based denoisers, i.e. DnCNN (Zhang et al., 2017a), Mem-
+Net (Tai et al., 2017) and residual UNet (Ronneberger et al.,
+2015), with tunable noise level map. We compare both the
+Gaussian denoising performance and the PnP performance5
+using these denoisers. As shown in Table 1, the resid-
+ual UNet and MemNet consistently outperform DnCNN
+in terms of denoising and CS-MRI. It seems to imply a
+better Gaussian denoiser is also a better denoiser prior for
+the PnP framework6. Since UNet is signiﬁcantly faster than
+MemNet, we choose UNet as our denoiser prior.
+Comparisons of different policies. We start by giving
+some insights of our learned policy by comparing the per-
+formance of PnP-ADMM with different polices: i) the hand-
+crafted policy used in IRCNN (Zhang et al., 2017b); ii) the
+ﬁxed policy that uses ﬁxed parameters (σ = 15,µ = 0.1);
+iii) the ﬁxed optimal policy that adopts ﬁxed parameters
+searched to maximize the average PSNR across all testing
+images; iv) the oracle policy that uses different parameters
+for different images such that the PSNR of each image is
+maximized and v) our learned policy based on a learned
+policy network to optimize parameters for each image. We
+remark that all compared polices are run for 30 iteration
+whilst ours automatically choose the terminal time.
+To understand the usefulness of the early stopping mecha-
+nism, we also report the results of these polices with optimal
+early stopping7. Moreover, we analyze whether the model-
+based RL beneﬁts our algorithm by comparing it with the
+learned policy by model-free RL whoseπ2 is optimized us-
+ing the model-free DDPG algorithm (Lillicrap et al., 2016).
+The results of all aforementioned policies are provided in
+Table 2. We can see that the bad choice of parameters (see
+“ﬁxed”) induces poor results, in which the early stopping is
+quite needed to rescue performance (see “ﬁxed∗”). When
+the parameters are properly assigned, the early stopping
+would be helpful to reduce computation cost. Our learned
+5We exhaustively search the best denoising strength/penalty
+parameters to exclude the impact of internal parameters.
+6Further investigation of this argument can be found in the
+suppl. material.
+7It should be noted some policies (e.g. ”ﬁxed optimal” and ”or-
+acle”) requires to access the ground truth to determine parameters,
+which is generally impractical in real testing scenarios.

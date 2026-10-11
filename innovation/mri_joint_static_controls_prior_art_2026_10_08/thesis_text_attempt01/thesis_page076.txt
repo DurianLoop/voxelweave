@@ -1,0 +1,39 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+performance when applied to KTF. This trend is also observed on multi-coil data, as
+highlighted on Table 5.3. This suggests that ALOHA, not relying explicitly onℓ1 sparsity,
+might succeed in exploiting varied information, from both low-frequency emphasizing
+masks from models promoting sparsity, but also higher frequency information.
+Remark. This point does not hold directly for deep learning methods, that will
+be discussed in later chapters. Indeed, the reconstruction methods that we use in
+these experiments are all based on an underlyingmodel, such as sparsity or low-rank.
+They arenot data-driven approaches to reconstruction.
+The question of what truly reflects the performance of a reconstruction method
+becomes even more complex in the case of deep learning-based reconstruction method,
+where the model is trained on a distribution of different sampling masks, making
+reconstruction and sampling even more intricate. We will come back to this question
+in Chapter 6.
+Remark. The results in the sequel are obtained with the SG-v1 algorithm, rather
+than SG-v2. Recall that SG-v1 already accelerated G-v1 by a factor60, and that we
+did not observe, in our experiments, a significant performance difference between
+SG-v1 and SG-v23.
+Cross-performances of performance measures.Up to here, we used PSNR as the
+performance measure, and we now compare it with the results of the greedy algorithm
+paired with SSIM, a metric that more closely reflects perceptual similarity (Wang et al.,
+2004). For brevity, we only consider ALOHA in this section. In the case where we
+optimized for SSIM, we noticed that unless a low-frequency initial mask is given, the
+reconstruction quality would mostly stagnate. This is why we chose to start the greedy
+algorithm with 4 low-frequency phase encodes at each frame in the SSIM case.
+The reconstructions for PSNR and SSIM are shown on Figure 5.8, where we see that the
+learning-based masks outperform the baselines across all sampling rates except at2.5%
+in the SSIM case. The quality of the results is very close for both masks, but each tends
+to perform slightly better with the performance metric for which it was trained. The
+fact that the ALOHA-SSIM result at2.5% has a very low SSIM is due to the fact that
+we impose 4 phase encodes across all frames, and the resulting sampling mask at2.5% is
+a low pass mask in this case.
+A visual reconstruction is provided in Figure 5.9, we see that there is almost no difference
+in reconstruction quality, and that the masks remain very similar. Overall, we observe in
+this case that the performance metric selection does not have a dramatic effect on the
+3The main reason of having these experiments on SG-v1 is that they were obtained from an earlier set
+of results. However, we believe that they remain insightful on the behavior of sLBCS, highlighting not
+only application on different settings, but we expect that such insights would also carry out to SG-v2.
+63

@@ -1,0 +1,54 @@
+Table 3: Comparison experiments results of different methods on ATLAS dataset. For each metric, we mark
+the best in bold.
+Method Dice Precision Recall PSNR SSIM
+SynNet 0.357 ± 0.072 0.459 ± 0.085 0.352 ± 0.068 - -
+LI-Net 0.312 ± 0.067 0.478 ± 0.095 0.278 ± 0.055 - -
+SERANet 0.213 ± 0.064 0.656 ± 0.179 0.149 ± 0.034 - -
+SegNetMRI 0.224 ± 0.067 0.618 ± 0.164 0.156 ± 0.034 28.22 ± 0.746 0.950 ± 0.006
+U-Net
+(full-sample) 0.512 ± 0.085 0.632 ± 0.102 0.511 ± 0.094 - -
+D5C5 - - - 28.78 ± 0.689 0.958 ± 0.0005
+ours 0.518 ± 0.064 0.688 ± 0.076 0.479 ± 0.020 28.87 ± 0.409 0.959 ± 0.00005
+ble 3 and Fig. 6 show the comparison of reconstruc￾tion and lesion segmentation performance on ATLAS
+dataset. We compared our method with existing seg￾mentation and reconstruction from under-sampled k￾space data approaches. We can see that our approach
+achieved better performance on lesion segmentation
+and promising performance on image reconstruction,
+with more that 0.15 gain on Dice score. It is worth
+noticing from Fig. 6 that our approach achieved
+smaller variety on Dice score, which indicates a better
+segmentation performance on small lesions. Segmen￾tation results are encouraging even compared with
+segmentation from fully-sampled data.
+To have a comprehensive comparison with existing
+segmentation from under-sampled data methods, we
+reported the box-plot on Dice score for different lesion
+sizes in Fig. 7. This figure shows that all of the meth￾ods perform well on median size lesions (lesion size 2
+and 3). However, our approach achieves encouraging
+results on small (lesion size 0 and 1) and huge (lesion
+size 5) lesions, while other methods perform worse.
+The promising segmentation result suggests the ef￾fectiveness and good generalization capability of the
+proposed method.
+The quantitative comparison of the reconstruction
+performance of different networks is shown in Table
+3. As we can see, our proposed method obtained
+promising quantitative metrics compared with other
+methods. Besides, we selected two slices to show
+the reconstruction performance of different networks,
+which are shown in Fig. 8. As we can see in Fig. 8,
+all the methods were able to generate high-quality
+images. The suppression of artifacts improved the
+visual quality of the reconstruction images greatly.
+Nevertheless, there were differences between the re￾construction results of different networks. Reference
+to the error maps and quantitative metrics, the recon￾struction ability of the proposed method was better
+than that of the other method.
+3.5 Evaluation and comparison on
+Simulated Brainweb Data
+To validate the effectiveness and robustness of the
+proposed method, we conduct experiments on simu￾lated Brainweb data, which is publicly available and
+offers digital brain phantoms with 12 tissue types.
+Three tissues were used to evaluate the segmenta￾tion performance because of their large size. Table
+4 and Fig. 9 shows the comparison of the image re￾construction and tissue segmentation results. We can
+see that our method achieved better performance on
+CSF segmentation and PSNR, with 0.04 and 1.2 dB
+improvement on CSF Dice score and PSNR, respec￾tively. Our method also achieved encouraging per￾formance on WM and GM segmentation and SSIM,
+with 0.9285, 0.9354 and 0.993, respectively.
+10

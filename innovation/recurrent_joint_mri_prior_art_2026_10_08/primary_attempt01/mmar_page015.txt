@@ -1,0 +1,48 @@
+assigning high attention weights to corrupted modalities. For each MMAR
+block level l, the auxiliary loss over the set of corrupted modalities K is:
+L
+(l)
+aux =
+1
+|K|
+X
+i∈K
+LCE(mean(F
+′′
+i
+), 0) (4)
+The total loss LMMAR for the network (with L = 6 encoder levels and
+α = 0.9) is defined as:
+Laux =
+1
+L
+X
+L
+l=1
+L
+(l)
+aux (5)
+LMMAR =
+N − M
+N
+· (αLseg + (1 − α)Laux). (6)
+The inclusion of this auxiliary loss relies on the assumption that none of
+the training scans are actually corrupted to begin with.
+Additionally, we observed that scaling the total loss by the fraction of
+available modalities per sample (e.g., scaling by 0.5 if only T1w and FLAIR
+were present) improves MMAR training stability on splits 2 and 3. We
+hypothesise that this reduces gradient interference between uni/few-modal
+samples caused by the high variance in feature distributions produced by the
+dynamic routing mechanism, when trained on our small dataset. This scaling
+negatively impacts the validation metrics for the multi-channel U-Net and
+U-HeMIS, so it was applied only to the MMAR.
+3.6. Evaluation
+3.6.1. Metric
+We evaluated segmentation performance using the Dice Similarity Coef￾ficient (DSC), defined as:
+DSC =
+2|Y ∩ Yˆ |
+|Y | + |Yˆ |
+(7)
+where Y and Yˆ represent the ground truth and predicted segmentation
+masks, respectively.
+15

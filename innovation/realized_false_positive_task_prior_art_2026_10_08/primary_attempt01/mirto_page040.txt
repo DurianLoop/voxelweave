@@ -1,0 +1,51 @@
+40 N. K. Hernashki and S. Chatterjee
+checkpoint used here, so it indicates the order of magnitude only. Evaluation itself needs no GPU: every MIRTO
+analysis runs on stored maps. One inference over 24 validation volumes (UCCD) drew 89.9W on average, against
+the 300W rating of the GPU.
+Table 55. Computational cost (Tesla V100-SXM2-32GB). Dinomaly2 times are approximate and were not taken from job
+accounting.
+Method Phase Wall clock GPU-hours s per volume
+REFLECT train (stage 1) 6d 17:25:53 484.29
+REFLECT train (stage 2) 4d 07:31:24 207.05
+REFLECT inference 03:07:18 3.12 32.5
+AnomalyDINO memory-native build 00:01:07 0.02
+AnomalyDINO inference 00:15:23 0.26 2.7
+IterMask3D train 09:15:03 18.50
+IterMask3D inference 02:43:04 2.72 28.3
+Dinomaly2 train (per configuration) 4h50m to 16h39m, scaling with training-set size, single V100 4.83 to 16.65
+Dinomaly2 calibration (per dataset) 00:15:00 0.25
+Dinomaly2 inference (per dataset) 00:15:00 0.25 2.6
+E Training data
+Table 56. Dice in the reference universe (20 cm3
+, validation threshold, subject mean) when all four methods share one training
+set, and the REFLECT − UCCD contrast. T2 and FLAIR do not depend on training data (0.085 and 0.324).
+Training set Sources REFLECT UCCD cDDPM AnomalyDINO REFLECT − UCCD
+IXI-HH IXI Hammersmith, T2 0.425 0.500 0.467 0.148
+IXI-Guys IXI Guy’s, T2 0.407 0.576 0.507 0.158
+IXI-HH+Guys IXI, both sites, T2 0.497 0.539 0.519 0.166 −0.042 [−0.060, −0.025]
+MOOD+IXI-HH MOOD, IXI Hammersmith, T1 + T2 0.521 0.496 0.417 0.152
+MOOD+IXI MOOD, all IXI, T1 + T2 0.552 0.452 0.216 0.161 +0.100 [0.079, 0.121]
+Table 56 summarises the comparison with a common training set. Within IXI-HH+Guys the methods kept their
+own training protocols: REFLECT trained on all 504 IXI T2 volumes of the pool (stage 1, 200 epochs; re-flow,
+50 epochs); UCCD on 324 training and 81 validation volumes (encoder and diffusion model taken at their best
+validation loss); cDDPM on 361 training and 92 validation volumes (best validation loss at epoch 1,426 of 1,600,
+2,854 optimisation steps); AnomalyDINO built its memory bank from 50 reference volumes with slice stride 2. The
+optimisation budget of a single method varies strongly between training sets (cDDPM: 2,854 steps on IXI-HH+Guys,
+79,040 on MOOD+IXI), so effects of the training set are effects of the training data together with the protocol that
+came with it. One model was trained per method and training set, so variance between training runs is not estimated;
+it is the most plausible competing explanation for the smaller differences between methods. The ranking-instability
+and evaluation-dominance hypotheses were supported with every common training set (ϕmax from 0.295 to 0.485).
+Further results on training data. Table 57 gives, for every comparison set, the share of defensible universes in which
+the four-method order differs from the order obtained with IXI-HH+Guys, by metric; REFLECT keeps the highest
+voxel AUROC in every set, but the order of the other three changes. With the training set as an eleventh axis
+(Table 58) the method × training-set interaction carries 0.115 of Dice variance and 0.142 of voxel AUPRC variance,
+against 0.028 and 0.056 for the main effect of the training set, so the training data mainly change which method
+benefits. Table 59 gives the contrasts with a common training set for all three metrics. Table 60 lists all twenty
+method–training-set combinations with the six selection criteria and the test regret of each; IXI-HH+Guys was the
+best training set on test for cDDPM and AnomalyDINO, and cost REFLECT 0.055 and UCCD 0.037 Dice. Table 61
+gives the stability of each selection rule. Selecting per method with the threshold refitted inside leave-one-subject-out
+folds of the validation set chooses REFLECT on MOOD+IXI, UCCD and cDDPM on IXI-Guys and AnomalyDINO
+on IXI-HH+Guys, and reproduces the test-selected order (UCCD 0.576 > REFLECT 0.552 > cDDPM 0.507 >
+AnomalyDINO 0.166); that joint choice, however, occurs in only 22.0% of validation resamples, and its four-method
+order differs from the IXI-HH+Guys order in 81.4% of defensible universes. Table 62 gives the verdicts of H1 to H9
+in every set of training data: only test-tuning optimism and conformal control change verdict between sets.

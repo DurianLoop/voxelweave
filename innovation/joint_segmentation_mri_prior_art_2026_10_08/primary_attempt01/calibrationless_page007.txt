@@ -1,0 +1,46 @@
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING 7 1
+(a) Ground Truth / 6x
+mask
+(b) K-UNET
+19.99
+(c) KDSLR
+21.12
+(d) KIKI-Net
+21.18
+(e) IDSLR
+22.01
+(f) Proposed
+22.79
+Fig. 4. Reconstruction results of 6x accelerated multi-channel brain data. SNR (dB) values are reported for the particular slice in each case. The
+data was undersampled using a Cartesian 2D non-uniform variable-density mask. The top row shows reconstructions (magnitude images), while
+the bottom row shows the corresponding error images. The proposed end-to-end calibrationless scheme, which combines the segmentation and
+reconstruction tasks (last column), is seen to offer improved reconstructions over networks with calibrationless reconstruction alone. The proposed
+IDSLR scheme without the segmentation module is also seen to offer improved performance compared to classical reconstruction algorithms.
+1
+(a) Ground Truth (b) IDSLR+SEG,
+CSF:0.70, GM:0.73,
+WM:0.78
+(c) Cascade,
+CSF: 0.76, GM: 0.78,
+WM: 0.89
+(d) Cascade (few shot),
+CSF:0.71, GM:0.74,
+WM:0.81
+(e) Proposed,
+CSF:0.77, GM:0.83,
+WM:0.89
+(f) Proposed (few shot),
+CSF:0.76, GM:0.81,
+WM:0.88
+(g) SEG,
+CSF:0.81, GM:0.86,
+WM:0.92
+Fig. 5. Comparison of segmentation performance on 8x accelerated multi-channel brain data. Dice coefficients are reported for the particular
+slice in each case. The segmentation algorithm pre-trained and tested on fully sampled data is denoted by SEG (last column). The second column
+denotes the IDSLR algorithm, cascaded with the pre-trained segmentation algorithm (SEG); the cascade is denoted as IDSLR+SEG. The remaining
+rows (c)-(f) denote end-to-end training strategies. (c) and (d) correspond to the cascaded architecture in Fig. 3, while (e) and (f) use the architecture
+in Fig. 2. (d) and (e) correspond to the cascade and proposed architectures trained in the few-shot mode.
+able to minimize alias artifacts while offering sharper edges.
+The images denoted by the proposed scheme are a combination
+of the proposed IDSLR approach with a segmentation network
+as shown in Fig. 2 and were jointly trained end-to-end. This

@@ -1,0 +1,41 @@
+Title Suppressed Due to Excessive Length 3
+in medical imaging [3,22], and efforts to minimize hallucinations from conditional
+generative models have been limited to handling OOD regions separately toin
+distribution (IND) regions [13]. However, we hypothesize that unconditional dif-
+fusion models for inverse problems (or score-matching networks) [6,7,19,26,33,5]
+offer a framework for hallucination reduction by combining rich domain-specific
+priors, learned from high-quality medical datasets without being conditioned on
+specific measurements with explicit data consistency optimization. The rationale
+behind this hypothesis is further detailed in Sec 2.2.
+One example, Diffusion Posterior Sampling (DPS) [6], adopts a Bayesian
+framework, using the score-matching network as strong domain prior and like-
+lihood estimation for data consistency in the reverse process to provide feasible
+solutions for given measurements. However, this approach typically requires a
+large number of sampling steps at inference time (e.g. T=1000). Similarly, Lin et
+al. [17] extended DPS to low-field MRI enhancement, but incorporated test-time
+model-parameter optimization, increasing inference cost.
+In this work, we proposeDynamicDPS, a novel framework for MRI recon-
+struction that extends DPS [6] to mitigate hallucinations produced by condi-
+tional models. DPS offers a principled framework for hallucination reduction,
+but its high inference cost and fixed step sizes limit practicality and can lead to
+sub-optimal convergence. Our approach addresses these by improving efficiency
+and robustness, enabling hallucination mitigation at lower computational cost.
+Figure 1 provides an overview of our method. A conditional model first gen-
+erates a high-field-like prediction as a prior. DCATS selects an optimal inter-
+mediate starting point to reduce diffusion steps, after which the prediction is
+refined via score-matching and data consistency optimization. We dynamically
+adjust the data-consistency step size to suppress hallucinations and accelerate
+sampling by skipping unnecessary steps. Our model-agnostic approach integrates
+seamlessly with existing conditional models. Applied to low-field MRI enhance-
+ment via IQT, DynamicDPS reduces hallucinations and achieves over 80% faster
+inference than prior diffusion-based methods. To the best of our knowledge, this
+is the first work to explicitly address hallucinations in MRI reconstruction.
+2 Method
+We propose DynamicDPS, a novel framework to mitigate hallucinations. This
+section provides a detailed overview of our approach and how it addresses the
+limitations. We first formulate the problem of IQT and hallucinations, followed
+by our hypothesis and theoretical justification for tackling these challenges. Fi-
+nally, we present a detailed breakdown of each component within our framework.
+2.1 Problem Formulation
+Image Quality Transfer (IQT) [2] aims to learn a mapping function between
+low-field (LF) images y∈ RM and their high-field (HF) counterpartsx∈ RN.

@@ -1,0 +1,57 @@
+{
+  "status": "design_prepared_not_executed_not_frozen",
+  "purpose": "Distinguish reconstruction changes from task-input statistics and training exposure under a fixed observation contract",
+  "gpu_jobs_started": 0,
+  "scientific_confirmation_patients": 0,
+  "publication_claim_confirmed": false,
+  "data_roles": {
+    "current_45_ciss": "already_seen_development_only",
+    "current_mc_rc_8_patients": "already_seen_development_only_and_current_task_checkpoint_failed_native_competence",
+    "training_roster": "pending_source_and_identity_qualification",
+    "validation_roster": "pending_patient_group_split_before_training",
+    "confirmation_roster": "pending_genuinely_unseen_source_qualification",
+    "locked_ixi_test": "excluded_do_not_read"
+  },
+  "task_architecture": "same_capacity_UNet2d5_spvPA_or_predeclared_independent_second_architecture",
+  "train_exposure": ["native_reference_control", "raw_pchip_only", "uniform_raw_pipeline_post_hat"],
+  "normalization": [
+    {
+      "name": "full_volume_own_stats",
+      "definition": "Mean and population standard deviation of all reconstructed image pixels before padding, same original task convention"
+    },
+    {
+      "name": "observed_anchor_stats_shared",
+      "definition": "Mean and population standard deviation of all acquired anchor-plane pixels in the same field of view before reconstruction; one pair of statistics shared by every candidate for a patient; zero sigma maps to one; no labels or hidden reference pixels"
+    }
+  ],
+  "evaluation_inputs": ["native", "raw_pchip", "pipeline_pchip", "post_resize_pchip", "hat"],
+  "first_matrix_models": 6,
+  "evaluation_cells_per_qualified_cohort": 30,
+  "native_input_role": "full_reference_external_control_only_not_deployable_sparse_input",
+  "budget_design": {
+    "updates_per_model": 20000,
+    "status": "proposed_before_source_roster_and_runtime_freeze",
+    "patient_weighting": "equal_per_patient",
+    "mixed_exposure": "equal_probability_four_sparse_conditions_at_fixed_total_updates",
+    "optimizer_augmentation_threshold": "must_be_identical_and_frozen_before_any_scored_run",
+    "checkpoint_selection": "one_validation_rule_per_model_before_confirmation_no_per_eval_input_selection"
+  },
+  "required_prelaunch_gates": [
+    "actual_acquisition_header_step_thickness_and_processing_chain",
+    "patient_identity_crosswalk_including_all_vs_seg_mc_rc_overlap",
+    "reference_semantics_and_grid_qualification",
+    "task_native_competence_on_separate_development_source",
+    "complete_patient_group_split_and_source_manifest_hashes",
+    "same_observation_indices_and_preserved_anchors_tail_for_sparse_conditions",
+    "actual_network_input_statistic_identity_audit",
+    "user_gpu_availability_and_no_interference_with_existing_training",
+    "frozen_code_checkpoint_augmentation_budget_and_metrics_contract"
+  ],
+  "metrics": ["full_dice_both_labels", "supported_missing_dice", "physical_boundary_assd_hd95", "lesion_misses", "signed_absolute_volume_error", "all1mm_band_sensitivity_and_undefined_cases"],
+  "interpretation": [
+    "Improvement after task adaptation supports exposure sensitivity, not proof of lossless anatomy",
+    "Anchor-only normalization is an existing-method control and a candidate specific contract, not established novelty",
+    "Do not tune or enlarge failed anchors blur pilot or order_rms policy",
+    "No publication claim without genuinely unseen qualified patients and adequate prior-art comparison"
+  ]
+}

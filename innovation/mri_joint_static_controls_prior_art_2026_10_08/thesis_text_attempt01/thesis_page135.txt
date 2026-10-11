@@ -1,0 +1,26 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+Figure 7.5: Image domain illustration of the WGAN cResNet sampling using three different
+methods. The columns contain respectively: the ground truth image, the mask (with brighter color
+meaning that the location has been selected recently), the observation, several samples and the
+empirical posterior mean and variances. The first row shows the result obtained with0.5% and
+2.5% sampling respectively. Here, VDS is our random policy, LBC is LBCS and GAS stands for
+Generative Adaptive Sampling and is our GAN-based policy.
+autoregressive models and score-based distribution suffer from slow inference times,
+limiting their potential use in a setting of adaptive acquisition in MRI, where the
+inference should take at most the same time as a readout. This can in principle be
+achieved by our model, which has an inference time in the order of milliseconds.
+In the vein of the Neural Conditioner (NC) (Belghazi et al., 2019), we mention the
+works of Douglas et al. (2017); Gautam et al. (2020) and a very recent energy based
+approach (Strauss and Oliva, 2021). However, these approaches focus on missing data
+imputation or inpainting, and are not designed for settings where the acquisition does
+not happen in image domain. Other approaches train a conditional embedder produce a
+noise distribution which will subsequently enable conditional sampling (Whang et al.,
+2020), or motivate a conditional generator based on approximately triangular transport
+maps (Kovachki et al., 2020).
+Generative adversarial networks have also been used in the context of inverse problems,
+and several works used unconditional GANs as priors (Bora et al., 2017; Anirudh et al.,
+2018; Latorre et al., 2019; Narnhofer et al., 2019; Jalali and Yuan, 2019; Hussein et al.,
+2020) and subsequently performed optimization in the latent space. Another approach
+has been to directly train GANs for reconstruction along additional losses in order to
+122

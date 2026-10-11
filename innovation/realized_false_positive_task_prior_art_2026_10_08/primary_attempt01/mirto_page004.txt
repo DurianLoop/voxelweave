@@ -1,0 +1,153 @@
+4 N. K. Hernashki and S. Chatterjee
+2 Method
+2.1 Setting and notation
+Let Ω ⊂ Z
+3 be the canonical voxel grid of a subject, with
+physical voxel volume v (here v = 1 mm3
+). For subject i
+we observe a brain mask Bi ⊆ Ω and a binary reference
+Ci ⊆ Bi (whole tumour). A UAD method m is trained on
+healthy scans only and, at inference, returns an anomaly
+map Am,i : Ωm → R on its own native grid Ωm. The test
+cohort T has n = |T | = 312 subjects and the validation
+set V has |V| = 24; the two are disjoint. MIRTO operates
+on stored anomaly maps: no model is retrained, fine-tuned
+or re-run during evaluation.
+After mapping to Ω (Section 2.3) we normalise each
+map inside its evaluation support Si ⊆ Bi (the brain, or
+the method’s field of view intersected with the brain),
+si(x) = A˜m,i(x) − minSi A˜m,i
+maxSi A˜m,i − minSi A˜m,i + ϵ
+, ϵ = 10−8
+,
+(1)
+and threshold it on a grid G = {0, 0.005, . . . , 1}:
+Pi(τ ) = Π
+
+{x ∈ Si
+: si(x) ≥ τ}
+
+, (2)
+where Π is a post-processing operator (the identity for
+plain thresholding). With plain thresholding Pi(τ ) is
+nested, τ < τ ′ ⇒ Pi(τ
+′
+) ⊆ Pi(τ ). With TPi = |Pi ∩ Ci
+|,
+pi = |Pi
+| and Gi = |Ci
+|, the false-positive burden and the
+Dice coefficient are
+FPi(τ ) = v
+
+Pi(τ ) \ Ci
+
+
+, Di(τ ) = 2 TPi(τ )
+pi(τ ) + Gi
+. (3)
+Nestedness makes FPi(τ ) non-increasing in τ , a property
+used repeatedly below and checked on every curve.
+2.2 Methods under evaluation
+All four models were trained with the authors’ public im￾plementations, adapted only to read our data; architec￾tures and losses were left unchanged. We summarise each
+briefly to fix the notation of its anomaly map.
+REFLECT [12]. A KL-regularised autoencoder [57] with
+8× spatial down-sampling and four latent channels maps
+a slice x to z0 = E(x). A velocity field vθ is trained by rec￾tified flow [44] on pairs (z
+a
+, zh
+) of synthetically corrupted
+and healthy latents, minimising
+LRF(θ) = Et∼U[0,1]
+
+ (z
+h − z
+a
+) − vθ
+
+tzh + (1 − t)z
+a
+, t
+
+2
+2
+,
+(4)
+followed by a re-flow stage that straightens the trajec￾tories. At inference a single Euler step gives the cor￾rected latent z1 = z0 + vθ(z0, 0) and the corrected image
+xˆ = D(z1). The published map fuses an image residual
+|x − xˆ| and a latent residual |z1 − z0| (Section 2.9).
+cDDPM [11]. A denoising diffusion model [33] with for￾ward process q(xt | x0) = N
+√
+α¯t x0,(1 − α¯t)I
+
+whose
+denoiser is conditioned on an encoding c = Eϕ(x) of
+the input through feature-wise affine modulation [55],
+h 7→ γ(c) ⊙ h + β(c). Training minimises
+LDM = Ex0,t,ε
+
+ε − εθ
+√
+α¯tx0 +
+√
+1 − α¯t ε, t, c
+
+2
+2
+. (5)
+The input is partially noised and denoised; the map is
+the residual |x−xˆ0|. Conditioning lets the reconstruction
+keep the subject’s intensity profile without copying the
+anomaly.
+UCCD (UCAD-CDM) [54]. The same residual principle,
+but the condition comes from a self-supervised contrastive
+encoder trained on healthy slices to be invariant to the
+factor that distinguishes a target from its background;
+the diffusion model is trained with (5).
+AnomalyDINO [24]. Frozen DINOv2 ViT-S/14 patch fea￾tures f(·) [53] of healthy reference slices form a memory
+bank M. A test patch u scores
+a(u) = min
+g∈M 
+1 −
+⟨f(u), g⟩
+∥f(u)∥ ∥g∥
+
+, (6)
+the cosine distance to its nearest healthy neighbour. The
+method is training-free.
+Model-free baselines. The z-scored intensity s(x) =
+(I(x) − µB)/σB of T2 or FLAIR inside the brain mask,
+scored through the same evaluator. The models see T2
+only, so FLAIR is a cross-contrast reference for what one
+intensity channel carries, not a fair competitor.
+2.3 Registration gating
+Canonical reference and physical units. Each subject
+has exactly one reference Ci
+, the original whole-tumour
+mask on the canonical grid, never resampled, cropped or
+masked per method, and identical for every method. The
+voxel volume is fixed from the dataset specification and
+the array shape, not from file headers, which had been
+altered in our copies of the data (Appendix B). Every
+burden in this paper is therefore on the canonical grid.
+Mapping. For method m a transform Tm lists, for each
+canonical axis j, the source axis, a start aj , an extent Lj ,
+a source size Sj and a reversal flag. A canonical coordinate
+xj maps to the source coordinate
+cj =
+
+xj − aj +
+1
+2
+ Sj
+Lj
+−
+1
+2
+, (7)
+reflected if flagged and clipped to the source; maps are
+interpolated linearly, references and the field of view F
+by nearest neighbour, and A˜m,i = (Am,i ◦ Tm) 1F . Voxels
+outside F score zero and are counted as negatives. Tm was
+set once per method from ten subjects, without reference
+to any score (Fig. 2a).

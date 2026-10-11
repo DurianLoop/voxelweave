@@ -1,0 +1,5 @@
+# 上批实际归档已完成
+
+原archive session69072，真正b82e52 exit0：6060旧hash全部核验不变，新51→6111；index SHA230ebb8b8a88044b5274151e5cb46660f6611f6851400d88739a2e27a13a9db2。不要重跑该归档，不修改已冻结来源。
+
+原session29823首intensity已实际2992，第二spatial运行。之后新的两篇原文/真实支持探索位于resolution_and_lesion_followup_2026_10_08，该批以最后POST/handoff记录为准。此文件与POST工具是上批index后附，下一delta纳入。

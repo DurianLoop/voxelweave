@@ -1,0 +1,36 @@
+Segmentation-Aware MRI Reconstruction 59
+network performance at ×4 acceleration task in MSE and SSIM measures around
+the regions of interest. However, when tasked with harsher undersampling rates,
+Table 1 highlights the effect of an end-to-end architecture as it yields better
+quality reconstructions in terms of PSNR and MSE metrics around the heart.
+Table 2 shows, while Cascade Network performs better at solo reconstruction
+task in terms of global performance metrics, segmentation-aware reconstruction
+with stabilization outperforms competing methods in terms of localized metrics.
+Note that the jointly trained compound model for segmentation-aware recon￾struction greatly suffer in the absence of stabilization. When supplied with high
+quality reconstructions, segmentation network is able learn the mapping to cre￾ate accurate segmentation maps. However, in the case of an insufficiently trained
+reconstruction network in the model, the segmentation network is exposed to
+heavy undersampling artifacts which in turn misguide the resulting segmenta￾tion output. Therefore, inaccurate segmentation information propagating into
+the reconstruction network damages overall quality of the reconstructions, lead￾ing to poor performance on both networks. As loss functions typically utilized
+for reconstruction is expressed over the entire image the learning signal com￾ing directly from the reconstruction output largely governs the performance for
+the overall image in the global setting. However, such loss functions are mainly
+dominated by bright bone structures, diagnostically irrelevant body parts and
+overall low-frequency information. Back-propagating the errors from the seg￾mentation network into the reconstruction network, indirectly emphasizes the
+areas of interest during training since the segmentation loss is concentrated
+around such diagnostically-relevant areas. Therefore, end-to-end training of a
+reconstruction-segmentation network creates a pseudo-attention effect to focus
+the efforts of the reconstruction network which in turn improves the localized
+performance around regions of interest.
+Table 2. Performance comparisons (MSE, PSNR and SSIM) on cardiac MRI data with
+×4 and ×8 acceleration rates across experiment setups. MSE is scaled with 103. (S)
+suffix indicates the stabilization technique. “F” stands for focused measurements that
+are taken over the area of diagnostic interest. Stabilized training improves the focused
+metrics indicating improved reconstruction quality for cardiac cavity.
+Method MSE PSNR SSIM F-MSE F-PSNR F-SSIM
+×4 acceleration
+CascadeNet 0.6698 32.1988 0.9113 1.0342 29.1253 0.8331
+CascadeNet → MANet 0.7640 31.5884 0.8563 1.1980 28.3712 0.8131
+CascadeNet → MANet (S) 0.7114 31.4328 0.8991 0.9731 30.0000 0.8828
+×8 acceleration
+CascadeNet 1.2825 28.4301 0.8259 1.7826 25.5156 0.7728
+CascadeNet → MANet 1.7603 25.2837 0.7265 2.4456 23.3219 0.6673
+CascadeNet → MANet (S) 1.3226 27.4895 0.8217 1.5453 26.3421 0.7931

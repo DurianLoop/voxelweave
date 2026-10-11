@@ -1,0 +1,5 @@
+# 独立入口导入路径修复
+
+V2的实际readiness-only命令1a864d exit1：移到新目录后，Python找不到experiments中的mc_rc_3d_baseline_v2_2026_10_07。这是本助手漏配模块搜索路径，不是训练/数值/医学能力失败；无MRI/GT数组或CUDA读取，没有医学输出。V2及BUILD_RECEIPT保持原样。
+
+V3在base入口读取既有模块前显式加入innovation/experiments路径；三个生产版本另存_v3，压缩资格、医学输出和evaluation实际退出receipt均指向新版本。算法只改变无损序列化；V3绑定本修复文件和既有原始来源。资格实际用CPU1/仅合成数组，不再复做网络/FOV/gates合成资格。新readiness-only必须在真实单独子进程可运行并返回延期3，而不是仅在资格进程注入sys.path后看似通过。

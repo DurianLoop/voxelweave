@@ -1,0 +1,208 @@
+{
+  "complete": true,
+  "errors": [],
+  "source": {
+    "path": "adaptive_acquisition_primary_followup_2026_10_09/primary_html_attempt01/greedy/primary.html.gz",
+    "bytes": 62643,
+    "sha256": "82b40da7939dea625e013f7f2ce38b56d781093d062feb8aa9ba5e88593ad097"
+  },
+  "lines": [
+    {
+      "id": "algorithm1.3.1",
+      "text": "Algorithm parameters: number of trajectories qq, discount factor γ\\gamma, IsGreedy True/False, number of acquisition steps TT"
+    },
+    {
+      "id": "algorithm1.3.2",
+      "text": "Initialise reconstruction model GG, initial mask U0U_{0}, train dataset 𝒟\\mathcal{D} containing batches of ground truth MR images 𝒙\\bm{x}, metric η\\eta (e.g. SSIM)"
+    },
+    {
+      "id": "algorithm1.3.3",
+      "text": "foreach batch in 𝒟\\mathcal{D} do"
+    },
+    {
+      "id": "algorithm1.3.4",
+      "text": "Compute initial reconstructions g0←G⁡(U0​F​𝒙)g_{0}\\leftarrow G(U_{0}F\\bm{x})"
+    },
+    {
+      "id": "algorithm1.3.5",
+      "text": "Compute initial metric v0←η⁡(g0,𝒙)v_{0}\\leftarrow\\eta(g_{0},\\bm{x})"
+    },
+    {
+      "id": "algorithm1.3.6",
+      "text": "for t∈{1,…,T}t\\in\\{1,...,T\\} do"
+    },
+    {
+      "id": "algorithm1.3.7",
+      "text": "Compute policy π(⋅|gt−1)\\pi(\\cdot|g_{t-1}) given the current reconstruction"
+    },
+    {
+      "id": "algorithm1.3.8",
+      "text": "Sample qq actions ata_{t} from π(⋅|gt−1)\\pi(\\cdot|g_{t-1})"
+    },
+    {
+      "id": "algorithm1.3.9",
+      "text": "Obtain probabilities pt←π⁡(at|gt−1)p_{t}\\leftarrow\\pi(a_{t}|g_{t-1})"
+    },
+    {
+      "id": "algorithm1.3.10",
+      "text": "if IsGreedy then"
+    },
+    {
+      "id": "algorithm1.3.11",
+      "text": "Append these actions to qq copies of Ut−1U_{t-1} to form UtU_{t}"
+    },
+    {
+      "id": "algorithm1.3.12",
+      "text": "else"
+    },
+    {
+      "id": "algorithm1.3.13",
+      "text": "if t=1t=1 then"
+    },
+    {
+      "id": "algorithm1.3.14",
+      "text": "Append these actions to qq copies of Ut−1U_{t-1} to form UtU_{t}"
+    },
+    {
+      "id": "algorithm1.3.15",
+      "text": "else"
+    },
+    {
+      "id": "algorithm1.3.16",
+      "text": "Append these qq actions to the qq instances of Ut−1U_{t-1} in memory to form UtU_{t}"
+    },
+    {
+      "id": "algorithm1.3.17",
+      "text": "end if"
+    },
+    {
+      "id": "algorithm1.3.18",
+      "text": "end if"
+    },
+    {
+      "id": "algorithm1.3.19",
+      "text": "Compute next-step reconstructions gt←G⁡(Ut​F​𝒙)g_{t}\\leftarrow G(U_{t}F\\bm{x})"
+    },
+    {
+      "id": "algorithm1.3.20",
+      "text": "Compute metrics vt←η⁡(gt,𝒙)v_{t}\\leftarrow\\eta(g_{t},\\bm{x})"
+    },
+    {
+      "id": "algorithm1.3.21",
+      "text": "Compute rewards rt←vt−vt−1r_{t}\\leftarrow v_{t}-v_{t-1}"
+    },
+    {
+      "id": "algorithm1.3.22",
+      "text": "Store log probabilities log⁡(pt)\\log(p_{t}) of actions, and rewards rtr_{t}"
+    },
+    {
+      "id": "algorithm1.3.23",
+      "text": "if IsGreedy then"
+    },
+    {
+      "id": "algorithm1.3.24",
+      "text": "Compute loss according to Equation (5)"
+    },
+    {
+      "id": "algorithm1.3.25",
+      "text": "Store gradient updates (e.g. loss.backward() in PyTorch)"
+    },
+    {
+      "id": "algorithm1.3.26",
+      "text": "Randomly select one of the qq copies of UtU_{t} to continue with"
+    },
+    {
+      "id": "algorithm1.3.27",
+      "text": "else"
+    },
+    {
+      "id": "algorithm1.3.28",
+      "text": "if t=Tt=T then"
+    },
+    {
+      "id": "algorithm1.3.29",
+      "text": "Compute loss according to Equation (4)"
+    },
+    {
+      "id": "algorithm1.3.30",
+      "text": "Store gradient updates"
+    },
+    {
+      "id": "algorithm1.3.31",
+      "text": "end if"
+    },
+    {
+      "id": "algorithm1.3.32",
+      "text": "Continue with all qq instances of UtU_{t}"
+    },
+    {
+      "id": "algorithm1.3.33",
+      "text": "end if"
+    },
+    {
+      "id": "algorithm1.3.34",
+      "text": "Update policy model weights using stored gradient updates (e.g. optimizer.step() in PyTorch)"
+    },
+    {
+      "id": "algorithm1.3.35",
+      "text": "end for"
+    },
+    {
+      "id": "algorithm1.3.36",
+      "text": "end foreach"
+    },
+    {
+      "id": "algorithm1.3.37",
+      "text": ""
+    }
+  ],
+  "actual_reading_completed": false,
+  "source_bindings": [
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/read_greedy_algorithm_v1.py",
+      "bytes": 1563,
+      "sha256": "2a0b6d4f41f610ed9ecdefb135dc78fcfe2cf89ffb5459b1a61240b3ff2b49e1"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/CPU_EXPLORATION_PROTOCOL.md",
+      "bytes": 1632,
+      "sha256": "bf7b06fa64b351946cfffeb108fdb6d66012db4a47b8a98a00617c53327e80de"
+    }
+  ],
+  "resources_before": {
+    "workspace_free_bytes": 8040083456,
+    "available_ram_bytes": 107404623872,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 38426256,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6130638,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 280123
+    },
+    "guarded_workspace_free_bytes": 8001657200
+  },
+  "resources_after": {
+    "workspace_free_bytes": 8040083456,
+    "available_ram_bytes": 107380613120,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 38426256,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6130638,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 280123
+    },
+    "guarded_workspace_free_bytes": 8001657200
+  }
+}

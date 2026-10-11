@@ -1,0 +1,98 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 11
+TABLE V
+ABLATION STUDIES ON TWO ASPECTS OF CO -DESIGN FOR ALL THE CONSIDERED TASKS UNDER 16× ACCELERATION
+Method Ablated component ROI-oriented reconstruction Tissue segmentation Pathology classification
+(Local PSNR in dB) (Dice score) (Cls. acc.) ( F1 score)
+Learned subsampling Task-specific training Single-coil Multi-coil Brain ¶ Knee Gliomas tumor
+PD+VN♭ ✗ (Poisson-disc) ✗ 29.91 36.48 0.9257 0.8018 0.9024 0.8871
+PD+VN♯ ✗ (Poisson-disc) ✓ 30.15 36.51 0.9256 0.8474 0.9072 0.8966
+TACKLE♭ ✓ ✗ 30.14 37.53 0.9350 0.8232 0.9062 0.8929
+TACKLE♯ ✓ ✓ 31.54 37.89 0.9395 0.8532 0.9159 0.9039
+♭ indicates full-FOV reconstruction oriented versions of PD+VN and T ACKLE ¶ see Supplement I
+♯ indicates task-specific versions of PD+VN and T ACKLE
+TackleROI (retrospective)
+ TackleROI (prospective)
+ Fully sampled
+Scan time: 335 secondsScan time: 84 secondsScan time: 84 seconds
+Fig. 10. Reconstruction comparison between the implemented prospective
+subsampling sequence and the retrospective subsampling sequence. Our learned
+sequence can be implemented on an MRI scanner and generates images of
+quality indistinguishable from those recovered from retrospectively sampled
+data. Compared to the ground truth image, our prospectively subsampled
+reconstruction recovers important features around the meniscus region, which
+is the ROI it was trained to enhance.
+visual difference, indicating that the improvement we show on
+retrospective simulations translates into actual improvement in
+practice. The prospective reconstruction successfully recovers
+important anatomical features around the meniscus region while
+only takes a quarter of the scan time compared to the full-
+sampled image.
+VI. A BLATION STUDIES
+A. Effectiveness of co-design
+We evaluate the effectiveness of two aspects of co-design
+used in the proposed framework: learnable subsampling and
+task-specific training. In Table V, we compare four variants of
+the proposed method that have neither, one, or both aspects of
+co-design. The meanings of having or not having each aspect
+are summarized as follows:
+• Learnable subsampling (column 2)
+✗ (Poisson-disc): use a Poisson-disc subsampling pattern
+that is randomly generated and then fixed
+✓: learn the subsampling pattern from data
+• Task-specific training (column 3)
+✗: separately optimize retriever and predictor
+✓: jointly optimize retriever and predictor
+To eliminate the effect of different network architectures, all
+four variants have exactly the same architectures. Overall,
+we find both aspects of co-design beneficial. For the task of
+reconstructing meniscus tear ROIs, learning the subsampling
+pattern is particularly helpful. Task-specific training, on the
+other hand, is more important for the knee segmentation task.
+Highlighted in cyan, the last row is the full-fledged version
+of TACKLE , which achieves the best performance for all
+considered scenarios with both aspects of co-design.
+TABLE VI
+ABLATION STUDIES ON MODEL ARCHITECTURE AND PRE -TRAINING FOR
+NON -RECONSTRUCTION TASKS UNDER 16× ACCELERATION
+Ablated component Tissue segmentation Pathology classification
+(Dice score) ( F1 score) (Cls. acc.)
+Arch. ofTθ Pre-train Brain ¶ Knee Gliomas tumor
+Predictor only ‡ ✗ 0.9005 0.7539 0.8966 0.8788
+VN+predictor‡ ✗ 0.9371 0.8163 0.9102 0.8969
+VN+predictor§ ✓ 0.9395 0.8532 0.9159 0.9039
+‡ U-Net(128) / ResNet(101) for tissue seg. / patho. class. ¶ see Supplement I
+§ E2E-VarNet + U-Net(64) / ResNet(18) for tissue seg. / patho. class.
+B. Effectiveness of the proposed architecture and training
+procedure
+The proposed architecture of Tθ from measurements y to
+prediction bz consists of an E2E-VarNet retriever and a U-Net
+predictor. A natural question is how this architecture compares
+with a single model-free neural network with a comparable
+number of parameters that directly maps subsampled mea-
+surements to the final prediction. We consider the following
+comparisons in Table VI:
+• Single larger predictor (row 1)
+– Tissue seg.: U-Net with 128 channels after the first
+convolution layer and the same number of pooling
+layers (42.2M parameters)
+– Patho. class.: ResNet101 (42.5M parameters)
+• VN+predictor (rows 2&3)
+– Tissue seg.: E2E-VarNet + standard U-Net (29.9M +
+10.6M = 40.5M parameters)
+– Patho. class.: E2E-VarNet + ResNet18 (29.9M + 11.2M
+= 41.1M parameters)
+Comparing the first two rows, we find that the proposed
+“VN+predictor” architecture significantly outperforms the “sin-
+gle larger predictor” baseline on all settings. This is likely
+due to the model-based nature of the “VN+predictor” archi-
+tecture, which more effectively extracts useful information
+from subsampled measurements for downstream tasks. Finally,
+we include the pre-training step discussed in Section III-D.
+Highlighted in cyan, the full-fledged version of TACKLE in the
+last row significantly outperforms the ablated baselines on both
+non-reconstruction tasks, indicating the importance of both the
+proposed architecture and training procedure.
+C. Using task-specific sequences for reconstruction
+Our optimized task-specific pipeline learns to adjust the
+image representation from a conventional form to one that
+is more readily interpretable by the predictor network. This

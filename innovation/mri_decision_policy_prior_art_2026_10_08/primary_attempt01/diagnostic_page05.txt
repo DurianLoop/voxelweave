@@ -1,0 +1,48 @@
+The MRI Scanner as a Diagnostic: Image-less Active Sampling 5
+T able 1. Diagnosis Support and Data Access of Implemented Methods.
+Diagnostic Support Data Used by the Model
+Method Sampling
+Optimization
+Patient-level
+Strategy Full k-space Diagnostic Label Undersampled k-space
+Oracle ✓ ✓
+Undersampled ✓ ✓
+Policy Reconstruction [2] ✓ ✓ ✓ ✓ ✓
+Policy Classifier (Ours) ✓ ✓ ✓ ✓
+4.2 Implementation Details
+We devise inference benchmarks to allow us to evaluate our approach in a fair
+fashion. Two benchmarks have the access to fully sampled k-space(high-fidelity
+images), and two do not optimise at the patient level the sampling strategy. The
+diagnosis support and data access are shown in Table 1.
+Fully Sampled (Oracle): This serves as an benchmark estimator of classifier
+performance on image input obtained by fully sampled k-space data, and hence
+no sampling optimisation occurs. We trained the classifier with the ground truth
+image as input which is transformed from fully sampled k-space data and super-
+vised by the diagnostic label using cross-entropy loss. We use as classification
+backbone a ResNet-50 [5] and to address the class imbalance in the training set,
+we add extra dropout layers overfitting, resulting in a total of 25.6M parameters.
+Undersampled: This classifier serves as a baseline of performance when simple
+inverse Fourier is used to transform the under-sampledk-space data, without any
+sampling optimisation. It has the same backbone as the Oracle, and is trained
+with undersampled images with various sample rates (4 to 20) and center fraction
+(0 to 0.10), supervised as before.
+Policy (via) Reconstruction [2]: We compare with a model that optimises
+patient-level sampling strategy with image reconstruction error as rewards. No-
+tably this method has access to fully sampled k-space, and hence has access to
+more information during training. We pre-trained a reconstruction network us-
+ing a U-Net [13] as the backbone with a first feature map size of 16 and 4 pooling
+cascades, resulting in a total of 837K parameters. The reconstruction network
+is trained with various sample rates (4 to 20) and center fraction (0 to 0 .10)
+supervised using the ℓ1 loss. We train the active sampler for reconstruction with
+reconstructed images from pre-trained model as inputs, and Structural Similar-
+ity Index Measure as the criterion to provide rewards, resulting in a total of
+26.7M parameters. The reconstructed images obtained with the policy network
+and pre-trained reconstruction model are evaluated with the Oracle, referred to
+as the Policy-based Reconstruction Network ( Policy Reconstruction).
+Proposed Policy Classifier : For our method, a backbone similar to the Un-
+dersampled is used as pre-trained classification network. The reward is driven
+by the predictions of the network and its feature maps are used to train the
+policy. The Feature Operator uses the last 2 layers’ feature maps as input and
+the global average pooling function to achieve a (80 , 512) output to feed in the
+policy network. The policy network (11M parameters) uses the cross entropy
+from classification network to provide rewards. It is trained with an initial sam-

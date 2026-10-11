@@ -1,0 +1,114 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 9
+LOUPErecon. T ackleclass.
+HealthyUnhealthy
+HealthyUnhealthy
+Healthy UnhealthyHealthy Unhealthy
+Ours 
+Precision: 0.9453 
+Recall: 0.8660 
+F1-score: 0.9039 
+Accuracy: 0.9159
+LOUPE 
+Precision: 0.9629 
+Recall: 0.8180 
+F1-score: 0.8846 
+Accuracy: 0.9024
+F1 score: 0.8846, Accuracy: 90.24% F1 score: 0.9039, Accuracy: 91.59%
+True label
+Predicted label Predicted label
+Fig. 7. Confusion matrices of the classification results by LOUPE recon. and
+TACKLE class.. Overall, TACKLE class. achieves higher accuracy in terms of both
+classification accuracy and F1 score than LOUPE recon.. TACKLE class. also has
+a significantly lower number of false negatives (bottom left) compared to
+LOUPErecon., which could lead to more patients receiving early treatment.
+classification performance of TACKLE class. and LOUPErecon. un-
+der 16× acceleration in Figure 7, using confusion matrices.
+The results show that TACKLE class. has substantially fewer false
+negatives (bottom left) and a higher overall accuracy compared
+to LOUPE recon..
+V. V ALIDATION ON AN EXPERIMENTALLY COLLECTED
+OUT-OF-D ISTRIBUTION DATASET
+In practice, creating a large well-annotated training set for a
+specific task can be very time-consuming or even infeasible.
+To demonstrate the immediate benefit of our method in a real-
+world setting, we conduct a validation of TACKLE on the ROI-
+oriented reconstruction task using experimentally collected data
+that is out of the distribution of the training data. Specifically,
+we train a TACKLE model on a large-scale dataset (fastMRI
+in this case) and directly test it on raw k-space data collected
+by different hardware using a different type of sequence from
+that of the training. Even without extra fine-tuning or test-
+time optimization, the learned ROI-specific model provides
+improved reconstructions on meniscus ROIs. In the following
+subsections, we present the details of this experiment.
+Data acquisition and processing Two subjects were scanned
+at the Massachusetts General Hospital in accordance with
+institutional review board guidelines. Their right knees were
+scanned by a 3D-encoded Cartesian gradient-echo sequence
+with a 3 Tesla MRI scanner (Model: Skyra; Siemens Healthcare,
+Erlangen, Germany) and a single-channel extremity coil. To
+implement the 2D subsampling pattern in the coronal plane,
+we used a transversal orientation with the frequency encoding
+direction (kx) pointing into the knee cap (anterior-posterior), so
+that the two phase encoding directions were left-right ( ky) and
+superior-inferior (kz), respectively. The acquisition parameters
+were as follows: TE/TR=4.8/9.1ms, FOV=192×192×192mm3,
+resolution=1×1×1mm3, flip angle=10◦. The total acquisition
+time of obtaining the fully sampled data for each subject was
+5 minutes and 35 seconds. The raw k-space data had the
+shape of 192×192×192 (kx×ky×kz). We applied the 1D
+inverse Fourier transform along kx for downstream processing.
+Specifically, we took the middle 40 slices of each volume and
+annotated bounding boxes around the meniscus region using an
+Count
+Per-slice Local PSNR improvement (dB)
+72.5% slices improved 
+-value: 5.12e-8p
+TackleROI over TackleFOV (ROI-oriented recon.)
+Count
+100% slices improved 
+-value: 3.10e-57p
+Per-slice PSNR improvement (dB)
+TackleFOV over LOUPEFOV (full-FOV recon.)
+Subject 1
+Subject 2
+(a)
+(b)
+TackleFOV: 28.70±0.14
+LOUPEFOV: 28.00±0.15
+95% CI
+TackleROI: 25.72±0.35
+TackleFOV: 25.16±0.29
+95% CI
+Fig. 8. Slice-wise difference histograms. (a): TACKLE FOV over LOUPEFOVon
+the full-FOV reconstruction task and (b): TACKLE ROI over LOUPE FOV on
+the ROI-oriented reconstruction task. The 95% confidence intervals are given
+in the top left corner of each plot. In both cases, the vast majority of slices
+are improved and the p-values given by the paired samples t-test are highly
+significant.
+image labelling tool3. Efforts were made such that the locations
+and sizes of the bounding boxes roughly match those in the
+fastMRI MT dataset. We emphasize that these bounding boxes
+are only for the purpose of measuring the accuracy of different
+models on reconstructing the meniscus region. The locations
+of the annotated ROIs are not the input to any of the tested
+models.
+Generalization gaps There are multiple generalization gaps
+between the training (fastMRI single-coil data) and test data:
+• Different hardware: The acquired data are collected
+directly with a single-channel extremity coil, while the
+training data are simulated from k-space data collected
+by multi-channel receiver coils [73].
+• Different sequence and resolution: The acquired data are
+given by a gradient-echo sequence with 1 mm isotropic
+resolution, while the training data are given by a spin-echo
+sequence with 0.5mm in-plane resolution [73].
+• Different distribution of the ROI anatomy: The acquired
+data are collected from two subjects whose menisci are
+healthy and have no tear, while the ROIs in the training
+data contain meniscus tears.
+Despite these generalization gaps, TACKLE ROI works robustly
+and leads to both numerical and visual improvement.
+Baselines In this section, we compare TACKLE ROI with the
+following baselines under 4× acceleration.
+3https://github.com/heartexlabs/labelImg

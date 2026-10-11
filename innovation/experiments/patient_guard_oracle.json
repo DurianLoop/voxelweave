@@ -1,0 +1,28 @@
+{
+  "scope": "target_assisted_patient_amplitude_oracle_historical_validation",
+  "patients": 23,
+  "beta_grid_step": 0.1,
+  "strict_patient_metric_signs": [
+    "ssim",
+    "mae",
+    "mse",
+    "ncc",
+    "dice_proxy",
+    "hd95_proxy",
+    "tail10_mse"
+  ],
+  "mean_psnr_gain_db": 0.1374653649937381,
+  "bootstrap_95_percentile_descriptive": [
+    0.08646830868236538,
+    0.1940332080048127
+  ],
+  "patients_with_gain_at_least_0_10db": 11,
+  "patients_kept_at_base": 5,
+  "source_sha256": "2e3f40ebc44ef58467fe6c8e5971284dae1fba64117143683ec78aaa79b7abfa",
+  "limitations": [
+    "The target determines both every patch alpha and each patient's beta; this is not deployable.",
+    "This is a stronger patient-level guard than the historical cohort-mean gate and is not an official promotion result.",
+    "The development cohort selected the two checkpoints; bootstrap intervals are descriptive, not independent confirmation.",
+    "Dice and HD95 are intensity-threshold proxies."
+  ]
+}

@@ -1,0 +1,45 @@
+Accelerated MRI with Metal Implants
+whereI ∗ is the ground truth image,αis a scaling factor, andQmeasures reconstruction
+quality by combining Structural Similarity Index (SSIM) (Wang et al., 2004) and Normalized
+Mean Squared Error (NMSE):
+Q(I,I∗) =λ ssim·SSIM(I,I ∗) +λ nmse·(1−NMSE(I,I ∗)) (2)
+2.2. MASC Framework
+Our framework comprises two components: an artifact-aware PPO-based (Schulman et al.,
+2017) acquisition policy and a U-Net-based MAR network (Ronneberger et al., 2015).
+Acquisition Policy.The artifact-aware PPO agent uses a shared convolutional encoder
+for actor and critic branches, processing the concatenated reconstruction and acquisition
+mask. The actor outputs action probabilities over all k-space lines, with already-acquired
+lines masked to zero to ensure valid selection until the budget is exhausted. We opti-
+mize using the standard PPO clipped objective with Generalized Advantage Estimation
+(GAE) (Schulman et al., 2016).
+MAR Network.The MAR network is a U-Net with four encoder and four decoder
+stages. Each encoder stage doubles the feature channels (64, doubling at each stage to 1024)
+using two 3×3 convolutions with batch normalization and ReLU, followed by max pooling.
+The decoder uses bilinear upsampling with skip connections to preserve spatial details. The
+network employs residual learning (He et al., 2016) whereg ψ(I) =I+r ψ(I), allowing it to
+focus on learning artifact corrections rather than full image reconstruction.
+Co-Adaptive Training.We propose a two-stage training scheme. In Stage 1, the
+MAR network is first pre-trained on paired metal-corrupted and clean images using:
+Lpretrain =L L1 +λ·L SSIM (3)
+whereL L1 = 1
+N
+PN
+i=1|xpred,i−xgt,i|andL SSIM = 1−SSIM(x pred,xgt). This combination
+is effective for training from scratch: L1 provides robust supervision against outliers while
+SSIM captures perceptual quality.
+In Stage 2, both networks are jointly optimized: the artifact-aware PPO agent observes
+MAR-processed reconstructions with rewards computed as:
+rt =α·(Q(g ψ(It+1),I∗)−Q(g ψ(It),I∗)) (4)
+whereQis our quality metric andI ∗ is the ground truth. This enables the policy to
+learn acquisition patterns complementary to the MAR network. Simultaneously, the MAR
+network is fine-tuned using MSE loss:
+Lfinetune =∥g ψ(It)−I ∗∥2
+2 (5)
+We switch from (L1 +SSIM) to MSE during fine-tuning. MSE provides more stable
+gradients than L1, which helps stabilize training when combined with noisy policy gradient
+updates. At this stage, the MAR network is already well-initialized and only needs mild
+regularization to prevent drift, while the RL reward already captures image quality, making
+additional perceptual losses unnecessary.
+This co-adaptive training creates mutual influence: as the MAR network improves on
+particular acquisition patterns, the policy learns to favor them; conversely, as the policy
+5

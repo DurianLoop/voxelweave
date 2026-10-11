@@ -1,0 +1,2537 @@
+[
+  {
+    "index": 0,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "PSACNN: Pulse Sequence Adaptive Fast Whole Brain Segmentation"
+  },
+  {
+    "index": 1,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Amod Jog"
+  },
+  {
+    "index": 2,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Andrew Hoopes"
+  },
+  {
+    "index": 3,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Douglas N Greve"
+  },
+  {
+    "index": 4,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Koen Van Leemput"
+  },
+  {
+    "index": 5,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Bruce Fischl"
+  },
+  {
+    "index": 6,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "URL: ajog@mgh.harvard.edu (Amod Jog)"
+  },
+  {
+    "index": 7,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "historyarticle-meta1"
+    ],
+    "text": "Issue date 2019 Oct 1."
+  },
+  {
+    "index": 8,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1"
+    ],
+    "text": "Abstract"
+  },
+  {
+    "index": 9,
+    "kind": "p",
+    "id": "P1",
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1"
+    ],
+    "text": "With the advent of convolutional neural networks (CNN), supervised learning methods are increasingly being used for whole brain segmentation. However, a large, manually annotated training dataset of labeled brain images required to train such supervised methods is frequently difficult to obtain or create. In addition, existing training datasets are generally acquired with a homogeneous magnetic resonance imaging (MRI) acquisition protocol. CNNs trained on such datasets are unable to generalize on test data with different acquisition protocols. Modern neuroimaging studies and clinical trials are necessarily multi-center initiatives with a wide variety of acquisition protocols. Despite stringent protocol harmonization practices, it is very difficult to standardize the gamut of MRI imaging parameters across scanners, field strengths, receive coils etc., that affect image contrast. In this paper we propose a CNN-based segmentation algorithm that, in addition to being highly accurate and fast, is also resilient to variation in the input acquisition. Our approach relies on building approximate forward models of pulse sequences that produce a typical test image. For a given pulse sequence, we use its forward model to generate plausible, synthetic training examples that appear as if they were acquired in a scanner with that pulse sequence. Sampling over a wide variety of pulse sequences results in a wide variety of augmented training examples that help build an image contrast invariant model. Our method trains a single CNN that can segment input MRI images with acquisition parameters as disparate as T 1 -weighted and T 2 -weighted contrasts with only T 1 -weighted training data. The segmentations generated are highly accurate with state-of-the-art results (overall Dice overlap= 0.94), with a fast run time (≈ 45 seconds), and consistent across a wide range of acquisition protocols."
+  },
+  {
+    "index": 10,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1",
+      "kwd-group1"
+    ],
+    "text": "Keywords: MRI, brain, segmentation, convolutional neural networks, robust, harmonization"
+  },
+  {
+    "index": 11,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "1. Introduction"
+  },
+  {
+    "index": 12,
+    "kind": "p",
+    "id": "P2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "Whole brain segmentation is one of the most important tasks in a neuroimage processing pipeline, and is a well-studied problem ( Fischl et al., 2002 ; Shiee and et al., 2010 ; Wang et al., 2013 ; Asman and Landman, 2012 ; Wachinger et al., 2017 ). The segmentation task involves taking as input an MRI image, usually a T 1 -weighted ( T 1 -w) image, of the head, and generating a labeled image with each voxel getting a label of the structure it lies in. Most segmentation algorithms output labels for right/left white matter, gray matter cortex, and subcortical structures such as the thalamus, hippocampus, amygdala, and others. Structure volumes and shapes estimated from a volumetric segmentation are routinely used as biomarkers to quantify differences between healthy and diseased populations ( Fischl et al., 2002 ), track disease progression ( Frisoni et al., 2009 ; Jack et al., 2011 ; Davatzikos et al., 2005 ), and study aging ( Resnick et al., 2000 ). Segmentation of a T 1 -w image is also used to localize and analyze the functional and diffusion signals from labeled anatomy after modalities such as functional MRI (fMRI), PET (positron emission tomography), and diffusion MRI are co-registered to the T 1 -w image. This enables the study of effects of external intervention or treatment on various properties of the segmented neuroanatomy ( Desbordes et al., 2012 ; Mattsson et al., 2014 ). In this work we are primarily concerned about whole brain segmentation of adult humans (age range 18 to 90 years)."
+  },
+  {
+    "index": 13,
+    "kind": "p",
+    "id": "P3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "An ideal segmentation algorithm needs to be highly accurate. Accuracy is frequently measured with metrics such as Dice coefficient and Jaccard index, that quantify overlap of predicted labels with a manually labeled ground truth. An accurate segmentation algorithm is more sensitive to and can detect the subtle changes in volume and shape of brain structures in patients with neurodegenerative diseases ( Jack et al., 2011 ). Fast processing time is also a desirable property for segmentation algorithms. Segmentation is one of the time-consuming bottlenecks in neuroimaging pipelines ( Fischl et al., 2002 ). A fast, memory-light segmentation algorithm can process a larger dataset quickly and can potentially be adopted in real-time image analysis pipelines."
+  },
+  {
+    "index": 14,
+    "kind": "p",
+    "id": "P4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "For MRI, however, it is also critical that the segmentation algorithm be robust to variations in the contrast properties of the input images. MRI is an extremely versatile modality, and a variety of image contrasts can be achieved by changing the multitude of imaging parameters. Large, modern MRI studies acquire imaging data simultaneously at multiple centers across the globe to gain access to a larger, more diverse pool of subjects ( Thompson et al., 2014 ; Mueller et al., 2005 ). It is very difficult to perfectly harmonize scanner manufacturers, field strengths, receive coils, pulse sequences, resolutions, scanner software versions, and many other imaging parameters across different sites. Variation in imaging parameters leads to variation in intensities and image contrast across sites, which in turn leads to variation in segmentation results. Most segmentation algorithms are not designed to be robust to these variations ( Han et al., 2006 ; Jovicich and et al., 2013 ; Nyúl and Udupa, 1999 ; Focke et al., 2011 ). Segmentation algorithms can introduce a site-specific bias in any analysis of multi-site data that is dependent on structure volumes or shapes obtained from that algorithm. In most analyses, the inter-site and inter-scanner variations are regressed out as confounding variables ( Kostro et al., 2014 ) or the MRI images are pre-processed in order to provide consistent input to the segmentation algorithm ( Nyúl and Udupa, 1999 ; Madabhushi and Udupa, 2006 ; Roy et al., 2013 ; Jog et al., 2015 ). However, a segmentation algorithm that is robust to scanner variation precludes the need to pre-process the inputs."
+  },
+  {
+    "index": 15,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "1.1. Prior Work"
+  },
+  {
+    "index": 16,
+    "kind": "p",
+    "id": "P5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Existing whole brain segmentation algorithms can be broadly classified into three types: (a) model-based, (b) multi-atlas registration-based, and (c) supervised learning-based. Model-based algorithms ( Fischl et al., 2002 ; Pohl et al., 2006 ; Pizer et al., 2003 ; Patenaude et al., 2011 ; Puonti et al., 2016 ) fit an underlying statistical atlas-based model to the observed intensities of the input image and perform maximum a posteriori (MAP) labeling. They assume a functional form (e.g. Gaussian) of intensity distributions and results can degrade if the input distribution differs from this assumption. Recent work by Puonti et al. (2016) builds a parametric generative model for brain segmentation that leverages manually labeled training data and also adapts to changes in input image contrast. In a similar vein, work by Bazin and Pham (2008) also uses a statistical atlas to minimize an energy functional based on fuzzy c-means clustering of intensities. Model-based methods are usually computationally intensive, taking 0.5–4 hours to run. With the exception of the work by Puonti et al. (2016) and Bazin and Pham (2008) , most model-based methods are not explicitly designed to be robust to variations in input T 1 -w contrast and fail to work on input images acquired with a completely different contrast such a proton density weighted ( P D -w) or T 2 -weighted ( T 2 -w)."
+  },
+  {
+    "index": 17,
+    "kind": "p",
+    "id": "P6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Multi-atlas registration and label fusion (MALF) methods ( Rohlfing et al., 2004 ; Heckemann et al., 2006 ; Sabuncu et al., 2010 ; Zikic et al., 2014 ; Asman and Landman, 2012 ; Wang et al., 2013 ; Wu et al., 2014 ) use an atlas set of images that comprises pairs of intensity images and their corresponding manually labeled images. The atlas intensity images are deformably registered to the input intensity image, and the corresponding atlas label images are warped using the estimated transforms into the input image space. For each voxel in the input image space, a label is estimated using a label fusion approach. MALF algorithms achieve state-of-the-art segmentation accuracy for whole brain segmentation ( Asman and Landman, 2012 ; Wang et al., 2013 ) and have previously won multi-label segmentation challenges ( Landman and Warfield, 2012 ). However, they require multiple computationally expensive registrations, followed by label fusion. Efforts have been made to reduce the computational cost of deformable registrations with linear registrations ( Coupé et al., 2011 ), or reducing the task to a single deformable registration ( Zikic et al., 2014 ). However, if the input image contrast is significantly different from the atlas intensity images, registration quality becomes inconsistent, especially across different multi-scanner datasets. If the input image contrast is completely different ( P D -w or T 2 -w) from the atlas images (usually T 1 -w), the registration algorithm needs to use a modality independent optimization metric such as cross-correlation or mutual information, which also affects registration consistency across datasets."
+  },
+  {
+    "index": 18,
+    "kind": "p",
+    "id": "P7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Accurate whole brain segmentation using supervised machine learning approaches has been made possible in the last few years by the success of deep learning methods in medical imaging. Supervised segmentation approaches built on CNNs have produced accurate segmentations with a runtime of a few seconds or minutes ( Li et al., 2017 ; Wachinger et al., 2017 ; Roy et al., 2018 ). These methods have used 2D slices ( Roy et al., 2018 ) or 3D patches ( Li et al., 2017 ; Wachinger et al., 2017 ) as inputs to custom-built fully convolutional network architectures, the U-Net ( Ronneberger et al., 2015 ) or residual architectures ( He et al., 2016 ) to produce voxel-wise semantic segmentation outputs. The training of these deep networks can take hours to days, but the prediction time on an input image is in the range of seconds to minutes, thus making them an attractive proposition for whole brain segmentation. CNN architectures for whole brain segmentation tend to have millions of trainable parameters but the training data is generally limited. A manually labeled training dataset can consist of only 20–40 labeled images ( Buckner et al., 2004 ; Landman and Warfield, 2012 ) due to the labor-intensive nature of manual annotation. Furthermore, the training dataset is usually acquired with a fixed acquisition protocol, on the same scanner, within a short period of time, and generally without any substantial artifacts, resulting in a pristine set of training images. Unfortunately, a CNN trained on such limited data is unable to generalize to an input test image acquired with a different acquisition protocol and can easily overfit to the training acquisitions. Despite the powerful local and global context that CNNs generally provide, they are more vulnerable to subtle contrast differences between training and test MRI images than model-based and MALF-based methods. A recent work by Karani et al. (2018) describes a brain segmentation CNN trained to consistently segment multi-scanner and multi-protocol data. This framework adds a new set of batch normalization parameters in the network as it encounters training data from a new acquisition protocol. To learn these parameters, the framework requires that a small number of images from the new protocol be manually labeled, which may not always be possible."
+  },
+  {
+    "index": 19,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "1.2. Our Contribution"
+  },
+  {
+    "index": 20,
+    "kind": "p",
+    "id": "P8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "We describe Pulse Sequence Adaptive Convolutional Neural Network (PSACNN); a CNN-based whole brain MRI segmentation approach with an augmentation scheme that models the forward models of pulse sequences to generate a wide range of synthetic training examples during the training process. Data augmentation is regularly used in training of CNNs when training data is scarce. Typical augmentation in computer vision applications involves rotating, deforming, and adding noise to an existing training example, pairing it with a suitably transformed training label, and adding it to the training batch data. Once trained this way, the CNN is expected to be robust to these variations, which were not originally present in the given training dataset."
+  },
+  {
+    "index": 21,
+    "kind": "p",
+    "id": "P9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "In PSACNN, we aim to augment CNN training by using existing training images and creating versions of them with a different contrast, for a wide range of contrasts. The CNN thus trained will be robust to contrast variations. We create synthetic versions of training images such that they appear to have been scanned with different pulse sequences for a range of pulse sequence parameters. These synthetic images are created by applying pulse sequence imaging equations to the training tissue parameter maps. We formulate simple approximations of the highly nonlinear pulse sequence imaging equations for a set of commonly used pulse sequences. Our approximate imaging equations typically have a much smaller number (3 to be precise) of imaging parameters. Estimating these parameters would typically need multi-contrast images that are not usually available, so we have developed a procedure to estimate these approximate imaging parameters using intensity information present in that image alone."
+  },
+  {
+    "index": 22,
+    "kind": "p",
+    "id": "P10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "When applying an approximate imaging equation to tissue parameter maps, changing the imaging parameters of the approximate imaging equation changes the contrast of the generated synthetic image. In PSACNN, we uniformly sample over the approximate pulse sequence parameter space to produce candidate pulse sequence imaging equations and apply them to the training tissue parameters to synthesize images of training brains with a wide range of image contrasts. Training using these synthetic images results in a segmentation CNN that is robust to the variations in image contrast."
+  },
+  {
+    "index": 23,
+    "kind": "p",
+    "id": "P11",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "A previous version of PSACNN was published as a conference paper ( Jog and Fischl, 2018 ). In this paper, we have extended it by removing the dependence on the FreeSurfer atlas registration for features. We have also added pulse sequence augmentation for T 2 -weighted sequences, thus enabling the same trained CNN to segment T 1 -w and T 2 -w images without an explicitly T 2 -w training dataset. We have also included additional segmentation consistency experiments conducted on more diverse multi-scanner datasets."
+  },
+  {
+    "index": 24,
+    "kind": "p",
+    "id": "P12",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "Our paper is structured as follows: In Section 2 , we provide a background on MRI image formation, followed by a description of our pulse sequence forward models and the PSACNN training workflow. In Section 3 , we show an evaluation of PSACNN performance on a wide variety of multi-scanner datasets and compare it with state-of-the-art segmentation methods. Finally, in Section 4 we briefly summarize our observations and outline directions for future work."
+  },
+  {
+    "index": 25,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4"
+    ],
+    "text": "2. Method"
+  },
+  {
+    "index": 26,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "2.1. Background: MRI Image Formation"
+  },
+  {
+    "index": 27,
+    "kind": "p",
+    "id": "P13",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "In MRI the changing electromagnetic field stimulates tissue inside a voxel to produce the voxel intensity signal. Let S be the acquired MRI magnitude image. S ( x ), the intensity at voxel x in the brain is a function of (a) intrinsic tissue parameters and (b) extrinsic imaging parameters. We will refer to the tissue parameters as nuclear magnetic resonance or NMR parameters in order to distinguish them from the imaging parameters. The principal NMR parameters include proton density ( ρ ( x )), longitudinal ( T 1 ( x )) and transverse ( T 2 ( x )), and T 2 * ( x ) relaxation times. In this work we only focus on ρ , T 1 , T 2 and denote them together as β ( x ) = [ ρ ( x ) ,T 1 ( x ) ,T 2 ( x )]. Let the image S be acquired using a pulse sequence Γ S . Commonly used pulse sequences include Magnetization Prepared Gradient Echo (MPRAGE) ( Mugler and Brookeman, 1990 ), Multi-Echo MPRAGE ( van der Kouwe et al., 2008 ) Fast Low Angle Shot (FLASH), Spoiled Gradient Echo (SPGR), T2-Sampling Perfection with Application optimized Contrasts using different flip angle Evolution (T2-SPACE) ( Mugler, 2014 ) and others. Depending on the type of the pulse sequence Γ S , its extrinsic imaging parameters can include repetition time ( TR ), echo time ( TE ), flip angle ( α ), gain ( G ), and many others. The set of imaging parameters is denoted by Θ S = { TR,TE,α,G,… }. The relationship between voxel intensity S ( x ) and the NMR parameters ( β ( x )) and imaging parameters ( Θ S ) is encapsulated by the imaging equation as shown in Eqn. 1"
+  },
+  {
+    "index": 28,
+    "kind": "table",
+    "id": "FD1",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "S ( x ) = Γ S ( β ( x ) ; Θ S ) . (1)"
+  },
+  {
+    "index": 29,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "For example, for the FLASH sequence, the imaging parameters are Θ FLASH = { TR,TE,α,G }, and the imaging equation is shown in Eqn. 2 ( Glover, 2004 ):"
+  },
+  {
+    "index": 30,
+    "kind": "table",
+    "id": "FD2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "Γ FLASH ( β ( x ) ; Θ F L A S H ) = G ρ ( x ) sin α ( 1 − e − T R T 1 ( x ) ) 1 − cos α e − T R T 1 ( x ) e − T E T 2 * ( x ) . (2)"
+  },
+  {
+    "index": 31,
+    "kind": "p",
+    "id": "P15",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "Most pulse sequences do not have a closed form imaging equation and a Bloch simulation is needed to estimate the voxel intensity ( Glover, 2004 ). There has been some work in deriving the imaging equation for MPRAGE ( Deichmann et al., 2000 ; Wang et al., 2014 ). Unfortunately, these closed form equations do not always match the scanner implementation of the pulse sequence. Different scanner manufacturers and scanner software versions have different implementations of the same pulse sequence. Sometimes additional pulses like fat suppression are added to improve image quality, further deviating from the closed form theoretical equation. Therefore, if such a closed form theoretical imaging equation with known imaging parameters (from the image header) is applied to NMR maps ([ ρ,T 1 ,T 2 ]) of a subject, the resulting synthetic image will systematically differ from the observed, scanner-acquired image. To mitigate this difference, we deem it essential to estimate the imaging parameters purely from the observed image intensities themselves. This way, when the imaging equation with the estimated parameters is applied to the NMR maps, we are likely to get a synthetic image that is close to the observed, scanner-acquired image. However, to enable estimation of imaging parameters purely from the image intensities requires us to approximate the closed form theoretical imaging equation to a much simpler form and with fewer parameters. Therefore, we do not expect the estimated parameters of an approximate imaging equation to match with the scanner parameters (such as TR or TE ). The approximation of the imaging equation and its estimated parameters are deemed satisfactory if they produce intensities similar to an observed, scanner-acquired image, when applied to NMR maps. Our approximations of the theoretical closed form imaging equations for a number of commonly used pulse sequences are described next in Section 2.2 ."
+  },
+  {
+    "index": 32,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "2.2. Pulse Sequence Approximation and Parameter Estimation"
+  },
+  {
+    "index": 33,
+    "kind": "p",
+    "id": "P16",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "In this work we primarily work with FLASH, MPRAGE, SPGR, and T2-SPACE images. Our goal is to be able to estimate the pulse sequence parameters Θ S from the intensity information of S . Intensity histograms of most pulse sequence images for the adult brain present peaks for the three main tissue classes in the brain: cerebro-spinal fluid (CSF), gray matter (GM), and white matter (WM). The mean class intensities can be robustly estimated by fitting a three-class Gaussian mixture model to the intensity histogram. Let S c , S g , S w be the mean intensities of CSF, GM, and WM, respectively. Let β c , β g , β w be the mean NMR [ ρ,T 1 ,T 2 ] values for CSF, GM, and WM classes, respectively. In this work, we extracted these values from a previously acquired dataset with relaxometry acquisitions ( Fischl et al., 2004 ), but they could also have been obtained from previous studies ( Wansapura et al., 1999 ). We assume that applying the pulse sequence equation Γ S to the mean class NMR values results in mean class intensities in S . This assumption leads to a three equation system as shown in Eqns. (3) – (5) , where the unknown is Θ S :"
+  },
+  {
+    "index": 34,
+    "kind": "table",
+    "id": "FD3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "S c = Γ S ( β c ; Θ S ) , (3)"
+  },
+  {
+    "index": 35,
+    "kind": "table",
+    "id": "FD4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "S g = Γ S ( β g ; Θ S ) , (4)"
+  },
+  {
+    "index": 36,
+    "kind": "table",
+    "id": "FD5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "S w = Γ S ( β w ; Θ S ) . (5)"
+  },
+  {
+    "index": 37,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "To solve a three equation system, it is necessary that Θ S have three or fewer unknown parameters. From the FLASH imaging equation in Eqn. 2 , it is clear that there are more than three unknowns (four, to be precise) in the closed form imaging equation, which is also true for most pulse sequences. Therefore, to enable us to solve the system in Eqns. (3) – (5) , we formulate a three-parameter approximation for pulse sequences like FLASH, SPGR, MPRAGE, and T2-SPACE. Our approximation for the FLASH sequence is shown in Eqns. (6) – (8) :"
+  },
+  {
+    "index": 38,
+    "kind": "table",
+    "id": "FD6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "log ( S FLASH ) = log ( G sin α ) + log ( ρ ) + log ( ( 1 − e − T R T 1 ) 1 − cos α e − T R T 1 ) − T E T 2 * , (6)"
+  },
+  {
+    "index": 39,
+    "kind": "table",
+    "id": "FD7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "= θ 0 + log ( ρ ) + f 1 ( T 1 ) + f 2 ( T 2 ) , (7)"
+  },
+  {
+    "index": 40,
+    "kind": "table",
+    "id": "FD8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "≈ θ 0 + log ( ρ ) + θ 1 T 1 + θ 2 T 2 , (8)"
+  },
+  {
+    "index": 41,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "where Θ FLASH = { θ 0 ,θ 1 ,θ 2 } forms our parameter set. We assume that B1 inhomogeneities have been corrected from all images and therefore do not include them in the forward models. We replace T 2 * by T 2 as they are highly correlated quantities due to the relation 1 / T 2 * = 1 / T 2 + 1 / T 2 ′ . f 1( T 1 ) and f 2( T 2 ) in Eqn. 7 model the contribution of T 1 and T 2 components respectively to the voxel intensity. Figure 1(a) shows the theoretical f 1( T 1 ) and our approximation θ 1 /T 1 for FLASH. For the range of values of T 1 in the human brain (500,3000) ms at 1.5 T, our approximation fits f 1( T 1 ) well. The error increases for long T 1 regions, which are generally CSF voxels in the brain, and relatively easy to segment. The SPGR pulse sequence is very similar to FLASH and so we use the same approximation for it ( Glover, 2004 )."
+  },
+  {
+    "index": 42,
+    "kind": "figure",
+    "id": "F1",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Figure 1: Figure 1: Open in a new tab (a) Fit of T 1 component in the FLASH equation (blue) and our approximation (red), (b) fit of T 1 component (blue) with our approximation (red) for MPRAGE, (c) fit of T 1 component (blue) with our approximation (red) for T2-SPACE"
+  },
+  {
+    "index": 43,
+    "kind": "p",
+    "id": "P19",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "For the MPRAGE sequence, we chose to approximate a theoretical derivation provided by Wang et al. (2014) . Assuming the echo time TE is small, which it typically is to avoid T 2 * - induced loss, the T 2 * effects in our approximation are not significant. Therefore, we use two parameters θ 1 and θ 2 to model a quadratic dependence on T 1 , which is an approximation of the derivation by Wang et al. (2014) , resulting in Eqn. (9) as our three-parameter approximation for MPRAGE. Comparison with the theoretical dependence on T 1 is shown in Fig. 1(b) , and our approximation shows a very good fit."
+  },
+  {
+    "index": 44,
+    "kind": "table",
+    "id": "FD9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "log ( S MPRAGE ) ≈ θ 0 + log ( ρ ) + θ 1 T 1 + θ 2 T 1 2 . (9)"
+  },
+  {
+    "index": 45,
+    "kind": "p",
+    "id": "P20",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "T2-SPACE is a turbo spin echo sequence. The intensity produced at the n th echo of a turbo spin echo sequence is given by Eqn. 10 :"
+  },
+  {
+    "index": 46,
+    "kind": "table",
+    "id": "FD10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "log ( S T 2 − S P A C E ) = log ( G ) + log ( ρ ) + log ( 1 − F e − T D T 1 ) − T E n T 2 , (10)"
+  },
+  {
+    "index": 47,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "where F ≈ 1 for a first order approximation ( Glover, 2004 ), TD is the time interval between last echo and TR , and TE n is the n th echo time. Our three-parameter approximation for Eqn. 10 is given in Eqn. 11 :"
+  },
+  {
+    "index": 48,
+    "kind": "table",
+    "id": "FD11",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "log ( S T 2 S P A C E ) ≈ θ 0 + log ( ρ ) + θ 1 T 1 + θ 2 T 2 . (11)"
+  },
+  {
+    "index": 49,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "The comparison with the theoretical equation as shown in Fig. 1(c) shows good fit for T 1 dependence for T 1 values in the GM-WM range. The error increases for very short T 1 (bone) and very long T 1 (CSF) voxels. This has minimal impact on the segmentation accuracy as they have sufficient contrast to segment regardless of small deviations from the model."
+  },
+  {
+    "index": 50,
+    "kind": "p",
+    "id": "P23",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "In Fig. 2(a) we show an acquired MPRAGE, Fig. 2(b) our approximately synthesized MPRAGE, and in Fig. 2(c) , their absolute intensity difference image. Our MPRAGE approximate equation ( Eqn. 9 ) is a close fit to the theoretical steady state Bloch equation and the synthesized MPRAGE has a very small image difference with the acquired MPRAGE."
+  },
+  {
+    "index": 51,
+    "kind": "figure",
+    "id": "F2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Figure 2: Figure 2: Open in a new tab Acquired/theoretical equation generated images compared with approximate synthesis images used in PSACNN training. The difference images are shown in the right column. The color scale shows the absolute intensity difference ranges from 0 to 1.5, where the maximum intensity in the image is 1.5."
+  },
+  {
+    "index": 52,
+    "kind": "p",
+    "id": "P24",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "In Fig. 2(d) we show a T2-SPACE image synthesized by applying the theoretical steady state Bloch equation ( Eqn. 11 ), Fig. 2(e) our approximately synthesized T2-SPACE, and in Fig. 2(f) , their absolute intensity difference image. Our T2-SPACE approximate equation ( Eqn. 11 ) is a close fit to the theoretical steady state Bloch equation for the gray-white matter T 1 values. The difference image ( Fig. 2(f)) also shows very small values in those regions. The fit errors increase (almost 30%) for CSF voxels, which is also visible in the difference image in the ventricle regions. However the image gradient between white matter and ventricles is still quite high in the Fig. 2(e) and the boundaries are therefore sharp, ensuring that the segmentation will not be much different than for the theoretical image in Fig. 2(f) ."
+  },
+  {
+    "index": 53,
+    "kind": "p",
+    "id": "P25",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "In Figs. 2(g) – (i) , we show theoretical FLASH, approximate FLASH, and the difference image, respectively. The intensity differences are small for gray-white matter (except for a few outlier regions) but increase for CSF."
+  },
+  {
+    "index": 54,
+    "kind": "p",
+    "id": "P26",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Our three-parameter approximations are such that the equation system in Eqns. (3) – (5) becomes linear in terms of Θ S and can be easily and robustly solved for each of the pulse sequences. The exact theoretical equations have more than three parameters, and even if they had fewer parameters, the exponential interaction of parameters with T 1 and T 2 renders solving the highly nonlinear system very unstable. Using our formulated approximate versions of pulse sequence equations, given any image S and the pulse sequence used to acquire it, we can estimate the three parameter set Θ ^ S , denoted by hat to distinguish it from the unknown parameter set Θ S ."
+  },
+  {
+    "index": 55,
+    "kind": "p",
+    "id": "P27",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "More importantly, the three-parameter [ θ 0 ,θ 1 ,θ 2 ] approximations establish a compact, 3-dimensional parameter space for a pulse sequence. Given any test image, its approximate pulse sequence parameter set is a point in this 3-dimesional parameter space, found by calculating the mean class intensities and solving the equation system in Eqns. (3) – (5) . We estimated the parameter sets for a variety of test MPRAGE images acquired on 1.5 T and 3 T scanners from Siemens Trio/Vision/SONATA/Avanto/Prisma and GE Signa scanners using our method. The estimated parameter distributions are shown in Figs. 3(a) – 3(c) . These give us an idea of the range of parameter values and their distribution for the MPRAGE sequence. We use this information to grid the parameter space in 50 bins between [0.8min( θ m ), 1.2max( θ m )] for m ∈ {0,1,2} such that any extant test dataset parameters are included in this interval and are close to a grid point. We create such a 3D grid for FLASH/SPGR and T2-SPACE as well. In Section 2.3 we describe PSACNN training that depends on sampling this grid to come up with candidate pulse sequence parameter sets. We will use these candidate parameter sets to create augmented, synthetic training images."
+  },
+  {
+    "index": 56,
+    "kind": "figure",
+    "id": "F3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Figure 3: Figure 3: Open in a new tab Estimated MPRAGE parameters θ 0 , θ 1 , and θ 2 distributions for a variety of 1.5 T and 3 T datasets from Siemens Trio/SONATA/Prisma/Avanto, GE Signa scanners."
+  },
+  {
+    "index": 57,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "2.3. PSACNN Training"
+  },
+  {
+    "index": 58,
+    "kind": "p",
+    "id": "P28",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "Let A = { A ( 1 ) , A ( 2 ) , … , A ( M ) } be a collection of M T 1 -w images with a corresponding expert manually labeled image set Y = { Y ( 1 ) , Y ( 2 ) , … Y ( M ) } . The paired collection { A , Y } is referred to as the training image set. Let A be acquired with a pulse sequence Γ A , where Γ A is typically MPRAGE that presents a good gray-white matter contrast. For PSACNN, we require that in addition to { A , Y } , we have B = [ B ( 1 ) , B ( 2 ) , … , B ( M ) ] the corresponding NMR parameter maps for each of the M training subjects. For each i ∈ {1,… ,M } we have B ( i ) = [ ρ ( i ) ,T 1( i ) ,T 2( i ) ], where ρ ( i ) is a map of proton densities, and T 1( i ) and T 2( i ) store the longitudinal ( T 1 ), and transverse ( T 2 ) relaxation time maps respectively. Most training sets do not acquire or generate the NMR maps. In case they are not available, we outline an image synthesis procedure in Section 2.5 to generate these from available T 1 -w MPRAGE images A ( i ) . Example images from { A , Y , B } are shown in Fig. 4 ."
+  },
+  {
+    "index": 59,
+    "kind": "figure",
+    "id": "F4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "Figure 4: Figure 4: Open in a new tab PSACNN training images for a training subject i : (a) Training MPRAGE ( A ( i ) ), (b) Training Label Image ( Y ( i ) ), (c) ρ ( i ) (PD) map, (d) T 1( i ) , (e) T 2( i ) ."
+  },
+  {
+    "index": 60,
+    "kind": "p",
+    "id": "P29",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "We extract patches p ( i ) ( x ) of size 96 × 96 × 96 from voxels × of A ( i ) . p ( i ) ( x ) is paired with a corresponding patch y ( i ) ( x ) extracted from the label image Y ( i ) . Training pairs of [ p ( i ) ( x ); y ( i ) ( x )] constitute the unaugmented data used in training. A CNN trained on only available unaugmented patches will learn to segment images with the exact same contrast as the training MPRAGE images and will not generalize to test images of a different contrast. We use the approximate forward models of pulse sequences as described in Section 2.2 to generate synthetic images that appear to have been imaged by that pulse sequence."
+  },
+  {
+    "index": 61,
+    "kind": "p",
+    "id": "P30",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "Consider a pulse sequence Γ S , which could be MPRAGE, FLASH, SPGR, or T2-SPACE, for each of which we have established a three-parameter space. We uniformly sample the [ θ 0 ,θ 1 ,θ 2 ] grid that is created for Γ S as described in Section 2.2 to get a candidate set Θ ^ S . Next, we extract 96 × 96 × 96-sized NMR parameter patches from B ( i ) ∈ B where the NMR patch at voxel x is denoted by [ ρ ( i ) ( x ) ,T 1( i ) ( x ) ,T 2( i ) ( x )]. We create an augmented patch p ( i ) ′ ( x ) by applying the test pulse sequence equation Γ S , with the sampled pulse sequence parameter set Θ ^ S , to training NMR patches as shown in Eqn. 12 :"
+  },
+  {
+    "index": 62,
+    "kind": "table",
+    "id": "FD12",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "p ( i ) ′ ( x ) = Γ S ( [ ρ ( i ) ( x ) , T 1 ( i ) ( x ) , T 2 ( i ) ( x ) ] ; Θ ^ S ) . (12)"
+  },
+  {
+    "index": 63,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "The synthetic patch therefore has the anatomy from the i th training subject, but the image contrast of a potential test pulse sequence Γ S with Θ ^ S as its parameters, as shown in Fig. 5 . The synthetic patch p ( i ) ′ ( x ) is paired with the corresponding label patch y ( i ) ( x ) extracted from Y i to create the augmented pair that is introduced in the training. The CNN, therefore, learns weights such that it maps both p ( i ) ′ ( x ) and p ( i ) ( x ) to the same label patch y ( i ) ( x ), in effect learning to be invariant to differences in image contrast. CNN weights are typically optimized by stochastic optimization algorithms that use mini-batches composed of training samples to update the gradients of the weights in a single iteration. In our training, we construct a mini-batch comprising four training samples: one sample of the original, unaugmented MPRAGE patch, and one each of synthetic FLASH/SPGR, synthetic T2-SPACE, and a synthetic MPRAGE patch. Each synthetic patch is generated with a parameter set ( Θ ^ S ) chosen from the 3D parameter space grid of its pulse sequence (Γ S ). Over a single epoch, we cover all parameter sets from the 3D parameter space grid of Γ S to train the CNN with synthetic patches that are mapped to the same label patch forcing it to learn invariance across different Θ ^ S . Invariance across pulse sequences is achieved by including patches from all four pulse sequences in each mini-batch. The training workflow is presented in Fig. 5 . On the right side of Fig. 5 are possible test images that were acquired by different pulse sequences. On the left side of Fig. 5 are the synthetic training images generated by applying the approximate pulse sequence equations to training NMR maps shown on the top center. All synthetic images are matched with the same label map at the output of the network. The patches are shown as 2D slices for the purpose of illustration."
+  },
+  {
+    "index": 64,
+    "kind": "figure",
+    "id": "F5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "Figure 5: Figure 5: Open in a new tab Workflow of PSACNN training."
+  },
+  {
+    "index": 65,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S8"
+    ],
+    "text": "2.4. PSACNN Network Architecture"
+  },
+  {
+    "index": 66,
+    "kind": "p",
+    "id": "P32",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S8"
+    ],
+    "text": "We use the U-Net ( Ronneberger et al., 2015 ) as our preferred voxel-wise segmentation CNN architecture, but any sufficiently powerful fully convolutional architecture can be used. Graphical processing unit (GPU) memory constraints prevent us from using entire 256 × 256 × 256-sized images as input to the U-Net and so we use 96 × 96 × 96-sized patches as inputs. Our U-Net instance (shown in Fig. 6 ) has five pooling layers and corresponding five upsampling layers. These parameters were constrained by the largest model size we could fit in the GPU memory. Prior to each pooling layer are two convolutional layers with filter size of 3 × 3 × 3, ReLu activation, and batch normalization after each of them. The number of filters in the first convolutional layers is 32, and it doubles after each pooling layer. The last layer has a softmax activation with L = 41 outputs. The U-Net is trained to minimize a soft Dice-based loss averaged over the whole batch. The loss is shown in Eqn. 13 , where x denotes the voxels present in each label patch y true ( b ) and y pred ( b ) of the b th training sample in a batch of N B samples. During training y pred ( b ) is a 96 × 96 × 96 × L -sized tensor with each voxel recording the softmax probability of it belonging to a particular label. y true ( b ) is a similar-sized one-hot encoding of the label present at each of the voxels. The 4D tensors are flattened prior to taking element-wise dot products and norms."
+  },
+  {
+    "index": 67,
+    "kind": "table",
+    "id": "FD13",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S8"
+    ],
+    "text": "Loss ( y t r u e , y p r e d ) = 1 N B ∑ b ( 1 − 2 ∑ x y t r u e ( b ) ⋅ y p r e d ( b ) ∑ x ( ‖ y t r u e ( b ) ‖ 2 + ‖ y p r e d ( b ) ‖ 2 ) ) (13)"
+  },
+  {
+    "index": 68,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S8"
+    ],
+    "text": "The Dice loss in Eqn. 13 is an un-weighted Dice loss. Several methods have been developed to address the label imbalance in loss calculation for smaller subcortical region labels versus large white or gray matter labels. Relative frequency of labels ( Roy et al., 2018 ) has been used as weights to scale the Dice-based loss while calculating it over a batch. Generalized dice loss ( Sudre et al., 2017 ), exponential logarithmic loss ( Wong et al., 2018 ), and others have also been used. However, in our experiments we did not observe a significant difference in predictions from networks trained using an un-weighted Dice loss versus a frequency-weighted Dice loss ( Roy et al., 2018 ) after more than 10 epochs. For example, some of the smaller structures such as the left-right accumbens, fourth ventricle, etc. were not found at all by networks trained for fewer than 10 epochs with an un-weighted Dice loss, but were segmented correctly once it was trained for more than 10 epochs. These structures were detected in earlier epochs when using the frequency-weighted Dice loss but there were other gross segmentation errors that made further training necessary. We speculate that label imbalance plays a big role when learning rates are not set appropriately for a segmentation task and small labels are missed. For our setup, with an initial learning rate of 0.001, we did not observe a difference between weighted and un-weighted Dice loss and chose to use the un-weighted version to avoid any bias for the smaller labels."
+  },
+  {
+    "index": 69,
+    "kind": "figure",
+    "id": "F6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S8"
+    ],
+    "text": "Figure 6: Figure 6: Open in a new tab U-Net architecture used in PSACNN"
+  },
+  {
+    "index": 70,
+    "kind": "p",
+    "id": "P34",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S8"
+    ],
+    "text": "We use the Adam optimization algorithm to minimize the loss. Each epoch uses 600K augmented and unaugmented training pairs extracted from a training set of 16 subjects out of a dataset with 39 subjects that were acquired with 1.5 T Siemens Vision MPRAGE acquisitions (TR=9.7 ms, TE=4 ms TI=20 ms, voxel-size=1 × 1 × 1.5 mm 3 ) with expert manual labels done as per the protocol described by Buckner et al. (2004) . We refer to this dataset as the Buckner dataset in the rest of the manuscript. After each training epoch, the trained model is a applied to a validation dataset that is generated from 3 of the remaining 23 (= 39 – 16) subjects. Training is stopped when the validation loss does not decrease any more, which is usually around 10 epochs. For prediction, we sample overlapping 96 × 96 × 96-sized patches from the test image with a stride of 32. We apply the trained network to these patches. The resultant soft predictions (probabilities) are averaged in the overlapping regions and the class with the maximum probability is chosen as the hard label at each voxel."
+  },
+  {
+    "index": 71,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "2.5. Synthesis of Training NMR Maps B"
+  },
+  {
+    "index": 72,
+    "kind": "p",
+    "id": "P35",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "As described in Section 2.3 , PSACNN requires the training dataset to be the collection { A , Y , B } . But most training datasets only contain { A , Y } and do not acquire or estimate the NMR parameter maps B . In this section, we will describe a procedure to synthesize B maps from the available image set A ."
+  },
+  {
+    "index": 73,
+    "kind": "p",
+    "id": "P36",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "We use a separately acquired dataset of eight subjects, denoted as dataset F , with multi echo FLASH (MEF) images with four flip angles 3°, 5°, 10°, and 20°. Proton density ( ρ ) and T 1 maps were calculated by fitting the known imaging equation for FLASH to the acquired four images ( Fischl et al., 2004 ). The ρ values are estimated up to a constant scale. Note that this dataset is completely distinct from the PSACNN training dataset { A , Y } with no overlapping subjects. For each subject j ∈ {1,…8} in F , we first estimate the three mean tissue class intensities S c , S g , and S w . We then estimate the MEF parameters ( Θ ^ M E F ( j ) = [ θ 0 , θ 1 , θ 2 ] ) using our approximation of the FLASH equation in Eqn. 8 and solving the equation system in Eqns. 3 – 5 . Next, the voxel intensity S MEF ( j ) ( x ) for each voxel x , using the approximate FLASH imaging equation in Eqn. 8 and the estimated Θ ^ M E F ( j ) = [ θ 0 , θ 1 , θ 2 ] gives us Eqn. 14 :"
+  },
+  {
+    "index": 74,
+    "kind": "table",
+    "id": "FD14",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "log ( S M E F ( j ) ( x ) ) ≈ θ 0 + log ( ρ ( j ) ( x ) ) + θ 1 T 1 ( j ) ( x ) + θ 2 T 2 ( j ) ( x ) . (14)"
+  },
+  {
+    "index": 75,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "The only unknown in Eqn. 14 is T 2( j ) ( x ), which we can solve for. This forms B F = { [ ρ ( j ) , T 1 ( j ) , T 2 ( j ) ] } for each subject in F ."
+  },
+  {
+    "index": 76,
+    "kind": "p",
+    "id": "P38",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "Next, we consider each of the PSACNN training images A ( i ) in A . We use the approximate forward model of the Γ A sequence (typically MPRAGE) and the pulse sequence parameter estimation procedure in Section 2.2 to estimate Γ A imaging parameters Θ ^ A ( i ) for all PSACNN training images A ( i ) . We use the estimated Θ ^ A ( i ) as parameters in the Γ A equation and apply it to the NMR maps B F of dataset F as shown in Eqn. 15 , to generate synthetic Γ A images of subjects in dataset F ."
+  },
+  {
+    "index": 77,
+    "kind": "table",
+    "id": "FD15",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "S s y n A ( j , i ) = Γ A ( [ ρ ( j ) , T 1 ( j ) , T 2 ( j ) ] ; Θ ^ A ( i ) ) . (15)"
+  },
+  {
+    "index": 78,
+    "kind": "p",
+    "id": "P39",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "For each PSACNN training image A ( i ) , we have eight synthetic S synA ( j,i ) , j ∈ {1,…,8} of subjects in dataset F with the same imaging parameter set Θ ^ A ( i ) and therefore, the same image contrast as A ( i ) . We pair up the synthetic images and proton density maps { S s y n A ( j , i ) , P ( j ) } to create a training dataset to estimate proton density map for subject i in the PSACNN training set. We extract 96 × 96 × 96-sized patches from the synthetic images and map them to patches from the proton density maps. A U-Net with specifications similar to that described in Section 2.3 is used to predict proton density patches from synthetic image patches, the only difference being the final layer that outputs 96 × 96 × 96 × 1-sized continuous valued output while minimizing the mean squared error loss. The trained U-Net is applied to patches extracted from A ( i ) to synthesize ρ ( i ) . The image contrast of the synthetic Γ A images S s y n A ( j , i ) from dataset F is the same as A ( i ). by design, which makes the training and test intensity properties similar and the trained U-Net can be applied correctly to patches from A ( i ) . Two other similar image synthesis U-Nets are trained for synthesizing T 1( i ) and T 2( i ) from A ( i ) . Thus, to estimate [ ρ ( i ) ,T 1( i ) ,T 2( i ) ] for subject i of the PSACNN training dataset, we need to train three separate U-Nets. In total, for M PSACNN training subjects, we need to train 3 M U-Nets, which is computationally expensive, but a one-time operation to permanently generate the B NMR maps that are necessary for PSACNN, from available A images. It is possible to train only 3 U-Nets for all M images from A as they have the exact same acquisition, however their estimated parameters are not exactly equal and have a small variance. Therefore, we chose to train 3 U-Nets per image to ensure subject-specific training. Our expectation is that generated NMR maps will be more accurate than those generated using a single U-Net per NMR parameter map for all subjects."
+  },
+  {
+    "index": 79,
+    "kind": "p",
+    "id": "P40",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S9"
+    ],
+    "text": "The training dataset ( Buckner ) cannot be shared due to Institutional Review Board requirements. The trained PSACNN network and the prediction script are freely available on the FreeSurfer development version repository on Github ( https://github.com/freesurfer/freesurfer )."
+  },
+  {
+    "index": 80,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "2.6. Application of PSACNN for 3 T MRI"
+  },
+  {
+    "index": 81,
+    "kind": "p",
+    "id": "P41",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "Our training dataset of { A , Y , B } was obtained on a 1.5 T Siemens Vision scanner. The tissue NMR parameters, ρ , T 1 , T 2 are different at 3 T field strength than 1.5 T. This might lead to the conclusion that it is not possible to create synthetic 3 T images during PSACNN augmentation as, in principle, we cannot apply 3 T pulse sequence imaging equations to 1.5 T NMR maps. Ideally, we would prefer to have a training dataset with B maps at both 1.5 T and 3 T, which unfortunately is not available to us. However, our imaging equation approximations allow us to frame a 3 T imaging equation as a 1.5 T imaging equation with certain assumptions about the relationship between 1.5 T and 3 T NMR parameters. For instance, consider the FLASH approximate imaging equation in Eqn. 8 . When estimating the imaging parameters of this equation, we construct an equation system (for 1.5 T in Eqn. 16 , reframed as Eqn. 18 ), as described in Section 2.2 . We assume that the 3 T FLASH sequence will have the same equation as the 1.5 T FLASH. This is a reasonable assumption because the sequence itself need not change with the field strength."
+  },
+  {
+    "index": 82,
+    "kind": "table",
+    "id": "FD16",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "[ log ( s c ) log ( s g ) log ( s w ) ] = [ 1 1 / T 1 c 1.5 1 / T 2 c 1.5 1 1 / T 1 g 1.5 1 / T 2 g 1.5 1 1 / T 1 w 1.5 1 / T 2 w 1.5 ] [ θ 0 θ 1 θ 2 ] + [ log ( ρ c ) log ( ρ g ) log ( ρ w ) ] (16)"
+  },
+  {
+    "index": 83,
+    "kind": "table",
+    "id": "FD17",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "s = B 1.5 θ 1.5 + ρ (17)"
+  },
+  {
+    "index": 84,
+    "kind": "table",
+    "id": "FD18",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "s − ρ = B 1.5 θ 1.5 (18)"
+  },
+  {
+    "index": 85,
+    "kind": "p",
+    "id": "P42",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "We can express the equation system for a 3 T pulse sequence in Eqn. 19 , where B 3 is 3×3-sized matrix similar to B 1.5 in Eqn. 18 , but with mean tissue NMR values at 3 T, which can be obtained from previous studies ( Wansapura et al., 1999 ). It is possible to estimate a 3 × 3-sized matrix K , where B 3 = B 1.5 K . K is given by, K = B 1.5 − 1 B 3 . Now, given a 3 T image, we first calculate the mean tissue intensities s . The ρ values are mean tissue proton density values and do not depend on field strength. Therefore, we can write Eqn. 19 , that is similar to Eqn. 18 . Substituting B 3 in Eqn. 19 , we get Eqn. 20 and reframe it as Eqn. 21 ."
+  },
+  {
+    "index": 86,
+    "kind": "table",
+    "id": "FD19",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "s − ρ = B 3 θ 3 , (19)"
+  },
+  {
+    "index": 87,
+    "kind": "table",
+    "id": "FD20",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "= ( B 1.5 K ) θ 3 , (20)"
+  },
+  {
+    "index": 88,
+    "kind": "table",
+    "id": "FD21",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "= B 1.5 ( K θ 3 ) . (21)"
+  },
+  {
+    "index": 89,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "Therefore, we can treat the parameters for 3 T ( θ 3 ) as linearly transformed (by K −1 ) parameters θ 1.5 . In essence, we can thus treat 3 T images as if they have been acquired with a 1.5 T scanner (with 1.5 T NMR tissue values) but with a parameter set θ 3 = K −1 θ 1.5 ."
+  },
+  {
+    "index": 90,
+    "kind": "p",
+    "id": "P44",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S10"
+    ],
+    "text": "However, while applying a 3 T equation to 1.5 T NMR maps to generate a synthetic 3 T image, the above relationship of B 3 = B 1.5 K implies a stronger assumption that [1,1 /T 1 υ 3 ,1 /T 2 υ 3 ] T = K T [1,1 /T 1 υ 1.5 ,1 /T 2 υ 1.5 ] T , where the [1,1 /T 1 υ 3 ,1 /T 2 υ 3 ] is a row vector with NMR values at any voxel υ at 3 T and [1,1 /T 1 υ 1.5 ,1 /T 2 υ 1.5 ] is a row vector of NMR values at 1.5 T for the same anatomy. K will have to be estimated using a least squares approach using all the 1.5 T and 3 T values at all voxels, which are not available to us. This linear relationship between 1.5 T and 3 T NMR parameters is likely not theoretically valid, but nevertheless works well in practice on healthy adult brain images as can be seen from empirical results presented in Section 3 and Figs. 3(a) – (c) , where we can see the estimated parameters from a variety of 1.5 T and 3 T MPRAGE scans. These are restricted in a small enough range because the contrast changes for MPRAGE between 1.5 T and 3 T are not drastically different and a linear relationship between the two NMR vectors is likely a good enough approximation."
+  },
+  {
+    "index": 91,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11"
+    ],
+    "text": "3. Experiments and Results"
+  },
+  {
+    "index": 92,
+    "kind": "p",
+    "id": "P45",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11"
+    ],
+    "text": "We evaluate the performance of PSACNN and compare it with unaugmented CNN (CNN), FreeSurfer segmentation (ASEG) ( Fischl et al., 2002 ), SAMSEG ( Puonti et al., 2016 ), and MALF ( Wang et al., 2013 ). We divide the experiments into two halves. In the first half, described in Section 3.2 , we evaluate segmentation accuracy as measured by Dice overlap on datasets with manual labels. In the second half, described in Section 3.3 , we evaluate the segmentation consistency of all five algorithms. Segmentation consistency is evaluated by calculating the coefficient of variation of structure volumes for the same set of subjects that have been scanned at multiple sites/scanners or sequences."
+  },
+  {
+    "index": 93,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S12"
+    ],
+    "text": "3.1. Training Set and Pre-processing"
+  },
+  {
+    "index": 94,
+    "kind": "p",
+    "id": "P46",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S12"
+    ],
+    "text": "As described in Section 2.4 , we randomly chose a subset comprising 16 out of 39 subjects representing the whole age range from the Buckner dataset These subjects have 1.5 T Siemens Vision MPRAGE acquisitions and corresponding expert manual label images and were used as our training dataset for CNN, PSACNN, and as the atlas set for MALF. ASEG segmentation in FreeSurfer and SAMSEG are model-based methods that use a pre-built probabilistic atlas prior. The atlas priors for ASEG and SAMSEG are built from 39 and 20 subjects respectively, from the Buckner dataset."
+  },
+  {
+    "index": 95,
+    "kind": "p",
+    "id": "P47",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S12"
+    ],
+    "text": "For MALF, we use cross-correlation as the registration metric and the parameter choices specific to brain MRI segmentation and joint label fusion as suggested by the authors in ( Wang et al., 2013 )."
+  },
+  {
+    "index": 96,
+    "kind": "p",
+    "id": "P48",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S12"
+    ],
+    "text": "For PSACNN, we use the same single trained network that is trained from real and augmented MPRAGE, FLASH, SPGR, and T2-SPACE patches of the 16-subject training data for all the experiments. We do not re-train it for a new test dataset or a new experiment."
+  },
+  {
+    "index": 97,
+    "kind": "p",
+    "id": "P49",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S12"
+    ],
+    "text": "All input images from the training and test datasets are brought into the FreeSurfer conformed space (resampled to isotropic 1×1×1 mm 3 ) skullstripped and intensity inhomogeneity corrected ( Sled et al., 1998 ) by the pre-processing stream of FreeSurfer ( Fischl et al., 2004 ). The intensities are scaled such that they lie in the [0,1] interval."
+  },
+  {
+    "index": 98,
+    "kind": "p",
+    "id": "P50",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S12"
+    ],
+    "text": "For the unaugmented CNN specifically, we further standardize the input image intensities such that their white matter mean (as identified by fitting a Gaussian mixture model to the intensity histogram) is fixed to 0.8. The CNN results were significantly worse on multi scanner data without this additional scaling. We also tested using piece-wise linear intensity standardization ( Nyúl and Udupa, 1999 ) on input images to the unaugmented CNN but the results were better for white matter mean standardization. There is no such scaling required for the other methods including PSACNN."
+  },
+  {
+    "index": 99,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13"
+    ],
+    "text": "3.2. Evaluation of Segmentation Accuracy"
+  },
+  {
+    "index": 100,
+    "kind": "p",
+    "id": "P51",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13"
+    ],
+    "text": "We evaluate all algorithms in three settings, where the test datasets have varying degrees of acquisition differences with the training Buckner dataset. Specifically, where the test dataset is acquired by:"
+  },
+  {
+    "index": 101,
+    "kind": "p",
+    "id": "P52",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13"
+    ],
+    "text": "Same scanner (Siemens Vision), same sequence (MPRAGE) as the training dataset"
+  },
+  {
+    "index": 102,
+    "kind": "p",
+    "id": "P53",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13"
+    ],
+    "text": "Different scanner (Siemens SONATA), same sequence (MPRAGE with different parameters) as the training set."
+  },
+  {
+    "index": 103,
+    "kind": "p",
+    "id": "P54",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13"
+    ],
+    "text": "Different scanner (GE Signa), different sequence (SPGR) as the training dataset."
+  },
+  {
+    "index": 104,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S14"
+    ],
+    "text": "3.2.1. Same Scanner, Same Sequence Input"
+  },
+  {
+    "index": 105,
+    "kind": "p",
+    "id": "P55",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S14"
+    ],
+    "text": "In this experiment we compare the performance of segmentation algorithms on test data with the exact same acquisition parameters as the training data. The test data consists of 20 subject MPRAGEs from the Buckner data that are independent of the 16 subjects used for training and 3 for validation of the CNN methods."
+  },
+  {
+    "index": 106,
+    "kind": "p",
+    "id": "P56",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S14"
+    ],
+    "text": "Figure 7 shows an example input test subject image, its manual segmentation, and segmentations of the various algorithms. All algorithms perform reasonably well on this dataset. We calculated the Dice coefficients of the labeled structures for all the algorithms (see Fig. 8 ). From the Dice coefficient boxplots (generated from 20 subjects) shown in Fig. 8 we observe that CNN (red) and PSACNN (blue) Dice overlap (ALL Dice = 0.9396) is comparable to each other and is significantly better (paired t-test p < 0.05) than ASEG (green), SAMSEG (yellow), and MALF (purple) for many of the subcortical structures, and especially for whole white matter (WM) and gray matter cortex (CT) labels. This suggests that large patch-based CNN methods do provide a more accurate segmentation than state-of-the-art approaches like MALF and SAMSEG for a majority of the labeled structures. But, since the training and test acquisition parameters are exactly same, there is no significant difference between CNN and PSACNN."
+  },
+  {
+    "index": 107,
+    "kind": "figure",
+    "id": "F7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S14"
+    ],
+    "text": "Figure 7: Figure 7: Open in a new tab Input Buckner MPRAGE with segmentation results from ASEG, SAMSEG, MALF, CNN, and PSACNN, along with manual segmentations."
+  },
+  {
+    "index": 108,
+    "kind": "figure",
+    "id": "F8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S14"
+    ],
+    "text": "Figure 8: Figure 8: Open in a new tab Dice coefficient boxplots of selected structures for all five methods on 20 subjects of the Buckner dataset. Acronyms: white matter (WM), cortex (CT), lateral ventricle (LV), cerebellar white matter (CWM), cerebellar cortex (CCT), thalamus (TH), caudate (CA), putamen (PU), pallidum (PA), hippocampus (HI), amygdala (AM), brain-stem (BS), overlap for all structures (ALL)."
+  },
+  {
+    "index": 109,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S15"
+    ],
+    "text": "3.2.2. Different Scanner, Same Sequence Input"
+  },
+  {
+    "index": 110,
+    "kind": "p",
+    "id": "P57",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S15"
+    ],
+    "text": "In this experiment we compare the accuracy of PSACNN against other methods on the Siemens13 dataset that comprises 13 subject MPRAGE scans acquired on a 1.5 T Siemens SONATA scanner with a similar pulse sequence as the training data. The Siemens13 dataset has expert manual segmentations generated with the same protocol as the training data ( Buckner et al., 2004 ). Figure 9 shows the segmentation results for all the algorithms. The image contrast (see Fig. 9(a) ) for the Siemens13 dataset is only slightly different from the training Buckner dataset. Therefore, all algorithms perform fairly well on this dataset. Figure 10 shows the Dice overlap boxplots calculated over 13 subjects. Similar to the previous experiment, the unaugmented CNN and PSACNN have a superior Dice overlap compared to other methods (statistically significantly better for five of the nine labels shown), but are comparable to each other as the test acquisition is not very different from the training acquisition."
+  },
+  {
+    "index": 111,
+    "kind": "figure",
+    "id": "F9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S15"
+    ],
+    "text": "Figure 9: Figure 9: Open in a new tab Input Siemens13 MPRAGE with segmentation results from ASEG, SAMSEG, MALF, CNN, and PSACNN, along with manual segmentations. Acronyms: white matter (WM), cortex (CT), lateral ventricle (LV), cerebellar white matter (CWM), cerebellar cortex (CCT), thalamus (TH), caudate (CA), putamen (PU), pallidum (PA), hippocampus (HI), amygdala (AM), brain-stem (BS), overlap for all structures (ALL)."
+  },
+  {
+    "index": 112,
+    "kind": "figure",
+    "id": "F10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S15"
+    ],
+    "text": "Figure 10: Figure 10: Open in a new tab Dice evaluations on Siemens13 dataset. Acronyms: white matter (WM), cortex (CT), lateral ventricle (LV), cerebellar white matter (CWM), cerebellar cortex (CCT), thalamus (TH), caudate (CA), putamen (PU), pallidum (PA), hippocampus (HI), amygdala (AM), brain-stem (BS), overlap for all structures (ALL)."
+  },
+  {
+    "index": 113,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S16"
+    ],
+    "text": "3.2.3. Different Scanner, Different Sequence Input"
+  },
+  {
+    "index": 114,
+    "kind": "p",
+    "id": "P58",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S16"
+    ],
+    "text": "In this experiment we compare the accuracy of PSACNN against other methods on the GE14 dataset comprising 14 subjects scanned on a 1.5 T GE Signa scanner with the SPGR (spoiled gradient recalled) sequence ( TR = 35 ms , TE = 5 ms, α = 45°, voxel size=0.9375 × 0.9375 × 1.5 mm 3 ). All the subjects have expert manual segmentations generated with the same protocol as the training data, but the manual labels are visibly different than training data, with a much thicker cortex ( Fig. 11(e) ). This is likely because the GE14 SPGR scans ( Fig. 11(a) ) present a noticeably different GM-WM image contrast than the MPRAGE training data. Consequently, as seen in Fig. 12 , all methods show a reduced overlap, but the unaugmented CNN (red boxplot) has the worst performance of all as it is unable to generalize to an SPGR sequence (despite white matter peak intensity standardization). Some obvious CNN errors are for small subcortical structures such as hippocampus (yellow in Fig. 11(g) ) labeled as thalamus (green label). PSACNN (ALL Dice=0.7636) on the other hand, is robust to the contrast change due to pulse sequencebased augmentation, and produces segmentations that are comparable to the state-of-the-art algorithms such as SAMSEG (ALL Dice=0.7708) and MALF (ALL Dice=0.7804) in accuracy, with 1–2 orders of magnitude lower processing time."
+  },
+  {
+    "index": 115,
+    "kind": "figure",
+    "id": "F11",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S16"
+    ],
+    "text": "Figure 11: Figure 11: Open in a new tab Input GE14 SPGR with segmentation results from ASEG, SAMSEG, MALF, CNN, and PSACNN, along with manual segmentations."
+  },
+  {
+    "index": 116,
+    "kind": "figure",
+    "id": "F12",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S13",
+      "S16"
+    ],
+    "text": "Figure 12: Figure 12: Open in a new tab Dice evaluations on GE14 dataset. Acronyms: white matter (WM), cortex (CT), lateral ventricle (LV), cerebellar white matter (CWM), cerebellar cortex (CCT), thalamus (TH), caudate (CA), putamen (PU), pallidum (PA), hippocampus (HI), amygdala (AM), brain-stem (BS), overlap for all structures (ALL)."
+  },
+  {
+    "index": 117,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17"
+    ],
+    "text": "3.3. Evaluation of Segmentation Consistency"
+  },
+  {
+    "index": 118,
+    "kind": "p",
+    "id": "P59",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17"
+    ],
+    "text": "The experiments described in Section 3.2 demonstrate that PSACNN is a highly accurate segmentation algorithm and better or comparable to the state-of-the-art segmentation algorithms. In this section, we evaluate the segmentation consistency of all algorithms on three distinct multi-scanner/multi-sequence datasets."
+  },
+  {
+    "index": 119,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "3.3.1. Four Scanner Data"
+  },
+  {
+    "index": 120,
+    "kind": "p",
+    "id": "P60",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "In this experiment we tested the consistency of the segmentation produced by the various methods on four datasets acquired from 13 subjects;"
+  },
+  {
+    "index": 121,
+    "kind": "p",
+    "id": "P61",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "MEF : 3D Multi-echo FLASH, scanned on Siemens Trio 3 T scanner, voxel-size 1×1×1.33 mm 3 , sagittal acquisition, TR =20 ms, TE =1.8+1.82n ms, flip angle 30°."
+  },
+  {
+    "index": 122,
+    "kind": "p",
+    "id": "P62",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "TRIO : 3D MPRAGE, scanned on Siemens Trio 3 T scanner, voxel-size 1 × 1 × 1.33 mm 3 , sagittal acquisition, TR =2730 ms, TE =3.44 ms, TI =1000 ms, flip angle 7°."
+  },
+  {
+    "index": 123,
+    "kind": "p",
+    "id": "P63",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "GE : 3D MPRAGE, scanned on GE Signa 1.5 T scanner, voxel-size 1 × 1 × 1.33 mm 3 , sagittal acquisition, TR =2730 ms, TE =3.44 ms, TI =1000 ms, flip angle 7°."
+  },
+  {
+    "index": 124,
+    "kind": "p",
+    "id": "P64",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "Siemens : 3D MPRAGE, scanned on Siemens Sonata 1.5 T scanner, voxel-size 1×1×1.33 mm 3 , sagittal acquisition, TR =2730 ms, TE =3.44 ms, TI =1000 ms, flip angle 7°."
+  },
+  {
+    "index": 125,
+    "kind": "p",
+    "id": "P65",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "For each structure l in each subject, we calculated the standard deviation ( σ l ) of the segmented label volume over all datasets. We divided this by the mean of the structure volume ( μ l ) for that subject, over all the datasets. This gives us σ l μ l , the coefficient of variation for structure l for each subject. In Table 1 , we calculated the mean coefficient of variation (in %) over the 13 subjects in the Four Scanner Dataset. The lower the coefficient of variation, the more consistent is the segmentation algorithm in predicting the structure volume across multi-scanner datasets. From Table 1 , we can observe that PSACNN has the lowest coefficient of variation in five of the nine structures and is the second lowest in three others. In the structures where PSACNN has the lowest coefficient of variation, it is statistically significantly lower ( p < 0.05, Wilcoxon signed rank test) than the third placed method, but not the second-placed method. SAMSEG has the lowest coefficient of variation for CA (caudate) and LV (lateral ventricle), whereas MALF is the lowest for HI (hippocampus) and AM (amygdala)."
+  },
+  {
+    "index": 126,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18",
+      "T1"
+    ],
+    "text": "Table 1:"
+  },
+  {
+    "index": 127,
+    "kind": "p",
+    "id": "P117",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18",
+      "T1"
+    ],
+    "text": "Mean (and std. dev.) of the coefficient of variation (in %) of structure volumes over all four datasets with all algorithms."
+  },
+  {
+    "index": 128,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18",
+      "T1"
+    ],
+    "text": "ASEG SAMSEG MALF CNN PSACNN Mean (Std) Mean (Std.) Mean (Std) Mean (Std.) Mean (Std.) WM 11.02 (7.19) 2.46 (2.14) 3.21 (1.23) 17.27 (3.83) 1.99 (1.19) CT 5.10 (3.75) 3.16 (1.30) 2.13 (0.73) 7.21 (2.95) 1.81 (1.30) TH 3.72 (1.49) 2.13 (0.62) 1.12 (0.55) 6.08 (7.13) 1.05 (0.62) CA 3.76 (2.10) 1.04 (1.47) 2.42 (1.50) 18.62 (11.05) 2.15 (1.04) PU 7.42 (2.03) 2.99 (0.86) 2.03 (0.95) 10.70 (4.16) 1.05 (0.86) PA 5.22 (3.32) 8.52 (4.45) 3.83 (2.44) 5.04 (3.37) 3.11 (4.45) HI 3.18 (1.23) 2.45 (0.95) 1.46 (0.88) 16.28 (10.21) 1.47 (0.54) AM 5.27 (2.20) 2.09 (1.09) 1.99 (1.19) 14.37 (6.75) 2.16 (0.98) LV 5.61 (6.53) 3.12 (5.90) 4.72 (6.26) 10.40 (6.98) 4.58 (6.72)"
+  },
+  {
+    "index": 129,
+    "kind": "p",
+    "id": "P118",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18",
+      "T1"
+    ],
+    "text": "Bold results show the minimum coefficient of variation."
+  },
+  {
+    "index": 130,
+    "kind": "p",
+    "id": "P66",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "Next, we calculated the signed relative difference of structure volume estimated for a particular dataset with respect to the mean structure volume across all four datasets and show them as boxplots in Fig. 13 ( MEF in red, TRIO in blue, GE in green, Siemens in purple.). Ideally, a segmentation algorithm would have zero bias and would produce the exact same segmentation for different acquisitions of the same subject. But the lower the bias, the more consistent is the algorithm across different acquisitions. Figures 13(a) – (i) show the relative difference for each of the nine structures for SAMSEG, MALF, PSACNN. There is a small, statistically significant bias (difference from zero, thick black line) for most structures and algorithms, which suggests that there is a scope for further improvement for all algorithms. The relative differences also give us an insight into which datasets show the most difference from the mean, a fact that is lost when the coefficient of variation is calculated."
+  },
+  {
+    "index": 131,
+    "kind": "figure",
+    "id": "F13",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "Figure 13: Figure 13: Open in a new tab Signed relative difference of volumes of (a) WM, (b) CT, (c) TH, (d) CA, (e) PU, (f) PA, (g) HI, (h) AM, (i) LV from mean structure volume over all four datasets. Left group of boxplots shows SAMSEG, middle shows MALF, right-most shows PSACNN. The colors denote different datasets, MEF (red), TRIO (blue), GE (green), Siemens (purple)"
+  },
+  {
+    "index": 132,
+    "kind": "p",
+    "id": "P67",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S18"
+    ],
+    "text": "PSACNN results for a majority of the structures ( Fig. 13(a) , Fig. 13(c) , for example) show lower median bias (< 2.5%), lower standard deviation, and fewer outliers. MALF has lower bias when segmenting HI ( Fig. 13(g) ), AM ( Fig. 13(h) ), whereas SAMSEG has better consistency when segmenting the LV structure ( Fig. 13(i) ). MEF uses a different pulse sequence than all the other datasets that have MPRAGE sequences. For most structures and algorithms shown in Fig. 13 , we observe that MEF shows the maximum relative volume difference from the mean (red boxplot in Figs. 13(a) , (b) for example). The Siemens acquisitions( TRIO in blue and Siemens in purple) show similar consistency to each other despite the differences in field strength (3 T vs 1.5 T)."
+  },
+  {
+    "index": 133,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "3.3.1. Four Scanner Data"
+  },
+  {
+    "index": 134,
+    "kind": "p",
+    "id": "P68",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "In this experiment we tested the consistency of the segmentation produced by the various methods on four datasets acquired from 13 subjects;"
+  },
+  {
+    "index": 135,
+    "kind": "p",
+    "id": "P69",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "MEF : 3D Multi-echo FLASH, scanned on Siemens Trio 3 T scanner, voxel-size 1×1×1.33 mm 3 , sagittal acquisition, TR =20 ms, TE =1.8+1.82n ms, flip angle 30°."
+  },
+  {
+    "index": 136,
+    "kind": "p",
+    "id": "P70",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "TRIO : 3D MPRAGE, scanned on Siemens Trio 3 T scanner, voxel-size 1 × 1 × 1.33 mm 3 , sagittal acquisition, TR =2730 ms, TE =3.44 ms, TI =1000 ms, flip angle 7°."
+  },
+  {
+    "index": 137,
+    "kind": "p",
+    "id": "P71",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "GE : 3D MPRAGE, scanned on GE Signa 1.5 T scanner, voxel-size 1 × 1 × 1.33 mm 3 , sagittal acquisition, TR =2730 ms, TE =3.44 ms, TI =1000 ms, flip angle 7°."
+  },
+  {
+    "index": 138,
+    "kind": "p",
+    "id": "P72",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "Siemens : 3D MPRAGE, scanned on Siemens Sonata 1.5 T scanner, voxel-size 1×1×1.33 mm 3 , sagittal acquisition, TR =2730 ms, TE =3.44 ms, TI =1000 ms, flip angle 7°."
+  },
+  {
+    "index": 139,
+    "kind": "p",
+    "id": "P73",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "For each structure l in each subject, we calculated the standard deviation ( σ l ) of the segmented label volume over all datasets. We divided this by the mean of the structure volume ( μ l ) for that subject, over all the datasets. This gives us σ l μ l , the coefficient of variation for structure l for each subject. In Table 1 , we calculated the mean coefficient of variation (in %) over the 13 subjects in the Four Scanner Dataset. The lower the coefficient of variation, the more consistent is the segmentation algorithm in predicting the structure volume across multi-scanner datasets. From Table 1 , we can observe that PSACNN has the lowest coefficient of variation in five of the nine structures and is the second lowest in three others. In the structures where PSACNN has the lowest coefficient of variation, it is statistically significantly lower ( p < 0.05, Wilcoxon signed rank test) than the third placed method, but not the second-placed method. SAMSEG has the lowest coefficient of variation for CA (caudate) and LV (lateral ventricle), whereas MALF is the lowest for HI (hippocampus) and AM (amygdala)."
+  },
+  {
+    "index": 140,
+    "kind": "p",
+    "id": "P74",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "Next, we calculated the signed relative difference of structure volume estimated for a particular dataset with respect to the mean structure volume across all four datasets and show them as boxplots in Fig. 13 ( MEF in red, TRIO in blue, GE in green, Siemens in purple.). Ideally, a segmentation algorithm would have zero bias and would produce the exact same segmentation for different acquisitions of the same subject. But the lower the bias, the more consistent is the algorithm across different acquisitions. Figures 13(a) – (i) show the relative difference for each of the nine structures for SAMSEG, MALF, PSACNN. There is a small, statistically significant bias (difference from zero, thick black line) for most structures and algorithms, which suggests that there is a scope for further improvement for all algorithms. The relative differences also give us an insight into which datasets show the most difference from the mean, a fact that is lost when the coefficient of variation is calculated."
+  },
+  {
+    "index": 141,
+    "kind": "p",
+    "id": "P75",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S19"
+    ],
+    "text": "PSACNN results for a majority of the structures ( Fig. 13(a) , Fig. 13(c) , for example) show lower median bias (< 2.5%), lower standard deviation, and fewer outliers. MALF has lower bias when segmenting HI ( Fig. 13(g) ), AM ( Fig. 13(h) ), whereas SAMSEG has better consistency when segmenting the LV structure ( Fig. 13(i) ). MEF uses a different pulse sequence than all the other datasets that have MPRAGE sequences. For most structures and algorithms shown in Fig. 13 , we observe that MEF shows the maximum relative volume difference from the mean (red boxplot in Figs. 13(a) , (b) for example). The Siemens acquisitions( TRIO in blue and Siemens in purple) show similar consistency to each other despite the differences in field strength (3 T vs 1.5 T)."
+  },
+  {
+    "index": 142,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "3.3.2. Multi-TI Three Scanner Data"
+  },
+  {
+    "index": 143,
+    "kind": "p",
+    "id": "P76",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "In this experiment we tested the segmentation consistency of PSACNN on a more extensive dataset collected at the University of Oslo. The dataset consists of 24 subjects, each scanned on three Siemens scanners, Avanto, Skyra, and Prisma, with the MPRAGE sequence and two inversion times ( TI )–850 ms and 1000 ms. The dataset descriptions in detail are as follows:"
+  },
+  {
+    "index": 144,
+    "kind": "p",
+    "id": "P77",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "A850 : 3D MPRAGE, scanned on Siemens Avanto 1.5 T scanner, voxel-size 1.25 × 1.25×1.2 mm 3 , sagittal acquisition, TR =2400 ms, TE =3.61 ms, TI =850 ms, flip angle 8°."
+  },
+  {
+    "index": 145,
+    "kind": "p",
+    "id": "P78",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "A1000 : 3D MPRAGE, scanned on Siemens Avanto 1.5 T scanner, voxel-size 1.25 × 1.25 × 1.2 mm 3 , sagittal acquisition, TR =2400 ms, TE =3.61 ms, TI =1000 ms, flip angle 8°."
+  },
+  {
+    "index": 146,
+    "kind": "p",
+    "id": "P79",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "S850 : 3D MPRAGE, scanned on Siemens Skyra 3 T scanner, voxel-size 1 × 1 × 1 mm 3 , sagittal acquisition, TR =2300 ms, TE =2.98 ms, TI =850 ms, flip angle 8°."
+  },
+  {
+    "index": 147,
+    "kind": "p",
+    "id": "P80",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "S1000 : 3D MPRAGE, scanned on Siemens Skyra 3 T scanner, voxel-size 1 × 1 × 1 mm 3 , sagittal acquisition, TR =2400 ms, TE =2.98 ms, TI =1000 ms, flip angle 8°."
+  },
+  {
+    "index": 148,
+    "kind": "p",
+    "id": "P81",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "P850 : 3D MPRAGE, scanned on Siemens Prisma 3 T scanner, voxel-size 1×1×1 mm 3 , sagittal acquisition, TR =2400 ms, TE =2.22 ms, TI =850 ms, flip angle 8°"
+  },
+  {
+    "index": 149,
+    "kind": "p",
+    "id": "P82",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "P1000 : 3D MPRAGE, scanned on Siemens Prisma 3 T scanner, voxel-size 0.8×0.8×0.8 mm 3 , sagittal acquisition, TR =2400 ms, TE =2.22 ms, TI =1000 ms, flip angle 8°"
+  },
+  {
+    "index": 150,
+    "kind": "p",
+    "id": "P83",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "We calculate the coefficient of variation of structure volumes across these six datasets similar to our experiment in Section 3.3.1 , and are shown in Table 2 . From Table 2 we can observe that PSACNN structure volumes have the lowest coefficient of variation for six of the nine structures. For WM, TH, PA, and HI structures PSACNN coefficient of variation is significantly lower than the next best method ( p < 0.05 using the paired Wilcoxon signed rank test). SAMSEG is significantly lower than MALF for the CT structure. As compared to Table 1 the coefficients of variation are lower as the input MPRAGE sequences are the preferred input for all of these methods (except SAMSEG)."
+  },
+  {
+    "index": 151,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20",
+      "T2"
+    ],
+    "text": "Table 2:"
+  },
+  {
+    "index": 152,
+    "kind": "p",
+    "id": "P119",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20",
+      "T2"
+    ],
+    "text": "Mean (and std. dev.) of the coefficient of variation (in %) of structure volumes over all six datasets with all algorithms."
+  },
+  {
+    "index": 153,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20",
+      "T2"
+    ],
+    "text": "ASEG SAMSEG MALF CNN PSACNN Mean (Std) Mean (Std.) Mean (Std) Mean (Std.) Mean (Std.) WM 2.82 (0.71) 3.06 (0.92) 2.30 (0.80) 6.01 (0.98) 1.91 (0.70) * CT 2.68 (0.67) 1.42 (0.77) * 1.80 (0.82) 4.57 (1.37) 1.85 (0.70) TH 3.70 (1.32) 1.93 (0.72) 1.37 (0.59) 3.38 (1.35) 0.85 (0.60) * CA 2.02 (0.60) 2.38 (1.31) 1.80 (1.05) 1.68 (1.33) 1.68 (0.85) PU 2.62 (1.22) 2.88 (1.78) 1.24 (0.74) 3.08 (1.13) 1.27 (0.86) PA 4.67 (2.50) 2.10 (2.29) 2.65 (1.41) 5.69 (1.41) 1.17 (0.56) * HI 2.48 (0.78) 2.23 (3.54) 1.99 (1.60) 6.31 (2.08) 1.00 (0.41) * AM 6.50 (1.79) 2.44 (2.42) 1.93 (1.28) 3.87 (1.28) 1.54 (0.56) LV 2.00 (0.82) 2.33 (1.36) 2.66 (2.38) 5.94 (1.87) 2.21 (0.86)"
+  },
+  {
+    "index": 154,
+    "kind": "p",
+    "id": "P120",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20",
+      "T2"
+    ],
+    "text": "Bold results show the minimum coefficient of variation."
+  },
+  {
+    "index": 155,
+    "kind": "p",
+    "id": "P121",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20",
+      "T2"
+    ],
+    "text": "indicates significantly lower ( p < 0.05, using the paired Wilcoxon signed rank test) coefficient of variation than the next best method."
+  },
+  {
+    "index": 156,
+    "kind": "p",
+    "id": "P84",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "In Figs. 14(a) – (i) we show the mean (over 24 subjects) signed relative volume difference (in %) with the mean structure volume averaged over all six acquisition for nine structures. We focus on SAMSEG, MALF, and PSACNN for this analysis. The boxplot colors denote different datasets, A850 (red), P850 (blue), S850 (green), A1000 (purple), P1000 (orange), S1000 (yellow). There is a small, statistically significant bias (difference from 0, thick black line) for most structures and algorithms. The bias is much smaller than that observed in Fig. 13 for the Four Scanner Dataset. PSACNN results for a majority of the structures (for example, Figs. 14(a) , (c) , (d) , (f) ) show lower median (< 2.5%), lower standard deviation, and fewer outliers. MALF has lower bias when segmenting, CT (14(b)), whereas SAMSEG has better consistency when segmenting the LV structure (14(i))."
+  },
+  {
+    "index": 157,
+    "kind": "figure",
+    "id": "F14",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "Figure 14: Figure 14: Open in a new tab Signed relative difference of volumes of (a) WM, (b) CT, (c) TH, (d) CA, (e) PU, (f) PA, (g) HI, (h) AM, (i) LV from mean structure volume over all four datasets. In each figure, left group of boxplots shows SAMSEG, middle shows MALF, right-most shows PSACNN. The colors denote different datasets, A850 (red), P850 (blue), S850 (green), A1000 (purple), P1000 (orange), S1000 (yellow)."
+  },
+  {
+    "index": 158,
+    "kind": "p",
+    "id": "P85",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S20"
+    ],
+    "text": "From Fig. 14(a) , which shows the relative volume difference for WM–which can act as an indicator of the gray-white contrast present in the image–we can see that for all methods, images from same scanner, regardless of TI, show similar relative volume differences. The WM relative volume difference for A850 is most similar to A1000, and similarly for the Prisma and Skyra datasets. For PSACNN, this pattern exists for other structures such as CA, PA, PU, HI, AM, LV as well. This suggests that change in the image contrast due to change in the inversion time TI from 850 ms to 1000 ms, has a smaller effect on PSACNN segmentation consistency than a change of scanners (and field strengths)."
+  },
+  {
+    "index": 159,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "3.3.3. MPRAGE and T2-SPACE Segmentation"
+  },
+  {
+    "index": 160,
+    "kind": "p",
+    "id": "P86",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "In this experiment we use the same trained PSACNN network to segment co-registered MPRAGE and T2-SPACE acquisitions for 10 subjects that were acquired in the same imaging session. The acquisition details for both the sequences are as follows:"
+  },
+  {
+    "index": 161,
+    "kind": "p",
+    "id": "P87",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "MPRAGE : 3D MPRAGE, scanned on Siemens Prisma 3 T scanner, voxel-size 1×1×1 mm 3 , sagittal acquisition, TR =2530 ms, TE =1.69 ms, TI =1250 ms, flip angle 7°."
+  },
+  {
+    "index": 162,
+    "kind": "p",
+    "id": "P88",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "T2-SPACE : 3D T2-SPACE, scanned on Siemens Prisma 3 T scanner, voxel-size 1×1×1 mm 3 , sagittal acquisition, TR =3200 ms, TE =564 ms, flip angle 120°."
+  },
+  {
+    "index": 163,
+    "kind": "p",
+    "id": "P89",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "Figures 15(a) – (i) show the input MPRAGE and T2-SPACE images with their corresponding segmentations by SAMSEG, MALF, and PSACNN. ASEG and CNN are not built or trained for non- T 1 -w images so we did not use them for comparison. We calculated the unsigned relative volume difference of structures segmented for the T2-SPACE dataset with the same on the MPRAGE dataset. Table 3 shows the unsigned relative volume difference for a subset of the structures. PSACNN shows the minimum unsigned relative volume difference for six of the nine structures, with significantly better performance for subcortical structures including TH, CA, PU, and HI. SAMSEG has significantly lower volume difference for PA and LV. All algorithms shows a large volume difference for lateral ventricles (LV). The LV has a complex geometry with a long boundary and a segmentation one-two voxels inside or outside the LV of the MPRAGE image can cause a large relative volume difference. Synthetic T2-SPACE images generated in the PSACNN augmentation can match the overall image contrast with the real T2-SPACE images, however we believe the intensity gradient from white matter (dark) to CSF (very bright) is not accurately matched to the intensity gradient in the real, test T2-SPACE images, possibly due to resolution differences in the training and test data. This points to avenues of potential improvement in PSACNN augmentation. MALF ( Fig. 15(c) and Fig. 15(g) ) shows a diminished performance despite using a cross-modal registration metric like cross-correlation in the ANTS registration between the T 1 -w atlas images and the T 2 -w target images."
+  },
+  {
+    "index": 164,
+    "kind": "figure",
+    "id": "F15",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "Figure 15: Figure 15: Open in a new tab Input (a) MPRAGE and (e) T2-SPACE images with segmentations by SAMSEG (b) and (f), MALF (c) and (g), and PSACNN (d) and (h)"
+  },
+  {
+    "index": 165,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T3"
+    ],
+    "text": "Table 3:"
+  },
+  {
+    "index": 166,
+    "kind": "p",
+    "id": "P122",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T3"
+    ],
+    "text": "Mean (and std. dev.) of the unsigned relative volume difference (in %) of structure volumes for T2-SPACE dataset with respect to MPRAGE dataset."
+  },
+  {
+    "index": 167,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T3"
+    ],
+    "text": "SAMSEG MALF PSACNN Mean (Std) Mean (Std.) Mean (Std) WM 5.20 (2.38) 5.01 (2.74) 3.74 (1.30) CT 8.22 (1.04) 2.98 (2.16) 2.95 (1.42) TH 7.71 (2.72) 13.60 (6.13) 4.22 (2.17) * CA 9.15 (2.66) 34.51 (13.23) 3.98 (2.72) * PU 5.31 (1.99) 10.60 (7.92) 2.48 (1.57) * PA 2.85 (1.70) * 42.36 (15.01) 13.35 (10.12) HI 14.17 (5.82) 30.12 (12.14) 3.18 (2.05) * AM 12.46 (4.50) 10.49 (4.48) 10.69 (4.42) LV 16.44 (5.93) * 41.92 (47.89) 25.83 (7.13)"
+  },
+  {
+    "index": 168,
+    "kind": "p",
+    "id": "P123",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T3"
+    ],
+    "text": "Bold results show the minimum unsigned relative difference."
+  },
+  {
+    "index": 169,
+    "kind": "p",
+    "id": "P124",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T3"
+    ],
+    "text": "indicates significantly lower ( p < 0.05, using the paired Wilcoxon signed rank test) unsigned relative volume difference than the next best method."
+  },
+  {
+    "index": 170,
+    "kind": "p",
+    "id": "P90",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "Since these two acquisitions were co-registered, we can calculate the Dice overlap between MPRAGE and T2-SPACE labeled structures, as shown in Table 4 . As we can observe, PSACNN shows a significantly higher overlap than the next best method on six of the nine structures, and tying with SAMSEG for thalamus (TH). SAMSEG shows a significantly higher overlap for PA and LV."
+  },
+  {
+    "index": 171,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T4"
+    ],
+    "text": "Table 4:"
+  },
+  {
+    "index": 172,
+    "kind": "p",
+    "id": "P125",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T4"
+    ],
+    "text": "Mean (and std. dev.) of the Dice coefficient for structures of T2-SPACE dataset with respect to MPRAGE dataset."
+  },
+  {
+    "index": 173,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T4"
+    ],
+    "text": "SAMSEG MALF PSACNN Mean (Std) Mean (Std.) Mean (Std) WM 0.91 (0.01) 0.57 (0.01) 0.94 (0.00) * CT 0.85 (0.01) 0.59 (0.00) 0.89 (0.01) * TH 0.92 (0.01) 0.80 (0.03) 0.92 (0.01) CA 0.88 (0.01) 0.65 (0.04) 0.90 (0.00) * PU 0.88 (0.02) 0.71 (0.05) 0.91 (0.02) * PA 0.89 (0.02) * 0.71 (0.03) 0.81 (0.05) HI 0.84 (0.04) 0.60 (0.03) 0.88 (0.02) * AM 0.83 (0.03) 0.65 (0.06) 0.88 (0.01) * LV 0.90 (0.03) * 0.63 (0.10) 0.87 (0.03)"
+  },
+  {
+    "index": 174,
+    "kind": "p",
+    "id": "P126",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T4"
+    ],
+    "text": "Bold results show the maximum Dice coefficient."
+  },
+  {
+    "index": 175,
+    "kind": "p",
+    "id": "P127",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21",
+      "T4"
+    ],
+    "text": "indicates significantly higher ( p < 0.05, using the paired Wilcoxon signed rank test) Dice than the next best method."
+  },
+  {
+    "index": 176,
+    "kind": "p",
+    "id": "P91",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S11",
+      "S17",
+      "S21"
+    ],
+    "text": "The PSACNN network is trained jointly on T 1 -w + T 2 -w synthetic examples, as described in Section 2.3 . We also observe that performance of a jointly trained PSACNN network on T2-SPACE images is not significantly different than a network trained on purely T 2 -w synthetic examples, as long as they are exposed to the same number of synthetic T 2 -w training examples. The average Dice (over all the labels) for a pure T 2 -w-trained network on T2-SPACE data from 10 subjects with respect to T 1 -w + T 2 -w trained network was 0.982 (std. dev. 0.02). This suggests that addition of synthetic T 1 -w examples in training does not affect the T2-SPACE segmentation accuracy."
+  },
+  {
+    "index": 177,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "4. Conclusion and Discussion"
+  },
+  {
+    "index": 178,
+    "kind": "p",
+    "id": "P92",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "We have described PSACNN, which uses a new strategy for training CNNs for the purpose of consistent whole brain segmentation across multi-scanner and multi-sequence MRI data. PSACNN shows significant improvement over state-of-the-art segmentation algorithms in terms accuracy based on our experiments on multiple manually labeled datasets acquired with different acquisition settings as shown in Section 3.2 ."
+  },
+  {
+    "index": 179,
+    "kind": "p",
+    "id": "P93",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "For modern large, multi-scanner datasets, it is imperative for segmentation algorithms to provide consistent outputs on a variety of differing acquisitions. This is especially important when imaging is used to quantify the efficacy of a drug in Phase III of its clinical trials. Phase III trials are required to be carried out in hundreds of centers with access to a large subject population across tens of countries ( Murphy and Koh, 2010 ), where accurate and consistent segmentation across sites is critical. The pulse sequence parameter estimation based augmentation strategy in training PSACNN allows us to train the CNN for a wide range of input pulse sequence parameters, leading to a CNN that is robust to input variations. In Section 3.3 , we compared the variation in structure volumes obtained via five segmentation algorithms for a variety of T 1 -weighted (and T 2 -weighted) inputs and PSACNN showed the highest consistency among all for many of the structures, with many structures showing less than 1% coefficient of variation. Such consistency enables detection of subtle changes in structure volumes in cross-sectional (healthy vs. diseased) and longitudinal studies, where variation can occur due to scanner and protocol upgrades."
+  },
+  {
+    "index": 180,
+    "kind": "p",
+    "id": "P94",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "PSACNN training includes augmented, synthetic MRI images generated by approximate forward models of the pulse sequences. Thus, as long as we can model the pulse sequence imaging equation, we can include multiple pulse sequence versions of the same anatomy in the augmentation and rely on the representative capacity of the underlying CNN architecture (U-Net in our case) to learn to map all of them to the same label map in the training data. We formulated approximate forward models of pulse sequences to train a network that can simultaneously segment MPRAGE, FLASH, SPGR, and T2-SPACE images consistently. Moreover, the NMR maps used in PSACNN need not perfectly match maps acquired using relaxometry sequences. They merely act as parameters that when used in our approximate imaging equation accurately generate the observed image intensities."
+  },
+  {
+    "index": 181,
+    "kind": "p",
+    "id": "P95",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "Recently image augmentation using domain adaptation methods has been used in training CNNs. These domain adaptation methods have been primarily driven by variants of generative adversarial networks (GAN) Goodfellow et al. (2014) . These include domain transfer network Taigman et al. (2016) , pix2pix Isola et al. (2016) , CycleGAN Zhu et al. (2017) , StarGAN Choi et al. (2018) , and many others that take images from a source domain and synthesize them in a target domain and include them in the training. In contrast, PSACNN synthesis essentially creates images from a wide range of domains and introduces them to the deep network in order for the network to be robust to differences in these domains. The deep domain adaptation methods need to model and learn the distributions that generate the source and target images and hence they require a large number of images in both the domains for training. In contrast, PSACNN needs only a single image from a target domain in order to estimate its pulse sequence equation and apply it to the training NMR parameters and synthesize training images that appear to be from the target domain."
+  },
+  {
+    "index": 182,
+    "kind": "p",
+    "id": "P96",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "Being a CNN-based method, PSACNN is 2–3 orders of magnitude faster than current state-of-the-art methods such as MALF and SAMSEG. On a system with an NVidia GPU (we tested Tesla K40, Quadro P6000, P100, V100) PSACNN completes a segmentation for a single volume within 45 seconds. On a single thread CPU, it takes about 5 minutes. SAMSEG and MALF take 15–30 minutes if they are heavily multi-threaded. On a single thread SAMSEG takes about 60 minutes, whereas MALF can take up to 20 hours. Pre-processing for PSACNN (inhomogeneity correction, skullstripping) can take up to 10—15 minutes, whereas SAMSEG does not need any pre-processing. With availability of training NMR maps of whole head images, PSACNN will be able to drop the time consuming skullstripping step. A fast, consistent segmentation method like PSACNN considerably speeds up neuroimaging pipelines that traditionally take hours to completely process a single subject."
+  },
+  {
+    "index": 183,
+    "kind": "p",
+    "id": "P97",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "PSACNN in its present form has a number of limitations we intend to work on in the future. The current augmentation does not include matching resolutions of the training and test data. This is the likely reason for overestimation of lateral ventricles in the T2-SPACE segmentation, as the training data and the synthetic T2-SPACE images generated from them have a slightly lower resolution than the test T2-SPACE data. Acquiring higher resolution training dataset with relaxometry sequences for ground truth P D , T 1 , and T 2 values will also help. Our pulse sequence models are approximate and can be robustly estimated. However, we do not account for any errors in the pulse sequence parameter estimation and the average NMR parameters. A probabilistic model that models these uncertainties to further make the estimation robust is a future goal. The pulse sequence parameter estimation also assumes the same set of parameters across the whole brain. It does not account for local differences, for example variation in the flip angle with B1 inhomogeneities."
+  },
+  {
+    "index": 184,
+    "kind": "p",
+    "id": "P98",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "PSACNN currently uses 96×96×96-sized patches to learn and predict the segmentations. This is a forced choice due to limitations in the GPU memory. However, using entire images would require significantly more training data than 20–40 labeled subjects. It is unknown how such a network would handle unseen anatomy. Further, it will be interesting to extend PSACNN to handle pathological cases involving tumors and lesions."
+  },
+  {
+    "index": 185,
+    "kind": "p",
+    "id": "P99",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S22"
+    ],
+    "text": "In conclusion, we have described PSACNN, a fast, pulse sequence resilient whole brain segmentation approach. The code has been made available as a part of the FreeSurfer development version repository ( https://github.com/freesurfer/freesurfer ). Further validation and testing will need to be carried out before its release."
+  },
+  {
+    "index": 186,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S23"
+    ],
+    "text": "Acknowledgments"
+  },
+  {
+    "index": 187,
+    "kind": "p",
+    "id": "P100",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S23"
+    ],
+    "text": "Support for this research was provided in part by the BRAIN Initiative Cell Census Network grant U01MH117023, the National Institute for Biomedical Imaging and Bioengineering (P41EB015896, 1R01EB023281, R01EB006758, R21EB018907, R01EB019956), the National Institute on Aging (5R01AG008122, R01AG016495), the National Institute of Mental Health the National Institute of Diabetes and Digestive and Kidney Diseases (1-R21-DK-108277–01), the National Institute for Neurological Disorders and Stroke (R01NS0525851, R21NS072652, R01NS070963, R01NS083534, 5U01NS086625,5U24NS10059103, R01NS105820), and was made possible by the resources provided by Shared Instrumentation Grants 1S10RR023401, 1S10RR019307, and 1S10RR023043. Additional support was provided by the NIH Blueprint for Neuroscience Research (5U01-MH093765), part of the multi-institutional Human Connectome Project. In addition, BF has a financial interest in CorticoMetrics, a company whose medical pursuits focus on brain imaging and measurement technologies. BF’s interests were reviewed and are managed by Massachusetts General Hospital and Partners HealthCare in accordance with their conflict of interest policies. This project has also received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Skodowska-Curie grant agreement No 765148, Danish Council for Independent Research under grant number DFF-6111–00291, and NIH: R21AG050122 National Institute on Aging."
+  },
+  {
+    "index": 188,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "fn-group1"
+    ],
+    "text": "Footnotes"
+  },
+  {
+    "index": 189,
+    "kind": "p",
+    "id": "P101",
+    "scope": [
+      "article",
+      null,
+      null,
+      "fn-group1"
+    ],
+    "text": "Publisher's Disclaimer: This is a PDF file of an unedited manuscript that has been accepted for publication. As a service to our customers we are providing this early version of the manuscript. The manuscript will undergo copyediting, typesetting, and review of the resulting proof before it is published in its final citable form. Please note that during the production process errors may be discovered which could affect the content, and all legal disclaimers that apply to the journal pertain."
+  },
+  {
+    "index": 190,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ref-list1"
+    ],
+    "text": "References"
+  }
+]

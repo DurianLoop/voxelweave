@@ -1,0 +1,62 @@
+Learning to Sample and Reconstruct for Accelerated MRI 12
+reconstructor and train the reconstructor with the fixed sampler. Mathematically,
+we solve the following optimization problems in sequence:
+θ(0)
+R = argmax
+θR
+Ex∼DEa∼πh
+T
+[S(R(Ma⊙F (x);θR), x)], (4.13)
+θ(l)
+π = argmax
+θπ
+Ex∼DJsparse
+T (x;π(·;θπ),R(·;θ(l−1)
+R )), (4.14)
+θ(l)
+R = argmax
+θR
+Ex∼DJsparse
+T (x;π(·;θ(l)
+π ),R(·;θR)), (4.15)
+where L is the number of alternation and l = 1, 2,··· ,L .
+Optimization problems (4.13) and (4.14) are identical to (4.11) and (4.12)
+respectively. We employ the same methods to solve them.
+Thanks to the proposed sparse-reward POMDP, which separates sampling and
+reconstruction, we can solve optimization problem (4.15) using BP. The following
+proposition enables training the reconstructor with a fixed sampler using gradient-
+based techniques such as the Adam optimizer.
+Proposition 1 The derivative of J sparse
+T w.r.t. θR is
+∇θRJ sparse
+T (x) = E{at}T−1
+t=0∼π [∇θRS(R(yT ;θR), x], (4.16)
+where{at}T−1
+t=0 ∼π means a sequential acquisition according to (4.6) and yT =
+yT (M0,{at}T−1
+t=0 ) = (M0 +∑T−1
+t=0 Mat)⊙ y.
+Proof See Appendix B.3.
+This proposition states that we can compute the gradient of Jsparse
+T w.r.t θR.
+Specifically, we sample a sampling trajectory {at}T−1
+t=0 from the ground truth x using
+the learned policy π to get yT , then reconstruct xT by applying the reconstruction
+functionR to yT , and finally compute the gradient of the similarity between the
+reconstructed image and the ground truth w.r.t θR. Furthermore, we run multiple
+trajectories to compute the average gradient, and optimize (4.15) by Adam optimizer.
+We refer to the entire training process as L2SR which stands for Learning to
+Sample and Reconstruct. We summarize this process in algorithm 2 and illustrated it
+in figure 2(b).
+Remark. The proposed alternating training framework is not suitable for the
+dense-reward POMDP, since there is no equivalent derivative of Jdense
+T w.r.t θR like
+the one presented in proposition 1. We explain this limitation in Appendix B.4.
+5. Experiments
+5.1. Implementation
+Setup: We evaluate the proposed methods under two different settings. In the ‘Fixed
+Reconstructor’ (abbreviated as ‘Fixed”) setting, the reconstructor is pre-trained
+using a heuristic sampling policy and is subsequently utilized with our proposed L2S
+method. In contrast, the ‘ Joint T raining’ (abbreviated as ‘Joint”) setting involves
+the simultaneous training of both the sampler and the reconstructor, employing our
+novel L2SR framework.

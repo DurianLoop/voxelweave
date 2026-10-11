@@ -1,0 +1,93 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+Table 3. Quantitative results (PSNR) of different CS-MRI methods on two datasets under various acceleration factorsf and noise levels
+σn. The best results are indicated by orange color and the second best results are denoted by blue color.
+DATASET f σn
+TRADITIONAL DEEP UNROLLING PNP
+RecPF FCSA ADMMNet ISTANet BM3D-MRI IRCNN Ours
+Medical7
+×2
+5 32.46 31 .70 33 .10 34 .58 33 .33 34 .67 34 .78
+10 29.48 28 .33 31 .37 31 .81 29 .44 31 .80 32 .00
+15 27.08 25 .52 29 .16 29 .99 26 .90 29 .96 30 .27
+×4
+5 28.67 28 .21 30 .24 31 .34 30 .33 31 .36 31 .62
+10 26.98 26 .67 29 .20 29 .71 28 .30 29 .52 29 .68
+15 25.58 24 .93 27 .87 28 .38 26 .66 27 .94 28 .43
+×8
+5 24.72 24 .62 26 .57 27 .65 26 .53 27 .32 28 .26
+10 23.94 24 .04 26 .21 26 .90 25 .81 26 .44 27 .35
+15 23.18 23 .36 25 .49 26 .23 25 .09 25 .53 26 .41
+MICCAI
+×2
+5 36.39 34 .90 36 .74 38 .17 36 .00 38 .42 38 .57
+10 31.95 30 .12 34 .20 34 .81 31 .39 34 .93 35 .06
+15 28.91 26 .68 31 .42 32 .65 28 .46 32 .81 33 .09
+×4
+5 33.05 32 .30 34 .15 35 .46 34 .79 35 .80 36 .11
+10 30.21 29 .56 32 .58 33 .13 31 .63 32 .99 33 .07
+15 28.13 26 .93 30 .55 31 .48 29 .35 30 .98 31 .42
+×8
+5 28.35 28 .71 30 .36 31 .62 31 .34 31 .66 32 .64
+10 26.86 27 .68 29 .78 30 .54 29 .86 30 .16 30 .89
+15 25.70 26 .35 28 .83 29 .50 28 .53 28 .72 29 .65
+Table 4. Quantitative results of different PR algorithms on four
+CDP measurements and varying amount of Possion noise (largeα
+indicates low sigma-to-noise ratio).
+α = 9 α = 27 α = 81
+Algorithms PSNR PSNR PSNR
+HIO 35.96 25.76 14.82
+WF 34.46 24.96 15.76
+DOLPHIn 29.93 27.45 19.35
+SPAR 35.20 31.82 22.44
+BM3D-prGAMP 40.25 32.84 25.43
+prDeep 39.70 33.54 26.82
+Ours 40.33 33.90 27.23
+policy leads to fast practical convergence as well as excellent
+performance, sometimes even outperforms the oracle policy
+tuned via inaccessible ground truth (in×2 case). We note
+this is owing to the varying parameters across iterations
+generated automatically in our algorithm, which yield extra
+ﬂexibility than constant parameters over iterations. Besides,
+we ﬁnd the learned model-free policy produces suboptimal
+denoising strength/penalty parameters compared with our
+mixed model-free and model-based policy, and it also fails
+to learn early stopping behavior.
+Comparisons with state-of-the-arts. We compare our
+method against six state-of-the-art methods for CS-MRI,
+including the traditional optimization-based approaches
+(RecPF (Yang et al., 2010) and FCSA (Huang et al., 2010)),
+the PnP approaches (BM3D-MRI (Eksioglu, 2016) and IR-
+CNN (Zhang et al., 2017b)), and the deep unrolling ap-
+proaches (ADMMNet (Yang et al., 2016) and ISTANet
+(Zhang & Ghanem, 2018)). To keep comparison fair, for
+each deep unrolling method, only single network is trained
+to tackle all the cases using the same dataset as ours. Table
+3 shows the method performance on two set of medical im-
+ages, i.e. 7 widely used medical images (Medical7) (Huang
+et al., 2010) and 50 medical images from MICCAI 2013
+grand challenge dataset 8. The visual comparison can be
+found in Fig. 3. It can be seen that our approach signiﬁcantly
+outperforms the state-of-the-art PnP method (IRCNN) by
+a large margin, especially under the difﬁcult ×8 case. In
+the simple cases ( e.g. ×2), our algorithm only runs 5 it-
+erations to arrive at the desirable performance, in contrast
+with 30 or 70 iterations required in IRCNN and BM3D-MRI
+respectively.
+4.3. Phase retrieval
+The goal of phase retrieval (PR) is to recover the underlying
+image from only the amplitude, or intensity of the output of
+a complex linear system. Mathematically, PR can be deﬁned
+as the problem of recovering a signalx∈ RN or CN from
+measurement y of the form y2 =|Ax|2 +ω, where the
+measurement matrixA represents the forward operator of
+the system, andω represents shot noise. We approximate it
+withω∼N (0,α 2|Ax|2). The term α controls the sigma-
+to-noise ratio in this problem.
+We test algorithms with coded diffraction pattern (CDP)
+(Cand`es et al., 2015). Multiple measurements, with different
+random spatial modulator (SLM) patterns are recorded. We
+model the capture of four measurements using a phase-only
+SLM as (Metzler et al., 2018). Each measurement opera-
+tor can be mathematically described as Ai =FDi, i ∈
+[1, 2, 3, 4], whereF can be represented by the 2D Fourier
+8https://my.vanderbilt.edu/masi/

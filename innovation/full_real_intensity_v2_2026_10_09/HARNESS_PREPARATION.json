@@ -1,0 +1,132 @@
+{
+  "complete": true,
+  "errors": [],
+  "old_source_unchanged": true,
+  "new_harness_parses": true,
+  "new_audit_parses": true,
+  "inherited_field_loop_unchanged": true,
+  "expected_fields": 35904,
+  "repaired_prerequisite_session": 47298,
+  "full_pipeline_executed": false,
+  "MRI_arrays_loaded": 0,
+  "GT_arrays_loaded": 0,
+  "model_arrays_loaded": 0,
+  "training_updates": 0,
+  "new_patient_medical_effects": 0,
+  "publication_claim_confirmed": false,
+  "goal_status": "active",
+  "source_bindings": [
+    {
+      "path": "full_real_intensity_v2_2026_10_09/build_relocated_harness.py",
+      "bytes": 6889,
+      "sha256": "e48c24a2fe8ddef08a2f4a0c0082063164bbfeb18a4a98c54c7b4f734cfb4b56"
+    },
+    {
+      "path": "resolution_degradation_controls_2026_10_08/qualify_full_real_pipeline.py",
+      "bytes": 17298,
+      "sha256": "b27c5ed516fca0a4cb9e5cc194b7987cc1ffc51689e518d63780203d3671e403"
+    },
+    {
+      "path": "resolution_degradation_controls_2026_10_08/audit_full_real_terminal.py",
+      "bytes": 7063,
+      "sha256": "29a588131aa4ceb6f80491d1a628eebd3957162fe85ad837bc527be3c5942a4b"
+    },
+    {
+      "path": "full_real_intensity_v2_2026_10_09/FULL_REAL_PIPELINE_PROTOCOL.md",
+      "bytes": 3029,
+      "sha256": "20891900f484ad2212d9eb4e79a606217f823793e9191bf2f2979c249c5a3188"
+    },
+    {
+      "path": "full_real_intensity_v2_2026_10_09/qualify_full_real_pipeline.py",
+      "bytes": 19414,
+      "sha256": "567842b232e1ea90f911104f800c8668422952f85db88d8080e01ddd72710d6a"
+    },
+    {
+      "path": "full_real_intensity_v2_2026_10_09/EXACT_HARNESS_DIFF.patch",
+      "bytes": 7465,
+      "sha256": "0a8b3c8b960473a0a41e17dda1a43d203e8d6b21253cde75e6f3b4991d380c99"
+    },
+    {
+      "path": "full_real_intensity_v2_2026_10_09/audit_full_real_terminal.py",
+      "bytes": 7338,
+      "sha256": "1da9e6650483703770f201530918fe61a81833281841b624ff4586e8b4ebb59b"
+    }
+  ],
+  "replacement_records": [
+    {
+      "old": "HERE=Path(__file__).resolve().parent;ROOT=HERE.parent",
+      "new": "HERE=Path(__file__).resolve().parent;ROOT=HERE.parent\nOLD=ROOT/'resolution_degradation_controls_2026_10_08'\nREPAIR=ROOT/'intensity_precision_failure_diagnosis_2026_10_09'",
+      "occurrences": 1
+    },
+    {
+      "old": "sys.path.insert(0,str(ROOT/'adaptation_paired_pilot_2026_10_08'))\nimport augmentation as intensity",
+      "new": "sys.path.insert(0,str(OLD))\nsys.path.insert(0,str(REPAIR))\nimport intensity_float64_stats as intensity",
+      "occurrences": 1
+    },
+    {
+      "old": "terminal=read(HERE/name)",
+      "new": "terminal=read(OLD/name)",
+      "occurrences": 1
+    },
+    {
+      "old": "HERE/'resolution_control.py'",
+      "new": "OLD/'resolution_control.py'",
+      "occurrences": 1
+    },
+    {
+      "old": "HERE/'independent_resolution.py'",
+      "new": "OLD/'independent_resolution.py'",
+      "occurrences": 1
+    },
+    {
+      "old": "HERE/'independent_intensity.py'",
+      "new": "OLD/'independent_intensity.py'",
+      "occurrences": 1
+    },
+    {
+      "old": "HERE/'qualify_synthetic_and_schedule_v2.py'",
+      "new": "OLD/'qualify_synthetic_and_schedule_v2.py'",
+      "occurrences": 1
+    },
+    {
+      "old": "sources.update(HERE/name for name in",
+      "new": "sources.update(OLD/name for name in",
+      "occurrences": 1
+    },
+    {
+      "old": "p=HERE/name;q=read(p)",
+      "new": "p=OLD/name;q=read(p)",
+      "occurrences": 1
+    },
+    {
+      "old": "assert read(HERE/prerequisites[-1])",
+      "new": "assert read(OLD/prerequisites[-1])",
+      "occurrences": 1
+    },
+    {
+      "old": ">=1_800_000",
+      "new": ">=4_800_000",
+      "occurrences": 1
+    },
+    {
+      "old": "<5_000_000",
+      "new": "<2_000_000",
+      "occurrences": 2
+    },
+    {
+      "old": "stage_limit_bytes=5_000_000",
+      "new": "stage_limit_bytes=2_000_000",
+      "occurrences": 1
+    },
+    {
+      "old": "    previous=ROOT/'real_context_and_author_code_followup_2026_10_08'",
+      "new": "    repaired_terminal=REPAIR/'ACTUAL_REPAIRED_STRESS_TERMINAL_TOOL.json'\n    repaired_observation=read(repaired_terminal)\n    assert repaired_observation['exit_code']==0 and 'session_id' not in repaired_observation\n    assert repaired_observation['observed_unified_exec_session']==47298\n    repaired_path=REPAIR/'repaired_stress_attempt01/receipt.json';repaired=read(repaired_path)\n    assert repaired['complete'] and repaired['status']=='completed' and not repaired['errors']\n    assert repaired['all40_synthetic228_real3_failed_regressions_verified']\n    assert repaired['all11_patients19_series_two_inputs_three_modes_verified']\n    assert len(repaired['fields'])==271 and repaired['MRI_input_arrays_loaded']==38\n    for b in repaired['source_bindings']:bind(b)\n    assert sha(OLD/'independent_intensity.py')=='11f3946b80d7c687acb03fedc607881b6813a2982290e9588431ad96cc63c81e'\n    assert sha(OLD/'qualify_full_real_pipeline.py')=='b27c5ed516fca0a4cb9e5cc194b7987cc1ffc51689e518d63780203d3671e403'\n    failed_terminal=OLD/'ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json';failed=read(failed_terminal)\n    assert failed['exit_code']==1 and 'session_id' not in failed and failed['observed_unified_exec_session']==74234\n    sources.update([repaired_terminal,repaired_path,REPAIR/'repaired_stress_attempt01/frozen_config.json',\n        Path(intensity.legacy.__file__),Path(__file__).parent/'build_relocated_harness.py',\n        failed_terminal,OLD/'full_real_pipeline_attempt01/receipt.json',OLD/'full_real_pipeline_attempt01/frozen_config.json',\n        OLD/'qualify_full_real_pipeline.py'])\n    previous=ROOT/'real_context_and_author_code_followup_2026_10_08'",
+      "occurrences": 1
+    },
+    {
+      "old": "shared_numpy_seeded_normal_convention=True,",
+      "new": "shared_numpy_seeded_normal_convention=True,\n           production_gamma_statistics_float64=True,old_reference_unchanged=True,\n           previous_failed_session=74234,original_failed_fields_completed=6216,",
+      "occurrences": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+13
+Figure 6: ACT halting maps on real ACDC 3D volumes (middle slices shown). Columns from left to right: input cardiac MRI, 
+ground truth segmentation, model prediction, ACT compute map. In the compute maps, brighter regions indicate more effective 
+iterations (up to 4–5), while darker regions indicate early halting (1–2 iterations). The model consistently allocates more 
+compute to cardiac structure boundaries and peripheral regions with ambiguous content.
+The ACT compute maps in Figure 6 demonstrate that the model learns a meaningful spatial curriculum. 
+Boundary regions between RV, MYO, and LV—where segmentation is most challenging due to partial 
+volume effects and low contrast—consistently receive 3–5 effective iterations. Large homogeneous regions 
+(background, ventricular cavities) halt after only 1–2 iterations, indicating that the model has learned that 
+these regions require minimal processing.
+The temporal evolution of ponder time (Figure 3, bottom-right) adds another dimension to this finding. 
+Early in training (epochs 1–20), the mean ponder time increases from 1.2 to 2.6 as the model learns to 
+“think harder” about difficult regions. After epoch 20, the ponder time monotonically decreases to 1.4 by 
+epoch 100, showing that as the model’s features improve, it needs fewer iterations to achieve the same 
+segmentation quality. This property could be valuable for clinical deployment where inference speed 
+matters.
+6.5 2D Slice Segmentation
+In 2D slice-level segmentation, the performance ranking reverses: RD-ViT outperforms Standard ViT.

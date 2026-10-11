@@ -1,0 +1,104 @@
+Figure 3: The SegNetMRI structure, formed by connecting the discussed MRN (top) for reconstruction, with MSN (bottom) for segmentation.
+which is shown in Figure 3.
+To learn this model, we first pre-train separate models. We
+pre-train the MRNN with under-sampled and fully-sampled
+MRI training pairs. Similarly, we pre-train the MSN with
+fully-sampled MRI and their corresponding segmentation la￾bels. After training MSN, we leave out the encoder compo￾nent (SE) and keep the decoder component (SD). We then
+connect the single decoder component of the MSN (SD) to
+each of the encoder components of each MRN (called REn)
+within each block. The resulting N outputs of the MSN de￾coder for each block are concatenated and merged to give the
+final segmentation via a 1 × 1 convolution. After pre-training
+separately and initializing the remaining parts, the parame￾ters of SegNetMRIN (with N blocks in the MRN portion,
+but a single segmentation decoder duplicated N times) are
+then fine-tuned. Therefore, both the reconstruction and seg￾mentation tasks share the same encoders, but have separate
+decoders for their respective tasks.
+The rationale for this architecture is the following:
+1. With the pre-training of MRNN , the reconstruction en￾coder extracts basic features in different blocks. In
+SegNetMRI, the sharing of the reconstruction encoders
+between MRN and MSN means that these same fea￾tures are used for both reconstruction and segmentation,
+which can help the two problems regularize each other.
+2. The segmentation component uses information at vari￾ous depths in the cascaded MRN, and combines this in￾formation in the decoder. The 1 × 1 convolution used to
+merge the outputs of the segmentation decoder at each
+layer can be viewed as ensemble learning.
+Loss function We adopt the `2 Euclidean distance as the
+loss function for pre-training the MRN,
+L
+MRN =
+1
+L
+XL
+i=1
+
+
+
+x
+f s
+i − xi
+
+
+
+2
+2
+, (2)
+where x
+f s
+i
+and xi are the i
+th full-sampled training image and
+the output of the MRN, respectively. To pre-train the MSN,
+we adopt the pixel-wise cross-entropy loss function
+L
+MSN = −
+XL
+i=1
+XN
+j=1
+XC
+c=1
+t
+gt
+ijc ln tijc, (3)
+where C tissue classes are to be classified. t
+gt and t is the
+pixel-wise ground-truth label and the MSN predicted label,
+respectively.
+Pre-training the MRN and MSN this way, we then con￾struct and fine-tune SegNetMRI with the following loss func￾tion
+L
+SegNetMRI = L
+MRN + λL
+OMSN. (4)
+We set λ = 0.01 in our experiments. Note the overall MSN
+(OMSN) loss containing N +1 loss function terms if the Seg￾NetMRI contains N blocks is
+L
+OMSN =
+1
+N + 1 
+L
+MMSN +
+XN
+i=1
+Li
+SMSN
+, (5)
+where the L
+MMSN is the loss for the merged prediction and
+L
+SMSN is the loss for each sub-MSN decoder prediction.
+4 Experiments and Discussions
+4.1 Implementation Details
+Setup We implement all deep models on TensorFlow for
+the Python environment using a NVIDIA Geforce GTX
+1080Ti with 11GB GPU memory and Intel Xeon CPU E5-
+2683 at 2.00GHz. We show the hyperparameter settings of
+encoder-decoder architecture used for both MRN and MSN
+in Figure 1. We use batch normalization to stabilize training.
+ReLU is used as activation function except for the last con￾volution layer of the encoder-decoder unit within each MRN
+block, where the identity map is applied for residual learn￾ing. We apply Xavier initialization for pre-training MRN and
+MSN. MSN is pre-trained for 60, 000 iterations using 64×64
+fully-sampled MRI patches randomly cropped (16 patches in
+a batch) and MRN is pre-trained for 30, 000 iterations using
+the entire training image (4 images in a batch). We then fine￾tune the SegNetMRI model for 8, 000 further iterations using
+entire images (4 images in a batch). ADAM is chosen as op￾timizer. We select the initial learning rate to be 0.0005, the
+first-order momentum to be 0.9 and the second momentum to
+be 0.999.
+Data We test our SegNetMRI architecture on the MR￾BrainS datasets from the Grand Challenge on MR Brain Im￾age Segmentation (MRBrainS) Workshop [Mendrik et al.,

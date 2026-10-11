@@ -1,0 +1,46 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+Algorithm Setting G-v1 (LBCS) SG-v1 (sLBCS-v1) SG-v2 (sLBCS-v2)
+Time nprocs Time nprocs Speedup Time nprocs Speedup
+KTF 152×152×17×3 6d 23h 152 11 h 40 38 58 (68) 3 h 25 38 170 (204)
+256×256×10×2 ∼ 7d 8h∗ 256 12 h 20 64 57 (68) 5 h 20 64 173 (204)
+IST 152×152×17×3 3d 11h 152 5 h 30 38 60 (68) 1 h 37 38 184 (204)
+ALOHA 152×152×17×3 ∼ 25d 1h∗ 152 1 d 14h 25 38 62 (68) 18 h 13 38 133 (204)
+Table 5.1: Running time of the greedy algorithms for different decoders and training data sizes.
+The setting corresponds tonx, ny, nframes, ntrain. The numbernprocs denotes how many parallel
+processes are used by each simulation.∗ means that the runtime was extrapolated from a few
+iterations. We usedk =nprocs for SG-v1 and SG-v2 andl = 1 for SG-v2. The speedup column
+contains the measured speedup and the theoretical speedup in parentheses.
+Algo. Setting npars nprocs Time
+KTF 152×152×17×3 1200 38 6h 30
+256×256×10×2∗ 2400 64 6h 45
+IST 152×152×17×3 1200 38 3h 20
+ALOHA 152×152×17×3 1200 38 1d 8h
+Table 5.2: Comparison of the learning-based random variable-density Gaussian sampling opti-
+mization for different settings.npars denotes the size of the grid used to optimize the parameters.
+For each set of parameters, the results were averaged on20 masks drawn at random from the
+distribution considered. Thenpars include a grid made of12 sampling rates (uniformly spread in
+[0.025, 0.3]), 10 different low frequency phase encodes (from2 to 18 lines), and different widths of
+the Gaussian density (uniformly spread in[0.05, 0.3]) – 10 for the images of size152× 152, 20 in
+the other case.
+The main point of these tables is to show that the computational improvement is very
+significant in terms of resources, and that our approach improves greatly the efficiency of
+the method of Gözcü et al. (2018). This ratio might differ from the predicted speedup
+factor of Θ
+(
+m
+l
+NT
+k
+)
+due to computational considerations. Table 5.1 shows that we have
+roughly a factor1.2 between the predicted and the measured speedup, mainly due to the
+communication between the multiple processes as well as I/O operations.
+Moving to the grid search computations for LB-VD, displayed in Table 5.2, we ought to
+do several remarks. The number of parameters was chosen in order to ensure the same
+order of magnitude of computations to be carried out for both LB-VD and sLBCS. Note
+also that in opposition to SG-v2, the grid search cannot be sped up by using a batch
+of training data: all the evaluation should be done on the same data. In the case of
+SG-v2 however, one can draw a new batch of training data at each sampling round of
+the algorithm.
+60

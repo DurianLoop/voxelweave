@@ -1,0 +1,11 @@
+# 六臂入口 v2：保留科研范围，接入真实228更新与最新磁盘预算
+
+只新增版本，不修改已执行/归档v1。两个输入×三个模式、每臂2992次更新/每患者272次曝光、完整母GT/geometry journal、原初始化及原六医学gate均沿PROTOCOL.md。native_reference只能开发能力诊断；包含11开发患者GT的19998 parent不能用作严格LOPO外折warm-start。4已见验证患者不作新确认；8未见确认患者12series及lockedIXI继续关闭。
+
+旧完整family80,156,359bytes，加19series optimizer coverage2MB、38FOV/atomic20MB、storage stage2MB，共104,156,359bytes，保留8GB磁盘储备。新代码/预检/资格文件计入原family7MB metadata/evaluation额度，不新增训练或删历史。准备阶段只读JSON、hash、原schedule、GPU汇总；不读医学或模型数组，不初始化CUDA，不操作其他PID。
+
+启动须实际35904 exit0及独立v2 audit、既有六首步资格、19series228实际更新exit0及独立coverage audit、38完整FOV真实exit0及独立audit。不得手工生成成功flags；build_deployment_qualification_v2.py仅在以上真实结果绑定后生成FULL_GPU_DEPLOYMENT_QUALIFICATION_V2.json。
+
+成本由114个分支各两步实测组成，按原2992 schedule的series曝光计。每series/kind/mode取两实测生产组件最大值，包含sampling、candidate resolution、intensity/hash、transfer、forward、loss、backward、gradient capture、AdamW；独立数值重算和内存capture作为资格费用另列，不冒充部署费用。保留两样本不能提供统计运行时间上界这一限制，使用两倍训练点估计并加准备、日志/审核及保存的明确allowance作工程wall。完整family另外计114开发及54已见验证FOV的保守推理外推，后者仅成本规划，不加载验证像素。实际GPU/CPU FOV时间、保存重载与MRI准备时间分别报告，不把CPU独立replay当生产GPU部署费用。
+
+v2的--preflight成功仅表示报告生成，ready=false时--train必须在任何医学/模型数组读取前拒绝。资格文件尚不存在时不生成虚假的完成结果。结束后训练模型仍需全journal/母GT审核、全部FOV医学效果及泛化检查；实现资格不等于发表claim。

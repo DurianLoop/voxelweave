@@ -1,0 +1,50 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+without sacrificing any reconstruction quality. We will see that the improvement is
+particularly significant for large datasets, as the batch sizel will typically remain small,
+typically up to 100 samples, whereas MRI datasets can contain more than 15000 data
+points (Zbontar et al., 2019).
+Algorithm 2sLBCS: Greedy mask optimization algorithm for (d)MRI
+Input: Training data{x}m
+i=1, recon. rule g, sampling setS, max.
+cardinalityn, samp. batch sizek, train. batch sizel
+Output: Sampling patternω
+1: (dMRI) Initialize t = 1
+2: while|ω|≤ n do
+3: Pick
+{
+Siter⊆S (MRI)
+Siter⊆S t (dMRI) at random, with|Siter| =k
+4: PickL⊆{ 1,...,m }, with|L| =l
+5: for S∈S iter such that|ω∪S|≤ Γ do
+6: ω′ =ω∪S
+7: For eachℓ∈L set ˆxℓ←fθ(Pω′Fxℓ,ω′)
+8: η(ω′)← 1
+|L|
+∑
+ℓ∈Lη(xℓ, ˆxℓ)
+9: end for
+10: ω←ω∪S∗, where S∗ = arg max
+S:|ω∪S|≤n
+S∈Siter
+η(ω∪S)
+11: (dMRI) t = (t modT ) + 1
+12: end while
+13: return ω
+5.3.3 Lazy LBCS
+In cases where the cardinality of the candidate elementsS grows extremely large, even
+Algorithm 2 can become impractical. In 2D MRI, LBCS deals with images of sizeH×W
+while having a candidate set of sizeH, withH different lines. However, in the case
+of 3D MRI, the number of candidate locations explodes, as we move to images of size
+P =H×W×S, whereS is the number of slices, with a candidate set of sizeH×W,
+i.e., one is allowed to sample in both phase and frequency encoding directions. While in
+2D dynamic MRI, the candidate set is of sizeH×T with T typically much smaller than
+H, in the case of 3D MRI, we often haveH≈W. In addition, we have less structure
+than in dMRI, as there is no option to cycle through frames. This implies that the batch
+of randomly sampled locations must be much larger to enable a good performance, which
+results in the cost remaining overall prohibitive. An additional reason for this increased
+cost is the reconstruction time of 3D methods. The number of slices can be much larger
+than the number of frames in dMRI, slowing down reconstruction considerably. Moving
+from single coil to multi-coil data further increases this cost, although this change does
+not increase the complexity of the sampling optimization problem.
+54

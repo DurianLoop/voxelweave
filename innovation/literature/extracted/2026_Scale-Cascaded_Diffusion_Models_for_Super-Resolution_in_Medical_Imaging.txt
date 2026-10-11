@@ -1,0 +1,220 @@
+
+=== PDF PAGE 1 ===
+      SCALE-CASCADED DIFFUSION MODELS FOR SUPER-RESOLUTION IN MEDICAL
+                                                                       IMAGING
+
+            Darshan Thaker*, Mahmoud Mostapha†, Radu Miron††, Shihan Qiu†, Mariappan Nadar†
+
+
+  * University of Pennsylvania, Philadelphia, PA USA              † Siemens Healthineers, Princeton, NJ USA
+                                         †† Siemens Industry Software, Romania (Advanta)
+
+
+                              ABSTRACT                                            steps and data consistency steps that enforce alignment of the
+Diffusion models have been increasingly used as strong gen-                       diffusion iterates with the measurementy.
+erative  priors  for  solving  inverse  problems  such  as  super-
+resolution  in  medical  imaging.   However,  these  approaches                   While   diffusion-based   posterior   samplers   have   achieved
+typically  utilize  a  diffusion  prior  trained  at  a  single  scale,           strong  results,  most  operate  at  a  single  image  scale.    In-
+ignoring  the  hierarchical  scale  structure  of  image  data.   In              stead,  recent  work  has  recognized  that  diffusion  processes
+this work, we propose to decompose images into Laplacian                          naturally follow a coarse to fine generation structure, which
+pyramid  scales  and  train  separate  diffusion  priors  for  each               has led to the development of posterior sampling algorithms
+frequency band.   We then develop an algorithm to perform                         that  exploit  this  emergent  behavior  during  inference  [6,  7].
+super-resolution  that  utilizes  these  priors  to  progressively                However,  these  approaches  still  rely  on  a  single  diffusion
+refine  reconstructions  across  different  scales.     Evaluated                 prior trained at a fixed scale.
+on  brain,  knee,  and  prostate  MRI  data,  our  approach  both
+improves  perceptual  quality  over  baselines  and  reduces  in-                 In this work, we directly embed scale-space structure into the
+ference  time  through  smaller  coarse-scale  networks.    Our                   unconditional diffusion prior itself.  To achieve this, we ex-
+framework  unifies  multiscale  reconstruction  and  diffusion                    ploit the Laplacian pyramid representation of images [8].  In
+priors for medical image super-resolution.                                        the  Laplacian  pyramid,  an  image  is  decomposed  into  mul-
+                                                                                  tiple  scales  where  each  scale  representation  captures  a  cer-
+Index  Terms—Super-resolution,  Diffusion  models,  Poste-                        tain  frequency  band.   This  allows  us  to  train  separate  dif-
+rior Sampling, Scale-cascaded                                                     fusion  models  at  each  scale,  each  specialized  to  a  specific
+                                                                                  frequency range.  Further, we take inspiration from classical
+                       1.  INTRODUCTION                                           multigrid  approaches  for  solving  inverse  problems  in  order
+                                                                                  to develop a scale-cascaded posterior sampling algorithm that
+                                                                                  exploits the scale-space decomposition [9, 10].  In this algo-
+The task of super-resolution deals with reconstructing a high-                    rithm, a given super-resolution task is decomposed into a se-
+resolution imagexfrom a low-resolution measurementyob-                            quence of smaller, better-conditioned super-resolution tasks,
+tained via                                                                        and coarser scale reconstructions are used to better initialize
+                              y=Hx+z                                (1)           finer-scale samplers. Our main contributions are as follows:
+
+whereHdenotes a downsampling operator andzis additive                              1.We construct a scale-cascaded diffusion prior defined over
+Gaussian noise.   Because there is a strong loss of informa-                           Laplacian pyramid scales and train this prior on a large
+tion through the non-invertible operatorH, strong priors are                           dataset of MR images of different anatomies.
+needed forxto ensure high-quality reconstruction [1, 2].  A                        2.Given  this  prior,  we  introduce  a  scale-cascaded  poste-
+popular Bayesian approach, known as posterior sampling, is                             rior sampling algorithm that decomposes a given super-
+to develop a conditional sampler forp(x|y)using a power-                               resolution  task  into  a  sequence  of  smaller  and  better-
+ful unconditional generative prior forp(x)such as a diffusion                          conditioned  super-resolution  tasks.     In  this  sequence,
+model [3, 4, 5].  A key advantage of this approach is that it                          coarser scale reconstructions are used to better initialize
+does  not  require  retraining  the  diffusion  prior  under  differ-                  finer-scale samplers.
+ent choices of measurement.  For diffusion models, posterior                       3.We  evaluate  our  algorithm  on  various  super-resolution
+sampling is performed by alternating unconditional denoising                           tasks at different downsampling factors.  We observe that
+    Work performed while Darshan was an intern at Siemens Healthineers.                our  algorithm  improves  the  quality  of  reconstructions
+The concepts and information presented in this paper/presentation are based            compared  to single-scale  posterior sampling  algorithms.
+on research results that are not commercially available.  Future commercial            Further,  our  formulation  reduces  computational  cost  by
+availability cannot be guaranteed.                                                     using smaller diffusion networks at coarse scales.
+
+=== PDF PAGE 2 ===
+Together,  this framework unifies classical multiscale recon-                         (level  2  and  level  1)  are  conditioned  on  the  outputs  of  the
+struction  with  modern  diffusion-based  priors,  providing  a                       coarser  scale  diffusion  models.   The  conditioning  is  imple-
+principled and efficient approach for super-resolution.                               mented as upsampling the coarser scale representations and
+                                                                                      concatenating channel-wise to the model input.  At thex       (1)
+                          2.  BACKGROUND                                              scale, we condition the diffusion model onx      (2) +up(x            (3))
+                                                                                      instead ofx     (2) andx        (3) separately. In contrast to prior scale-
+Before providing the details of our method, we first provide                          cascaded diffusion models [12], our model explicitly predicts
+some  background  on  diffusion  models  and  posterior  sam-                         the difference image representations at finer scales, reducing
+pling.  Diffusion models are generative models that learn to                          the training task to a certain frequency band [13, 14].
+reverse  a  gradual  noising  process  [11].   This  noising  pro-
+cess  is  constructed  over  the  intervalt∈[0,1]such  that                           3.3.  Scale-Cascaded Posterior Sampling
+samples att=  0are clean data and samples att=  1are                                  Given  our  scale-cascaded  diffusion  prior  at  3  levels,  we
+isotropic Gaussian.   Sampling from a data distribution pro-                          develop  a  scale-cascaded  posterior  sampling  algorithm  for
+ceeds by starting with a samplex              t  att=  1,  progressively              super-resolution  tasks.     Consider  a  super-resolution  task
+denoising through estimates ofE[x          0|x t]and adding back                      whereHrepresents  a  downsampling  operator  of  factork.
+noise.  Given a pretrained unconditional diffusion prior, pos-                        Our  algorithm  sequentially  applies  the  DiffPIR  algorithm
+terior sampling algorithms such as DiffPIR further introduce                          from  level  3  to  level  1.    Specifically,  at  each  leveli,  we
+data consistency steps in addition to the denoising steps [3].                        replace the data fitting term in (2) with
+Given ˆx0 ≜E[x         0|x t], the data consistency steps estimate                                   y−H       2                          
+E[x      0|x t,y]as the solution to an optimization problem                                                                      3X                   2
+                                                                                                                  x(i)   +           up(x        (j)   )         (6)
+                arg min                   2 +τ∥x−         ˆx0∥22            (2)                                               j=i+1                   2
+                     x  ∥y−Hx∥                   2|{z}|{z     }
+                              Data Fitting           Prior                            and  the  prior  term  is  applied  with  the  estimate  at  leveli.
+For more details, we refer the reader to [3, 5].                                      Above, the upsampling operationupmatches the resolution
+                                                                                      ofx     (i)    andx        (j)   .  Further, we decomposeHinto a sequence
+                              3.  METHOD                                              of 2x downsampling operators, denoted asH     2.  This ensures
+                                                                                      that  data  consistency  is  applied  in  a  coarse-to-fine  manner
+3.1.  Laplacian Pyramid Construction                                                  as we sample from the three diffusion models sequentially.
+                                                                                      Thus, the problem remains better-conditioned and the coarse
+We  first  describe  the  Laplacian  pyramid  decomposition  we                       scale outputs provide valuable conditioning information for
+utilize in our method. For a imagex∈R                   d×d    , a 3-level Lapla-     the following levels.  Compared to multi-grid methods [10],
+cian pyramid yields a hierarchy{x     (3),x  (2),x  (1)}where each                    we  perform  posterior  sampling  at  the  scale  of  each  diffu-
+             d                                                                        sion model by modifying the forward operator as opposed to
+x(i) ∈R    2i−1   ×    d2i−1     such that                                            upsamplingx                          (i)    and retaining the sameH.
+
+                     x(3) =down(down(x))                         (3)
+                     x(2) =down(x)−up(x                            (3))                    (4)                       4.  RESULTS
+
+                     x(1) =x−up(down(x)).                       (5)                   4.1.  Experimental Setup
+
+Above,downanduprepresent  downsampling  and  upsam-                                   We use the EDM2 backbone for our diffusion priors at differ-
+pling operations with factor 2.  Each image represents a fre-                         ent levels [15]. Our models are trained on the NYU FastMRI
+quency band withx          (3)  as the coarsest representation of the                 dataset consisting of Brain, Knee, and Prostate MRI images
+image and subsequent scales representing difference images                            from 1.5T, 3T and other scanners [16, 17, 18] .  We evaluate
+between successive pyramid levels.  For complex-valued im-                            on a held-out dataset of 100 slices per anatomy type and we
+ages, we apply the pyramid on the real and imaginary compo-                           use the Peak Signal-to-Noise Ratio (PSNR) and Learned Per-
+nents of the image independently.                                                     ceptual Image Patch Similarity (LPIPS) metrics. We evaluate
+                                                                                      our method on two axes.  The first isolates the performance
+3.2.  Scale-Cascaded Diffusion Prior                                                  of one level of the diffusion model,  for which we test a 2x
+                                                                                      super-resolution task using the level 1 diffusion model.  The
+We train three diffusion priors at each scale of the Laplacian                        second evaluates the effect of cascading in posterior sampling,
+pyramid  that  modelp(x                   (3)),p(x       (2) | x  (3)), andp(x                 (1) |for  which  we  test  a  4x  super-resolution  task.   We  compare
+x(2),x  (3)).    Specifically,  the  coarsest  scale  representation,                 our method to the DiffPIR and DPS algorithms with diffusion
+which we refer to as our level 3 model, is an unconditional                           models that are not cascaded [3, 4].  To ensure fair compar-
+diffusion  model,  whereas  the  finer  scale  diffusion  models                      ison,  all  models  were  sampled  usingT=  200steps  total,
+
+=== PDF PAGE 3 ===
+                                                                 Brain                                       Knee                                     Prostate
+       Method                             PSNR↑   SSIM↑   LPIPS↓   PSNR↑   SSIM↑   LPIPS↓   PSNR↑   SSIM↑   LPIPS↓
+       DiffPIR [3]                                       30.14         0.95          0.11          30.57         0.86          0.15          34.44         0.94          0.11
+       DPS [4]                                            26.93         0.92          0.10          27.66         0.85          0.18          30.38         0.91          0.15
+       Scale-Cascaded DiffPIR (Ours)31.27        0.96         0.09         31.63        0.91         0.13         35.91        0.97         0.08
+
+Table 1:Quantitative Results on 2x super-resolution.We find that our approach strongly improves upon posterior sampling
+baselines in perceptual quality of reconstructions.
+
+
+                                                                      Brain                                       Knee                                     Prostate
+  Method                                          PSNR↑   SSIM↑   LPIPS↓   PSNR↑   SSIM↑   LPIPS↓   PSNR↑   SSIM↑   LPIPS↓
+  DiffPIR [3]                                                    24.25         0.81          0.23          25.71         0.71          0.33          28.23         0.79          0.30
+  DPS [4]                                                          22.59         0.77          0.21          23.28         0.67          0.36          25.07         0.73          0.33
+  Multi-Grid PnP [9]                                        23.48         0.78          0.24          24.49         0.67          0.34          26.60         0.73          0.32
+  Scale-Cascaded DiffPIR 2-Level (Ours)       26.53         0.87          0.19          26.53         0.75          0.28  29.020.82          0.26
+  Scale-Cascaded DiffPIR 3-Level (Ours)31.69        0.94         0.16         30.76        0.93         0.17   28.980.90         0.17
+
+Table 2: Quantitative Results on 4x super-resolution.Our scale-cascaded approach illustrates the benefit of conditioning
+information as well as the benefit of multiscale structure in solving inverse problems, improving upon standard posterior sam-
+pling algorithms and a standard multi-grid approach.
+
+
+where our cascaded sampling is split intoT/N         levels  steps at
+each level.
+
+4.2.  2x Super-Resolution
+Table 1 shows our results on the 2x super-resolution task us-
+ing only the level 1 diffusion model and the low-resolution
+image as the condition.  Our method is able to improve the
+perceptual  quality  of  reconstructions  compared  to  baseline
+methods,  indicating  the  benefit  of  introducing  conditioning
+into the diffusion model.   This is further illustrated qualita-
+tively in Figure 1.  Further, because our approach only pre-
+dicts the difference image, a smaller model suffices to model
+the denoising network.                                                                           Degradedy                  Predictedx                     (1)Reconstructed image
+
+4.3.  4x Super-Resolution                                                                 Fig. 1:Qualitative Results on 2x super-resolution.Across
+Table 2 and Figure 2 show the performance of our method                                   different  anatomies,  our  algorithm  is  able  to  fill  in  fine-
+on  the  4x  super-resolution  task.    Our  scale-cascaded  ap-                          grained detail of the degraded image as shown in the differ-
+proach significantly improves upon baseline methods due to                                ence image predictionx                      (1).
+better-conditioned  inverse  problems  at  each  scale  and  bet-
+ter initialization of finer-scale sampling.  To disentangle the                           observe a 35% increase in sampling speed. This demonstrates
+effect  of  these  two  improvements,  we  also  test  a  2-level                         that our scale-cascaded approach helps not only in improving
+scale-cascaded model such that the second level is uncondi-                               sampling quality but also reducing inference time.
+tional. Even though this model is unconditional at the coarser
+scale, on the Brain and Knee datasets we still observe a≈2
+dB increase in PSNR compared to DiffPIR, which confirms                                                                5.  REFERENCES
+our hypothesis that the inverse problem is better-conditioned
+at the coarser scale.  We draw a similar conclusion when we                                 [1]Leonid  I  Rudin,   Stanley  Osher,   and  Emad  Fatemi,
+compare our approach to the multi-grid baseline, which keeps                                      “Nonlinear  total  variation  based  noise  removal  algo-
+the same forward operator at each scale.   Lastly,  as coarser                                    rithms,”Physica D: nonlinear phenomena, vol. 60, no.
+scales operate at a lower resolution, sampling is faster and we                                   1-4, pp. 259–268, 1992.
+
+=== PDF PAGE 4 ===
+                                                                                [10]Seungseok Oh, Adam B Milstein, Charles A Bouman,
+                                                                                       and Kevin J Webb,  “Multigrid algorithms for optimiza-
+                                                                                       tion and inverse problems,”  inComputational Imaging.
+                                                                                       SPIE, 2003, vol. 5016, pp. 59–70.
+                                                                                [11]Jonathan Ho, Ajay Jain, and Pieter Abbeel,  “Denoising
+                                                                                       diffusion probabilistic models,”Advances in neural in-
+                                                                                       formation processing systems, vol. 33, pp. 6840–6851,
+                                                                                       2020.
+                                                                                [12]Jonathan Ho, Chitwan Saharia, William Chan, David J
+    Cleanx           Degradedy            DiffPIR               Ours                   Fleet, Mohammad Norouzi, and Tim Salimans,   “Cas-
+Fig. 2: Qualitative Results on 4x super-resolution.Com-                                caded diffusion models for high fidelity image genera-
+pared  to  DiffPIR,  our  scale-cascaded  algorithm  better  cap-                      tion,”Journal of Machine Learning Research, vol. 23,
+tures finer anatomy details, resulting in higher quality recon-                        no. 47, pp. 1–33, 2022.
+structions. Zoomed in for clarity.                                              [13]Wei-Sheng  Lai,  Jia-Bin  Huang,  Narendra  Ahuja,  and
+                                                                                       Ming-Hsuan Yang,  “Deep laplacian pyramid networks
+                                                                                       for fast and accurate super-resolution,”  inProceedings
+ [2]Ashish Bora,  Ajil Jalal,  Eric Price,  and Alexandros G                           of the IEEE conference on computer vision and pattern
+      Dimakis,  “Compressed sensing using generative mod-                              recognition, 2017, pp. 624–632.
+      els,”  inInternational conference on machine learning.                    [14]Emily L Denton, Soumith Chintala, Rob Fergus, et al.,
+      PMLR, 2017, pp. 537–546.                                                         “Deep generative image models using a laplacian pyra-
+ [3]Yuanzhi Zhu, Kai Zhang, Jingyun Liang, Jiezhang Cao,                               mid of adversarial networks,”Advances in neural infor-
+      Bihan Wen, Radu Timofte, and Luc Van Gool, “Denois-                              mation processing systems, vol. 28, 2015.
+      ing  diffusion  models  for  plug-and-play  image  restora-               [15]Tero  Karras,  Miika  Aittala,  Jaakko  Lehtinen,  Janne
+      tion,”     inProceedings  of  the  IEEE/CVF  conference                          Hellsten, Timo Aila, and Samuli Laine, “Analyzing and
+      on computer vision and pattern recognition, 2023, pp.                            improving the training dynamics of diffusion models,”
+      1219–1229.                                                                       inProceedings of the IEEE/CVF Conference on Com-
+ [4]Hyungjin  Chung,  Jeongsol  Kim,  Michael  T  Mccann,                              puter Vision and Pattern Recognition, 2024, pp. 24174–
+      Marc L Klasky,  and Jong Chul Ye,   “Diffusion poste-                            24184.
+      rior sampling for general noisy inverse problems,”arXiv                   [16]Florian Knoll, Jure Zbontar, Anuroop Sriram, Matthew J
+      preprint arXiv:2209.14687, 2022.                                                 Muckley,  Mary  Bruno,  Aaron  Defazio,  Marc  Parente,
+ [5]Giannis Daras, Hyungjin Chung, Chieh-Hsin Lai, Yuki                                Krzysztof J Geras, Joe Katsnelson, Hersh Chandarana,
+      Mitsufuji,  Jong  Chul  Ye,  Peyman  Milanfar,  Alexan-                          et al.,   “fastmri:  A publicly available raw k-space and
+      dros G Dimakis, and Mauricio Delbracio,  “A survey on                            dicom dataset of knee images for accelerated mr image
+      diffusion models for inverse problems,”arXiv preprint                            reconstruction using machine learning,”Radiology: Ar-
+      arXiv:2410.00083, 2024.                                                          tificial Intelligence, vol. 2, no. 1, pp. e190007, 2020.
+ [6]Darshan  Thaker,   Abhishek  Goyal,   and  René  Vidal,                     [17]Radhika  Tibrewala,  Tarun  Dutt,  Angela  Tong,  Luke
+      “Frequency-guided  posterior  sampling  for  diffusion-                          Ginocchio, Riccardo Lattanzi, Mahesh B Keerthivasan,
+      based   image   restoration,”       inProceedings   of   the                     Steven   H   Baete,   Sumit   Chopra,   Yvonne   W   Lui,
+      IEEE/CVF  International  Conference  on  Computer  Vi-                           Daniel K Sodickson, et al.,   “Fastmri prostate:  A pub-
+      sion, 2025, pp. 12873–12882.                                                     lic, biparametric mri dataset to advance machine learn-
+ [7]Severi  Rissanen,  Markus  Heinonen,  and  Arno  Solin,                            ing for prostate cancer imaging,”Scientific data, vol. 11,
+                                                                                       no. 1, pp. 404, 2024.
+      “Generative  modelling  with  inverse  heat  dissipation,”                [18]Jure  Zbontar,  Florian  Knoll,  Anuroop  Sriram,  Tullie
+      arXiv preprint arXiv:2206.13397, 2022.                                           Murrell, Zhengnan Huang, Matthew J Muckley, Aaron
+ [8]Peter  J  Burt  and  Edward  H  Adelson,   “The  laplacian                         Defazio,  Ruben  Stern,  Patricia  Johnson,  Mary  Bruno,
+      pyramid as a compact image code,” inReadings in com-                             et al., “fastmri: An open dataset and benchmarks for ac-
+      puter vision, pp. 671–679. Elsevier, 1987.                                       celerated mri,”arXiv preprint arXiv:1811.08839, 2018.
+ [9]Nils Laurent, Julián Tachella, Elisa Riccietti, and Nelly
+      Pustelnik,     “Multilevel  plug-and-play  image  restora-
+      tion,” 2025.

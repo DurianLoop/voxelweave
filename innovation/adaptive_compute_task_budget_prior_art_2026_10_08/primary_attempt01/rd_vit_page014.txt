@@ -1,0 +1,26 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+14
+Table 3: 2D ACDC slice segmentation results.
+Configuration Best Dice Params
+RD-ViT Tiny (2D) 0.889 4,200,742
+Standard ViT (2D) 0.872 ~5.7M
+The 2D result (Dice 0.889 vs 0.872, +1.7 pp for RD-ViT) suggests that recurrent depth is more effective 
+when individual samples provide rich spatial context. In 2D, each 224×224 slice has 196 patches (14×14 
+grid) at full resolution, providing enough spatial information for iterative refinement to be beneficial. In 
+3D, the same model processes 512 patches but at much lower effective per-slice resolution (128×128 spatial 
+from volumes originally containing only ~10 slices), creating a harder optimization landscape where 
+capacity per parameter dominates over regularization from weight sharing.
+6.6 Data Efficiency
+Figure 7: Data efficiency comparison on 3D ACDC. Both RD-ViT and Standard ViT improve monotonically with more training 
+data. In 3D, Standard ViT maintains a consistent advantage, with the gap narrowing from 5 pp at 10% to 3 pp at 100%.
+Table 4: Data efficiency comparison across 2D and 3D settings (Dice).
+Data % RD-ViT 2D Std ViT 2D 𝛥 2D RD-ViT 3D Std ViT 3D 𝛥 3D
+10% 0.774 0.762 +1.2 pp 0.444 0.496 −5.2 pp
+25% 0.833 0.826 +0.7 pp 0.526 0.610 −8.4 pp
+50% 0.846 0.882 −3.6 pp 0.704 0.744 −4.0 pp
+75% 0.880 0.876 +0.4 pp 0.751 0.766 −1.5 pp
+100% 0.882 0.872 +1.0 pp 0.765 0.794 −2.9 pp
+The data efficiency hypothesis is confirmed in 2D but not in 3D. In 2D, RD-ViT outperforms Standard ViT 
+at both the lowest (10%, +1.2 pp) and highest (100%, +1.0 pp) data fractions, with the advantage persisting 
+across most training sizes. This supports the hypothesis that weight sharing provides beneficial 
+regularization when the model has sufficient spatial context per sample.

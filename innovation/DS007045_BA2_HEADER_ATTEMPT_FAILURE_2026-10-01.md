@@ -1,0 +1,5 @@
+# BA2 header attempt failure
+
+The frozen `sub-BA2` two-file pilot executed on 2026-10-01. Both ranged HTTP requests and NIfTI header parsing reached result serialization, but `json.dumps` failed on NumPy `float32` values in the zoom list (`TypeError: Object of type float32 is not JSON serializable`). The script did not write its result file and intentionally did not retain compressed bytes. Because the protocol specified one request per object and no retry, BA2 will not be requested again in this round. No voxel data or GPU was used. This is a local reporting bug, not evidence of an image/mask geometry mismatch.
+
+Fresh follow-up case, fixed before new requests: `sub-BA3`, using exactly `ds007045/derivatives/processing/sub-BA3/sub-BA3_t2_MNI152_brain.nii.gz` (5,765,102 bytes in archived S3 root listing) and `ds007045/derivatives/segmentation/sub-BA3/sub-BA3_MNI152_tumor-mask.nii.gz` (18,426 bytes in archived segmentation listing). All other limits and tests in [the original protocol](DS007045_TWO_HEADER_PROTOCOL_2026-10-01.md) apply. The `sub-BA3` report is a new case, not a retry of BA2.

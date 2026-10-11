@@ -1,0 +1,24 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+Appendix A.
+Original Pc: 100,000 Pc: 10,000 Pc: 3,000
+Figure 6: X-Ray images with photon count 100,000, 10,000, 3,000.
+Acc: 4
+Original Acc: 8 Acc: 16
+Figure 7: MRI images with acceleration 4, 8, 16.
+Diagnostic Hyperparameters.The segmentation network was optimized with Adam
+(Kingma and Ba, 2014) using a learning rate of 0.001 and a batch size of 8 without data
+augmentation for 20 training epochs. The training loss consisted of Dice and L1, equally
+weighted at 0.5 each. The network used a sigmoid activation and a threshold of 0.5 was
+used at inference to compute the Dice performance. The model was trained on a per-slice
+level using all available MRI slices. At inference, Dice performance was computed using
+slices 60-130, as this range is representative of the regions where the ground truth masks
+appear and thus is more representative of performance. The Dice scores were computed
+separately for each slice, then averaged across slices per patient, followed by averaging across
+patients to compute final performance. For the UCSF-PDGM ResNet classifiers, we trained
+for 20 epochs with a learning rate of 0.0001 and a batch size of 16 without augmentation.
+Each task was treated as binary classification (subtype: glioblastoma vs not glioblastoma,
+grade: (II, III) vs IV) using binary cross entropy loss. All MRI slices were again used
+for training, followed by using slices 60-130 at inference. Prediction scores were generated
+separately for each slice, followed by computing a patient-level score as the median across
+slices to serve as input to patient-level AUROC calculations. The median across slices was
+21

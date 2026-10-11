@@ -1,0 +1,20 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+12
+Figure 5: MoE expert utilization by cardiac structure. Each panel shows the routing frequency distribution across 8 experts for 
+patches belonging to that class. Background (BG) strongly favors expert 7. Right ventricle (RV) concentrates on experts 1–2. 
+Myocardium (MYO) distributes across experts 2–5. Left ventricle (LV) strongly favors expert 3. The distinct distributions confirm 
+spontaneous category-specific specialization without explicit routing supervision.
+The MoE expert utilization analysis provides one of the most compelling findings in this work. Without 
+any explicit supervision of the routing mechanism—the router is trained end-to-end solely through the 
+segmentation loss—different experts develop distinct specializations for different cardiac structures. 
+Background patches predominantly route to expert 7, which likely learns to produce zero-class features 
+efficiently. RV patches concentrate on experts 1–2, which specialize in the complex geometry of the right 
+ventricle. MYO patches distribute across experts 2–5, consistent with the myocardium’s structural 
+complexity as a thick ring with varying wall thickness. LV patches strongly concentrate on expert 3, which 
+becomes a specialist for the relatively regular left ventricular cavity.
+This emergent specialization suggests that MoE provides a natural structural inductive bias for multi-class 
+segmentation: the router learns to decompose the segmentation problem into class-specific sub-problems, 
+each handled by a lightweight expert. This decomposition is particularly beneficial in the recurrent setting 
+because the same expert routing pattern is applied at every loop iteration, creating a consistent class-specific 
+processing pathway across depths.
+6.4 ACT Halting Maps

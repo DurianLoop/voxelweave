@@ -1,0 +1,28 @@
+2.3. Checkpoint selection
+Because our primary objective is to evaluate the benefits of hetero-modal
+learning (i.e., maximising training data) rather than hetero-modal inference
+(i.e., using a single set of weights for all possible inputs), we evaluated the
+model using the checkpoint that achieved the highest validation Dice Simi￾larity Coefficient (DSC) for each specific inference modality setup. In other
+words, for each of the hetero-modal learning methods, we store 15 different
+model checkpoints from a single training run. This ensures the fairest pos￾sible comparison against the modality specialists, which naturally use their
+own optimal DSC checkpoints.
+However, for the corruption augmentation experiments, we assume that
+corrupted modalities cannot be identified a priori (otherwise, they would
+simply be treated as missing). Consequently, for those specific tests, we used
+the final model checkpoints—representing the state where the models have
+converged to a stable local minimum as the learning rate decays to zero.
+3. Methods
+We implemented two established baseline methods for hetero-modal seg￾mentation: a multi-channel U-Net (Ronneberger et al., 2015) and U-HeMIS
+(Havaei et al., 2016). We also developed and evaluated our own archi￾tecture, the Multimodal Attention Router (MMAR), designed to enhance
+model robustness against corrupted modalities. We compared these hetero￾modal methods to modality specialist baselines. This section details each
+of these architectures and our training methodologies. Code is available at:
+https://github.com/Jesse-Phitidis/MultiModal.
+3.1. Modality specialist baselines
+We trained modality-specialist baselines to serve as comparative bench￾marks for the hetero-modal approaches. Each specialist model is trained and
+evaluated on a fixed, unique, modality combination. Consequently, these
+models cannot leverage the full multi-modal training data present in splits
+2 and 3 (with the exception of the T1w specialist in training split 3). To
+prevent overfitting on their simpler learning tasks, the specialist baselines
+were configured with a standard 16, 32, 64, 128, 256, and 320 channels per
+resolution level, totalling approximately 16.7M parameters.
+8

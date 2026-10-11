@@ -1,0 +1,44 @@
+Learning to Sample and Reconstruct for Accelerated MRI 3
+• We develop an alternating training framework called L2SR that leverages the
+sparse-reward POMDP to jointly optimize samplers and reconstructors. A key
+novelty is that L2SR overcomes the training mismatch issue that arises due to
+the decomposition of the joint optimization problem into separate sampler and
+reconstructor subproblems in prior works.
+• Our experiments demonstrate the state-of-the-art reconstruction performance on
+the fastMRI benchmark, validating the benefits of our proposed solutions for the
+joint optimization problem.
+The remainder of this paper is organized as follows. In section 2, we discuss
+related works. In section 3, we provide notations of accelerated MRI and formulate
+optimization problems. In section 4, we delve into the issues inherent to the design of
+the dense-reward POMDP, followed by the introduction of the sparse-reward POMDP,
+along with its associated dynamic sampling training framework and alternating
+training framework. Experimental results are presented in section 5, and finally, we
+conclude our findings in section 6.
+2. Related W ork
+In this section, we briefly review prior works on sampling and reconstruction in
+accelerated MRI.
+2.1. Learning Reconstructors with Fixed Heuristic Sampling Policy
+Existing heuristic sampling policies for MRI reconstruction [2, 15, 16] include
+uniform density random sampling, variable density sampling, Poisson-disc sampling,
+equispaced sampling, and continuous-trajectory variable density sampling. These
+sampling strategies are very simple and easy to implement. Methods of learning
+reconstructors with a fixed heuristic sampling policy can be divided into two categories:
+optimization-based methods and DL-based methods.
+Optimization-based methods use constrained optimization problems to obtain
+the reconstruction image. These problems minimize an ℓ1-norm regularization term
+for sparsity while constraining the ℓ2-norm error in the Fourier domain for accuracy
+(see Equation (3) in [2]). The regularization term is often referred to as Total Variation
+(TV) [17] or Wavelet [18]. These optimization problems can be solved using iterative
+optimization methods such as Iterative Soft Thresholding Algorithm (ISTA) [19] and
+Iterative Reweighted Least Squares (IRLS) [20]. While these methods are interpretable
+and have theoretical guarantees, they depend on human-designed image priors and are
+not adaptive to specific datasets.
+DL-based methods use DL models as reconstructors for MRI, significantly
+improving reconstruction quality. Unet-based network models [4, 5] and GAN-based
+network models [6, 7] learn an end-to-end mapping from sampled measurements to
+reconstruction images. Unrolled dynamic models such as ADMM-net [8], Variational-
+net [9], and ISTA-net [10] first unroll an iterative algorithm to form the backbone
+network architecture and then replace some of its operators with neural networks.
+These methods are data-driven, and hence therefore be adapted to specific datasets.
+However, compared to optimization-based methods, DL-based methods are less
+interpretable and may have generalization issues.

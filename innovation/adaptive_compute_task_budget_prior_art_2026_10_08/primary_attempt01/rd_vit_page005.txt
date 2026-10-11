@@ -1,0 +1,34 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+5
+3 Methods
+RD-ViT follows a Prelude → Recurrent Loop → Coda → SegHead architecture. The Prelude consists of 
+standard ViT blocks that perform initial feature extraction. The Recurrent Loop applies a single shared ViT 
+block T times with LTI-stable injection, ACT halting, depth-wise LoRA, and optional MoE. The Coda 
+consists of standard ViT blocks for final refinement. The SegHead upsamples patch-level features to 
+pixel/voxel-level predictions. The complete architecture is shown in Figure 2.
+Figure 2: RD-ViT architecture. The recurrent block is a single ViT block (attention + optional MoE FFN) looped T times with 
+LTI injection, ACT halting, and depth-wise LoRA. Components adapted from OpenMythos [1]. The architecture supports both 
+2D (Conv2d patch embed) and 3D (Conv3d patch embed) inputs.
+3.1 Patch Embedding
+For 2D images of size H × W, a Conv2d with kernel size P × P and stride P projects each non-overlapping 
+patch to a dim-dimensional embedding, producing N = (H/P) ⋅ (W/P) patch tokens. For 3D volumes of size 
+D × H × W, a Conv3d with kernel (Pz
+, P, P) and stride (Pz
+, P, P) produces N = (D/Pz
+) ⋅ (H/P) ⋅ (W/P) tokens. 
+In our 3D experiments, H = W = 128, D = 16, P = 16, Pz = 2, yielding N = 8 ⋅ 8 ⋅ 8 = 512 patch tokens.
+We use fixed sinusoidal positional encodings rather than learned embeddings. For 2D, we use 4-way 
+encoding (sin and cos for both H and W grid positions), requiring dim to be divisible by 4. For 3D, we use 
+6-way encoding (sin and cos for H, W, and D), requiring dim to be divisible by 6. The encoding uses the 
+standard frequency schedule 𝜔k = 1 / 10000
+k/d where d = dim/4 (2D) or dim/6 (3D).
+The positional encoding for a patch at grid position (gh, gw) in 2D is constructed by concatenating four 
+vectors: PE(gh, gw) = [sin(𝜔 ⋅ gh); cos(𝜔 ⋅ gh); sin(𝜔 ⋅ gw); cos(𝜔 ⋅ gw)], where 𝜔 ∈ ℝ dim/4
+is the 
+frequency vector. For 3D, this extends to six components covering all three spatial dimensions.
+The choice of sinusoidal over learned positional encoding is deliberate for recurrent depth. Since the same 
+block is applied T times, learned embeddings must remain consistent across iterations. Sinusoidal encodings 
+satisfy this by construction and allow relative position attention patterns through inner products.
+Layer normalization is applied to projected patch features before adding positional encoding, stabilizing 
+the input distribution and preventing position information from being dominated by high-variance features.
+3.2 Attention

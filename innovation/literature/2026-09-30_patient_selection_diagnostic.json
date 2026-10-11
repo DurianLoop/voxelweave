@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-30",
+  "status": "historical_development_diagnostic_not_deployable",
+  "selection_unit": "entire_patient",
+  "notes": [
+    "Oracle policies use target-derived metrics and are unavailable at deployment.",
+    "The two existing models share the old-data evaluation contract; repaired-data results are not mixed in.",
+    "Per-patient guardrails are stricter than original cohort-average guardrails.",
+    "This is not an upper bound for patch selection, blending, retraining, or MRI reconstruction.",
+    "No independence claim: these 23 validation patients have been used repeatedly during development.",
+    "The stopped orientation branch remains stopped; no new model or checkpoint was selected."
+  ],
+  "sources": [
+    {
+      "path": "design\\pastnet_v2\\runs\\full_control_seed3407_vram20\\validation\\per_patient.csv",
+      "sha256": "bb467f38b06cff01c501b41b95a59d85f4d4c715adf709120ed9e6a4ab0f9dce"
+    },
+    {
+      "path": "design\\pastnet_orientation\\runs\\full_orientation_seed3407_vram20\\validation\\per_patient.csv",
+      "sha256": "195f50b90f9d27aa3391b6fd34cadef3fdffda0ac4afff4204520e71db6e3334"
+    }
+  ],
+  "summary": [
+    {
+      "policy": "always_candidate",
+      "selected_patients": 23,
+      "total_patients": 23,
+      "mean_change_vs_base": {
+        "psnr": 0.09438771410184667,
+        "ssim": -0.0004118073569889416,
+        "mae": -2.2213116931824824e-05,
+        "mse": -7.416075566433567e-05,
+        "ncc": 0.001286226406684574,
+        "dice_proxy": -3.0413648174306163e-07,
+        "hd95_proxy": 0.1584198663437174,
+        "tail10_mse": -0.0008143036243727484
+      }
+    },
+    {
+      "policy": "oracle_psnr",
+      "selected_patients": 17,
+      "total_patients": 23,
+      "mean_change_vs_base": {
+        "psnr": 0.10504354517361522,
+        "ssim": 0.00011056013144151576,
+        "mae": -9.098164919600547e-05,
+        "mse": -8.155933400572992e-05,
+        "ncc": 0.0013900606451536645,
+        "dice_proxy": 7.733890201131755e-05,
+        "hd95_proxy": 0.09505249740022804,
+        "tail10_mse": -0.0008485821252737523
+      }
+    },
+    {
+      "policy": "oracle_psnr_and_mae",
+      "selected_patients": 12,
+      "total_patients": 23,
+      "mean_change_vs_base": {
+        "psnr": 0.09472226279471886,
+        "ssim": 0.000492305835066518,
+        "mae": -0.0001319612853726048,
+        "mse": -7.571801464051314e-05,
+        "ncc": 0.0012346957214752472,
+        "dice_proxy": 9.920065133365345e-05,
+        "hd95_proxy": 0.07483431643459804,
+        "tail10_mse": -0.0007571235701904509
+      }
+    },
+    {
+      "policy": "oracle_psnr_mae_ssim_hd95",
+      "selected_patients": 4,
+      "total_patients": 23,
+      "mean_change_vs_base": {
+        "psnr": 0.04563916418812088,
+        "ssim": 0.0003280388304763414,
+        "mae": -8.42830074620205e-05,
+        "mse": -3.588625900401471e-05,
+        "ncc": 0.0005743555542854603,
+        "dice_proxy": 0.00011065324283550211,
+        "hd95_proxy": -0.027341994039750968,
+        "tail10_mse": -0.00034576207629563723
+      }
+    }
+  ]
+}

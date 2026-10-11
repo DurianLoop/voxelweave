@@ -1,0 +1,51 @@
+Wohlrapp Bubeck Rueckert Lotter
+Ground Truth
+UCSF-PDGM
+CheXpert
+Noising
+Undersampling
+Poisson Noise
+Reconstructed Images
+Noisy Images
+1
+Evaluation Mitigation: Reweighting1 Equalized Odds Constraint2
+Diagnosis
+Segmentation
+Classification
+Fairness Evaluation
+2
+U-Net
+GAN
+SDE
+Reconstruction
+Figure 1: Combined pipeline for downstream bias evaluation and mitigation in medical
+image reconstruction. MRI and X-ray images undergo realistic simulated degra-
+dation and are subsequently reconstructed with three approaches before serving
+as input to downstream prediction models. Reconstruction quality, downstream
+performance, and fairness are evaluated. Subsequently, two bias mitigation strate-
+gies are applied exclusively during reconstruction fine-tuning.
+do not reflect the impact of reconstructed images on subsequent clinical tasks. This gap
+raises a key unresolved question:How does AI-based reconstruction influence downstream
+clinical performance and, in particular, fairness?The latter is especially important to assess
+given the risk of generative models in encoding biases (Saumure et al., 2025; Ruggeri and
+Nozza, 2023; Luccioni et al., 2023; Mehrabi et al., 2021). While some smaller-scale studies
+have involved clinician review of AI-reconstructed images (Feuerriegel et al., 2023; Lee et al.,
+2024), this approach is not scalable, especially when investigating nuanced performance
+differences across subgroups.
+In this work, we assess the downstream implications of AI-based reconstruction through
+an evaluation framework that leverages reconstruction and classification/segmentation AI
+models applied in tandem. The framework provides a scalable approach to understand how
+reconstruction errors propagate, while also simulating a realistic clinical scenario as both
+reconstruction and diagnostic models are increasingly deployed in medical workflows. We
+apply this framework across three reconstruction approaches (U-Net, GAN, diffusion), two
+imaging domains (MRI, X-ray), and two tasks (classification and segmentation). We addi-
+tionally propose and evaluate bias mitigation techniques tailored to reconstruction models.
+Our findings highlight differences in trends between image metrics and diagnostic accuracy,
+and the potential of reconstruction models to shift demographic biases.
+2. Related Work
+Reconstruction Models in Medical Imaging:Medical image reconstruction is a pop-
+ular AI application due to its promise in increasing image quality while facilitating lower
+radiation doses and faster scanning times (Ahishakiye et al., 2021; Diab and Lotter, 2025).
+Given pairs of noisy (i.e., undersampled/lower dose) and original images, these models are
+trained to reconstruct the original from the noisy image. Recently, unsupervised methods
+2

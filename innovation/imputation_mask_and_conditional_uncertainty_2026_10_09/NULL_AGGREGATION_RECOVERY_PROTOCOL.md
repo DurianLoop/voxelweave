@@ -1,0 +1,5 @@
+# 保留原完整分母的null聚合合同
+
+原诊断32d597真实exit1，在新输出receipt写入前，发现helper过滤掉null再求均值，不符合原完整分母合同。既有production aggregate和independent_aggregate均在任何series/patient指标未定义时返回null，另外记录defined计数；不能删null病例改变分母。原医学结果、阈值和gate不改，此失败属于新诊断helper。
+
+保留原失败代码/实际返回及空attempt01。另建attempt02，mean在空集合或任何None时返回None，完整分母保持；逐series指标、Fraction计算、3e-12聚合检查和全部36series/144regions保持。全部主full/missing指标为定义值，matched效应结论不受null恢复改变。新实际终态必须成功后才称诊断完成。

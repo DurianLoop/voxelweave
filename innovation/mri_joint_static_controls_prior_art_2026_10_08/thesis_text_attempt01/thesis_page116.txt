@@ -1,0 +1,29 @@
+7 Uncertainty driven adaptive sam-
+pling via GANs
+In the previous chapter, we considered methods to optimize sampling based on deep
+reinforcement learning, and showed that in their current state, they fail to deliver on
+their promises of improving performance by doing long-term planning and adapting to
+the patient.
+In this chapter, we take a step back from the question of designing the best sampling
+policy, and primarily aim at exploring how conditional Generative Adversarial Networks
+(GANs) (Goodfellow et al., 2014; Mirza and Osindero, 2014) can be used to model inverse
+problems in a Bayesian fashion. We are particularly interested on how they can be used
+to learn the posteriorp(x|yω), namely the distribution of ground truth images given
+observations.
+In the context of inverse problems, GANs have mainly been used either as reconstruction
+models (Yang et al., 2018; Chen et al., 2022) or as generative priors (Bora et al., 2017;
+Jalal et al., 2021), as discussed in Section 3.2.5. However, the work of Adler and Öktem
+(2018a) showed that GANs trained to approximate the posterior can learn to act as
+reconstructors and simultaneously provide uncertainty quantification (UQ).
+We argue that there is even more that they can do when trained to approximatep(x|yω).
+In this work, we show how conditional GANs naturally provide a criterion for adaptive
+sampling. Indeed, by sequentially observation the location with the largest posterior
+variance in the measurement domain, the GAN provides an adaptive sampling policy
+without ever being trained for it. In addition, our GAN-based sampling policy can easily
+be adapted to provide sampling in other measurement domains, contrarily to competing
+methods that are designed with Fourier sampling explicitly in mind (Zhang et al., 2019b).
+In particular, we show that when considering image domain sampling, our GAN-based
+policy can strongly outperform the non-adaptive greedy policy from sLBCS. However,
+in Fourier domain, the GAN-based policy does not match the performance of sLBCS.
+Indeed, in image domain, it seems that there is a greater variability in the location
+103

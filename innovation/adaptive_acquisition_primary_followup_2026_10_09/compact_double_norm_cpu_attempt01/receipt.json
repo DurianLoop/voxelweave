@@ -1,0 +1,207 @@
+{
+  "complete": false,
+  "errors": [
+    "AssertionError: "
+  ],
+  "cases": [
+    {
+      "case": "random",
+      "affine_dtype": "torch.float64",
+      "max_errors": {
+        "output": 8.881784197001252e-16,
+        "dx": 8.881784197001252e-16,
+        "dgamma": 1.7763568394002505e-15,
+        "dbeta": 0.0
+      },
+      "input_sha256": "f8000010be55f4d4206f00424964f19bef7582f4c2592f8da0bcf85417dc21e8",
+      "upstream_sha256": "0227f575e3300f095f5f008ba9ac34937840d7fcdf477347ae87b0b6d661be92"
+    },
+    {
+      "case": "random",
+      "affine_dtype": "torch.float32",
+      "max_errors": {
+        "output": 4.440892098500626e-16,
+        "dx": 4.440892098500626e-16,
+        "dgamma": 0.0,
+        "dbeta": 0.0
+      },
+      "input_sha256": "f8000010be55f4d4206f00424964f19bef7582f4c2592f8da0bcf85417dc21e8",
+      "upstream_sha256": "3bd9ebeab8a92c729e67216ed0b3c3d51ab1d04c9f64023e09db63d23353e2bc"
+    },
+    {
+      "case": "constant",
+      "affine_dtype": "torch.float64",
+      "max_errors": {
+        "output": 0.0,
+        "dx": 2.2737367544323206e-13,
+        "dgamma": 0.0,
+        "dbeta": 0.0
+      },
+      "input_sha256": "95d38231af93d495aefe2b643613a35c712aba3c44065b3eca0fa1cbc1b31871",
+      "upstream_sha256": "c5c7f5f7163ea02bfc11eb3e49d6d2ec63a389db8f70bb33819cb74834fc8750"
+    }
+  ],
+  "finite_difference": [
+    {
+      "case": "random",
+      "parameter": "input",
+      "direction_norm": 0.9999999999999999,
+      "analytical": -0.677828171584972,
+      "checks": [
+        {
+          "h": 0.001,
+          "plus": 38.65374266130077,
+          "minus": 38.65509831764298,
+          "derivative": -0.6778281711063983,
+          "analytic_error": 4.785737361956421e-10
+        },
+        {
+          "h": 0.0001,
+          "plus": 38.65435272964773,
+          "minus": 38.654488295282036,
+          "derivative": -0.6778281715469348,
+          "analytic_error": 3.8037240024380026e-11
+        },
+        {
+          "h": 1e-05,
+          "plus": 38.65441373441308,
+          "minus": 38.654427290976514,
+          "derivative": -0.6778281715469348,
+          "analytic_error": 3.8037240024380026e-11
+        }
+      ]
+    },
+    {
+      "case": "random",
+      "parameter": "gamma",
+      "direction_norm": 1.0,
+      "analytical": -9.984908930059184,
+      "checks": [
+        {
+          "h": 0.001,
+          "plus": 38.644435603767064,
+          "minus": 38.66440542162719,
+          "derivative": -9.98490893006121,
+          "analytic_error": 2.0250467969162855e-12
+        },
+        {
+          "h": 0.0001,
+          "plus": 38.65342202180411,
+          "minus": 38.65541900359013,
+          "derivative": -9.984908930107395,
+          "analytic_error": 4.82103246213228e-11
+        },
+        {
+          "h": 1e-05,
+          "plus": 38.65432066360782,
+          "minus": 38.65452036178644,
+          "derivative": -9.984908930960046,
+          "analytic_error": 9.00861607533443e-10
+        }
+      ]
+    },
+    {
+      "case": "random",
+      "parameter": "beta",
+      "direction_norm": 1.0,
+      "analytical": -3.8899404861688573,
+      "checks": [
+        {
+          "h": 0.001,
+          "plus": 38.650530572210954,
+          "minus": 38.65831045318329,
+          "derivative": -3.8899404861680864,
+          "analytic_error": 7.709388682997087e-13
+        },
+        {
+          "h": 0.0001,
+          "plus": 38.6540315186485,
+          "minus": 38.65480950674574,
+          "derivative": -3.8899404862036135,
+          "analytic_error": 3.47561979197053e-11
+        },
+        {
+          "h": 1e-05,
+          "plus": 38.654381613292266,
+          "minus": 38.65445941210197,
+          "derivative": -3.8899404852799075,
+          "analytic_error": 8.889498026576348e-10
+        }
+      ]
+    },
+    {
+      "case": "constant",
+      "parameter": "input",
+      "direction_norm": 0.001,
+      "analytical": -0.23475020007822167,
+      "checks": [
+        {
+          "h": 0.001,
+          "plus": -14.826692441111192,
+          "minus": -14.826222940711734,
+          "derivative": -0.23475019972885036,
+          "analytic_error": 3.493713096602846e-10
+        },
+        {
+          "h": 0.0001,
+          "plus": -14.826481165930208,
+          "minus": -14.826434215890583,
+          "derivative": -0.23475019812480014,
+          "analytic_error": 1.9534215356387108e-09
+        },
+        {
+          "h": 1e-05,
+          "plus": -14.826460038412405,
+          "minus": -14.82645534340964,
+          "derivative": -0.23475013826157462,
+          "analytic_error": 6.181664705118273e-08
+        }
+      ]
+    }
+  ],
+  "MRI_arrays_loaded": 0,
+  "GT_arrays_loaded": 0,
+  "parent_arrays_loaded": 0,
+  "optimizer_updates": 0,
+  "GPU_calls": 0,
+  "publication_claim_confirmed": false,
+  "goal_status": "active",
+  "resources_before": {
+    "workspace_free_bytes": 8037933056,
+    "available_ram_bytes": 106382630912,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 36749719,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6773071,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 1314227
+    },
+    "guarded_workspace_free_bytes": 8001183337
+  },
+  "source_bindings": [
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/verify_compact_double_norm_cpu_v1.py",
+      "bytes": 4613,
+      "sha256": "b3638508e8c3706f6f63154cd0de73a5078f6eccea36ccf1706770cf08d99a8b"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/COMPACT_DOUBLE_NORM_PROTOCOL_V1.md",
+      "bytes": 1497,
+      "sha256": "c88089cf7f043ce0b94c285197772948b48c54d3ebcc28c7ec58777bc826a20a"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/compact_double_norm_v1.py",
+      "bytes": 2152,
+      "sha256": "e85b7f7ad62c2b42ccd78d5ad798ffb9dc768a02e0c579926f2ec5a14cf48a21"
+    }
+  ],
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\MRI\\innovation\\adaptive_acquisition_primary_followup_2026_10_09\\verify_compact_double_norm_cpu_v1.py\", line 49, in main\n    r['finite_difference'].append(dict(case=case,parameter=('input','gamma','beta')[index],direction_norm=float(np.linalg.norm(direction)),analytical=analytical,checks=checks));save();assert checks[-1]['analytic_error']<=1e-8\n                                                                                                                                                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "elapsed_seconds": 0.33512960001826286,
+  "CUDA_initialized": false
+}

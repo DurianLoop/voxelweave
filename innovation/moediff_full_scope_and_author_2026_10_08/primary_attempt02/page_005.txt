@@ -1,0 +1,164 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5
+1) Expert 1: To effectively denoise the centrum semiovale,
+an area dominated by smooth white matter structures with
+low textural variation, this expert emphasizes global structural
+coherence. It incorporates a dilated convolutional block in the
+bottleneck to enlarge the receptive field without increasing
+parameter count, capturing broad anatomical continuity. The
+encoder consists of an initial 3 × 3 convolutional layer, one
+residual block, and a lightweight Edge Enhancement Block
+utilizing a Laplacian kernel, followed by two downsampling
+convolutional layers (4 × 4, stride 2) with residual blocks,
+totalling 8 layers. The bottleneck includes one 3 × 3 dilated
+convolution and one residual block (2 layers total). The decoder
+mirrors the encoder with two transposed convolutional layers
+and residual connections (8 layers), finalized by a 1 × 1
+convolution. To promote perceptual fidelity of smooth structural
+regions, this expert incorporates a perceptual loss derived from
+a pre-trained VGG-16 [26] feature extractor:
+Ltask(1) = ∥z0 − zˆ0(1)∥
+2
+2 + ∥Φ(z0) − Φ(ˆz0(1))∥
+2
+2
+(10)
+where Φ(·) denotes the VGG-based perceptual feature extractor
+applied directly in latent space.
+2) Expert 2: To enable more accurate extraction of cortical
+edges and high-frequency information, this expert adopts a
+complex convolutional bottleneck. The encoder consists of
+an initial 3 × 3 convolutional layer and two downsampling
+convolutional layers (4 × 4, stride 2), each followed by a
+DenseBlock with four layers. In each DenseBlock, all preceding
+feature maps are concatenated as input to each subsequent
+layer, with a growth rate of 16 channels per layer. The
+bottleneck includes a Complex Convolution Block that jointly
+models magnitude and phase components. The decoder mirrors
+the encoder with two transposed convolutional layers and
+DenseBlocks, followed by a final 1 × 1 convolution to produce
+the output. For this, its loss function combining edge-aware
+and frequency-domain constraints is defined as:
+Ltask(2) = ∥S(z0) − S(ˆz0(2))∥
+2
+2 + ∥F(z0) − F(ˆz0(2))∥
+2
+2
+(11)
+where S(·) is the Sobel operator and F(·) denotes the Fourier
+transform in latent space.
+3) Expert 3: This expert is designed to delineate the
+grey–white matter junction, a region characterized by sharp
+structural transitions and subtle anatomical textures. To capture
+both long-range semantic dependencies and localized spectral
+variations, the architecture integrates a non-local attention
+block and a channel attention-enhanced decoding pathway. The
+encoder consists of an initial 3×3 convolutional layer, followed
+by two downsampling convolutional layers (4 × 4, stride 2),
+each paired with a convolutional block and a channel attention
+module to strengthen region-specific contrast. The bottleneck
+includes one standard convolutional layer and one residual
+block to maintain compact semantic representation. The decoder
+mirrors the encoder with two transposed convolutional layers,
+channel attention blocks, and a Non-Local Attention Block
+that models spatial correlations across distant regions. The
+non-local module employs 1 × 1 convolutions to compute
+query, key, and value feature maps, followed by softmax-based
+attention aggregation and feature fusion. To enhance sensitivity
+to spatially localized frequency components, we employ a
+multi-scale Short-Time Fourier Transform (STFT) [27]-based
+reconstruction loss:
+Ltask(3) =
+X
+s∈S
+X
+w∈Ωs
+∥STFTs(z
+w
+0
+) − STFTs(ˆz
+w
+0(3))∥
+2
+2
+(12)
+where S denotes a predefined set of window sizes of {8, 16, 32},
+and Ωs is the set of sliding windows applied to the latent
+representation at scale s. STFTs(·) denotes the STFT computed
+over each window.
+D. Joint training
+To facilitate effective region-adaptive learning in the MoE
+framework, we jointly train the expert networks and the gating
+mechanism through an integrated loss function. Specifically,
+the joint training incorporates both the expert-specific loss and
+a gating regularization term to promote accurate and robust
+expert selection. The overall expert loss is defined as a weighted
+sum of each expert’s individual loss, dynamically modulated
+by gating probabilities:
+LE =
+X
+K
+i=1
+Gi
+· LEi
+(13)
+To guide the gating network toward accurate expert assign￾ments, we introduce a supervised expert-selection constraint
+based on the similarity between each expert’s predicted latent
+representation zˆ0(i) and the corresponding ground-truth latent
+representation z0. To enhance numerical stability and robust
+estimation, we employ adaptive temperature scaling based on
+the Median Absolute Deviation (MAD) [28]:
+T = 1.4826 × MAD 
+cos θ(ˆz0(i)
+, z0)
+
+(14)
+where 1.4826 is a normalization constant aligning MAD to
+the standard deviation of a normal distribution. Using this
+adaptively scaled temperature T, the supervised expert-selection
+probabilities G
+∗
+i
+are computed as follows:
+G
+∗
+i =
+exp 
+cos θ(ˆz0(i)
+, z0)/T
+PK
+j=1 exp 
+cos θ(ˆz0(j)
+, z0)/T (15)
+Then, to maintain expert specialization and avoid mode
+collapse, we incorporate a diversity-promoting regularization
+term into the gating loss. Instead of penalizing overall similarity
+across all expert pairs, we specifically target the most similar
+pairs, which ensures effective differentiation between experts
+while minimizing computational overhead:
+Lgating = −
+1
+K
+X
+K
+i=1
+G
+∗
+i
+log Gi
+| {z }
+Supervised gating loss
++ log 
+1 +
+1
+K
+X
+K
+i=1
+max
+j̸=i
+cos θ(ˆz0(i)
+, zˆ0(j))
+!
+| {z }
+Expert diversity regularization
+(16)

@@ -1,0 +1,47 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+Reconstructor
+Sampling  
+policy
+Training data
+Undersampling
+ﬀt
+iﬀt
+Ground truth
+Fourier spectrum
+Undersampled 
+Fourier spectrum
+ Reconstruction
+Observation
+Sampling mask
+Figure 4.1: Overview of sampling in accelerated MRI, using a knee image. Acquisition physically
+happens sequentially in Fourier space (full readout lines acquired at once), and a sampling policy
+can decide ahead of time what sampling mask to use (non-adaptive sampling), or integrate
+information from the current reconstruction to decide on the next location to acquire (adaptive
+sampling).
+Blue dashed lines indicate optional relations: not all policies and reconstruction methods rely on
+training data, and not all policies are patient-adaptive. The light grayed area indicates that we
+do not have access to the full ground truth and spectrum at evaluation time, but that we rather
+directly acquire undersampled data.
+4.6.1 Non-adaptive sampling masks
+In this first setting, given access to a set of training data{x1,..., xm}∼ p(x), we aim
+at finding the mask that exhibits the best average performance, namely
+max
+ω:|ω|≤N
+1
+m
+m∑
+i=1
+η(xi,fθ(yω,i;ω)) s.t.yω,i =Aωxi +ϵ. (4.5)
+However, solving Equation 4.5 remains challenging, due to the combinatorial nature of
+the problem. It also brings questions ofgeneralization, of whether a maskω that shows
+good performance on the training set would also show good performance on a testing set
+of unseen samples from the same distributionp(x). While standard learning-theoretic can
+give answer on the generalization problem (Gözcü et al., 2018), the combinatorial nature
+of the problem dooms to failure any naive approach, as the total number of different
+masks grows exponentially, with a complexityO(2N).
+Two main types of approaches have been proposed for Problem 4.5, relying either on
+tackling the combinatorial problem in an approximate fashion (Gözcü et al., 2018; Zibetti
+et al., 2020) or relaxing the mask to a continuous variable that is then solved using
+gradient-based optimization (Bahadir et al., 2019; Aggarwal and Jacob, 2020; Weiss
+et al., 2020; Huijben et al., 2020; Sherry et al., 2019). Combinatorial approaches typically
+40

@@ -1,0 +1,332 @@
+[
+  {
+    "id": "jcm-15-05508-t001",
+    "text": "jcm-15-05508-t001_Table 1Table 1Representative segmentation studies on the Cheng brain-tumor dataset. Most prior results use slice-level random splits; the present work uses a subject-wise split (see Section 3). Bold indicates the method proposed in this study.StudyMethodSplitDiceIoU/mIoUGupta et al. 2023 [11]U-Net variants; R2U-Net most consistentslice-level——Avazov et al. 2024 [13]Lightweight spatial-attention U-Netslice-level~0.93—Preetha et al. 2025 [12]Multi-scale attention U-Net + EfficientNet-B490:100.9340.880Rai et al. 2024 [14]Two-headed UNet-EfficientNet-B4 (+ensemble)slice-level0.940/0.957— This work Region-wise Bézier aug. + Swin-UMamba subject-wise 5-fold 0.896 0.820",
+    "rows": [
+      [
+        "Study",
+        "Method",
+        "Split",
+        "Dice",
+        "IoU/mIoU"
+      ],
+      [
+        "Gupta et al. 2023 [11]",
+        "U-Net variants; R2U-Net most consistent",
+        "slice-level",
+        "—",
+        "—"
+      ],
+      [
+        "Avazov et al. 2024 [13]",
+        "Lightweight spatial-attention U-Net",
+        "slice-level",
+        "~0.93",
+        "—"
+      ],
+      [
+        "Preetha et al. 2025 [12]",
+        "Multi-scale attention U-Net + EfficientNet-B4",
+        "90:10",
+        "0.934",
+        "0.880"
+      ],
+      [
+        "Rai et al. 2024 [14]",
+        "Two-headed UNet-EfficientNet-B4 (+ensemble)",
+        "slice-level",
+        "0.940/0.957",
+        "—"
+      ],
+      [
+        "This work",
+        "Region-wise Bézier aug. + Swin-UMamba",
+        "subject-wise 5-fold",
+        "0.896",
+        "0.820"
+      ]
+    ]
+  },
+  {
+    "id": "jcm-15-05508-t002",
+    "text": "jcm-15-05508-t002_Table 2Table 2Source-domain (Cheng) segmentation under subject-wise five-fold cross-validation (mean ± SD). Bold indicates the best value in each column; the dagger (†) denotes the lighter Mamba-decoder variant of Swin-UMamba.FamilyMethodDSC (%)IoU (%)HD95 (px)Params (M)FPSCNNU-Net84.1 ± 1.674.8 ± 1.99.231.095CNNU-Net++85.0 ± 1.475.9 ± 1.78.736.678CNNAttention U-Net85.3 ± 1.576.3 ± 1.88.534.970CNNResUNet++84.0 ± 1.774.6 ± 2.09.414.584CNNDeepLabV3+85.6 ± 1.376.7 ± 1.68.326.788TransformerTransUNet86.2 ± 1.377.6 ± 1.67.9105.341TransformerSwin-UNet86.0 ± 1.477.3 ± 1.78.027.260TransformerSwinUNETR86.8 ± 1.278.4 ± 1.57.525.152TransformerSegFormer-B286.5 ± 1.278.0 ± 1.57.727.564MambaU-Mamba87.0 ± 1.178.7 ± 1.47.322.858MambaVM-UNet87.3 ± 1.179.1 ± 1.47.127.462MambaSwin-UMamba87.9 ± 1.079.9 ± 1.36.827.559MambaSwin-UMamba †87.6 ± 1.179.5 ± 1.37.019.171Mamba BA-SwinMamba (ours) 89.6 ± 0.9 82.0 ± 1.1 5.9 27.559",
+    "rows": [
+      [
+        "Family",
+        "Method",
+        "DSC (%)",
+        "IoU (%)",
+        "HD95 (px)",
+        "Params (M)",
+        "FPS"
+      ],
+      [
+        "CNN",
+        "U-Net",
+        "84.1 ± 1.6",
+        "74.8 ± 1.9",
+        "9.2",
+        "31.0",
+        "95"
+      ],
+      [
+        "CNN",
+        "U-Net++",
+        "85.0 ± 1.4",
+        "75.9 ± 1.7",
+        "8.7",
+        "36.6",
+        "78"
+      ],
+      [
+        "CNN",
+        "Attention U-Net",
+        "85.3 ± 1.5",
+        "76.3 ± 1.8",
+        "8.5",
+        "34.9",
+        "70"
+      ],
+      [
+        "CNN",
+        "ResUNet++",
+        "84.0 ± 1.7",
+        "74.6 ± 2.0",
+        "9.4",
+        "14.5",
+        "84"
+      ],
+      [
+        "CNN",
+        "DeepLabV3+",
+        "85.6 ± 1.3",
+        "76.7 ± 1.6",
+        "8.3",
+        "26.7",
+        "88"
+      ],
+      [
+        "Transformer",
+        "TransUNet",
+        "86.2 ± 1.3",
+        "77.6 ± 1.6",
+        "7.9",
+        "105.3",
+        "41"
+      ],
+      [
+        "Transformer",
+        "Swin-UNet",
+        "86.0 ± 1.4",
+        "77.3 ± 1.7",
+        "8.0",
+        "27.2",
+        "60"
+      ],
+      [
+        "Transformer",
+        "SwinUNETR",
+        "86.8 ± 1.2",
+        "78.4 ± 1.5",
+        "7.5",
+        "25.1",
+        "52"
+      ],
+      [
+        "Transformer",
+        "SegFormer-B2",
+        "86.5 ± 1.2",
+        "78.0 ± 1.5",
+        "7.7",
+        "27.5",
+        "64"
+      ],
+      [
+        "Mamba",
+        "U-Mamba",
+        "87.0 ± 1.1",
+        "78.7 ± 1.4",
+        "7.3",
+        "22.8",
+        "58"
+      ],
+      [
+        "Mamba",
+        "VM-UNet",
+        "87.3 ± 1.1",
+        "79.1 ± 1.4",
+        "7.1",
+        "27.4",
+        "62"
+      ],
+      [
+        "Mamba",
+        "Swin-UMamba",
+        "87.9 ± 1.0",
+        "79.9 ± 1.3",
+        "6.8",
+        "27.5",
+        "59"
+      ],
+      [
+        "Mamba",
+        "Swin-UMamba †",
+        "87.6 ± 1.1",
+        "79.5 ± 1.3",
+        "7.0",
+        "19.1",
+        "71"
+      ],
+      [
+        "Mamba",
+        "BA-SwinMamba (ours)",
+        "89.6 ± 0.9",
+        "82.0 ± 1.1",
+        "5.9",
+        "27.5",
+        "59"
+      ]
+    ]
+  },
+  {
+    "id": "jcm-15-05508-t003",
+    "text": "jcm-15-05508-t003_Table 3Table 3Augmentation ablation (subject-wise five-fold). Δ DSC is relative to A0; x-DSC is the mean Dice on the two unseen target domains. A check mark (✓) indicates that the corresponding augmentation component is enabled; the dagger (†) denotes the lighter Mamba-decoder variant of Swin-UMamba; bold indicates the best value in each column.CfgGeometricGlobal BézierRegion-WiseDecoderDSC (%)x-DSC (%)Δ DSCA0–––CNN85.470.0—A1✓––CNN86.972.6+1.5A2✓✓–CNN88.175.7+2.7A3✓✓✓CNN 89.6 78.3 +4.2A4✓✓✓Mamba (†)89.278.7+3.8",
+    "rows": [
+      [
+        "Cfg",
+        "Geometric",
+        "Global Bézier",
+        "Region-Wise",
+        "Decoder",
+        "DSC (%)",
+        "x-DSC (%)",
+        "Δ DSC"
+      ],
+      [
+        "A0",
+        "–",
+        "–",
+        "–",
+        "CNN",
+        "85.4",
+        "70.0",
+        "—"
+      ],
+      [
+        "A1",
+        "✓",
+        "–",
+        "–",
+        "CNN",
+        "86.9",
+        "72.6",
+        "+1.5"
+      ],
+      [
+        "A2",
+        "✓",
+        "✓",
+        "–",
+        "CNN",
+        "88.1",
+        "75.7",
+        "+2.7"
+      ],
+      [
+        "A3",
+        "✓",
+        "✓",
+        "✓",
+        "CNN",
+        "89.6",
+        "78.3",
+        "+4.2"
+      ],
+      [
+        "A4",
+        "✓",
+        "✓",
+        "✓",
+        "Mamba (†)",
+        "89.2",
+        "78.7",
+        "+3.8"
+      ]
+    ]
+  },
+  {
+    "id": "jcm-15-05508-t004",
+    "text": "jcm-15-05508-t004_Table 4Table 4Class-stratified Dice on the source dataset; best in bold.SettingMeningiomaGliomaPituitaryMeanSwin-UMamba (baseline)88.689.483.187.9 BA-SwinMamba (ours) 90.4 91.0 86.2 89.6",
+    "rows": [
+      [
+        "Setting",
+        "Meningioma",
+        "Glioma",
+        "Pituitary",
+        "Mean"
+      ],
+      [
+        "Swin-UMamba (baseline)",
+        "88.6",
+        "89.4",
+        "83.1",
+        "87.9"
+      ],
+      [
+        "BA-SwinMamba (ours)",
+        "90.4",
+        "91.0",
+        "86.2",
+        "89.6"
+      ]
+    ]
+  },
+  {
+    "id": "jcm-15-05508-t005",
+    "text": "jcm-15-05508-t005_Table 5Table 5Single-source domain generalization: train on Cheng, test on two unseen datasets without fine-tuning (Dice %); best in bold.MethodSource (Cheng)Target-1 (BRISC)Target-2 (BraTS-2D)Target MeanBest CNN (DeepLabV3+)85.671.066.868.9Best Transformer (SwinUNETR)86.873.269.171.2Swin-UMamba87.974.870.672.7Swin-UMamba + global-aug baseline88.177.573.975.7 BA-SwinMamba (ours) 89.6 80.1 76.4 78.3",
+    "rows": [
+      [
+        "Method",
+        "Source (Cheng)",
+        "Target-1 (BRISC)",
+        "Target-2 (BraTS-2D)",
+        "Target Mean"
+      ],
+      [
+        "Best CNN (DeepLabV3+)",
+        "85.6",
+        "71.0",
+        "66.8",
+        "68.9"
+      ],
+      [
+        "Best Transformer (SwinUNETR)",
+        "86.8",
+        "73.2",
+        "69.1",
+        "71.2"
+      ],
+      [
+        "Swin-UMamba",
+        "87.9",
+        "74.8",
+        "70.6",
+        "72.7"
+      ],
+      [
+        "Swin-UMamba + global-aug baseline",
+        "88.1",
+        "77.5",
+        "73.9",
+        "75.7"
+      ],
+      [
+        "BA-SwinMamba (ours)",
+        "89.6",
+        "80.1",
+        "76.4",
+        "78.3"
+      ]
+    ]
+  }
+]

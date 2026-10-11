@@ -1,0 +1,7 @@
+# 强任务能力先例选择
+
+本轮两次固定题名查询均实际HTTP200；命中BrainSegFounder2406.10395v3与Swin医学预训练2111.14791v2，另条S3T音乐分类排除、不计MRI正文。摘要已读，尚不能据其认证MRI收益或下载权重可用。全旧innovation Markdown按精确标题/ID排重无命中（rg exit1表示未命中，非实验失败），不同于全世界查新。
+
+选择这两篇固定HTML文字阅读，补查大规模外部预训练→小病灶任务的监督/数据及算力合同。BrainSegFounder的41,400参与者与BraTS/ATLAS多对比或单对比不是本项目稀疏单T2/VS；Swin5050预训练为CT，跨到MRI不可直接引用baseline效果。external weights若以后使用，需要单独数据来源/患者重合审计及冻结合同，不把它当原strictLOPO random cold-init的既有结果。
+
+全文获取沿原HTMLParser保存原HTML与blocks/formulas/tables/images/meta，公式表格获取不是已读，逐段实际读后另立provenance；无需大PDF或模型权重。总目录cap2MB保持。不得从paper提升直接推出本项目可发表claim，不改六医学gate或confirmation关闭状态。

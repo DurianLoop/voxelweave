@@ -1,0 +1,47 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+conditional generation, where the generator is conditioned on a partial observation, and
+aims at generating a full image that is both consistent with the partial observation and
+likely to originate from the data distributionp(x). This was explored later in tasks
+such as multimodal image-to-image translation, where a model aims at translating a
+same image between two domain (e.g. between a sketch and a realistic picture) (Zhu
+et al., 2017). Particularly relevant to us is the work of Adler and Öktem (2018a), which
+explicitly shows that learning a conditional Wasserstein GANs (WGANs) (Arjovsky et al.,
+2017) in an inverse problem amounts to approximating the posteriorp(x|y). We discuss
+this work in greater depth as they were, until recently (Kovachki et al., 2020), the only
+work that formally connected conditional WGANs to learning the posterior in the context
+of inverse problems. Similarly, (Belghazi et al., 2019) show that a conditional GAN
+can serve to learn an exponential amount of conditionals, although without explicitly
+connecting it to learning a posterior distribution.
+Conditional Wasserstein GANs
+The Wasserstein distance, also known as the Earth-Mover distance, is defined as a
+distance between two probability distributionsp and q
+W(p,q )≜ inf
+γ∈Π(p,q)
+E(x,y)∼γ [∥x− y∥] (7.2)
+where Π(p,q ) denotes the set of all joint distributionsγ(x, y) that respectively marginalize
+to p and q. In Wasserstein GANs (WGANs), one aims to find the distributiongθ
+that minimizes the Wasserstein distance with the reference distributionp. Although
+Equation 7.2 does not look like a two-player game at first glance, it can be expressed in
+a minmax form by leveraging the Kantorovich-Rubinstein duality (Villani, 2008, Remark
+6.5 on p. 95), which states that
+W(p,q ) = sup
+d:∥d∥L≤1
+Ex∼p [d(x)]− Ez∼q[d(z)] (7.3)
+where∥d∥L≤ 1 refers to functions with a Lipschitz constant smaller or equal to1. This
+results in the objective
+min
+θ
+W(p(x),gθ) = min
+θ
+max
+ϕ:∥dϕ∥L≤1
+Ex∼p(x) [dϕ(x)]− Ez∼p(z)[dϕ(gθ(z))] (7.4)
+where similarly to Equation 7.1, we aim at training a generator to produce samples that
+resemblep(x), with the discriminator output being large forreal samples and small for
+generated ones. Note that there are important differences in the objective, as we see
+that Equation 7.4 has no logarithms in the objective, and imposes a constraint on the
+Lipschitz constant of the discriminator. This has been enforced various ways, but the
+most common approach relies on regularizing the objective with a term called gradient
+penalty (Gulrajani et al., 2017) that penalizes large Lipschitz constants. One of the
+106

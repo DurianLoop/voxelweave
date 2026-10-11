@@ -1,0 +1,17 @@
+# 6923后交接：开发已完成，优先全强度终态与泛化控制
+
+本轮实质进展：新增Tanno1907.13418v1主文全部139块；全2992前景点几何诊断；原76开发FOV真正终态/原capture/112FOV完整比较；全28metadata描述。目标active，无发表claim独立确认。所有新增在innovation，GPU授权有效，不请求重复授权，不干预用户训练、不安装、不委派、不删历史。
+
+**不要再poll12652**：真实8042cc exit0无session_id、全76strict通过、elapsed4169.0702993；ACTUAL_DEVELOPMENT_EVALUATION_TERMINAL_TOOL.json已保存observed12652；原capture288edd成功，全部GT/概率/坐标/二值/患者计数来源核过。前阶段冻结compare脚本7e4c67成功，complete_comparison_attempt01已完整且归档。旧29823/78123也早已真正完成，不再poll。
+
+开发Dice native intensity.862924/spatial.866582；raw intensity.880839/spatial.860915，均通过4均值能力参照；原36验证分别.468329/.521877/.518307/.463237，六医学门槛仍全失败。011个别开发仍弱。当前优先泛化/普通增强；不同队列差异不当因果/确认。全28metadata aa5178：验证spacing边际位于开发范围，024体积约1073mm³，不是最小；不能据4seen val选择阈值或专用增强。GT体积仅分析，禁止部署feature。
+
+**继续poll90446**：最后真实c260ec仍有session_id，12504/35904，elapsed9281.90149119997s；isolated0、fullchain/shared_post最大2.384185791015625e-6（比旧1.907大但仍<=3e-6），coordinate1.1368683772161603e-13、support5.706546346573305e-14。完整资格仍未成功；不继承旧6216。真正整体exit0且无session_id后，保存full_real_intensity_v2_2026_10_09/ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json，加observed_unified_exec_session90446，再执行已有audit_full_real_terminal.py。失败保留、不放宽阈值、不改已绑定runner。
+
+全11GT的19998parent不作严格LOPO外折init；8未见确认12series及lockedIXI关闭。六普通resolution/support/reliability增强已有入口但必须全强度资格及资源可容纳后训练。GPU最后9c48c3 free1394MiB，原8192启动准入有效；磁盘最新63e547约8,014,209,024bytes、8GB储备外14.2MB，不足六final仅payload33.73MB。已结束开发输出已归档，不迁移CPU任务、不开CUDA抢资源、不检查/控制其他PID。
+
+新论文直占下游量UQ/variance分解/按置信度拒绝与保留LR；候选收窄为强task/普通增强后合法采集信息对具体paired病灶动作净收益增量，所有同容量QC/error/action-risk/去metadata/metadata-only/static/random/always/defer与全费用控制仍必需。异方差内部好边界差，保留FN/FP/体积端点。公开v1式20/21常数检验给负方差，只限HTML；两个作者URL404，未读/执行源码、final/PDF/supp未核。不能重复计原1篇或将数学检验当MRI收益。
+
+归档：2d83bc核旧6780+43=6823；439ddc再核全部6823+100=6923，包含真正完成的全部76开发输出及完整比较。APPEND_CAPACITY_INDEX SHA3d4514b07456ea239c7f91ba20af3f36902362613f50ff72fe5ddb5cb07f2a96；PROOF SHA399977a77f7f76132d15a84e75f8623e85baa1dae7c727e6709d9c99a8461197。不要重跑或覆盖两个index/proof与被冻结文件。
+
+6923之后待下一index追加：ACTUAL_CAPACITY_ARCHIVE_TERMINAL_TOOL.json、POST_CAPACITY_ARCHIVE_OBSERVATIONS.json、CURRENT_ROUND_REPORT.md、本交接、FINAL_PUBLIC_RESPONSE.json及最终保存工具观察。旧README的live数字为归档时快照，后续写新报告而非修改。所有可用工具缓冲、当前可见用户请求、交接与公开回复已落盘；未可得历史原文不补造。

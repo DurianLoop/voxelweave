@@ -1,0 +1,34 @@
+Configuration details. We use patch size P = 5 at all resolution levels and a
+window size of min(4, number of patches at resolution). We set the embed￾ding dimension equal to the number of channels at each resolution level (i.e.,
+E = C) and the MLP hidden dimension to 4E. We used L = 8 transformer
+blocks, each with 8 attention heads. The modality-specific encoders mirrored
+the specialist baselines, utilising 16, 32, 64, 128, 256, and 320 channels per
+level.
+3.5. Implementation and training details
+3.5.1. 3D U-Net architecture
+All methods shared a common 3D U-Net backbone based on nnU-Net
+(Isensee et al., 2021), using two Conv-Norm-Act blocks per resolution level
+across six levels. We used 3 × 3 × 3 convolutions, instance normalisation
+with affine scaling, and Leaky ReLU activations with a slope of 0.01. The
+encoder blocks incorporated residual connections, using strided convolutions
+for downsampling. Decoder upsampling was achieved via 2×2×2 transposed
+convolutions (stride 2).
+3.5.2. Modality dropout
+To train the hetero-modal methods, we applied random modality dropout.
+For each training sample with T available modalities (where T may already
+be less than the total unique dataset modalities, N), we sampled an integer
+D from the range [0, T − 1]. We randomly dropped D modalities, bringing
+the total number of missing modalities to M = (N − T) + D.
+3.5.3. Standard data augmentation
+We applied standard nnU-Net-style spatial and intensity augmentations:
+random affine transforms (prob=0.2, isotropic scaling in [0.7, 1.4], rotation
+in [-90◦
+, 90◦
+]); Gaussian noise (prob=0.15, std in [0, 0.316]); Gaussian blur
+(prob=0.1, sigma in [0.5, 1.5]); contrast adjustment (prob=0.15, multiplier
+in [0.65, 1.5]); gamma augmentation (prob=0.15, gamma in [0.7, 1.5]); low￾resolution simulation (prob=0.25 per modality, factor in [1, 2]); and random
+axis flipping (prob=0.5). We also simulated motion, ghosting, spike, and
+bias field MRI artefacts (prob=0.05 each, via TorchIO (Pérez-García et al.,
+2021)). Post-augmentation, images were rescaled to [0, 1], saturating at the
+0.5 and 99.5 percentiles.
+12

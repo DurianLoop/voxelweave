@@ -1,0 +1,86 @@
+, VOL. XX, NO. XX, XXXX 2020 1
+Causality-inspired Single-source Domain
+Generalization for Medical Image Segmentation
+Cheng Ouyang, Chen Chen, Surui Li, Zeju Li, Chen Qin, Wenjia Bai and Daniel Rueckert, Fellow, IEEE
+Abstract—Deep learning models usually suffer from the do￾main shift issue, where models trained on one source domain
+do not generalize well to other unseen domains. In this work,
+we investigate the single-source domain generalization problem:
+training a deep network that is robust to unseen domains, under
+the condition that training data are only available from one
+source domain, which is common in medical imaging applica￾tions. We tackle this problem in the context of cross-domain
+medical image segmentation. In this scenario, domain shifts are
+mainly caused by different acquisition processes. We propose a
+simple causality-inspired data augmentation approach to expose
+a segmentation model to synthesized domain-shifted training
+examples. Specifically, 1) to make the deep model robust to
+discrepancies in image intensities and textures, we employ a
+family of randomly-weighted shallow networks. They augment
+training images using diverse appearance transformations. 2)
+Further we show that spurious correlations among objects in an
+image are detrimental to domain robustness. These correlations
+might be taken by the network as domain-specific clues for
+making predictions, and they may break on unseen domains. We
+remove these spurious correlations via causal intervention. This is
+achieved by resampling the appearances of potentially correlated
+objects independently. The proposed approach is validated on
+three cross-domain segmentation scenarios: cross-modality (CT￾MRI) abdominal image segmentation, cross-sequence (bSSFP￾LGE) cardiac MRI segmentation, and cross-site prostate MRI
+segmentation. The proposed approach yields consistent perfor￾mance gains compared with competitive methods when tested on
+unseen domains.
+Index Terms—Domain generalization, Image segmentation,
+Causality, Data augmentation
+I. INTRODUCTION
+Deep learning based medical image segmentation ap￾proaches [1]–[6] usually achieve state-of-the-art performance
+when being trained and tested on datasets from a single do￾main, i.e. from identically distributed training and testing data.
+However, in practice, deep learning models perform less well
+when the testing data is drawn from a different distribution
+than that of the training data (i.e. a different domain) [7],
+[8]. The discrepancy between training and testing domains is
+This work is supported in part by the EPSRC Programme Grant
+EP/P001009/1, in part by EPSRC Grant EP/W01842X/1, in part by the
+Innovate U.K. under Grant 104691, and in part by the ERC Grant 884622.
+Code is available at https://github.com/cheng-01037/Causality-Medical￾Image-Domain-Generalization. (Corresponding author: Cheng Ouyang, E￾mail: c.ouyang@imperial.ac.uk).
+Cheng Ouyang, Chen Chen, Surui Li, Zeju Li, Wenjia Bai and Daniel
+Rueckert are with the Department of Computing, Imperial College London,
+UK; Chen Qin is with the Department of Electrical and Electronic Engineer￾ing, Imperial College London, UK; Wenjia Bai is also with the Department of
+Brain Sciences, Imperial College London, UK; Daniel Rueckert is also with
+the Institute for AI and Informatics in Medicine, Klinikum rechts der Isar,
+Technical University of Munich, Germany.
+termed as the domain shift [9]. In medical image segmentation,
+the most notorious source of domain shift is the differences
+in image acquisition processes (imaging modalities, scanning
+protocols, or device manufacturers) [10]. This type of domain
+shift is therefore termed as the acquisition shift [11]. We argue
+that the performance deterioration under acquisition shift can
+be attributed to the following two mechanisms: the shifted
+domain-dependent features and the shifted-correlation effect.
+Fig. 1. A. An example of domain-dependent features. Appearance varies
+with imaging modalities (domains). Appearance-based decision rules that are
+built on one domain (e.g. CT) may fail on other domains (e.g. MRI). B. An
+example of spurious correlations: In the source domain, the model learns
+to detect pneumonia by looking at the metal token that is correlated with but
+not causally leads to the pneumonia label [12], [13]
+2
+. However, these metal
+tokens may not exist in the target domain, potentially leading to model failure.
+Shifted domain-dependent features: Domain-dependent
+features include intensities and textures, which constitute im￾age appearance, as shown in Fig. 1-A. Deep networks are
+susceptible to shifts in intensity and texture [7], [8]. This is
+in contrast to human annotators: they can easily find the cor￾respondence of the same anatomical structure across different
+domains [8], usually by focusing on the shape information that
+is domain-invariant and is intuitively causal to human-defined
+segmentation masks, compared with intensity/texture.
+Shifted-correlation effect: Due to a confounder (i.e. a
+“third” variable that spuriously correlates two variables of
+interest) [14], objects in the background might be correlated
+but not causally related to the objects of interest [15]. The
+network might take these objects in the background as clues
+for recognizing the objects of interest [15]. For example, in
+[12], [13], as illustrated in Fig. 1-B, a model that recognizes
+pneumonia in X-ray images is actually looking at the
+metal token in the background, which correlates with
+pneumonia due to the confounder: data selection bias. These
+correlations are often detrimental under domain shift. This is
+because decision rules based on these correlations may break
+in the shifted domain: the correlated objects in the background
+2
+Image adapted from [12] under the terms of Creative Commons Attri￾bution License.

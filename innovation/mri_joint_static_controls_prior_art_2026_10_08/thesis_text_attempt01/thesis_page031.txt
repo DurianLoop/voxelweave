@@ -1,0 +1,38 @@
+CHAPTER 2. MRI BACKGROUND
+2005; Deshmane et al., 2012) examine the differences and similarities of these techniques
+in greater detail and detail various clinical applications. Calibrationless methods have
+also been explored in more recent years (Trzasko and Manduca, 2011; Majumdar and
+Ward, 2012; El Gueddari et al., 2019).
+An example of parallel imaging with coil sensitivities.We illustrate the role
+of sensitivity maps to provide additional information to resolve the aliasing due to the
+acceleration in Figure 2.5. This example assumes three coils with box-like sensitivities
+covering each a third of the image. We see that in the caseR = 1, there is no aliasing,
+and reconstruction is simply achieved by an inverse Fourier transform. In the caseR = 3.
+We see that adding the information of each coil allows to still resolve the aliasing, but
+this is not sufficient forR = 4, where the three coils do not provide enough information
+in order to resolve aliasing. We can see also on the last column how increasingR results
+in acquisition lines getting more spread out in Fourier space.
+Note that this is an idealized example, as in this case the coil-sensitivities do not
+overlap, which means that summing up individual images multiplied by their respective
+sensitivities suffices to reconstruct the image. The SENSE algorithm is more involved
+and can resolve images with overlapping coil sensitivities.
+2.1.6 Dynamic MRI
+Before terminating this chapter, we will also cover the case of dynamic MRI, which will
+be relevant to Chapter 5 of this thesis. Dynamic MRI, as its name suggests aims at
+imaging dynamic, moving objects. It can be used for instance for cardiac imaging (Tsao
+et al., 2003) or vocal tract imaging (Echternach et al., 2010). The data are acquired in
+k-space at different times, resulting in k-t raw data, and the direct reconstruction is done
+with a frame by frame inverse Fourier transform.
+In this setting, imaging speed is most critical for several reasons: if one wants to image
+a fast-moving object precisely, then a high temporal resolution will be required, which
+presents a challenge for MRI (Tsao et al., 2003). Accelerating the acquisition in this case
+will not only improve the comfort of the patient, but might also provide higher temporal
+resolution.
+However, the motion between two frames should not be too large, and in practice, which
+would require breath-held examinations for Cartesian cardiac imaging (Gamper et al.,
+2008; Jung et al., 2009), which is often impractical for patients. In this case, techniques
+such as radial sampling can be greatly beneficial, as radial spokes continually sample the
+center of the k-space, and then motion can be retrospectively corrected in free-breathing
+samples (Winkelmann et al., 2007; Uecker et al., 2010; Feng et al., 2014, 2016b).
+If one wishes to perform Cartesian sampling in this case, higher acceleration rates would
+18

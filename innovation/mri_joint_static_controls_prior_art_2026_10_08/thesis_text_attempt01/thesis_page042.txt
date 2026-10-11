@@ -1,0 +1,42 @@
+3.3. TRADE-OFFS
+3.2.5 Generative approaches
+The role of the reconstruction methods can be seen as learning a data-driven prior which
+has proven to enable higher quality of reconstruction than mathematically motivated
+models. While reconstruction methods embed the full iterative resolution of Problem 3.1
+into a deep architecture, other approaches, relying on deep generative models, propose to
+explicitly parametrize the prior with a neural network (Bora et al., 2017; Jalal et al., 2021;
+Patel and Oberai, 2021). This has the advantage of keeping the optimization procedure
+more transparent, as it will be about explicitly finding a sample from a deep generative
+prior that is consistent with the observation. The approach, proposed initially by Bora
+et al. (2017) relies on training a generative adversarial network (GAN) to capture the
+prior distribution. We first briefly introduce GANs.
+Generative adversarial networks.GANs (Goodfellow et al., 2014) are a specific
+type of deep learning models where a generatorgθ(z) and a discriminatordϕ(x) are
+trained in a competitive fashion: starting from random noisez∼ p(z), the generator
+tries to construct samples that imitate a distribution of references imagesp(x) from
+which we are given a large set of samples{xi}m
+i=1. The discriminator, on the other
+hand, tries to classify a sample based on how likely it is to originate from the reference
+distribution. The problem can formally be described as a game between the generator
+and the discriminator, where we solve
+min
+θ
+max
+ϕ
+Ep(x) [dϕ(x)]− Ep(z) [dϕ(gθ(z))]. (3.9)
+Generative priors. Given a trained generatorgθ∗(z) approximating the image dis-
+tribution of interestp(x), the approach of Bora et al. (2017), applied also to MRI in
+Patel and Oberai (2021), aims at finding a sample from the generator consistent with
+the observations by solving
+minz ∥Aωgθ∗(z)−yω∥2 (3.10)
+While this approach does not enable to directly construct a maximum a posteriori
+(MAP) estimate, due to the GAN only yielding samples and no probabilities, the low-
+dimensionality of the latent spacez enables to efficiently carry out Markov Chain Monte
+Carlo (MCMC) computations (Patel and Oberai, 2021) to construct posterior samples.
+3.3 Trade-offs
+While all the methods presented in this chapter enable reconstruction from sub-Nyquist
+sampling rates, they feature different advantages and drawbacks. The state-of-the-art in
+terms of reconstruction performance is occupied by deep learning-based reconstruction
+methods, such as unrolled algorithms. They allow for the best quality and fastest inference
+among all methods presented here, but require large training datasets and are not robust
+29

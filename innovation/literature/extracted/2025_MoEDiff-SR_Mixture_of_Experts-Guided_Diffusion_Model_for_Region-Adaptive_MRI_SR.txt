@@ -1,0 +1,665 @@
+
+=== PDF PAGE 1 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               1
+
+         MoEDiff-SR: Mixture of Experts-Guided Diffusion Model for
+                                    Region-Adaptive MRI Super-Resolution
+
+Zhe Wang, Yuhua Ru, Aladine Chetouani, Fang Chen, Fabian Bauer, Liping Zhang, Didier Hans∗, Rachid Jennane∗,
+                                                   Mohamed Jarraya∗, Yung Hsin Chen∗
+
+
+
+
+   Abstract—Magnetic Resonance Imaging (MRI) at lower field                                    AGNETIC resonance imaging (MRI) is a fundamental
+strengths (e.g., 3T) suffers from limited spatial resolution, making                  Mand versatile medical imaging modality that provides
+it  challenging  to  capture  fine  anatomical  details  essential  for               detailed  and  high-resolution  visualization  of  soft  tissues  by
+clinical   diagnosis   and   neuroimaging   research.   To   overcome                 leveraging the interaction between strong magnetic fields, ra-
+this  limitation,  we  propose  MoEDiff-SR,  a  Mixture  of  Experts                  diofrequency pulses, and the intrinsic magnetic properties of bi-
+(MoE)-guided  diffusion  model  for  region-adaptive  MRI  Super-
+Resolution (SR).  Unlike conventional diffusion-based  SR models                      ological tissues [1]. Unlike ionizing radiation-based techniques
+that apply a uniform denoising process across the entire image,                       such as Computed Tomography (CT) or X-ray imaging, MRI
+MoEDiff-SR dynamically selects specialized denoising experts at                       offers a non-invasive and radiation-free approach, making it
+a  fine-grained  token  level,  ensuring  region-specific  adaptation                 particularly suitable for repeated examinations and longitudinal
+and enhanced SR performance. Specifically, our approach first                         studies  [2].  Its  exceptional  ability  to  generate  high-contrast
+employs   a   Transformer-based   feature   extractor   to   compute
+multi-scale patch  embeddings, capturing  both global  structural                     images  with  superior  tissue  differentiation  has  positioned  it
+information  and  local  texture  details.  The  extracted  feature                   as  an  indispensable  tool  in  the  diagnosis,  monitoring,  and
+embeddings  are  then  fed  into  an  MoE  gating  network,  which                    treatment planning of a wide spectrum of neurological disorders.
+assigns  adaptive  weights  to  multiple  diffusion-based  denoisers,                These include neurodegenerative diseases such as Alzheimer’s
+each  specializing  in  different  brain  MRI  characteristics,  such  as             and Parkinson’s, where MRI aids in detecting brain atrophy,
+centrum semiovale, sulcal and gyral cortex, and grey–white matter
+junction. The final output is produced by aggregating the denoised                   white  matter  changes,  and  abnormal  protein  aggregations;
+results from these specialized experts according to dynamically                       demyelinating disorders like multiple sclerosis (MS), where it
+assigned  gating  probabilities.  Experimental  results  demonstrate                  facilitates the visualization of plaques and disease progression;
+that MoEDiff-SR outperforms existing state-of-the-art methods in                      and acute cerebrovascular conditions such as ischemic stroke,
+terms of quantitative image quality metrics, perceptual fidelity, and                where  MRI  enables  the  timely  identification  of  infarcts  and
+computational efficiency. Difference maps from each expert further
+highlight  their  distinct  specializations,  confirming  the  effective              haemorrhages.  As  medical  imaging  continues  to  evolve,  the
+region-specific  denoising  capability  and  the  interpretability  of                reliance on MRI has grown substantially, driven by its ability
+expert contributions. Additionally, clinical evaluation validates its                 to  capture  a  broad  spectrum  of  structural,  functional,  and
+superior diagnostic capability in identifying subtle pathological fea-                biochemical changes that are crucial for both early diagnosis
+tures, emphasizing its practical relevance in clinical neuroimaging.                  and prognostic evaluations [3].
+Our code is available at https://github.com/ZWang78/MoEDiff-SR.
+                                                                                         Over  the  past  few  decades,  field  strengths  have  evolved
+   Index Terms—Magnetic resonance imaging, Super resolution,                          from sub-0.5T systems to the widespread adoption of 1.5/3T
+Mixture of experts, Region-adaptive                                                   scanners, and more recently, to the cutting-edge development of
+                                                                                      ultra-high-field (UHF) 7T MRI [4]. These improvements have
+                            I.  INTRODUCTION                                          significantly  enhanced  image  clarity,  enabling  the  detection
+                                                                                      of finer anatomical structures and subtle pathological markers
+                                                                                      that remain elusive in lower-field scans [5]. In conditions such
+  Zhe Wang, Yung Hsin Chen and Mohamed Jarraya are with Department of                 as epilepsy, 7T MRI has demonstrated unparalleled precision
+Radiology, Massachusetts General Hospital, Harvard Medical School, Boston,            in identifying small cortical lesions, thereby refining surgical
+02114, USA (e-mail: zwang78@mgh.harvard.edu; ychen4@mgh.harvard.edu;                  planning [6]. Similarly, it has also improved the visualization of
+mjarraya@mgh.harvard.edu).
+  Yuhua  Ru  is  with  Jiangsu  Institute  of  Hematology,  The  First  Affili-       cortical demyelination for MS, which is often underrepresented
+ated  Hospital  of  Soochow  University,  Suzhou,  215006,  China.  (e-mail:          at  conventional  field  strengths  [7].  Despite  its  diagnostic
+ruyuhua@suda.edu.cn).                                                                 superiority, 7T MRI faces substantial barriers to widespread
+  Aladine Chetouani is with L2TI Laboratory, University Sorbonne Paris Nord,
+Villetaneuse, 93430, France (e-mail: aladine.chetouani@univ-paris13.fr).              clinical implementation. The high cost of procurement, instal-
+  Fang   Chen   is   with   department   of   Medical   School,   Henan   Univer-     lation, and maintenance poses a significant financial challenge,
+sity   of   Chinese   Medicine,   Zhengzhou,   450046,   China.   (e-mail:   chen-    limiting  its  availability  to  select  research  institutions  and
+fangyxy@hactcm.edu.cn).
+  Fabian Bauer is with Division of Radiology, German Cancer Research Center,          specialized medical centres [8]. Additionally, the operational
+Heidelberg, 69120, Germany (e-mail: fabian.bauer@dkfz-heidelberg.de).                 complexities associated with ultra-high-field imaging, such as
+  Liping Zhang is with Athinoula A. Martinos Centre for Biomedical Imaging,           increased susceptibility artefacts, specific absorption rate (SAR)
+Massachusetts  General  Hospital,  Harvard  Medical  School,  Boston,  02114,
+USA. (e-mail: lzhang90@mgh.harvard.edu).                                              limitations, and the necessity for advanced RF coil technology,
+  Didier Hans is with Nuclear Medicine Division, Geneva University Hospital,          further hinder its routine clinical adoption [9].
+Geneva, 1205, Switzerland. (e-mail: didier.hans@chuv.ch).                                The evolution of Super-Resolution (SR) techniques in MRI
+  Rachid  Jennane  is  with  IDP  Institute,  UMR  CNRS  7013,  University  of
+Orleans, Orleans, 45067, France (e-mail: rachid.jennane@univ-orleans.fr).             has undergone a paradigm shift with the emergence of deep
+
+=== PDF PAGE 2 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               2
+
+
+learning  architectures,  surpassing  the  capabilities  of  conven-              a generative prior, InverseSR captures the prior distribution of
+tional interpolation and reconstruction methodologies. Modern                     3D T1-weighted  brain  MRIs, enabling the  reconstruction of
+deep learning approaches employ sophisticated neural networks                     high-resolution images from low-resolution inputs. Validation
+to establish nonlinear mappings between Low-Resolution (LR)                       on  over  100  brain  T1-weighted  MRIs  from  the  IXI  dataset
+and High-Resolution (HR) image domains, achieving unprece-                        demonstrated  that  InverseSR  achieved  superior  performance
+dented fidelity in image reconstruction from lower-field MRI                      compared to baseline models.
+acquisitions [10]. The transition from handcrafted priors to data-                   Despite these advances, existing diffusion-based SR models
+driven feature extraction enables the preservation of intricate                   in  the  medical  imaging  domain  still  face  several  challenges.
+anatomical details while enhancing spatial resolution, a critical                 Most  models  apply  a  uniform  denoising  strategy  across  the
+advancement for clinical diagnostics and quantitative analysis                    entire image, disregarding the significant anatomical and textu-
+[11]. Early implementations of deep learning-based SR adopted                     ral heterogeneity present within different regions, such as the
+convolutional  neural  networks  (CNNs)  [12]  as  foundational                   smooth intensity transitions observed in white matter, intricate
+architectures. The pioneering work of Dong et al. with Super-                     folding patterns in the cortex, and delicate branching structures
+Resolution  Convolutional  Neural  Networks  (SRCNN)  [13]                        within  the  vasculature.  Such  a  global  denoising  approach
+established an end-to-end learning framework that directly trans-                 inherently  neglects  region-specific  variations  in  noise  levels,
+formed LR MRI inputs into HR outputs through hierarchical                         anatomical complexity, and tissue contrast, which consequently
+feature abstraction. Subsequent CNN variants, including Very                      induces excessive smoothing of fine-grained anatomical features
+Deep  Super-Resolution  (VDSR)  [14]  and  Super-Resolution                       and clinically relevant structural boundaries. Furthermore, the
+Residual Networks (SRResNet) [15], demonstrated quantitative                      inability of uniform strategies to adaptively handle diverse noise
+improvements in Peak Signal-to-Noise Ratio (PSNR) by 2-4                          characteristics often leads to persistent residual noise artefacts,
+dB and Structural Similarity Index (SSIM) enhancements of                         adversely impacting the clinical utility of reconstructed images
+0.05-0.12 compared to bicubic interpolation baselines. However,                   by  potentially  obscuring  subtle  pathological  indicators  or
+these  architectures  exhibit  intrinsic  limitations  in  modelling              essential diagnostic markers. To address these challenges, we
+long-range spatial dependencies and preserving high-frequency                     introduce  MoEDiff-SR,  a  novel  Mixture-of-Experts  (MoE)-
+textures, often resulting in over-smoothed reconstructions with                   Guided  Diffusion  Model  for  region-adaptive  MRI  SR.  In
+compromised  edge  definition  [16].  The  field  has  witnessed                  contrast to conventional SR methods, MoEDiff-SR dynamically
+significant advancements through the integration of Generative                    assigns  weights  to  specialized  denoising  experts,  thereby
+Adversarial Networks (GANs) [17], addressing the perceptual                       tailoring  the  reconstruction  process  to  specific  anatomical
+quality limitations of conventional CNN architectures. GAN-                       structures and tissue characteristics. Specifically, MoEDiff-SR
+based  frameworks,  particularly  those  employing  perceptual                    employs an MoE framework [22] wherein each diffusion expert
+loss functions and attention mechanisms, have demonstrated                        is  trained  to  effectively  reconstruct  distinct  tissue  types  and
+superior performance in texture synthesis and structural preser-                  structural  patterns  inherent  in  MRI scans.  A  gating  network
+vation. Ledig et al. [15] demonstrated that SRGAN architectures                   intelligently routes 3T MRI inputs to three specialized diffusion
+could  achieve  Mean  Opinion  Scores  (MOS)  improvements                        experts based on multi-scale feature embeddings derived via a
+of  0.8-1.2  points  compared  to  CNN-based  methods  through                    Transformer-based feature extractor from the conditional input
+adversarial  training  strategies.  Furthermore,  the  Enhanced                   3T  MRI.  These  experts  collaboratively  generate  a  weighted
+Super-Resolution Generative Adversarial Network (ESRGAN)                          super-resolution output, facilitating fine-grained adaptation to
+[18]  proposed  by  Wang  et  al  improved  upon  the  original                   various  anatomical  regions  and  diverse  noise  levels.  During
+SRGAN by introducing a Residual-in-Residual Dense Block                           the  training  phase,  in  addition  to  utilizing  7T  MRI  inputs,
+(RRDB)  without  batch  normalization,  allowing  for  deeper                     we incorporate gradient nonlinearity correction and bias field
+network architectures. ESRGAN also employed a relativistic                        correction.  These  corrections  enhance  the  gating  network’s
+discriminator to predict the probability that a given image is                    convergence  by  addressing  signal  distortions  and  intensity
+more realistic than a reference image, rather than distinguishing                 inhomogeneities.  During  inference,  MoEDiff-SR  efficiently
+between  real  and  fake  images,  achieving  higher  Natural                     generates high-quality 7T-like MRI from only a 3T MRI input
+Image Quality Evaluator (NIQE) scores compared to previous                        combined  with  Gaussian-distributed  noise.  Furthermore,  the
+methods. K Diffusion MRI (KDMRI) [19] incorporates k-space                        specialized structure inherent in the MoE architecture supports
+consistency through a modified reverse process that minimizes                     asynchronous inference, allowing individual experts to indepen-
+data   fidelity   loss   at  each   denoising   step.   This   approach           dently process different image regions, substantially enhanc-
+demonstrated  23%  improvement  in  Normalized  Root  Mean                        ing deployability and computational efficiency. Experimental
+Square Error (NRMSE) compared to vanilla diffusion models                         validation demonstrates that MoEDiff-SR significantly outper-
+when reconstructing 7T-like images from 3T MRI inputs, while                      forms state-of-the-art SR methods, exhibiting improvements
+maintaining spectral compatibility in the frequency domain. The                   in perceptual quality metrics. Visual comparisons highlight its
+method’s alternating projection between image space denoising                     enhanced capacity to preserve cortical boundaries, delineate
+and k-space constraint enforcement effectively reduces Gibbs                      tissue interfaces, and suppress noise in homogeneous regions.
+artefacts in SR reconstructions. In [20], InverseSR is proposed                   Moreover, difference-map visualizations demonstrate that each
+for 3D brain MRI super-resolution that leverages a pre-trained                    expert is effectively activated in the anatomical domains for
+3D  Latent  Diffusion  Model  (LDM)  [21]  to  enhance  the                       which  it  is  specialized,  validating  the  interpretability  and
+resolution  of  clinical  MRI  scans.  By  utilizing  the  LDM  as                targeted functionality of the MoE framework. The experimental
+
+=== PDF PAGE 3 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               3
+
+
+results not only validate the technical soundness of MoEDiff-                      information  and  local  texture  details,  we  employ  a  multi-
+SR but also underscore its clinical relevance.                                     scale  patch  embedding  strategy  followed  by  Transformer-
+   The primary contributions of this study include the following:                  based feature extraction and adaptive denoising using a MoE
+  •  Token-based  expert  selection:  We  introduce  a  gating                     framework.  Specifically,  given  a  conditional  input  3T  MRI
+      mechanism  that  computes  token-wise  expert  activation                    slicey, we decompose it into patches at multiple spatial scales,
+      scores based on multi-scale patch embeddings. This en-                       ensuring that the model captures features at different levels of
+      ables fine-grained, region-aware expert selection, allowing                  granularity:
+      the model to dynamically adapt to diverse anatomical and                        •  Large-scale patches (64×64): Encode global anatomical
+      textural features across brain regions.                                            coherence and structural relationships.
+  •  MoE  for  adaptive  diffusion  denoising: A novel MoE                            •  Medium-scale patches (32×32): Capture mid-level contex-
+      framework  dynamically  combines  specialized  diffusion                           tual features, providing a balance between spatial context
+      denoisers tailored for specific anatomical characteristics,                        and localized information.
+      significantly enhancing the preservation of fine anatomical                     •  Small-scale patches (16×16): Preserve fine-grained details,
+      details.                                                                           critical for structures like cortical boundaries and vascular
+  •  Integration  of  anatomical  priors: We incorporate gradi-                          features.
+      ent nonlinearity and bias field corrections into the training                   Each  set  of  patches  is  passed  through  a  dedicated  linear
+      phase, significantly enhancing the gating network’s ability                  convolutional projection layer with kernel size and stride equal
+      to accurately assign experts based on precise anatomical                     to  the  patch  size,  performing  non-overlapping  tokenization,
+      and   tissue-specific   characteristics,   thereby   improving               which generates multi-scale embeddings Flarge,Fmedium,Fsmall.
+      perceptual fidelity and structural accuracy.                                 These  multi-scale  patch  embeddings  are  concatenated  along
+  •  Clinical validation: Through the real clinical evaluation,                    the token dimension to form a comprehensive feature repre-
+      our model demonstrates enhanced diagnostic performance                       sentation Fmulti-scale, which is then processed through the Swin
+      in detecting subtle pathologies that are typically obscured                  Transformer encoder [24], donated asE2, effectively modelling
+      in  lower-resolution  MRI,  thereby  affirming  its  clinical                both long-range dependencies and local spatial relationships
+      utility and diagnostic relevance.                                            in the MRI slice:
+
+                          II.  METHODOLOGY                                                           zc =E2(Fmulti-scale),  zc∈ RN×d                   (1)
+   The main flowchart is illustrated in Fig. 1. Initially, given a                 wherezc denotes the Transformer-encoded feature tokens,N  is
+7T MRI slicex, along with its corresponding gradient nonlinear-                    the total number of non-overlapping patches aggregated from
+ity correctiong and bias field correctionb, is processed through                   all scales, and d is the feature embedding dimension of each
+an  image  encoder E1  to  generate  the  latent  representation                   token.
+z0.  Subsequently,  the  corresponding  3T  MRI  slice y  serves
+as  conditional  input  to  the  proposed  MoEDiff-SR  module,                     B.  Gating Mechanism
+illustrated in Fig. 2. Finally, the resultant latent output ˆz0 from                  To enable anatomically adaptive and semantically meaningful
+MoEDiff-SR  is  decoded  byD  to  produce  a  super-resolved                       expert selection, we propose a token-aware gating mechanism
+7MRI slice ˆx with 7T-like resolution and quality. The image                       that  computes  routing  probabilities  based  on  fine-grained
+encoder  and  decoder  utilized  in  this  study  are  derived  from               interactions between expert-specific queries and Transformer-
+the VQ-VAE architecture [23]. Given that this study primarily                      encoded   token   representations.   Given   the   encoded   token
+emphasizes the MoEDiff-SR module, its detailed description                         sequence zc ∈ RN×d,  we  first  project  each  token  through
+and analysis are provided in the subsequent sections.                              a shared lightweight MLP to obtain a refined representation
+
+                                                                                   ˜zc∈ RN×d,  where  ˜znc ∈ Rd  denotes  the n-th  token.  Then,
+                                                                                   each  expert Ei  is  associated  with  a  learnable  query  vector
+                                                                                   qi∈ Rd. We compute token-wise attention weights via cosine
+                                                                                   similarity followed by softmax normalization:
+
+                                                                                                   Attn(i) =       exp (cosθ(qi, ˜znc ))PN
+                                                                                                                    m=1 exp (cosθ(qi, ˜zmc  ))                (2)
+                                                                                      The expert activation score is then calculated as the attention-
+                                                                                   weighted semantic response:
+
+                                                                                                                  NX
+ Fig. 1: The flowchart of the proposed global methodology.                                          Scorei =          Attn(i)· cosθ(qi, ˜znc )                 (3)
+
+                                                                                                                 n=1
+A.  Multi-scale patch embedding                                                       Finally, to encourage balanced expert utilization and prevent
+                                                                                   the  collapse  of  routing  to  a  small  subset  of  experts,  we
+   MRI  scans  exhibit  complex  anatomical  variations  across                    apply a frequency-aware softmax to compute the final routing
+different regions. To effectively capture both global contextual                   probability for each expert:
+
+=== PDF PAGE 4 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 2: The proposed MoEDiff-SR workflow starts by extracting multi-scale patches from the conditional input 3T MRI slice y.
+These patches are subsequently transformed via a linear projection layer, and the obtained embeddings are further encoded by
+a Swin TransformerE2, resulting in conditional latent representation zc. Next, the gating networkG  dynamically computes
+adaptive weights (G1,G2, andG3) for three specialized diffusion-based SR experts (E1, E2, and E3). Each expert follows the
+fundamental architecture of the Conditional Latent Diffusion Model (CLDM) [21] and receives the latent representation z0
+from the 7T MRI, zc  from the 3T MRI, the timestep t, and its assigned weightGi. The experts then individually generate
+region-specific denoised latent outputs ˆz0(i). Finally, these outputs are aggregated based on the dynamically assigned weights to
+produce the final weighted latent denoised code ˆz0.
+
+
+                                                                                    where the diffusion lossLdiffusion(i)  encourages accurate noise
+                 Gi =     exp(Scorei)P           P                                  estimation during the diffusion process:
+                            j exp(Scorej)·  e−γcije−γcj                   (4)
+where ci  denotes the exponentially smoothed usage frequency                                   Ldiffusion(i) = Ezt(i),ϵ(i)   ∥Ei(zt(i),t)−ϵ(i)∥22         (7)
+of  expert Ei,  which  is  updated  during  training  using  an
+Exponential Moving Average (EMA) [25] with a decay factor                           where zt(i)  is  the  noisy  latent  code  at  diffusion  timestep t,
+of 0.99. γ  controls the strength of the frequency regularization                   and ϵ(i)  represents the Gaussian noise specifically introduced
+(set to γ = 0.1 in our implementation).                                             by  expert Ei  during  the  forward  diffusion  process,  while
+                                                                                    Ei(zt(i),t) represents the predicted noise by each expert.
+C.  Expert specialization                                                              Following the diffusion framework described in Eq. 5, each
+   The MoE framework comprises three anatomically special-                          expert estimates the clean latent representation ˆz0(i)  through
+ized diffusion denoising experts Ei:                                                the reverse diffusion step:
+   • E1:  Specializes  in  denoising  the  centrum  semiovale,
+      enhancing  smooth  white  matter  regions  with  minimal                                      ˆz0(i) = zt(i)−p1− ¯αt(i)Ei(zt(i),ti)p
+      textural variation.                                                                                                        ¯αt(i)                                  (8)
+   • E2:  Focuses  on  the  sulcal  and  gyral  cortex,  preserving
+      high-frequency details within complex cortical folds.                            The final latent representation ˆz0 is computed by aggregating
+   • E3: Targets the grey-white matter junction, ensuring sharp                     expert outputs weighted by the gating probabilities:
+      delineation at the cortical-subcortical interface.
+   Using the expert-specific Gaussian noise schedule, the latent                                                         KX
+representation z0  is noised as follows:                                                                         ˆz0 =       Gi· ˆz0(i)                                (9)
+    zt(i) =p¯αt(i)z0 +p1− ¯αt(i)ϵ(i),  ϵ(i)∼N (0,I)     (5)                                                             i=1
+
+   To ensure effective specialization within the MoE diffusion                      whereGi  denotes  the  gating  probability  assigned  to  expert
+model,  each  expert Ei  is  trained  using  a  combination  of  a                  Ei, dynamically adjusting its contribution based on regional
+fundamental  diffusion-based  denoising  loss  and  an  expert-                     characteristics within the MRI slice.K denotes the total number
+specific task loss tailored to distinct MRI restoration objectives.                 of experts in our approach.
+The training loss for each expert is defined as follows:                               The expert-specific task lossesLtask(i)  further refine expert
+                                                                                    specialization, addressing distinct anatomical or texture-related
+                      LEi =Ldiffusion(i) +Ltask(i)                        (6)       challenges:
+
+=== PDF PAGE 5 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               5
+
+
+   1)  Expert 1:  To effectively denoise the centrum semiovale,                    attention aggregation and feature fusion. To enhance sensitivity
+an  area  dominated  by  smooth  white  matter  structures  with                   to  spatially  localized  frequency  components,  we  employ  a
+low textural variation, this expert emphasizes global structural                   multi-scale Short-Time Fourier Transform (STFT) [27]-based
+coherence. It incorporates a dilated convolutional block in the                    reconstruction loss:
+bottleneck  to  enlarge  the  receptive  field  without  increasing                                        X
+parameter count, capturing broad anatomical continuity. The                            Ltask(3) =X               ∥STFTs(zw0 )− STFTs(ˆzw0(3))∥22     (12)
+encoder  consists  of  an  initial 3× 3  convolutional  layer,  one                                  s∈S  w∈Ωs
+residual  block,  and  a  lightweight  Edge  Enhancement  Block                    whereS denotes a predefined set of window sizes of{8, 16, 32},
+utilizing a Laplacian kernel, followed by two downsampling                         and  Ωs  is  the  set  of  sliding  windows  applied  to  the  latent
+convolutional  layers  (4× 4,  stride  2)  with  residual  blocks,                 representation at scales. STFTs(·) denotes the STFT computed
+totalling 8 layers. The bottleneck includes one 3× 3 dilated
+convolution and one residual block (2 layers total). The decoder                   over each window.
+mirrors the encoder with two transposed convolutional layers
+and  residual  connections  (8  layers),  finalized  by  a  1× 1                   D.  Joint training
+convolution. To promote perceptual fidelity of smooth structural                      To facilitate effective region-adaptive learning in the MoE
+regions, this expert incorporates a perceptual loss derived from                   framework, we jointly train the expert networks and the gating
+a pre-trained VGG-16 [26] feature extractor:                                       mechanism through an integrated loss function. Specifically,
+                                                                                   the joint training incorporates both the expert-specific loss and
+      Ltask(1) =∥z0− ˆz0(1)∥22 +∥Φ(z0)− Φ(ˆz0(1))∥22        (10)                   a  gating  regularization  term  to  promote  accurate  and  robust
+where Φ(·) denotes the VGG-based perceptual feature extractor                      expert selection. The overall expert loss is defined as a weighted
+applied directly in latent space.                                                  sum of each expert’s individual loss, dynamically modulated
+   2)  Expert 2:  To enable more accurate extraction of cortical                   by gating probabilities:
+edges  and  high-frequency  information,  this  expert  adopts  a                                                        KX
+complex  convolutional  bottleneck.  The  encoder  consists  of                                                LE =          Gi·LEi                             (13)
+an  initial  3× 3  convolutional  layer  and  two  downsampling                                                         i=1
+convolutional  layers  (4× 4,  stride  2),  each  followed  by  a                     To guide the gating network toward accurate expert assign-
+DenseBlock with four layers. In each DenseBlock, all preceding                     ments, we introduce a supervised expert-selection constraint
+feature  maps  are  concatenated  as  input  to  each  subsequent                  based on the similarity between each expert’s predicted latent
+layer,  with  a  growth  rate  of  16  channels  per  layer.  The                  representation ˆz0(i)  and the corresponding ground-truth latent
+bottleneck includes a Complex Convolution Block that jointly                       representation z0. To enhance numerical stability and robust
+models magnitude and phase components. The decoder mirrors                         estimation, we employ adaptive temperature scaling based on
+the  encoder  with  two  transposed  convolutional  layers  and                    the Median Absolute Deviation (MAD) [28]:
+DenseBlocks, followed by a final 1× 1 convolution to produce
+the output. For this, its loss function combining edge-aware                                       T  = 1.4826× MAD cosθ(ˆz0(i),z0)             (14)
+and frequency-domain constraints is defined as:                                    where 1.4826  is  a  normalization  constant  aligning  MAD  to
+                                                                                   the  standard  deviation  of  a  normal  distribution.  Using  this
+ Ltask(2) =∥S(z0)−S(ˆz0(2))∥22 +∥F(z0)−F(ˆz0(2))∥22  (11)                          adaptively scaled temperatureT , the supervised expert-selection
+where S(·) is the Sobel operator andF(·) denotes the Fourier                       probabilitiesG∗i  are computed as follows:
+transform in latent space.                                                                         G∗i  =      exp cosθ(ˆz0(i),z0)/T
+   3)  Expert  3:   This  expert  is  designed  to  delineate  the                                         PK
+grey–white  matter  junction,  a  region  characterized  by  sharp                                            j=1 exp cosθ(ˆz0(j),z0)/T              (15)
+structural transitions and subtle anatomical textures. To capture                     Then,  to  maintain  expert  specialization  and  avoid  mode
+both long-range semantic dependencies and localized spectral                       collapse, we incorporate a diversity-promoting regularization
+variations,  the  architecture  integrates  a  non-local  attention                term into the gating loss. Instead of penalizing overall similarity
+block and a channel attention-enhanced decoding pathway. The                       across all expert pairs, we specifically target the most similar
+encoder consists of an initial 3×3 convolutional layer, followed                   pairs, which ensures effective differentiation between experts
+by two downsampling convolutional layers (4× 4, stride 2),                         while minimizing computational overhead:
+each paired with a convolutional block and a channel attention
+module to strengthen region-specific contrast. The bottleneck                                              KX
+includes  one  standard  convolutional  layer  and  one  residual                     Lgating = − 1K           G∗i logGi
+block to maintain compact semantic representation. The decoder                                     |      i=1{z          }
+mirrors the encoder with two transposed convolutional layers,                                       Supervised gating loss                              !     (16)
+channel  attention  blocks,  and  a  Non-Local  Attention  Block                                                        KX
+that  models  spatial  correlations  across  distant  regions.  The                                + log     1 +  1K        maxj̸=i  cosθ(ˆz0(i), ˆz0(j))
+non-local  module  employs  1× 1  convolutions  to  compute                                           |                i=1     {z                         }
+query, key, and value feature maps, followed by softmax-based                                                      Expert diversity regularization
+
+=== PDF PAGE 6 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               6
+
+
+   Furthermore, to dynamically balance the relative contribu-                                        IV.  EXPERIMENTS AND RESULTS
+tions of the expert loss and gating loss, we apply an uncertainty-                  A.  Ablation  study  for  incorporating  bias  filed  and  gradient
+based adaptive weighting strategy, automatically adjusting the                      nonlinearity correction
+influence ofLgating  based on its variance. This weighting term
+is defined as:                                                                         In  our  proposed  MoE-based  SR  framework,  each  input
+                                w =     1                                          7T  MRI  slice  is  complemented  by  its  corresponding  bias
+                                       σ2gating                                   (17)field correction b and gradient nonlinearity correction g. Such
+                                                                                    incorporation  of  these  corrections  enriches  the  contextual
+where σ2gating  represents  the  variance  of  the  gating  loss,  esti-            information available to the gating network, thereby enhanc-
+mated through an EMA with a decay factor of 0.99.                                   ing  its  capacity  for  adaptive  expert  selection  across  diverse
+   Finally,  the  total  joint  training  objective  is  formulated  by             anatomical  regions.  To  systematically  evaluate  the  impact
+combining the expert loss and adaptively weighted gating loss:                      of  these  corrections,  we  conducted  an  ablation  study,  with
+                         Ltotal =LE +wLgating                          (18)         the  results  presented  in  Fig.  3,  illustrating  the  convergence
+                                                                                    behaviour  of  the  gating  loss  across  different  configurations.
+            III.  EXPERIMENTAL DATA AND SETTINGS                                   As can be seen, the removal of either correction detrimentally
+                                                                                    affects  training  stability  and  convergence  speed,  leading  to
+A.  Employed database                                                               increased gating loss. In particular, the exclusion of bothb andg
+   The  Human  Connectome  Project  (HCP)  [29]  maps  the                          results in the highest gating loss throughout training, indicating
+healthy human connectome by collecting neuroimaging and be-                         suboptimal  expert  specialization  and  heightened  uncertainty
+havioural data on 1,200 normal young adults, aged 22-35. The                        in  the  gating  mechanism.  Among  the  individual  corrections,
+project was carried out in two phases by a consortium of over                       gradient nonlinearity correction g  exhibits a more pronounced
+100 investigators and staff at 10 institutions. In Phase I, data                    effect in reducing gating loss, suggesting its stronger influence
+acquisition  and  analysis  methods  were  optimized,  including                    in facilitating expert specialization, which could be attributed
+refinements  to  pulse  sequences  and  key  preprocessing  steps.                  to  the  fundamental  role  of  gradient  nonlinearity  in  defining
+In Phase II, neuroimaging and behavioural data were acquired                        structural integrity within MRI images. Since tissue contrast and
+from  1,200  healthy  adults  recruited  from  300  families  of                    edge definition are largely influenced by gradient distortions,
+twins and their non-twin siblings. To obtain brain connectivity                     the  absence  of g  leads  to  greater  ambiguity  in  anatomical
+maps of the highest quality, HCP employed cutting-edge MR                           boundaries,  making  it  more  difficult  for  the  gating  network
+hardware, including 3T and 7T MR scanners and customized                            to  accurately  assign  expert  contributions.  In  contrast,  while
+head coils.                                                                         the bias field correction b plays an important role in intensity
+                                                                                    normalization, its effect is more global and less directly tied to
+B.  Data preprocessing                                                              fine-grained structural information, leading to a comparatively
+   After  normalization  and  standardization,  each  3T  and  7T                   smaller  impact  on  gating  stability.  Our  proposed  approach,
+MRI volume with a respective voxel size of 1.5mm× 1.5mm                             incorporating bothb andg, consistently attains the lowest gating
+× 1.5mm and 0.7mm× 0.7mm× 0.7mm are resampled to a                                  loss, signifying improved training stability and a more effective
+consistent size of 260× 310× 260 voxels, where each slice is                        gating strategy. These findings underscore the critical role of
+reformatted to a spatial resolution of 256×256×3 pixels. The                        bias field and gradient nonlinearity corrections in enhancing
+resulting dataset consists of 184 pairs of T1-weighted (T1w)                        the robustness and precision of expert selection within the MoE
+MRI volumes at both 3T and 7T resolutions. These MRI slice                          framework, ultimately contributing to more accurate and stable
+pairs are then randomly divided into training, validation and                       SR performance.
+test sets with a ratio of 8:1:1.
+
+C.  Experimental details
+   The  VQ-VAE  model  was  configured  with  a  base  channel
+size of 128, the embedding dimension was defined as 512, and
+the codebook size was 1024. During the MoEDiff-SR training,
+a base learning rate of 1e-06 was applied, with a lambda linear
+scheduler incorporating a warm-up period every 100 steps. The
+batch size was set to 32. The scale factor of the latent space
+was set as 0.2. The AdamW optimizer [30] was utilized for
+training over 5,000 epochs. To ensure stable optimization of
+each  expert  at  the  early  stage,  the  gating  probabilities  were
+fixed to a uniform distribution across all experts during the first
+1,000 training epochs. For diffusion timesteps T , 500, 2000,
+and 1000 are configured for Expert 1, Expert 2, and Expert                          Fig.  3:  Convergence  analysis  of  gating  loss  under  different
+3,  respectively.  We  implemented  our  global  approach  using                    configurations.
+PyTorch v1.12.1 [31] on Nvidia A100 80 GB graphics cards.
+
+=== PDF PAGE 7 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               7
+
+
+   Additionally, we present a quantitative evaluation of the SR                    distortion.  Conversely,  SR3  demonstrates  notably  better  SR
+performance on the test set using the Learned Perceptual Image                     performance  on  high-frequency  edges,  particularly  cortical
+Patch Similarity (LPIPS) metric [32], as summarized in Table I.                    boundaries. However, SR3 still exhibits significant artefacts in
+The LPIPS metric quantifies the perceptual similarity between                      cortical and white matter areas, undermining overall anatomical
+the generated 7T-like outputs and the corresponding 7T ground                      fidelity. Leveraging the MoE architecture, our proposed method
+truth, with lower scores indicating higher perceptual fidelity and                 effectively  addresses  the  limitations  observed  in  existing
+better alignment with the high-field MRI reference. As can be                      techniques.  The  collaboration  among  meticulously  designed
+seen, incorporating bothg andb yields the lowest LPIPS score                       experts and different denoising strategies applied to each region
+of 0.0311. Removing either correction degrades performance,                        enhance the simultaneous reconstruction capabilities for both
+with  the  exclusion  of g  leading  to  an  increase  in  LPIPS  to               high- and low-frequency regions, enabling accurate depiction
+0.0460,  while  omitting b  results  in  an  even  higher  score  of               of intricate cortical  boundaries and coherent preservation of
+0.0541. The absence of both corrections further exacerbates the                    textures in grey and white matter areas, closely resembling the
+perceptual degradation, yielding the highest LPIPS of 0.0598.                      original 7T ground-truth MRIs.
+For  context,  we  report  the  LPIPS  score  of  0.0896  between                     2)  Quantitative metric-based analysis:  Beyond ESRGAN
+real  3T  and  7T  images  as  a  reference  baseline,  illustrating               and SR3, Table III extends the comparison to a diverse set of
+that even in the worst-case scenario without g  and b, our SR                      State-of-the-Art (SOTA) SR methods, including WavTrans [34],
+model outperforms the direct perceptual discrepancy between                        MASA [35], McMRSR [36], MC-VarNet [37], and DisC-Diff
+different field strengths.                                                         [38], thereby enabling a comprehensive performance evaluation.
+   These results highlight the critical role of gradient nonlin-                  The  assessment  covers  image  quality  metrics  in  terms  of
+earity  and  bias  field  corrections  in  enhancing  both  training               PSNR  (dB),  SSIM,  LPIPS  (10−2),  and  RMSE  (10−2),  as
+stability  and  perceptual  fidelity  in  our  MoE-based  super-                  well as computational efficiency, measured in terms of Params
+resolution framework. The ablation study confirms that their                      (M)  and  FLOPs  (G).  As  can  be  seen,  all  selected  methods
+absence significantly degrades performance, reinforcing their                      have achieved varying degrees of SR performance based on
+necessity for achieving more stable training and superior SR                       the  3T  data.  However,  our  proposed  approach  consistently
+reconstruction quality.                                                            achieves the best overall performance across all image quality
+             TABLE I: Analysis of impact of b and g                                metrics. Specifically, it attains the highest PSNR of 38.16 dB
+                                                                                   and SSIM of 0.93, indicating superior fidelity and structural
+    LPIPS                                       b                                  preservation, while also achieving the lowest LPIPS of 1.18
+    g                                              with b            without b     and RMSE of 1.83, which reflect enhanced perceptual quality
+                    with g                         0.0311              0.0541      and  minimal  reconstruction  error.  These  results  underscore
+                   without g                       0.0460              0.0598      the  model’s  ability  to  generate  highly  accurate  and  visu-
+    real 3T vs real 7T (context reference)                 0.0896                  ally  faithful  super-resolved  images.  Among  the  competing
+                                                                                   diffusion-based  methods,  SR3  and  DisC-Diff,  although  they
+                                                                                   trail our method across all metrics, nonetheless demonstrate the
+B.  Comparisons with state-of-the-art methods                                      competitive efficacy of advanced diffusion architectures. MC-
+                                                                                  VarNet, which is based on a variational network framework,
+   The comparison is divided into two main parts: Qualitative                      achieves reconstruction quality (PSNR of 35.59, SSIM of 0.89),
+visualization analysis and quantitative metric-based analysis.                     but  exhibits  inferior  perceptual  alignment  (LPIPS  of  2.12)
+   1)  Qualitative visualization analysis:  To facilitate a focused                and higher reconstruction error (RMSE of 3.47), suggesting
+qualitative assessment, Table II provides a visualization com-                     limitations  in  modelling  finer  image  textures.  Intermediate
+parison of representative models from the CNN- and diffusion-                      performance is observed in MASA and WavTrans, highlighting
+based  models,  ESRGAN  [18]  and  SR3  [33],  together  with                      their limited capacity in recovering both global structure and
+our proposed method. To ensure fairness and consistency, all                       fine-scale details. From a computational perspective, diffusion-
+models  were  trained  on  the  same  dataset  using  input  slices                based  models  are  typically  characterized  by  relatively  large
+with uniform dimensions (256× 256 pixels). Given the voxel                         parameter  counts,  attributable  to  their  inherently  complex
+size  transformation  involved  in  the  SR  task,  enhancing  2D                  generative  architectures.  Nevertheless,  they  exhibit  notable
+in-plane resolution from 1.5mm×1.5mm to 0.7mm×0.7mm,                               advantages in computational efficiency in terms of FLOPs. For
+an approximate magnification factor of 2.1× was required. To                       example, although our ensemble diffusion framework comprises
+align with this target, ESRGAN was evaluated using its nearest                     a substantial number of parameters (133.02 M), it maintains a
+supported  scaling  factor  of  2×,  while  SR3  was  configured                   low computational cost of only 56.12G FLOPs, primarily due
+to  produce  outputs  at  512×512  pixels.  For  a  more  intuitive                to its latent-space operation. This stands in sharp contrast to
+and   comprehensive   evaluation,  regions  clearly   displaying                   CNN-based models such as ESRGAN, which, despite having
+distinctions  among  white  matter,  grey  matter  fissures,  and                  a comparatively modest parameter count (16.73 M), incurs a
+cortical boundaries were specifically emphasized. Visualization                    substantially higher computational burden of 1450.87G FLOPs.
+results illustrate significant differences among these methods.                   This inefficiency arises largely from its reliance on pixel-level
+As  can  be  seen,  ESRGAN  tends  to  lose  substantial  high-                    inference and densely connected convolutional operations at
+frequency  details,  resulting  in  overly  smooth  outputs  that                  full spatial resolution, which collectively contribute to inflated
+lack  crucial  anatomical  details  and  lead  to  overall  image                  computational  demands.  Furthermore,  benefiting  from  the
+
+=== PDF PAGE 8 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               8
+
+                                        TABLE II: Qualitative visualization comparison with SOTA methods
+
+            Input (3T)                           Ground Truth (7T)                       ESRGAN [18]                               SR3 [33]                                        Ours
+
+
+
+
+
+
+
+
+
+
+
+
+
+decoupled  structure  of  the  MoE  architecture,  which  allows                          smooth  residual  patterns  and  coherent  structural  boundaries.
+asynchronous activation of expert networks during inference,                              Expert 2 demonstrates heightened sensitivity to cortical regions
+our model can further reduce the computational load to 42.21                              and sulcal boundaries, with pronounced residual suppression
+G FLOPs, engaging 62.69M  parameters, which facilitates effi-                             around  edges  and  high-frequency  details.  Expert  3  shows
+cient adaptation to resource-constrained environments, without                            enhanced  reconstruction  accuracy  at  tissue  interfaces  and
+compromising model performance.                                                           transitional  zones.  The  residuals  are  particularly  reduced  in
+TABLE III: Quantitative comparison of image quality metrics                               regions of sharp contrast changes. These observations confirm
+and computational cost across methods                                                     that  each  expert  effectively  targets  specific  anatomical  and
+                                                                                          textural characteristics, guided by their unique architectural and
+                       PSNR     SSIM     LPIPS     RSME         Params     FLOPs          loss function design. The gating mechanism further facilitates
+  3T (ref)                   24.13      0.78       8.96        6.22 -                -    optimal integration by adaptively weighting expert contributions
+  ESRGAN [18]        24.45      0.82      10.53       6.59       16.73      1450.87       according to the local image context, thus ensuring a globally
+  SR3 [33]                 34.49      0.89       3.79        2.4997.81        46.32       coherent and anatomically faithful 7T-like reconstruction.
+  WavTrans [34]        31.07      0.85       5.39        5.17     2.1         162.89
+  MASA [35]            33.70      0.88       3.11        5.48     4.0         180.13            TABLE IV: Visualization of the expert specialization
+  McMRSR [36]       30.91      0.83       6.07        5.73        3.5         269.86
+  MC-VarNet [37]     35.59      0.89       2.12        3.47       5.7         139.86
+  DisC-Diff [38]        36.92      0.91       1.67        2.13    86.1        461.00                E1                   E2                   E3                         Final
+  Ours                        38.16      0.93       1.18        1.83133.02       56.12
+  Ours (asyn)∗               -             -             -              -62.69        42.21
+  ∗ The reported results are from the most computationally intensive expert
+    network during asynchronous inference.
+
+   Overall,  our  proposed  approach  achieves  SOTA  image
+quality across multiple quantitative metrics while maintaining                                  G1 = 0.21   G2 = 0.48   G3 = 0.31               Weighted
+high  computational  efficiency.  These  results  underscore  its                            ∗ The  expert-specific  weights  (G1,G2,G3)  for  this  particular  slice  are
+effectiveness in balancing reconstruction fidelity with resource-                              dynamically computed by the gating networkG.
+efficient deployment.
+
+C.  Visualization of the expert specialization                                            D.  Clinical evaluation
+   To  further  elucidate  the  functional  specialization  of  each                          To ensure the clinical validity of our proposed SR framework,
+expert within the proposed MoE framework, we visualize the                                ethical  approval  was  obtained  from  the  Institutional  Review
+difference maps between each expert’s output and the ground                               Board (IRB) at Massachusetts General Hospital (MGH) under
+truth 7T MRI. These maps are computed by taking the pixel-                                protocol number 2024P003489. All datasets used in this study
+wise  absolute  difference  between  the  expert  output  and  the                        were fully de-identified to adhere to strict ethical guidelines
+ground truth 7T MRI, highlighting the residual discrepancies                              and privacy regulations.
+and reconstruction focus of each expert. In the visualizations,                                 TABLE V: Clinical evaluation for real cases at MGH
+lighter  areas  reflect  lower  reconstruction  errors,  suggesting
+better  alignment  with  the  ground  truth.  As  shown  in  Fig.                                Real 3T MRI                    Real 7T MRI                 7T-like SR MRI
+IV, each column represents the output of a particular expert,
+visualized through its corresponding absolute difference map
+with respect to the 7T reference. The final output is computed
+via a weighted combination of expert outputs. The visualized
+difference maps underscore the distinct specialization of each
+expert.  Specifically,  Expert  1  exhibits  minimal  residuals  in
+homogeneous  white  matter  regions,  preserving  large-scale                                 In a representative clinical case of Multiple Sclerosis (MS),
+anatomical continuity. Its low-frequency focus is evident in the                          a demyelinating disease characterized by periventricular and
+
+=== PDF PAGE 9 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                               9
+
+
+subcortical white matter abnormalities, lesion detection poses a                    model’s  deployment  efficiency.  Despite  comprising  multiple
+significant challenge, particularly on lower-field MRI systems.                     diffusion  experts,  the  MoE  design  supports  asynchronous
+MS  lesions,  often  presenting  as  small  hypointense  foci,  so-                 inference, allowing individual experts to be selectively activated
+called “black holes”, on T1w imaging, are frequently subtle                         based  on  region-specific  needs,  which  enables  a  substantial
+and  prone  to  under-recognition  at  3T  due  to  limitations  in                 reduction in FLOPs and parameter usage without compromising
+spatial resolution and tissue contrast. As illustrated in Table V,                  image quality. From a clinical perspective, clinical evaluation
+7T MRI provided a marked improvement in image resolution                            has affirmed that MoEDiff-SR-generated 7T-like images offer
+and contrast, enabling enhanced visualization of periventricular                    not only improved visual quality but also enhanced diagnostic
+abnormalities and facilitating the detection of MS-associated                       clarity, especially in cases where subtle pathological features
+pathology with greater fidelity, which highlights the diagnostic                    are otherwise obscured at lower field strengths.
+advantages of ultra-high-field imaging in neuroinflammatory                            2)  Limitations:  Despite these strengths, the study has several
+conditions. It is noteworthy that, when our proposed SR method                      limitations.  Firstly,  the  performance  of  the  model  is  heavily
+was  applied  to  the  3T  MRI,  the  synthesized  7T-like  image                   dependent  on  the  availability  of  large,  high-quality  paired
+closely approximated the ground-truth 7T scan in its delineation                    data.  The  scarcity  of  datasets,  especially  for  rare  conditions
+of  periventricular  white  matter  and  the  visibility  of  small                 or  specialized  applications,  may  restrict  the  generalizability
+hypointense lesions. While exact slice correspondence between                       of the approach. Secondly, although the MoE strategy results
+3T and 7T scans cannot be guaranteed due to inherent inter-                         in  a  significantly  lighter  inference  process,  the  model  still
+scan variability in positioning and acquisition parameters, the                     requires approximately 45GB of graphic memory, deploying
+qualitative improvements achieved by the SR model are evident                       the framework on common computers thus remains challenging.
+in  the  enhanced  conspicuity  of  clinically  relevant  features,                 Finally, the use of bias field correction and gradient nonlinearity
+which  underscores  the  clinical  utility  of  our  proposed  SR                   correction, while beneficial for generating high-quality outputs,
+framework.                                                                          introduces an additional dependency on pre-processing steps,
+                                                                                    which could pose challenges in workflows where these correc-
+E.  Discussion                                                                      tions are unavailable or impractical to implement consistently.
+                                                                                       3)  Future work:  Future work for this study will focus on
+   In this study, we introduced MoEDiff-SR, a novel Mixture-                        expanding the generalizability and robustness of the proposed
+of-Experts  (MoE)  guided  diffusion  framework  for  region-                       SR framework. One key direction is the exploration of multi-
+adaptive super-resolution (SR) of brain MRI. By integrating a                       modal data integration, combining MRI with complementary
+Transformer-based gating mechanism with anatomically special-                       imaging modalities such as CT or ultrasound, to improve the
+ized diffusion experts, the proposed model adaptively modulates                     reconstruction process and accuracy. Additionally, expanding
+the  denoising  process  in  accordance  with  the  structural  and                 the framework to accommodate other imaging modalities could
+textural heterogeneity across brain regions. This expert-driven                     further  broaden  its  applicability  and  impact  across  diverse
+design  enables  precise  enhancement  of  both  low-frequency                      clinical and research domains.
+anatomical  continuity  and  high-frequency  cortical  details,                                                  V.  STATEMENTS
+yielding superior performance over state-of-the-art CNN- and
+diffusion-based SR methods across perceptual, structural, and                          This  manuscript  was  prepared  using  data  from  the  HCP
+quantitative  evaluation  metrics.  Clinical  assessments  further                  project. The views expressed in it are those of the authors and
+validate the diagnostic utility of the generated 7T-like images,                    do not necessarily reflect the opinions of the HCP investigators,
+particularly in scenarios where conventional 3T MRI fails to                        the National Institutes of Health (NIH), or the private funding
+capture subtle but clinically relevant abnormalities. Overall, our                  partners.
+proposed MoEDiff-SR effectively bridges data-driven SR with                                               VI.  ACKNOWLEDGEMENTS
+anatomy-aware  modelling,  offering  a  scalable  and  clinically
+meaningful  solution  for  enhancing  image  quality  in  routine                      The authors gratefully acknowledge the support of the Ralph
+neuroimaging.                                                                       Schlaeger Research Fellowship under award number 246448
+   1)  Strengths:  A central innovation of MoEDiff-SR lies in                       from Massachusetts General Hospital (MGH), Harvard Medical
+its anatomically-informed denoising strategy. From a technical                      School (HMS) and the French National Agency of Research
+perspective,  unlike  prior  SR  methods  that  rely  on  globally                  (ANR) under project number ANR-20-CE45-0013-01.
+uniform processing, our model adaptively distributes denoising                                                      REFERENCES
+responsibilities across specialized diffusion experts. As shown
+in both quantitative metrics and visual analysis, this architecture                  [1]  S.  Geethanath  and  J.  T.  Vaughan  Jr,  “Accessible  magnetic  resonance
+results in superior reconstruction fidelity, especially in areas                          imaging: a review,” Journal of Magnetic Resonance Imaging, vol. 49,
+                                                                                          no. 7, pp. e65–e77, 2019.
+where classical methods often struggle. Second, the integration                      [2]  L.  K.  Niraj,  B.  Patthi,  A.  Singla,  R.  Gupta,  I.  Ali,  K.  Dhama,  J.  K.
+of  bias  field  correction  and  gradient  nonlinearity  correction                      Kumar, and M. Prasad, “Mri in dentistry-a future towards radiation free
+into the latent embedding space further enhances the model’s                              imaging–systematic review,” Journal of clinical and diagnostic research:
+                                                                                          JCDR, vol. 10, no. 10, p. ZE14, 2016.
+capacity for accurate expert assignment, which suggests that                         [3]  T. Skandsen, K. A. Kvistad, O. Solheim, S. Lydersen, I. H. Strand, and
+domain-specific prior information can be repurposed as condi-                             A. Vik, “Prognostic value of magnetic resonance imaging in moderate
+tioning cues within learning-based frameworks to drive more                               and  severe  head  injury:  a  prospective  study  of  early  mri  findings  and
+                                                                                          one-year outcome,” Journal of neurotrauma, vol. 28, no. 5, pp. 691–699,
+anatomically-aware restoration. Another critical strength is the                          2011.
+
+=== PDF PAGE 10 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                                                             10
+
+
+
+ [4]  M.  Nikpanah,  W.  R.  Willoughby,  A.  E.  Campbell-Washburn,  T.  S.                          [24]  Z. Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z. Zhang, S. Lin, and B. Guo,
+       Denney Jr, A. A. Malayeri, L. ver Hoef, and K. K. Porter, “Low versus                                “Swin transformer: Hierarchical vision transformer using shifted windows,”
+       ultra-high field mri: How to select your mri fleet,” Appl Radiol, vol. 52,                            in Proceedings of the IEEE/CVF international conference on computer
+       no. 1, pp. 28–41, 2023.                                                                               vision, 2021, pp. 10 012–10 022.
+ [5]  B.  Vachha  and  S.  Y.  Huang,  “Mri  with  ultrahigh  field  strength  and                    [25]  J. S. Hunter, “The exponentially weighted moving average,” Journal of
+       high-performance  gradients:  challenges  and  opportunities  for  clinical                           quality technology, vol. 18, no. 4, pp. 203–210, 1986.
+       neuroimaging  at  7  t  and  beyond,”  European  Radiology  Experimental,                      [26]  K. Simonyan and A. Zisserman, “Very deep convolutional networks for
+       vol. 5, pp. 1–18, 2021.                                                                               large-scale image recognition,” arXiv preprint arXiv:1409.1556, 2014.
+ [6]  M.  I.  Vargas,  P.  Martelli,  L.  Xin,  O.  Ipek,  F.  Grouiller,  F.  Pittau,                [27]  D.  Griffin  and  J.  Lim,  “Signal  estimation  from  modified  short-time
+       R.  Trampel,  R.  Gruetter,  S.  Vulliemoz,  and  F.  Lazeyras,  “Clinical                            fourier transform,” IEEE Transactions on acoustics, speech, and signal
+       neuroimaging  using  7  t  mri:  Challenges  and  prospects,”  Journal  of                            processing, vol. 32, no. 2, pp. 236–243, 1984.
+      Neuroimaging,  vol.  28,  no.  1,  pp.  5–13,  2018.  [Online].  Available:                     [28]  F. R. Hampel, “The influence curve and its role in robust estimation,”
+       https://onlinelibrary.wiley.com/doi/abs/10.1111/jon.12481                                             Journal  of  the  american  statistical  association,  vol.  69,  no.  346,  pp.
+ [7]  H.  Kolb,  M.  Absinta,  E.  S.  Beck,  S.-K.  Ha,  Y.  Song,  G.  Norato,                             383–393, 1974.
+       I.  Cortese,  P.  Sati,  G.  Nair,  and  D.  S.  Reich,  “7t  mri  differentiates              [29]  D.  C.  Van  Essen,  S.  M.  Smith,  D.  M.  Barch,  T.  E.  Behrens,  E.  Ya-
+       remyelinated from demyelinated multiple sclerosis lesions,” Annals of                                 coub, K. Ugurbil, W.-M. H. Consortium et al., “The wu-minn human
+      Neurology,  vol.  90,  no.  4,  pp.  612–626,  2021.  [Online].  Available:                            connectome project: an overview,” Neuroimage, vol. 80, pp. 62–79, 2013.
+       https://onlinelibrary.wiley.com/doi/abs/10.1002/ana.26194                                      [30]  I. Loshchilov and F. Hutter, “Decoupled weight decay regularization,”
+ [8]  S. E. Jones, J. Lee, and M. Law, “Neuroimaging at 3t vs 7t: is it really                               2019. [Online]. Available: https://arxiv.org/abs/1711.05101
+      worth it?” Magnetic Resonance Imaging Clinics, vol. 29, no. 1, pp. 1–12,                        [31]  A.  Paszke,  S.  Gross,  F.  Massa,  A.  Lerer,  J.  Bradbury,  G.  Chanan,
+       2021.                                                                                                 T. Killeen, Z. Lin, N. Gimelshein, L. Antiga, A. Desmaison, A. K¨opf,
+ [9]  M.  N.  Hoff,  A.  McKinney  IV,  F.  G.  Shellock,  U.  Rassner,  T.  Gilk,                           E. Yang, Z. DeVito, M. Raison, A. Tejani, S. Chilamkurthy, B. Steiner,
+       R.  E.  Watson  Jr,  T.  D.  Greenberg,  J.  Froelich,  and  E.  Kanal,  “Safety                      L. Fang, J. Bai, and S. Chintala, “Pytorch: An imperative style, high-
+       considerations of 7-t mri in clinical practice,” Radiology, vol. 292, no. 3,                          performance deep learning library,” 2019.
+       pp. 509–518, 2019.                                                                             [32]  R.  Zhang,  P.  Isola,  A.  A.  Efros,  E.  Shechtman,  and  O.  Wang,  “The
+[10]  S. S. Chandra, M. Bran Lorenzana, X. Liu, S. Liu, S. Bollmann, and                                     unreasonable effectiveness of deep features as a perceptual metric,” in
+       S. Crozier, “Deep learning in magnetic resonance image reconstruction,”                               Proceedings  of  the  IEEE  conference  on  computer  vision  and  pattern
+      Journal of Medical Imaging and Radiation Oncology, vol. 65, no. 5, pp.                                 recognition, 2018, pp. 586–595.
+       564–577, 2021.                                                                                 [33]  C. Saharia, J. Ho, W. Chan, T. Salimans, D. J. Fleet, and M. Norouzi,
+[11]  E.  Ahishakiye,  M.  Bastiaan  Van  Gijzen,  J.  Tumwiine,  R.  Wario,                                “Image super-resolution via iterative refinement,” IEEE transactions on
+       and  J.  Obungoloch,  “A  survey  on  deep  learning  in  medical  image                              pattern analysis and machine intelligence, vol. 45, no. 4, pp. 4713–4726,
+       reconstruction,” Intelligent Medicine, vol. 1, no. 03, pp. 118–127, 2021.                             2022.
+[12]  A. Krizhevsky, I. Sutskever, and G. E. Hinton, “Imagenet classification                         [34]  G.  Li,  J.  Lyu,  C.  Wang,  Q.  Dou,  and  J.  Qin,  “Wavtrans:  Synergizing
+      with deep convolutional neural networks,” Advances in neural information                               wavelet  and  cross-attention  transformer  for  multi-contrast  mri  super-
+       processing systems, vol. 25, pp. 1097–1105, 2012.                                                     resolution,” in International Conference on Medical Image Computing
+[13]  C. Dong, C. C. Loy, K. He, and X. Tang, “Learning a deep convolutional                                 and Computer-Assisted Intervention.    Springer, 2022, pp. 463–473.
+       network for image super-resolution,” in Computer Vision–ECCV 2014:                             [35]  L. Lu, W. Li, X. Tao, J. Lu, and J. Jia, “Masa-sr: Matching acceleration
+      13th European Conference, Zurich, Switzerland, September 6-12, 2014,                                   and  spatial  adaptation  for  reference-based  image  super-resolution,”  in
+      Proceedings, Part IV 13.    Springer, 2014, pp. 184–199.                                               Proceedings  of  the  IEEE/CVF  Conference  on  Computer  Vision  and
+[14]  J.  Kim,  J.  K.  Lee,  and  K.  M.  Lee,  “Accurate  image  super-resolution                          Pattern Recognition, 2021, pp. 6368–6377.
+       using very deep convolutional networks,” in Proceedings of the IEEE                            [36]  G. Li, J. Lv, Y. Tian, Q. Dou, C. Wang, C. Xu, and J. Qin, “Transformer-
+       conference on computer vision and pattern recognition, 2016, pp. 1646–                                empowered multi-scale contextual matching and aggregation for multi-
+      1654.                                                                                                  contrast mri super-resolution,” in Proceedings of the IEEE/CVF Confer-
+[15]  C. Ledig, L. Theis, F. Husz´ar, J. Caballero, A. Cunningham, A. Acosta,                                ence  on  Computer  Vision and  Pattern Recognition,  2022, pp.  20 636–
+      A. Aitken, A. Tejani, J. Totz, Z. Wang et al., “Photo-realistic single image                           20 645.
+       super-resolution using a generative adversarial network,” in Proceedings                       [37]  P. Lei, F. Fang, G. Zhang, and T. Zeng, “Decomposition-based variational
+       of  the  IEEE  conference  on  computer  vision  and  pattern  recognition,                           network for multi-contrast mri super-resolution and reconstruction,” in
+       2017, pp. 4681–4690.                                                                                  Proceedings of the IEEE/CVF International Conference on Computer
+[16]  Z.  Wang,  J.  Chen,  and  S.  C.  Hoi,  “Deep  learning  for  image  super-                           Vision, 2023, pp. 21 296–21 306.
+       resolution: A survey,” IEEE transactions on pattern analysis and machine                       [38]  Y.  Mao,  L.  Jiang,  X.  Chen,  and  C.  Li,  “Disc-diff:  Disentangled
+       intelligence, vol. 43, no. 10, pp. 3365–3387, 2020.                                                   conditional diffusion model for multi-contrast mri super-resolution,” in
+[17]  I.  Goodfellow,  J.  Pouget-Abadie,  M.  Mirza,  B.  Xu,  D.  Warde-Farley,                            International Conference on Medical Image Computing and Computer-
+       S.  Ozair,  A.  Courville,  and  Y.  Bengio,  “Generative  adversarial  nets,”                        Assisted Intervention.    Springer, 2023, pp. 387–397.
+      Advances in neural information processing systems, vol. 27, 2014.
+[18]  X.  Wang,  K.  Yu,  S.  Wu,  J.  Gu,  Y.  Liu,  C.  Dong,  Y.  Qiao,  and
+       C. Change Loy, “Esrgan: Enhanced super-resolution generative adversarial
+       networks,” in Proceedings of the European conference on computer vision
+      (ECCV) workshops, 2018, pp. 0–0.
+[19]  B.  Kawar,  M.  Elad,  S.  Ermon,  and  J.  Song,  “Denoising  diffusion
+       restoration models,” Advances in Neural Information Processing Systems,
+       vol. 35, pp. 23 593–23 606, 2022.
+[20]  J.  Wang,  J.  Levman,  W.  H.  L.  Pinaya,  P.-D.  Tudosiu,  M.  J.  Cardoso,
+       and  R.  Marinescu,  “Inversesr:  3d  brain  mri  super-resolution  using  a
+       latent diffusion model,” in International Conference on Medical Image
+      Computing  and  Computer-Assisted  Intervention.     Springer,  2023,  pp.
+      438–447.
+[21]  R. Rombach, A. Blattmann, D. Lorenz, P. Esser, and B. Ommer, “High-
+       resolution image synthesis with latent diffusion models,” in Proceedings
+       of the IEEE/CVF conference on computer vision and pattern recognition,
+       2022, pp. 10 684–10 695.
+[22]  R. A. Jacobs, M. I. Jordan, S. J. Nowlan, and G. E. Hinton, “Adaptive
+       mixtures of local experts,” Neural computation, vol. 3, no. 1, pp. 79–87,
+      1991.
+[23]  A.  Van  Den  Oord,  O.  Vinyals  et  al.,  “Neural  discrete  representation
+       learning,” Advances in neural information processing systems, vol. 30,
+       2017.

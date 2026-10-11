@@ -1,0 +1,49 @@
+Learning to Sample and Reconstruct for Accelerated MRI 5
+In this paper, we also aim to learn a pair of samplers and reconstructors jointly.
+Instead of training end-to-end by BP, we will design an RL-based joint training
+framework.
+3. Problem F ormulation
+In section 3.1, we specify the notation of CSMRI. In section 3.2, we formulate the
+optimization problem.
+3.1. Notation
+In the context of this study, our focus is confined to the analysis of two-dimensional
+(2D) accelerated MRI in conjunction with one-dimensional (1D) vertical Cartesian
+sampling. We define a ground truth image, denoted by the matrix x∈ RN×N, and
+the corresponding fully sampled measurements in the Fourier domain (referred to
+as k-space in MRI data), represented by the matrix y∈ CN×N, obtained via the
+two-dimensional Discrete Fourier Transform, F, i.e., y =F(x). For fully-observed
+MRI scanning, the ground truth image can be reconstructed from the fully sampled
+measurements by Inverse Fourier Transform, i.e., x =F−1(y).
+Further, in accelerated MRI, we only observe partially sampled measurements.
+Mathematically, the process of sampling is realized by masking y using a binary mask
+matrix M∈{ 0, 1}N×N, rendering the observation of M⊙ y, where⊙ designates the
+Hadamard product. In this study, all binary mask matrices satisfy the property that
+each of their columns is either all 0’s or all 1’s, unless specified otherwise.
+The process of reconstruction involves a specific mapping R : CN×N→ RN×N,
+called the reconstructor, which maps (partially-observed) measurements to the
+reconstructed image end-to-end. In this paper, it is customarily formulated as a
+parametric neural network denoted byR(·;θR).
+Additionally, we define a fixed heuristic sampling policy πh
+t as a probability
+distributional function accepting the N-dimensional binary column vector a as an
+input. Specifically, πh
+t sample a under the constraint that ∥a∥1 = t, i.e., πh
+t is
+constructed in such a way that πh
+t (a) = 0 if ∥a∥1 ̸= t. Denote the mask matrix
+Ma = 1· aT with the property that ∥Ma∥∞ =∥a∥1.
+We give a list of notation index and where it is defined in Appendix A.
+3.2. Optimization Problems
+To get an optimal pair of samplers and reconstructors, we want to solve the following
+joint optimization problem based on dense-reward POMDP
+max
+θπ,θR
+Ex∼DEπS(xT, x)
+s.t. yt = Mt⊙F (x), t = 0, 1,··· ,T,
+xt =R(yt;θR), t = 0, 1,··· ,T,
+at∼π(·| xt;θπ), t = 0, 1,··· ,T − 1,
+Mt+1 = 1(Mt + Mat), t = 0, 1,··· ,T − 1,
+(3.1)
+whereD signifies a dataset comprising ground truth images, T denotes the length of
+sampling trajectory, S is an image similarity metric, at∈A ={n}N
+n=1, the sampler

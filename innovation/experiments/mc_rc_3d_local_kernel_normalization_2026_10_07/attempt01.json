@@ -1,0 +1,134 @@
+{
+  "created_utc": "2026-10-07T05:34:30.542707+00:00",
+  "complete": true,
+  "errors": [],
+  "script_sha256": "89b72eb570da303d276ad9e1fdef5d7819e677f8cf85cfa426076bfa0369ac4c",
+  "source_file": "experiments/mc_rc_3d_local_kernel_normalization_2026_10_07.py",
+  "source_sha256": "9745855713dadc5cb770b1963a66bac6e58b9fdf3ad1b1ec7fd53a5d75b3ea72",
+  "protocol_sha256": "7c70cdc22d58d785e6cac0c736af7bb9bf0f63c93197148cc92d6daac89b004a",
+  "cases": [
+    {
+      "case": "random",
+      "dtype": "float64",
+      "max_output_absolute_error": 2.220446049250313e-15,
+      "strict_tolerance": 1e-07,
+      "strict_gate_passed": true,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "constant_two",
+      "dtype": "float64",
+      "max_output_absolute_error": 1.5798473640415978e-13,
+      "strict_tolerance": 1e-07,
+      "strict_gate_passed": true,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "zero",
+      "dtype": "float64",
+      "max_output_absolute_error": 0.0,
+      "strict_tolerance": 1e-07,
+      "strict_gate_passed": true,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "offset_1000",
+      "dtype": "float64",
+      "max_output_absolute_error": 1.7059211820935616e-09,
+      "strict_tolerance": 1e-07,
+      "strict_gate_passed": true,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "random",
+      "dtype": "float32",
+      "max_output_absolute_error": 9.055198644247753e-07,
+      "strict_tolerance": 3e-06,
+      "strict_gate_passed": true,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "constant_two",
+      "dtype": "float32",
+      "max_output_absolute_error": 0.000188484787940979,
+      "strict_tolerance": 3e-06,
+      "strict_gate_passed": false,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "zero",
+      "dtype": "float32",
+      "max_output_absolute_error": 0.0,
+      "strict_tolerance": 3e-06,
+      "strict_gate_passed": true,
+      "all_outputs_finite": true
+    },
+    {
+      "case": "offset_1000",
+      "dtype": "float32",
+      "max_output_absolute_error": 0.5821084498113263,
+      "strict_tolerance": 3e-06,
+      "strict_gate_passed": false,
+      "all_outputs_finite": true
+    }
+  ],
+  "actual_mri_task_forwards": 0,
+  "actual_training_updates": 0,
+  "actual_gpu_updates": 0,
+  "mri_or_label_values_loaded": 0,
+  "confirmation_patients_opened": false,
+  "publication_claim_confirmed": false,
+  "known_operator_not_novel": true,
+  "full_architecture_or_training_recipe_implemented": false,
+  "dropout_probability": 0,
+  "derivative_verification": [
+    {
+      "variable": "input",
+      "index": [
+        0,
+        2,
+        3,
+        3,
+        3
+      ],
+      "autograd": -0.2265007743332357,
+      "finite_difference": -0.22650077432517787,
+      "absolute_error": 8.057832179275692e-12
+    },
+    {
+      "variable": "weight",
+      "index": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "autograd": 0.335969410123575,
+      "finite_difference": 0.3359694101201516,
+      "absolute_error": 3.4234282075829015e-12
+    }
+  ],
+  "locality_verification": {
+    "interior_full_vs_crop_max_error": 0.0,
+    "far_perturbation_interior_max_error": 0.0
+  },
+  "fp32_qualification_passed": false,
+  "fp32_failed_cases": [
+    "constant_two",
+    "offset_1000"
+  ],
+  "float64_qualification_passed": true,
+  "cuda_initialized": false,
+  "resources_after": {
+    "workspace_free_bytes": 10039373824,
+    "available_ram_bytes": 101424914432,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false
+  },
+  "finished_utc": "2026-10-07T05:34:30.669216+00:00"
+}

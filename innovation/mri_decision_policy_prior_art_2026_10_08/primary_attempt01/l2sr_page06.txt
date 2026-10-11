@@ -1,0 +1,48 @@
+Learning to Sample and Reconstruct for Accelerated MRI 6
+π : RN×N → ∆N is the N-dimensional discrete conditional probability distribution
+function, ∆N ={u∈ [0, 1]N | ∑
+iui = 1} denotes the N-dimensional probability
+simplex, M0 is an initial binary mask matrix, and 1(·) is a matrix indicator function.
+For simplicity, we denote the objective function EπS(xT, x) in (3.1) as Jdense
+T (x;π,R).
+One of the challenges in solving this joint optimization problem directly is its
+complexity. One approach is to train both θπ andθR end-to-end by BP, as mentioned
+in section 2.3. However, training may fail due to the long sampling trajectory, and
+existing BP methods often solve weakened forms of (3.1). Another approach is to use
+reinforcement learning (RL). However, the existing dense-reward partially observable
+Markov decision process (POMDP) may not be suitable for end-to-end joint training.
+When training the sampler via RL, we must keep the environment unchanged, and
+thus the reconstructor as a part of the environment must also remain the same. This
+contradicts the end-to-end joint training. Additionally, it is difficult to design a multi-
+agent POMDP for the two learnable agents, the sampler and the reconstructor.
+DL-based MRI methods can obtain a better reconstructor with a fixed heuristic
+sampling policy πh by solving the following suboptimization problem of (3.1):
+max
+θR
+Ex∼DEa∼πh [S(R(Ma⊙F (x);θR), x)]. (3.2)
+Dynamic sampling methods can obtain better samplers by solving the following
+suboptimization problem of (3.1) with a fixed pre-trained reconstruction model R(·):
+max
+θπ
+Ex∼DJdense
+T (x;π(·;θπ),R). (3.3)
+To solve (3.3), they formulate the sequential sampling process as the following dense-
+reward POMDP (illustrated in figure 1(a)):
+• Observation
+yt = Mt⊙ y, t = 0, 1,··· ,T, (3.4)
+xt =R(yt), t = 0, 1,··· ,T. (3.5)
+• Action setA and action at∈A
+at∼π(·| xt), t = 0, 1,··· ,T − 1. (3.6)
+• Transition
+Mt+1 = 1(Mt + Mat), t = 0, 1,··· ,T − 1, (3.7)
+and yt+1 and xt+1 is calculated by (3.4) and (3.5).
+• Reward
+rt = S(xt, x)− S(xt−1, x), t = 1,··· ,T. (3.8)
+• Discount factor
+γ∈ [0, 1]. (3.9)
+These methods solve (3.3) via deep RL with the above dense-reward POMDP.
+However, a recent study [35] has revealed a problem with training when solving
+the suboptimization problem (3.3). Specifically, there is a training mismatch when
+the heuristic sampling policy used to pre-train the reconstructor is different from the
+policy learned through reinforcement learning. This mismatch leads to a suboptimal
+pair of samplers and reconstructors for the joint optimization problem (3.1).

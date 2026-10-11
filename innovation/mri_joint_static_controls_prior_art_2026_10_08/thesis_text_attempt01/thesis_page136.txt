@@ -1,0 +1,38 @@
+7.6. DISCUSSION
+increase the quality of the reconstruction (Yang et al., 2018). In such settings, the noise
+channel of the generator is often discarded at test time as the aim is to obtain the best
+image quality.
+There has also been some recent interest into quantifying the uncertainty in the recon-
+struction. This notably motivated the negative log-likelihood in Zhang et al. (2019b),
+where the level of uncertainty can be used as a criterion to decide when sampling can be
+stopped. A recent work, based on Stein’s unbiased risk estimator, studied the calibration
+of the uncertainty for variational autoencoders (Edupuganti et al., 2020). Score-matching
+is also very promising for UQ, although it suffers from long inference times (Ramzi et al.,
+2020; Song et al., 2021).
+As discussed, Zhang et al. (2019b) is the work more conceptually similar to ours. Their
+model aims at doing reconstruction and uncertainty quantification, while also providing
+adaptive sampling through their evaluator. It is also trained in an adversarial fashion,
+although it is not a GAN. However, their approach isnot generative, and only yields point
+estimates of the mean and the variance by minimizing a multivariate Gaussian negative
+log likelihood. Their approach supposes the pixel-wise uncertainty to be independent
+random variables normally distributed around the mean, an assumption not required
+in Adler and Öktem (2018a); Belghazi et al. (2019). This assumption also implies that
+sampling from this distribution to estimate the Fourier variance is not possible, as this
+would require access to the full covariance matrix, and our results confirm this.
+We note also that the optimization of the sampling pattern is not restricted to MRI, but
+has also been applied on the standard compressed sensing setting, notably motivated by
+early work on Bayesian Compressive Sensing (Ji et al., 2008; Wu et al., 2019b,a).
+Finally, our methodology relies on the idea of sequentially acquiring the most uncertain
+measurement at each round, a concept which has first been proposed and leveraged in
+the context of optimal experimental design (Lindley, 1956; Chaloner and Verdinelli, 1995;
+Vanlier et al., 2012). While until recently, most approaches in this realm relied on a
+statistical prior model as well as expensive MCMC sampling (Vanlier et al., 2012; Pauwels
+et al., 2014), but variational approaches have also been explored (Foster et al., 2019).
+However, most of these approaches do not scale up to very high-dimensional problems.
+On the contrary, GANs are naturally fit to deal with high-dimensional problems, and
+provide with a natural way of empirically quantifying the uncertainty in this acquisition.
+7.6 Discussion
+Our results show the potential of conditional GANs in tackling inverse problems, as they
+offer a good reconstruction, uncertainty quantification and adaptive sampling at once, by
+only training in a standard adversarial fashion. Nonetheless, several points are worth
+123

@@ -1,0 +1,71 @@
+Learning to Sample and Reconstruct for Accelerated MRI 23
+For∀ϵ> 0, there exists a pair of πϵ∈C(RN×N, ∆N) andRϵ∈C(CN×N, RN×N)
+satisfying
+sup
+π∈C(RN×N,∆N)
+R∈C(CN×N,RN×N)
+vdense
+π,R (D, M0)−vdense
+πϵ,Rϵ(D, M0)<ϵ.
+We have the recursion formula for both vdense
+π,R (x, M0) and vsparse
+π,R (x, M0):
+vdense
+π,R (x,Mt) =
+N∑
+at=1
+π(at| xt)·vdense
+π,R (x, 1 (Mt + Mat)),
+vsparse
+π,R (x,Mt) =
+N∑
+at=1
+π(at| yt)·vsparse
+π,R (x, 1 (Mt + Mat)).
+Letπ∗
+ϵ∈C(CN×N, ∆N) defined as
+π∗
+ϵ (·| y) =πϵ(·|R ϵ(y)), ∀y∈ CN×N.
+Since the similarity metric function S is bounded by [0, 1], vπ,R ∈ [0, 1].
+Recursively, we have
+vdense
+πϵ,Rϵ(D, MT ) = Ex∼DS(Rϵ(MT⊙F (x)), x)
+=vsparse
+π∗ϵ,Rϵ (D, MT ),
+vdense
+πϵ,Rϵ(D, MT−1)
+= Ex∼D
+n∑
+aT−1=1
+πϵ(at| xT−1)·vdense
+πϵ,Rϵ(x, 1 (MT−1 + MaT−1))
+= Ex∼D
+n∑
+aT−1=1
+π∗
+ϵ (at| yT−1)·vdense
+πϵ,Rϵ(x, 1 (MT−1 + MaT−1))
+= Ex∼D
+n∑
+aT−1=1
+π∗
+ϵ (at| yT−1)·vsparse
+π∗ϵ,Rϵ (x, 1 (MT−1 + MaT−1))
+= vsparse
+π∗ϵ,Rϵ (D, MT−1),
+···
+Finally, we have
+vdense
+πϵ (D, M0) =vsparse
+π∗ϵ
+(D, M0),
+which means that for ∀ϵ, there exists a pair of π∗
+ϵ ∈ C(CN×N, ∆N) and Rϵ ∈
+C(CN×N, RN×N) satisfying
+sup
+π∈C(RN×N,∆N)
+R∈C(CN×N,RN×N)
+vdense
+π,R (D, M0)<v sparse
+π∗ϵ,Rϵ (D, M0) +ϵ.
+Because of the arbitrariness of ϵ, the proof is completed!

@@ -1,0 +1,5 @@
+# observed NPZ读取守卫修复
+
+v2的两项非同输入primitive和两项synthetic网络自重放通过，网络三个head概率/阈值均0差异；随后读取observed NPZ时失败。原因是NPZ本身也由zipfile.ZipFile读取，v2把所有ZIP打开都屏蔽，误挡了唯一允许的observed数据包。失败入口/JSON保持原样。
+
+v3不改归一化模块、数值门槛、checkpoint或实验定义。zipfile守卫仅允许从元数据取得且SHA已核验的这一份observed NPZ绝对路径，仍拒绝原MR ZIP和其他ZIP；nibabel.load继续屏蔽。路径比较在解析成绝对路径后进行，不按扩展名泛放行。相同的primitive、自重放和candidate观察全部重跑并保留。

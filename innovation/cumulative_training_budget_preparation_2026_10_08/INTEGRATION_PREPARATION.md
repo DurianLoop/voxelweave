@@ -1,0 +1,16 @@
+# 未来医学长runner接入的必要限制
+
+本阶段的budget_ledger.py只接受synthetic_accounting_only=true和资格60s/3markers合同。它没有医学输入、checkpoint或训练函数；不能直接变更原训练或替代正式runner。已执行/绑定源码冻结，以后另写版本，不原地改参数。
+
+目前能复用的是账的结构：trusted entry提供冻结合同与外部expected-head→读取整个sealed chain→累计charged纳秒及每臂合法更新quota→预留下一transaction最坏费用→写pending→执行→验证payload/commit来源→不可覆盖封闭receipt及close proof→核actual区间不超过charge→最后才发布新head。异常exit17的pending保留，即使它有可解析journal也不自动倒退/重放；实际医学失败权重/日志/已耗时间必须审计后决定独立版本，未知时长不填0。
+
+人工每秒封闭余量只是本轮2MB日志合同。未来医学checkpoint的保存/哈希/同步/验证远大于SHA marker，余量必须由真实资源及storage合同决定，并给所有臂相同可用预算。若无法给出next forward/update/commit合理上界，不能仅靠一次剩余预算检查保证不中途超支；医学runner仍要在各真实操作前后guard并明确不可中断操作的风险与失败收费。达到wall资源限制但仅部分臂完成时，不把该partial结果当充分适配主要比较。
+
+计账清楚分为已测实际interval、预算中的保守reserve/charge、尚未完成的pending以及未计入该原语的外围费用。不能把3.2466928s当本轮实际neural时间，也不能只用prefix .2466928s忽略closure实际.0253054s。外层bootstrap/读输入/cache/模型初始化/保存验证等未来正式作业若属于其30h或新冻结scope，必须由医学controller一起纳入；本轮没有完整医学或患者部署cost。
+
+原有共同model/optimizer/RNG恢复资格继续有效，仅限原资格范围。医学checkpoint还需arm/step/stream/config/source/input/last-model binding、checkpoint journal一致性和CPU/CUDA RNG/optimizer/device/dtype的完整恢复验证，pending与外部head不能从模型文件里自报。人工synthetic checkpoint永不作医学初值。三臂draw与监督共享，common_projected_dense仍是dense augmentation，不能误dispatch为direct。
+
+正式预算未知且尚不能冻结。科学依赖：原两臂final真实exit0/冻结→原56全FOV、两臂全部六gates、独立strict实际exit→三臂真实19-series资源/实际exit→据实测另冻充分适配stream/update/wall/storage及医学provenance新runner→固定合法action/task model后真实病灶余量与完整费用→强静态等额外曝光/双cost-defer/DC→冻结全pipeline后8未见确认。8未见/12series和lockedIXI保持关闭，native额外信息不填部署gain，旧weak9pair/fullcostnull不能fit新head。
+
+GPU授权保留；真实资源入口仍未使用的attempt02只有原全部科学依赖及8GB空闲等满足时启动。原99542正式CPU训练不迁移、不重启，不控制其他PID。新的医学runner实现与资格完成后才称长训练执行准备完整；本轮标记formal_medical_long_runner_qualified=false，避免把局部资格冒充整体。
+

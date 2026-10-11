@@ -1,0 +1,37 @@
+6.1. REINFORCEMENT LEARNING TO OPTIMIZE SAMPLING
+TRAJECTORIES
+Sampling policy Adaptive Long horizon
+LBCS (Gözcü et al., 2018) ✗ ✗
+AlphaGo (Jin et al., 2019) ✓ ✓
+DDQN (Pineda et al., 2020) ✗(✓) ✓
+Policy Gradient (Bakker et al., 2020) ✓ ✗ (✓)
+Table 6.1: Methods that will be considered in the paper. Bakker et al. (2020) considered fixed
+vs. adaptive and greedy vs. non-greedy, Pineda et al. (2020) considered data specific vs subject
+specific policies and also compared against greedy methods.
+theorem to enable the training of the policy network (Sutton and Barto, 2018, ch. 13).
+They both a greedy and a non-greedy (long horizon) policy, and find that, surprisingly,
+“a simple greedy approximation of the objective leads to solutions nearly on-par with the
+more general non-greedy approach.”
+We summarize the features of the different models in Table 6.1, and for the reasons
+discussed above, we consider the method of Pineda et al. (2020) to be represented by
+their non-adaptive DS-DDQN, and the method of Bakker et al. (2020) to be represented
+by their greedy policy model.
+6.1.1 A short RL primer
+Assume that we have an agent in an unknown environment, and that the agent can
+interact with the environment and potentially obtain rewards based on its actions. In
+reinforcement learning, we would like the agent to learn to maximize its cumulative
+reward from its interaction with the environment. This means that the agent should learn
+a strategy that allows it to adapt to its environment in order to maximize its reward. In
+Go, this could mean train the agent to win as many games as possible, or in MRI, this
+could amount to selecting the next line to acquire to maximize the reconstruction quality.
+Agent Environment
+<latexit sha1_base64="3lVZDDgeJwhRE3bu/HKzVYMR5Do=">AAACDXicbVA9SwNBEN3z2/h1ammzGEWrcCchWgo2VqJoPiB3hL3NRBf39o7dOTUc+QM2/hUbC0Vs7e38N+7FFGp8MPB4b4aZeVEqhUHP+3QmJqemZ2bn5ksLi0vLK+7qWsMkmeZQ54lMdCtiBqRQUEeBElqpBhZHEprR9VHhN29AG5GoC+ynEMbsUome4Ayt1HG3AoQ7zE/glhpkCHRAzQ4NhKJBzPCKM5mfDzpu2at4Q9Bx4o9ImYxw2nE/gm7CsxgUcsmMafteimHONAouYVAKMgMp49fsEtqWKhaDCfPhNwO6bZUu7SXalkI6VH9O5Cw2ph9HtrM40fz1CvE/r51h7yDMhUozBMW/F/UySTGhRTS0KzRwlH1LGNfC3kr5FdOMow2wZEPw/748Thp7Fb9WqZ5Vy4e1URxzZINskl3ik31ySI7JKakTTu7JI3kmL86D8+S8Om/frRPOaGad/ILz/gXVtJti</latexit>
+New states02S
+<latexit sha1_base64="eeu6yo2zP4PHlHLKE7UE9x4QiNw=">AAACDXicbVA9SwNBEN3zM8avqKXNYhSswp2EaBmw0DKK+YBcCHubSbK4t3fszqnhyB+w8a/YWChia2/nv3HzUWjig4HHezPMzAtiKQy67rezsLi0vLKaWcuub2xubed2dmsmSjSHKo9kpBsBMyCFgioKlNCINbAwkFAPbs9Hfv0OtBGRusFBDK2Q9ZToCs7QSu3coY/wgOkFINVwz3SHDqmmvlDUDxn2OZPp9bCdy7sFdww6T7wpyZMpKu3cl9+JeBKCQi6ZMU3PjbGVMo2CSxhm/cRAzPgt60HTUsVCMK10/M2QHlmlQ7uRtqWQjtXfEykLjRmEge0cnWhmvZH4n9dMsHvWSoWKEwTFJ4u6iaQY0VE0tCM0cJQDSxjXwt5KeZ9pxtEGmLUheLMvz5PaScErFYpXxXy5NI0jQ/bJATkmHjklZXJJKqRKOHkkz+SVvDlPzovz7nxMWhec6cwe+QPn8wci8puT</latexit>
+Get rewardr2R
+<latexit sha1_base64="N2quDbJwjhNe4Eum38/modM8nrg=">AAACDnicbVA9SwNBEN3z2/h1ammzGASrcCcSLRUbywj5gtwR5jYTXbK3d+zuieHIL7Dxr9hYKGJrbee/cS9JoYkPBh7vzTAzL0oF18bzvp2FxaXlldW19dLG5tb2jru719RJphg2WCIS1Y5Ao+ASG4Ybge1UIcSRwFY0uCr81j0qzRNZN8MUwxhuJe9zBsZKXfcoMPhg8joMkAIrNDqiQAMuaRCDuWMg8stR1y17FW8MOk/8KSmTKWpd9yvoJSyLURomQOuO76UmzEEZzgSOSkGmMQU2gFvsWCohRh3m43dG9MgqPdpPlC1p6Fj9PZFDrPUwjmxncaKe9QrxP6+Tmf55mHOZZgYlmyzqZ4KahBbZ0B5XyIwYWgJMcXsrZXegbC42wZINwZ99eZ40Typ+tXJ6c1q+qE7jWCMH5JAcE5+ckQtyTWqkQRh5JM/klbw5T86L8+58TFoXnOnMPvkD5/MHr56b2Q==</latexit>
+Take actiona2A
+<latexit sha1_base64="wretuWdOY3oqE49zG1Nq26hKzoA=">AAACCHicbVA9SwNBEN3zM8avqKWFi0GwCncSomXAxjIS8wG5EPY2k2TJ3t6xOyeGI6WNf8XGQhFbf4Kd/8bNR6GJDwYe780wMy+IpTDout/Oyura+sZmZiu7vbO7t587OKybKNEcajySkW4GzIAUCmooUEIz1sDCQEIjGF5P/MY9aCMidYejGNoh6yvRE5yhlTq5Ex/hAdMqMgQ6pob6QlE/ZDjgTKbVcSeXdwvuFHSZeHOSJ3NUOrkvvxvxJASFXDJjWp4bYztlGgWXMM76iYGY8SHrQ8tSxUIw7XT6yJieWaVLe5G2pZBO1d8TKQuNGYWB7ZycaBa9ifif10qwd9VOhYoTBMVni3qJpBjRSSq0KzRwlCNLGNfC3kr5gGnG0WaXtSF4iy8vk/pFwSsVirfFfLk0jyNDjskpOSceuSRlckMqpEY4eSTP5JW8OU/Oi/PufMxaV5z5zBH5A+fzB4H4mZ8=</latexit>
+States2S
+Figure 6.1: Illustration of an agent interacting with its environment.
+83

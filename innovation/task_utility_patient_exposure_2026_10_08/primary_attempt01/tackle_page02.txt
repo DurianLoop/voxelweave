@@ -1,0 +1,113 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 2
+the traditional CS-MRI methods [9]–[23].
+In the existing co-design literature, task prediction is often
+viewed as a post-processing step decoupled from image
+reconstruction. All the aforementioned methods focus on image
+reconstruction and rely on standard image similarity metrics
+such as mean square error (MSE) or peak signal-to-noise ratio
+(PSNR) as a proxy for performance on a downstream task. Such
+a reconstruction-oriented formulation lacks a direct connection
+with the downstream tasks that reflect actual clinical needs [24].
+We are thus motivated to ask: can one improve the accuracy of
+downstream task prediction by optimizing the entire CS-MRI
+pipeline in an end-to-end fashion?
+With end-to-end co-design methods, it seems like we are
+only one step away from incorporating downstream tasks as
+part of the optimization. Namely, one can simply append a
+task prediction module and add a task-specific loss. However,
+as shown in Figure 1 and Table II, this approach leads
+to a suboptimal performance on the task prediction and is
+sometimes even worse than the traditional approach of separate
+reconstruction and task prediction. These results indicate that
+it remains a challenge on how to robustly learn task-specific
+strategies for CS-MRI.
+In this paper, we address this challenge by proposing a uni-
+fied framework, task-specific codesign of k-space subsampling
+and pr ediction (TACKLE ), for designing task-specific CS-MRI
+systems. Different from existing works that focus on specific
+tasks, TACKLE is a general framework that accommodates
+different downstream tasks. To do so, we design a two-
+step training strategy that mimics the training of modern
+language and vision models. TACKLE is first trained for a
+generic task of image reconstruction, and then fine-tuned
+for specific downstream tasks. We find that this approach
+can effectively learn generalizable task-specific strategies that
+lead to significant and consistent improvements, with an
+example shown in Figure 1 (c). Besides the standard task
+of reconstructing the full field-of-view (which we call full-
+FOV reconstruction hereafter), we demonstrate TACKLE on
+three other tasks covering both pixel-level and image-level
+imaging problems: region-of-interest (ROI) oriented reconstruc-
+tion, tissue segmentation, and pathology classification. Our
+experimental results show that end-to-end optimization for task
+prediction sometimes circumvents the typical reconstruction in
+terms of pixel-wise accuracy, but leads to improved accuracy
+on the task of interest by effectively extracting key visual
+information for task prediction.
+The main contributions of this work are as follows:
+• We provide a general framework (TACKLE ) that learns spe-
+cific strategies for a variety of CS-MRI tasks. TACKLE op-
+timizes the entire CS-MRI pipeline, from measurement
+acquisition to label prediction, in an end-to-end fashion
+directly for a user-defined task.
+• We validate TACKLE on multiple MRI datasets, covering
+different body parts, scanning sequences, and hardware
+setups. Experimental results show that TACKLE outper-
+forms the reconstruction-oriented baseline methods on
+all considered settings. We evaluate the proposed end-to-
+end architecture and training procedure through ablation
+studies. Our results offer guidance for designing effective
+task-specific CS-MRI systems in the future.
+• We show the generalization of TACKLE to out-of-
+distribution data by deploying it to a dataset we experi-
+mentally acquired using a different acquisition sequence
+from that of the training data. We further implement a
+learned 4×-accelerated sequence on a Siemens 3T MRI
+Skyra scanner. The sequence shortens the scan time from
+335 seconds to 84 seconds, a four-fold time reduction
+as desired, while maintaining high performance. These
+experiments highlight the real-world practicality of our
+method.
+II. B ACKGROUND
+A. Compressed sensing MRI
+CS-MRI [1] refers to accelerating MRI via compressed
+sensing (CS) [25], which aims to reconstruct the underlying
+image from a set of subsampled k-space measurements.
+1) Basics: The common setup of CS-MRI involves the
+reconstruction of an image x∈ Cn from its subsampled, noisy
+k-space measurements
+y :=MFx +n∈ Cm (m≪n), (1)
+where F is the Fourier transform, M ∈{ 0, 1}m×n is the
+subsampling matrix withm∈{ 0, 1}n denoting its subsampling
+pattern, and n∈ Cm is the complex measurement noise. For
+parallel imaging MRI, the measurements are collected from
+multiple coils. For the i-th coil, the measurements yi can be
+expressed as
+yi :=MFS ix +ni∈ Cm, (2)
+where Si is the pixel-wise sensitivity map and ni is the
+measurement noise of the i-th coil. For both settings, we
+refer to b :=∥m∥1 as the sampling budget and R := n
+b as
+the acceleration ratio of the acquisition. Classical CS-MRI
+enables sampling below the Nyquist-Shannon rate by solving
+an optimization problem with a regularizer that leverages the
+structure of MRI images [2], [26]–[28].
+2) Subsampling patterns: Subsampling patterns, or masks,
+in traditional CS-MRI are often generated randomly or hand-
+crafted to have a point spread function (PSF) with low
+coherence, which leads to better reconstruction performance
+according to the CS theory. Popular subsampling patterns
+include the 2D variable density [1], bidirectional Cartesian [29],
+Poisson-disc [30], and continuous-trajectory variable density
+[31], among others [32], [33]. Despite overall effectiveness,
+these subsampling patterns are designed for generic image
+reconstruction and not optimized for any specific body part
+and diagnostic purpose. Therefore, these patterns may lead to
+suboptimal performance for downstream tasks where specific
+anatomical or pathological information is relevant.
+3) DL-based reconstruction: Recently, DL methods have
+achieved state-of-the-art performance on CS-MRI reconstruc-
+tion. One line of work combines data-driven priors with
+model-based iterative reconstruction (MBIR) [3], [4], [34],
+[35]. Another line of work learns a model-free reconstruction
+network via end-to-end training [36]–[40]. A third line of work,

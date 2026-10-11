@@ -1,0 +1,49 @@
+{
+  "status": "implementation_preparation_not_executed_not_frozen",
+  "purpose": "Study residual sparse-task differences after exposure and normalization adaptation only with a capable evaluator",
+  "architecture_candidate": "981602-parameter GlobalLocalUNet, conventional capability baseline, no architecture novelty claim",
+  "architecture_source": "experiments/mc_rc_global_local_task_cpu_support.py",
+  "current_capability_result_to_consult": "experiments/mc_rc_global_local_task_validation_cpu/attempt_01.json",
+  "previous_matrix_specification": "experiments/task_input_contract_matrix_preparation_2026-10-03.json",
+  "qualified_patient_roles": {
+    "development_training": ["001", "002", "004", "005", "006", "007", "009", "010", "011", "012", "013"],
+    "validation_only": ["020", "022", "024", "025"],
+    "confirmation_reserved_do_not_open": ["030", "029", "019", "028", "031", "026", "027", "015"]
+  },
+  "qualified_series_counts": {"development": 19, "validation": 9, "confirmation_reserved": 12},
+  "train_exposure": ["native_reference_control", "raw_pchip_only", "uniform_raw_pipeline_post_hat"],
+  "normalization": ["observed_anchor_stats_shared", "full_volume_own_stats"],
+  "evaluation_inputs": ["native", "raw_pchip", "pipeline_pchip", "post_resize_pchip", "hat"],
+  "models_planned": 6,
+  "evaluation_cells_planned_per_series": 30,
+  "native_role": "Full reference control, separate explicit IO; never passed to the sparse reconstruction or correction branch",
+  "sparse_observation": {"phase": 0, "stride": 4, "required_source": "Actual observed DICOM planes", "no_hidden_MR_statistics_or_GT_crop": true},
+  "proposed_budget_updates_per_model": 20000,
+  "budget_frozen": false,
+  "fairness_requirements": [
+    "Same random initial weights and architecture capacity",
+    "A saved identical patient and series draw schedule; equal patient probability then equal within-patient series probability",
+    "A saved identical augmentation and spatial sampling schedule, independent RNG streams for exposure choice",
+    "Same total optimizer updates, optimizer and LR schedule, supervised target definition and threshold",
+    "Fixed final checkpoint or one predeclared identical validation rule, not one checkpoint per evaluation input",
+    "Equal within-patient series weights then equal patient weights",
+    "Four mixed sparse inputs sampled uniformly at a fixed total update count, not four times the data budget",
+    "The original raw PCHIP input and matched raw-trained model remain strong baselines"
+  ],
+  "prelaunch_gates": [
+    "Current four-validation-patient capability threshold passes, otherwise stop this evaluator",
+    "Separate complete native-input loader and independent geometry/source proof implemented",
+    "Native task competence adequate on fixed developer/validator roles",
+    "Four sparse candidates all generated from exactly the same observed-only packages and original anchors",
+    "Actual model-input statistics audited after spatial resampling and before padding",
+    "All training identities, code, data, sample schedule and metric endpoints frozen before confirmation",
+    "Direct sparse segmentation and resolution randomisation strong controls prepared with equal information and budget",
+    "GPU availability explicitly established before GPU execution; no interference with existing user terminal training"
+  ],
+  "task_endpoints": ["full_native_dice", "supported_missing_dice", "anchors_dice", "tail_dice", "recall_and_complete_misses", "physical_assd_hd95", "signed_and_absolute_relative_volume_error", "undefined_and_empty_cases"],
+  "correction_candidate_status": "Not implemented; only after residual effects persist under adequate competence and fair matched controls",
+  "confirmation_status": "Not opened; 8 patients alone do not guarantee publishability; independent second trained task model still required",
+  "new_gpu_jobs_started": 0,
+  "scientific_confirmation_patients": 0,
+  "publication_claim_confirmed": false
+}

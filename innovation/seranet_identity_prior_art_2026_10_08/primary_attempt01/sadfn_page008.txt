@@ -1,0 +1,30 @@
+8 Fan et al
+the output of the Conv1, Conv2, Conv3, Conv4, Conv5, Conv6, Conv7, Conv8,
+Conv9, Conv10 and concatenate them into a single “thick” feature map tensor.
+Note the smaller size feature maps are up-sampled using bilinear interpolation
+to the same size of features from the Pre-RecNetN . Then the “thick” feature
+maps of the size 240 ∗ 240 ∗ 640 (32+32+64+64+128+128+64+64+32+32) are
+further compressed into a “thin” feature tensor of the size 240 ∗ 240 ∗ 32 via the
+1 × 1 convolution with ReLU as activation function.
+The Feature Fusion cross Tasks The compressed feature tensor obtained by
+the multilayer feature aggregation strategy contains the supervision information
+from the Pre-SegNet. We concatenate the feature tensor of the size 240 ∗ 240 ∗ 32
+with the feature maps of the size 240 ∗ 240 ∗ 32 output by convolutional layers
+in the Pre-RecNet as shown in Figure 2. Then the concatenated features of
+the size 240 ∗ 240 ∗ 64 are further compressed into a feature tensor of the size
+240∗240∗32 via 1×1 convolution with ReLU activation function. The compressed
+feature tensor from multilayer feature aggregation is concatenated to the first
+four convolutional layers in each Pre-RecNet block, the supervision information
+from segmentation can guide the reconstruction in different depth. Also, in the
+Figure 2, the feature fusion strategy is also utilized in each block of the Pre￾RecNet.
+To prove the supervision information is effectively fused into the reconstruc￾tion, we give some feature maps in the fused feature tensor yielded by the 1 × 1
+convolution in Figure 3. In Figure 3(a) we show the segmentation label of a
+certain MRI data. In Figure 3(b), Figure 3(c) and Figure 3(d), we visualize the
+feature maps selected from the fused feature tensors in the second layer and
+fourth layer. We observe the feature maps show clear segmentation information,
+while no such feature maps are observed in the Pre-RecNetN model.
+(a) Seg Labels (b) Feature (2nd Layer) (c) Feature (4th Layer) (d) Feature (4th Layer)
+Fig. 3. The selected feature maps from the feature tensors produced by the feature
+fusion in the deep fusion network.
+The Fine-tuning Strategy We further fine-tune the resulting architecture.
+Given a zero-filled MR image in the training dataset, a corresponding high￾quality MR image can be yielded by the Pre-RecNetN in Section 3.1. Then

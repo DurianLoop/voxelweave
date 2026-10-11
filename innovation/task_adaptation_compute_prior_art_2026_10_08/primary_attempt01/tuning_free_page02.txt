@@ -1,0 +1,87 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+denoiser) and the penalty parameter used in thek-th iteration
+respectively.
+In this formulation, the regularizerR can be implicitly de-
+ﬁned by a plugged denoiser, which opens a new door to
+leverage the vast progress made on the image denoising
+front to solve more general inverse imaging problems. To
+plug well-known image denoisers, e.g. BM3D (Dabov et al.,
+2007) and NLM (Buades et al., 2005), into optimization al-
+gorithms often leads to sizeable performance gain compared
+to other explicitly deﬁned regularizers, e.g. total variantion.
+That is PnP as a stand-alone framework can combine the ben-
+eﬁts of both deep learning based denoisers and optimization
+methods, e.g. (Zhang et al., 2017b; Rick Chang et al., 2017;
+Meinhardt et al., 2017). These highly desirable beneﬁts are
+in terms of fast and effective inference whilst circumvent-
+ing the need of expensive network retraining whenever the
+speciﬁc problem changes.
+Whilst a PnP framework offers promising image recovery re-
+sults, a major drawback is that its performance is highly sen-
+sitive to the internal parameter selection, which generically
+includes the penalty parameter µ, the denoising strength
+(of the denoiser) σ and the terminal time τ. The body of
+literature often utilizes manual tweaking e.g. (Rick Chang
+et al., 2017; Meinhardt et al., 2017) or handcrafted crite-
+ria e.g. (Chan et al., 2017; Zhang et al., 2017b; Eksioglu,
+2016; Tirer & Giryes, 2018) to select parameters for each
+speciﬁc problem setting. However, manual parameter tweak-
+ing requires several trials, which is very cumbersome and
+time-consuming. Semi-automated handcrafted criteria (for
+example monotonically decreasing the denoising strength)
+can, to some degree, ease the burden of exhaustive search of
+large parameter space, but often leads to suboptimal local
+minimum. Moreover, the optimal parameter setting differs
+image-by-image, depending on the measurement model,
+noise level, noise type and unknown image itself. These dif-
+ferences can be noticed in the further detailed comparison in
+Fig. 1, where peak signal-to-noise ratio (PSNR) curves are
+displayed for four images under varying denoising strength.
+This paper is devoted to addressing the aforementioned
+challenge – how to deal with the manual parameter tuning
+problem in a PnP framework. To this end, we formulate the
+internal parameter selection as a sequential decision-making
+problem. To do this, a policy is adopted to select a sequence
+of internal parameters to guide the optimization. Such prob-
+lem can be naturally ﬁt into a reinforcement learning (RL)
+framework, where a policy agent seeks to map observations
+to actions, with the aim of maximizing cumulative-reward.
+The reward reﬂects the to do or not to do events for the
+agent, and a desirable high reward can be obtained if the
+policy leads to a faster convergence and better restoration
+accuracy.
+We demonstrate, through extensive numerical and visual
+Figure 1. Compressed Sensing MRI using radial sampling pattern
+with 20 % sampling rate, where PSNR curves of four medical
+images are displayed - using PnP-ADMM with different denoising
+strengths. Different images requires different denoising strengths
+to reach the optimal performance.
+experiments, the advantage of our algorithmic approach on
+Compressed Sensing MRI and phase retrieval problems. We
+show that the policy well approximates the intrinsic function
+that maps the input state to its optimal parameter setting.
+By using the learned policy, the guided optimization can
+reach comparable results to the ones using oracle parameters
+tuned via the inaccessible ground truth. An overview of
+our algorithm is shown in Fig. 2. Our contributions are as
+follows:
+1. We present a tuning-free PnP algorithm that can cus-
+tomize parameters towards diverse images, which often
+demonstrates faster practical convergence and better
+empirical performance than handcrafted criteria.
+2. We introduce an efﬁcient mixed model-free and model-
+based RL algorithm. It can optimize jointly the dis-
+crete terminal time, and the continuous denoising
+strength/penalty parameters.
+3. We validate our approach with an extensive range of
+numerical and visual experiments, and show how the
+performance of the PnP is affected by the parameters.
+We also show that our well-designed approach leads to
+better results than state-of-the-art techniques on com-
+pressed sensing MRI and phase retrieval.
+2. Related Work
+The body of literature has reported several PnP algorithmic
+techniques. In this section, we provide a short overview of
+these techniques.
+Plug-and-play (PnP). The deﬁnitional concept of PnP was
+ﬁrst introduced in (Danielyan et al., 2010; Zoran & Weiss,

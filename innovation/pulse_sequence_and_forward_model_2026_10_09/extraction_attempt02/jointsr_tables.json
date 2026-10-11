@@ -1,0 +1,321 @@
+[
+  {
+    "id": "ueq0001",
+    "rows": [
+      [
+        "n ∼ U ( 1 , N ) , I ← I n , L ← L n ."
+      ]
+    ]
+  },
+  {
+    "id": "eq0001",
+    "rows": [
+      [
+        "θ x ∼ U ( a r o t , b r o t ) , log s x ∼ U ( a s c , b s c ) , ϕ x ∼ U ( a s h , b s h ) , θ y ∼ U ( a r o t , b r o t ) , log s y ∼ U ( a s c , b s c ) , ϕ y ∼ U ( a s h , b s h ) , θ z ∼ U ( a r o t , b r o t ) , log s z ∼ U ( a s c , b s c ) , ϕ z ∼ U ( a s h , b s h ) , T l i n = Affine ( θ x , θ y , θ z , s x , s y , s z , ϕ x , ϕ y , ϕ z ) ,",
+        "(1)"
+      ]
+    ]
+  },
+  {
+    "id": "ueq0002",
+    "rows": [
+      [
+        "SVF ′ ∼ N 10 × 10 × 10 × 3 ( 0 , σ T 2 ) , SVF = Upsample ( SVF ′ ) , T n o n l i n = exp ( SVF ) ."
+      ]
+    ]
+  },
+  {
+    "id": "ueq0003",
+    "rows": [
+      [
+        "I T = I ∘ T = I ∘ ( T l i n ∘ T n o n l i n ) L T = L ∘ T = L ∘ ( T l i n ∘ T n o n l i n )"
+      ]
+    ]
+  },
+  {
+    "id": "eq0002",
+    "rows": [
+      [
+        "μ k , c ∼ N ( m k , c μ , a k , c μ ) , σ k , c ∼ N t r u n c ( m k , c σ , a k , c σ ) , G c ′ ( x , y , z ) ∼ N ( μ L T ( x , y , z ) , c , σ L T ( x , y , z ) , c 2 ) , γ c ∼ U ( a γ , b γ ) , G c = min x , y , z G c ′ + ( max x , y , z G c ′ − min x , y , z G c ′ ) × [ G c ′ − min x , y , z G c ′ max x , y , z G c ′ − min x , y , z G c ′ ] γ c , G ( x , y , z ) = { G c ( x , y , z ) } c = 1 , … , C ,",
+        "(2)"
+      ]
+    ]
+  },
+  {
+    "id": "eq0003",
+    "rows": [
+      [
+        "θ c , x R ∼ U ( a r o t , b r o t ) , t c , x ∼ U ( a t , b t ) , θ c , y R ∼ U ( a r o t , b r o t ) , t c , y ∼ U ( a t , b t ) , θ c , z R ∼ U ( a r o t , b r o t ) , t c , z ∼ U ( a t , b t ) , R c = { Id. = Rigid ( 0 , 0 , 0 , 0 , 0 , 0 ) , if c = 1 Rigid ( θ c , x R , θ c , y R , θ c , z R , t c , x , t c , y , t c , z ) , if c > 1 G c R = G c ∘ R c ,",
+        "(3)"
+      ]
+    ]
+  },
+  {
+    "id": "ueq0004",
+    "rows": [
+      [
+        "log B c ′ ∼ N 4 × 4 × 4 ( 0 , σ B 2 ) , log B c = Upsample ( log B c ′ ) , B c ( x , y , z ) = exp [ log B c ( x , y , z ) ] , G c B ( x , y , z ) = G c R ( x , y , z ) B c ( x , y , z ) ,"
+      ]
+    ]
+  },
+  {
+    "id": "ueq0005",
+    "rows": [
+      [
+        "α ∼ U ( a α , b α ) , σ S , c = 2 α log ( 10 ) / ( 2 π ) r c / r t a r g , I c σ = G c R * N [ 0 , d i a g ( σ S , c ) ] , I c L R = Resample ( I c σ ; d c ) ,"
+      ]
+    ]
+  },
+  {
+    "id": "eq0004",
+    "rows": [
+      [
+        "ϵ c ∼ { δ ( ϵ c ) , c = 1 N [ 0 , diag ( σ ϵ , θ 2 , σ ϵ , θ 2 , σ ϵ , θ 2 , σ ϵ , t 2 , σ ϵ , t 2 , σ ϵ , t 2 ) ] , c > 1 R c ′ = R c − 1 × Rigid ( ϵ c ) , U c ′ = I c L R ∘ R c ′ , U c = Resample ( U c ′ ; r t a r g ) ,",
+        "(4)"
+      ]
+    ]
+  },
+  {
+    "id": "ueq0006",
+    "rows": [
+      [
+        "Ω ^ = argmin Ω E [ ∥ Y − Y ˜ ( U 1 , V 1 , … , U c , V c ; Ω ) ∥ 1 ]"
+      ]
+    ]
+  },
+  {
+    "id": null,
+    "rows": [
+      [
+        "a r o t",
+        "b r o t",
+        "a s c",
+        "b s c",
+        "a s h",
+        "b s h",
+        "σ T 2",
+        "a γ",
+        "b γ",
+        "σ B 2",
+        "a b",
+        "b t",
+        "a α",
+        "b α",
+        "σ ϵ , θ 2",
+        "σ ϵ , t 2"
+      ],
+      [
+        "10",
+        "10",
+        "log 0.9",
+        "log 1.1",
+        "0.01",
+        "0.01",
+        "3 2",
+        "0.7",
+        "1.3",
+        "0 . 5 2",
+        "20",
+        "20",
+        "0.8",
+        "1.2",
+        "0 . 3 2",
+        "0 . 3 2"
+      ]
+    ]
+  },
+  {
+    "id": null,
+    "rows": [
+      [
+        "Slice spacing (method)",
+        "PSNR (dB)",
+        "SSIM"
+      ],
+      [
+        "3 mm (cubic)",
+        "23.9 ± 0.9",
+        "0.778 ± 0.024"
+      ],
+      [
+        "3 mm ( SynthSR )",
+        "27.8 ± 1.6",
+        "0.914 ± 0.013"
+      ],
+      [
+        "3 mm (fully sup.)",
+        "29.0 ± 1.4",
+        "0.938 ± 0.010"
+      ],
+      [
+        "5 mm (cubic)",
+        "21.9 ± 0.9",
+        "0.688 ± 0.027"
+      ],
+      [
+        "5 mm ( SynthSR )",
+        "25.7 ± 1.5",
+        "0.854 ± 0.017"
+      ],
+      [
+        "5 mm (fully sup.)",
+        "27.4 ± 1.6",
+        "0.905 ± 0.013"
+      ],
+      [
+        "7 mm (cubic)",
+        "20.2 ± 1.0",
+        "0.621 ± 0.032"
+      ],
+      [
+        "7 mm ( SynthSR )",
+        "23.9 ± 1.4",
+        "0.797 ± 0.020"
+      ],
+      [
+        "7 mm (fully sup.)",
+        "25.5 ± 1.5",
+        "0.842 ± 0.015"
+      ]
+    ]
+  },
+  {
+    "id": null,
+    "rows": [
+      [
+        "Slice spacing",
+        "Average vol. error",
+        "Corr. 1 mm",
+        "Dice 1 mm",
+        "Effect size"
+      ],
+      [
+        "1 mm",
+        "0.0%",
+        "1.00",
+        "1.000",
+        "1.38"
+      ],
+      [
+        "3 mm (cubic)",
+        "4.5%",
+        "0.98",
+        "0.891",
+        "1.35"
+      ],
+      [
+        "3 mm ( SynthSR )",
+        "3.3%",
+        "0.99",
+        "0.901",
+        "1.36"
+      ],
+      [
+        "3 mm (fully sup.)",
+        "2.7%",
+        "0.99",
+        "0.909",
+        "1.36"
+      ],
+      [
+        "5 mm (cubic)",
+        "7.6%",
+        "0.95",
+        "0.863",
+        "1.22"
+      ],
+      [
+        "5 mm ( SynthSR )",
+        "2.9%",
+        "0.99",
+        "0.889",
+        "1.33"
+      ],
+      [
+        "5 mm (fully sup.)",
+        "2.7%",
+        "0.99",
+        "0.904",
+        "1.35"
+      ],
+      [
+        "7 mm (cubic)",
+        "10.1%",
+        "0.91",
+        "0.835",
+        "0.98"
+      ],
+      [
+        "7 mm ( SynthSR )",
+        "3.0%",
+        "0.97",
+        "0.875",
+        "1.30"
+      ],
+      [
+        "7 mm (fully sup.)",
+        "2.8%",
+        "0.99",
+        "0.900",
+        "1.34"
+      ]
+    ]
+  },
+  {
+    "id": null,
+    "rows": [
+      [
+        "Resolution",
+        "1 mm",
+        "3 mm cubic",
+        "3 mm SynthSR",
+        "3 mm fully sup.",
+        "5 mm cubic",
+        "5 mm SynthSR",
+        "5 mm fully sup.",
+        "7 mm cubic",
+        "7 mm SynthSR",
+        "7 mm fully sup."
+      ],
+      [
+        "Av. pial surface-to-surface error (mm)",
+        "0.0 ± 0.0",
+        "0.51 ± 0.34",
+        "0.38 ± 0.22",
+        "0.36 ± 0.22",
+        "0.70 ± 0.50",
+        "0.49 ± 0.34",
+        "0.44 ± 0.29",
+        "0.93 ± 0.72",
+        "0.62 ± 0.48",
+        "0.56 ± 0.41"
+      ],
+      [
+        "Av. white surface-to-surface error (mm)",
+        "0.0 ± 0.0",
+        "0.45 ± 0.34",
+        "0.36 ± 0.18",
+        "0.36 ± 0.22",
+        "0.66 ± 0.63",
+        "0.45 ± 0.30",
+        "0.46 ± 0.27",
+        "0.90 ± 0.86",
+        "0.55 ± 0.42",
+        "0.53 ± 0.38"
+      ],
+      [
+        "Average pial surface area (cm 2 )",
+        "1,988 ± 187",
+        "1,835 ± 179",
+        "1,947 ± 185",
+        "1,989 ± 202",
+        "1,800 ± 177",
+        "1,938 ± 194",
+        "1,950 ± 192",
+        "1,729 ± 171",
+        "1,860 ± 181",
+        "1,887 ± 190"
+      ]
+    ]
+  }
+]

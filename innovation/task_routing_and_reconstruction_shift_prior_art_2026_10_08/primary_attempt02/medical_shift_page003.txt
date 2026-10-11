@@ -1,0 +1,45 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+have also been developed that do not require paired original and noisy images (Chen et al.,
+2023; Sultan et al., 2025; Chen et al., 2026). Variations of the U-Net (Ronneberger et al.,
+2015) are commonly used as the neural network architecture for reconstruction models.
+In addition to standard losses like mean-squared error (MSE), GAN and diffusion-based
+approaches are common in the field (Bousse et al., 2024; Heckel et al., 2024).
+Fairness Analysis in Medical Imaging:Research on bias in AI-driven healthcare spans
+various medical domains, with medical imaging receiving considerable attention. In clas-
+sification tasks, biases are typically revealed by comparing performance across subgroups.
+Studies cover various imaging modalities, including brain MRI (Stanley et al., 2022; Ioan-
+nou et al., 2022), chest X-rays (Seyyed-Kalantari et al., 2021; Glocker et al., 2023; Yang
+et al., 2024; Lotter, 2024), dermatology images (Chiu et al., 2024; Groh et al., 2021), and
+retinal images (Burlina et al., 2021). They address sensitive attributes such as sex (Stanley
+et al., 2022), age (Seyyed-Kalantari et al., 2021), race (Seyyed-Kalantari et al., 2021), and
+skin tone (Kinyanjui et al., 2020), evaluating disparities using performance metrics such as
+Area Under the Curve (AUC) (Seyyed-Kalantari et al., 2021), or more dedicated fairness
+criteria (Yuan et al., 2023). In segmentation, studies have assessed segmentation perfor-
+mance under varying demographic distributions, such as by race and sex representation in
+training datasets (Ioannou et al., 2022; Lee et al., 2022; Puyol-Ant´ on et al., 2022).
+Fairness Analysis of Reconstruction Models:Reconstruction model performance is
+typically measured using image quality metrics such as Peak Signal-to-Noise Ratio (PSNR)
+and Structural Similarity Index Measure (SSIM). Recent studies assessing subgroup biases
+primarily rely on these metrics, examining how image quality varies across demographic
+subgroups. For instance, Du et al. (2023b) investigated fairness in deep learning-based
+brain MRI reconstruction, highlighting disparities in image reconstruction quality across
+different demographic groups using PSNR and SSIM. Similarly, Sheng et al. (2024) explored
+fairness challenges and potential solutions in ultrasound computed tomography, identifying
+significant disparities in reconstruction performance linked to subgroup attributes. With
+limited available literature, bias evaluation in reconstruction models is an emerging area
+of research for which there is a need to study the implications of image reconstruction on
+downstream tasks.
+Bias Mitigation:In classification, substantial efforts have focused on developing bias
+mitigation strategies. Data-centric approaches directly modify training datasets, employ-
+ing methods such as data redistribution (Oguguo et al., 2023), differentiable resampling
+techniques (Li and Vasconcelos, 2019), harmonization of datasets (Bissoto et al., 2019),
+and synthetic generation of diverse samples (Wang et al., 2024). Additionally, methods like
+Just Train Twice (JTT) target misclassified instances to implicitly mitigate subgroup biases
+without explicit annotations (Liu et al., 2021).
+Representation-level strategies aim to learn unbiased feature representations through ex-
+plicit disentanglement. Techniques include variational autoencoders (Creager et al., 2019),
+orthogonal disentanglement methods enforcing independence between sensitive attributes
+and task-specific features (Sarhan et al., 2020; Deng et al., 2023; Chiu et al., 2024; Du
+et al., 2023a), and group-adaptive architectures employing demographic-specific attention
+mechanisms (Gong et al., 2020).
+3

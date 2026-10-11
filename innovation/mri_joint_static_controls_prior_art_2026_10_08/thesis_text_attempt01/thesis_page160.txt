@@ -1,0 +1,39 @@
+A.6. DETAIL ON THE PRACTICAL RECOMMENDATIONS
+A.6 Detail on the practical recommendations
+In this appendix, we discuss the recommendations issued in the conclusion, and provide
+the supporting evidence from our results.
+Focus on improvements in the reconstructor architecture, mask distribution
+and algorithms used for training the reconstructor.Our results and ablations on
+the setting of Bakker et al. (2020) consistently show that the improvements obtained by
+changing the reconstructor architecture or the mask distribution are orders of magnitude
+more impactful than moving from LBCS to RL. This is supported the results of both
+Section 6.3.2 and Appendix A.2.3, where we see that moving from a UNet to a cResNet
+typically brings a significantly larger improvement (typically0.01 SSIM) than what RL
+brings over LBCS in the best case (at most0.0015 SSIM).This trend is also seen in
+Appendix A.2.3 when moving fromcvb in the short horizon setting tocvz in the long
+horizon setting. We refer the reader to this section for more details.
+Compare against strong baselines, such as LBCS.This point is established through-
+out our paper, where all results illustrate that, at best, RL methods bring moderate
+improvement over LBCS. This improvement often comes at the cost of prohibitive com-
+putational expense, even on higher end DGX-2 servers1, while training LBCS required at
+most a couple of hours (cf. Appendix A.1).
+Show sampling curves and use AUC to aggregate your results instead of
+performance at the final sampling rate.There is no consensus on how results
+should be aggregated from sampling curves. Bakker et al. (2020); Van Gorp et al. (2021)
+reported performance at the end of the acquisition, and Pineda et al. (2020) reported
+AUC curves computed on the acceleration factor. Gözcü et al. (2018); Yin et al. (2021)
+reported performance at selected sampling rates, and for other works such as Jin et al.
+(2019), it is not clear how results were aggregated.
+We believe that reporting the AUC on sampling rates, computed on the whole range of
+acquisition steps allows to most meaningfully quantify the performance of a policy on
+its whole trajectory. It does not require to select a sampling rate at which the result
+should be evaluated, and using sampling rates as opposed to acceleration factor allows to
+equally weight the contribution of each acquired line.
+Table 6.4 and Figure 6.3 compellingly illustrate that reporting the policy at a given sam-
+pling rate is not representative of its performance throughout the acquisition procedure.
+Be mindful about preprocessing settings when evaluating a policy model. We
+recommend using the cropped+vertical setting with the data normalization
+implemented by Zbontar et al. (2019).We discussed in Section 6.2 that Bakker
+1The authors of (Pineda et al., 2020) confirmed to us that it took more than 20 days to train their
+model.
+147

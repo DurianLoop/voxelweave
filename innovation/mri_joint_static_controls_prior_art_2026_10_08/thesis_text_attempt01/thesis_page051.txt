@@ -1,0 +1,40 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+sampling budget. Others tackle a problem of designing a masksequentially, by adding
+new sampling locations based on the currently acquired information. Finally, some
+methods aim at training a model that is able to propose apatient-adaptive mask design.
+These methods often leverage tools from reinforcement learning (RL) and this is why we
+refer to such models aspolicy models.
+The works of Bahadir et al. (2019); Aggarwal and Jacob (2020); Weiss et al. (2020);
+Huijben et al. (2020) relax the problem of optimizing the mask to a continuous opti-
+mization problem, and train the sampling pattern along with the neural network using
+backpropagation. After training, the mask is then mapped back as a boolean vector.
+Other approaches use a pre-trained reconstruction model and train a policy model that
+performs patient-adaptive sequential mask optimization using reinforcement learning
+(Pineda et al., 2020; Bakker et al., 2020). The approach of Zhang et al. (2019b) is unique,
+as they aim at training an evaluator that tries to estimate the current reconstruction
+error for each location in k-space, while using this evaluator to inform the training of the
+reconstruction model. Finally, a fourth category of approaches tackles the challenging
+problem jointly learning a reconstruction model and a policy model for patient-adaptive
+sampling (Jin et al., 2019; Van Gorp et al., 2021; Yin et al., 2021).
+Remark (A short discussion of non-Cartesian sampling methods). The problem
+of optimizing sampling trajectories becomes more complex when moving to the
+non-Cartesian realm. The problem is inherently continuous, and there is a lot of
+freedom in designing non-Cartesian trajectories as long as hardware constraints such
+as bounded first and second derivatives of the trajectory (Boyer et al., 2016).
+As a result, there is great diversity in the methods proposed. Traditional approaches
+such as radial spokes (Lauterbur, 1973) and spirals (Meyer et al., 1992) are typically
+model-based, model-driven, but more recent space filling trajectories like SPARKLING
+(Lazarus et al., 2019) fall under this category. Weiss et al. (2019); Chaithya et al.
+(2022) attempted to train non-Cartesian sampling and reconstruction jointly, in an
+end-to-end fashion, yieldinglearning-based, data-drivenapproaches, while Wang et al.
+(2021) proposed to parametrize the trajectories with B-spline to facilitate learning,
+resulting in amodel-based data-drivenmethod. Finally, (Chaithya et al., 2021) also
+proposed to refine the SPARKLING algorithm by learning from data the underlying
+variable-density distribution, yielding alearning-based, model-drivenapproach.
+These approaches were compared in Chaithya and Ciuciu (2022), where additional
+challenges due to non-Cartesian sampling are highlighted. In this setting, it appears
+that the algorithm used to optimize the sampling trajectory greatly matters, as
+it is possible for trajectories to remain stuck close to initialization. As a result,
+merely being a learning-based, data-driven approach does not guarantee an improved
+performance over model-based model-driven alternatives. Nonetheless, the best
+38

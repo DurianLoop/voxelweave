@@ -1,0 +1,37 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+9
+Variant dim Heads Loops MoE Params (3D) Effective depth
+RD-ViT Tiny 192 3 8 No 2,579,110 8 (shared)
+RD-ViT Tiny+MoE 192 3 8 8 experts 3,023,014 8 (shared+MoE)
+RD-ViT Small 384 6 8 No 10,304,838 8 (shared)
+Standard ViT 192 3 — No 5,676,036 10 (unique)
+The Standard ViT baseline uses the same total effective depth (prelude + loop iterations + coda = 1 + 8 + 1 
+= 10 layers) but with unique weights per layer, resulting in approximately 2.2× the parameters of RD-ViT 
+Tiny. This provides a fair comparison: same effective depth, same hidden dimension, but unique vs shared 
+weights.
+5 Experimental Setup
+5.1 Dataset
+We evaluate on the Automated Cardiac Diagnosis Challenge (ACDC) dataset, which contains cine-MRI 
+volumes from 100 patients with ground truth segmentation for four classes: background (BG, label 0), right 
+ventricle (RV, label 1), myocardium (MYO, label 2), and left ventricle (LV, label 3). Each patient has end￾diastolic (ED) and end-systolic (ES) frames with corresponding segmentation masks. We download the 
+dataset from HuggingFace (mathpluscode/ACDC) which provides preprocessed volumes at 1mm × 1mm 
+× 10mm resolution.
+We split at the patient level: 70 patients for training (140 volumes), 15 for validation (30 volumes), and 15 
+for testing (30 volumes). For 3D experiments, each volume is resized to 128 × 128 × 16 via trilinear 
+interpolation (images) and nearest-neighbor interpolation (labels). For 2D experiments, axial slices are 
+extracted, resized to 224 × 224, and replicated to 3 channels for compatibility with standard ViT 
+architectures.
+5.2 Evaluation Metrics
+We report the Dice similarity coefficient (DSC) as the primary metric, computed per-class for RV, MYO, 
+and LV (excluding background) and averaged. Dice is defined as DSC(P, G) = 2|P ∩ G| / (|P| + |G|), where 
+P is the predicted segmentation and G is the ground truth. We also report the spectral radius 𝜌(A) of the 
+LTI injection matrix and the mean ACT ponder time (effective iterations per patch).
+5.3 Training Details
+All experiments run on Google Colab with a single T4 GPU (16 GB VRAM). We use batch size 4 for 3D 
+and 8 for 2D, learning rate 1 × 10−4 with cosine annealing, weight decay 0.05, gradient clipping at 1.0, 
+and train for 100 epochs. The ACT ponder weight 𝜆 = 0.01. Random seed is fixed at 42 throughout. Total 
+training time per model ranges from 1,123s (Standard ViT) to 2,189s (RD-ViT+MoE) due to MoE routing 
+overhead.
+5.4 Data Efficiency Protocol
+To test the data efficiency hypothesis, we train each model at five data fractions: 10%, 25%, 50%, 75%, 
+and 100% of the training set. The subsets are drawn from the first k patients (not randomly sampled) to 

@@ -1,0 +1,15 @@
+# Local fastMRI repeated-T2 header feasibility: full seven-case result
+
+**Status:** Header-only, internal technical screen. The [selection and match rule](FASTMRI_REPEAT_T2_HEADER_GATE_PLAN_2026-10-01.md) was fixed before reading these headers. The [script](experiments/fastmri_repeat_t2_header_gate.py) used `pydicom.dcmread(..., stop_before_pixels=True)` on only the seven manifest cases with a `REPEAT`-labeled T2 series. It read no image pixels, NIfTI, model weights or locked test data and used no GPU. The exact local fastMRI release/access agreement and image-publication rights remain unverified.
+
+The source T2-series manifest contained 1,544 entries and its SHA-256 matched the frozen plan. Seven cases satisfied the repeat-label rule. Their directories contained exactly 272 DICOM headers in 17 SeriesInstanceUID groups. All 17 series had `ORIGINAL/PRIMARY` image type and `MRAcquisitionType=2D` in the checked headers; those flags alone do **not** prove independent raw slice acquisition. Four within-case series pairs had both labels containing T2 and one `REPEAT` label. All four had matched physical slice centers under the 0.1 mm rule and distinct SOP sets. The four complete pair outcomes were:
+
+| Pair category | Count | Why it stops |
+|---|---:|---|
+| Matched geometry/protocol except time | 2 | Usable acquisition/series timing evidence is absent under the frozen header rule, so a distinct acquisition event is not documented by this gate. |
+| Matched centers but other protocol/grid mismatch | 2 | One pair has matrix and TR mismatch; another has matrix mismatch. Both also lack usable time evidence. |
+| Fully header-compatible repeated T2 pair | **0** | None passed every frozen criterion. |
+
+Three of the seven repeat-label cases had no second T2-labeled series in the local folder at all; a label containing `REPEAT` is therefore not reliable evidence of a usable repeat pair. The [summary](experiments/fastmri_repeat_t2_header_gate/summary.json) reports only anonymous ordinals, counts and technical reason codes; no patient IDs, paths, raw DICOM UIDs, dates or pixels are written to output. Plan SHA-256 is `8a210f7b883b50442afb73722b04cc92cfaf9d575e2c0c41c6c9630fa25fc4b3`, script SHA-256 `e19183100ba67e904875ede14a2c67aa685b5bbb79e774eefdf5fc760867d8a1`, summary SHA-256 `79b585949a575a121c145210f84fc9d4d93e9c69752d7e7d1fd6ea512f875581`.
+
+**Decision:** Do not start a target-pixel repeat-acquisition experiment from these files or call them a publishable acquisition-identity source. The two near-matched pairs are a concrete trace-back lead: an author or data steward would need the exact official release/download rights and acquisition record confirming genuinely independent repeated measurements at these centers, including why timing fields are unusable in this local export. A future study must still freeze its own patient/series list, image registration/motion checks, target pixels and failure rule before any inference. The present two-source [public manuscript](PUBLIC_ONLY_MIRA_MANUSCRIPT_DRAFT_2026-10-01.md) remains a published-slice context audit; this local fastMRI material is excluded.

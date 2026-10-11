@@ -1,0 +1,86 @@
+MIRTO 21
+that many outperformance claims are probably false [22],
+and that biases enter at every step of evaluation [63].
+MIRTO adds a source of uncertainty that intervals over
+subjects do not capture, the choice of evaluation pipeline,
+and shows how large it is.
+Limitations. The evidence comes from a single cohort
+and a single contrast. BraTS 2020 whole-tumour labels
+are large, conspicuous lesions, and evaluation on T2 alone
+limits what can be said about small or subtle pathology;
+the small-lesion results here are a floor, not a characteri￾sation. The 312 test subjects served both to develop the
+protocol and the choice of training set and to test the
+hypotheses, so all inference is exploratory; explicit deci￾sion criteria keep a hypothesis from being bent to fit its
+outcome, but they cannot remove the influence of other
+analyses of the same cohort. One trained model exists
+per method and training set, so training-seed variance,
+which can be large enough to change benchmark con￾clusions [17] and is the most likely competing explana￾tion for small between-method differences, is unknown.
+A common training set means the same source data, not
+the same optimisation budget, and IXI-HH+Guys is not
+the best training set for every method: on test it cost RE￾FLECT 0.055 and UCCD 0.037 Dice relative to their best
+training sets (Appendix Table 60), so the comparison of
+methods should not be read as each method’s best attain￾able result. The injection study validated the diagnostics
+on two pipelines; their power on other architectures is
+assumed rather than shown. Validation-threshold inter￾vals do not include the uncertainty of fitting a threshold
+on 24 subjects, which a nested resampling would add.
+The covariate-adjusted slice estimators failed their own
+control, so the borrowed-map contrast, not the adjusted
+AUROC, is the defensible slice-level measure. Finally, the
+training-free improvement to REFLECT is shown for one
+method and two trained models, and the specific winning
+aggregation did not replicate.
+Future work. The next step is a pre-registered confirma￾tory evaluation on an untouched cohort, with the training
+set and every threshold rule fixed by its protocol. Nested
+resampling of the validation threshold, several training
+seeds per method and a second pathology with smaller
+lesions would close the main gaps listed above.
+5 Conclusion
+A UAD leaderboard is a statement about models and
+evaluation jointly. In our study the method decided rank￾ings by voxel AUROC, whereas the evaluation decided the
+order of the three strongest models in Dice and in lesion
+sensitivity. MIRTO separates the two. It gates the geom￾etry of the comparison with tests of known power, holds
+models to operating points chosen without the test set
+and reports what those operating points actually deliver,
+evaluates every conclusion over a multiverse of defensi￾ble pipelines, reading how often an order flips together
+with how large each difference is, and attaches paired,
+multiplicity-adjusted intervals to each claim. Elementary
+identities explain why a contrast changes between valida￾tion thresholds and matched burden, why post-processing
+appears to help and why pooled and subject-level rank￾ings disagree, and a known conformal result states how
+often calibration on a small set will miss its target. Ap￾plied to four current UAD families, the protocol exposed
+a geometric error that standard metrics missed, showed
+which apparent differences were artefacts of threshold
+transfer, and still supported some definite statements for
+this cohort and training set: REFLECT had the highest
+voxel AUROC, the two conditioned diffusion models gave
+higher Dice at small budgets, no method found more than
+12 of the 165 small lesions, and a training-free change to
+REFLECT’s latent aggregation raised its Dice at matched
+burden in two checkpoints. Reporting evaluation choices
+with the same care as architectures would make UAD
+comparisons much easier to interpret.
+Acknowledgments. The authors thank Prof. Francesca Ieva
+of Politecnico di Milano and Human Technopole for creating
+the opportunity for this research and for her support. S.C.
+thanks Dr Craig Glastonbury of Human Technopole for his
+continuous support and encouragement.
+Author contributions (CRediT). N.K: Data curation,
+Formal analysis, Investigation, Methodology, Software, Val￾idation, Visualisation, Writing – original draft. Soumick
+Chatterjee: Conceptualisation, Formal analysis, Methodol￾ogy, Project administration, Resources, Supervision, Writing
+– original draft.
+Data availability and ethics. This study is a secondary
+analysis of publicly released datasets; no new data were ac￾quired and no participant was contacted. BraTS 2020 [49,4,5]
+was used under the organisers’ terms, which permit research
+use provided that the designated publications are cited. The
+IXI dataset [35] is distributed under the Creative Commons
+CC BY-SA 3.0 licence. The MOOD 2020 brain data [65]
+are publicly available on Hugging Face (https://huggingface.
+co/datasets/dzimmerdkfz/mood_brain)Informed consent and
+ethical approval for data acquisition were obtained by the orig￾inal studies, as described in the cited publications. The data
+must be obtained from their providers. Per-subject results un￾derlying every table and figure are released with the code.
+Code availability. The MIRTO evaluator, the anal￾ysis code, the hypotheses with their decision cri￾teria and the reporting checklist are available at
+https://github.com/soumickmj/MIRTO. The four UAD
+methods were trained (or, for AnomalyDINO, built)
+and run from forks of their authors’ public imple￾mentations, which adapt them to read the datasets
+used here and leave architectures and losses un￾changed: REFLECT, https://github.com/negin-kafee/
+REFLECT; UCCD, https://github.com/negin-kafee/
+unsupervised-contrastive-cond-diff; cDDPM, https://github.

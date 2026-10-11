@@ -1,0 +1,38 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+0 1 2 3 4 5 6
+iterations 104
+0
+50
+100
+150Number of Evaluations
+Figure 5.23: Number of lazy evaluations per round of the lazy LBCS algorithm, until50% sampling
+rate (50624 locations acquired, initialization with24× 24 centermost frequencies).
+Adapting these algorithms to non-Cartesian settings such as radial sampling would be of
+great interest to clinicians, as radial sampling has seen a large success in body MRI due to
+the resistance to motion that it offers, enabling free breathing imaging (Coppo et al., 2015;
+Feng et al., 2016a). Although golden angle sampling has been widely used (Feng et al.,
+2014), we anticipate that adjusting the distribution of radial spokes more closely to the
+underlying data distribution would improve the overall quality of reconstructed images.
+We anticipate however that this would involve challenges in simulating a non-Cartesian
+acquisition and quantifying the improvement of adding new measurements to an image,
+but recent deep learning reconstruction methods could provide a solution to this issue
+(Ramzi et al., 2022).
+Both sLBCS and lLBCS could certainly be improved by endowing them with additional
+heuristics. sLBCS would likely benefit from candidate lines being drawn from a probability
+favoring low frequency locations rather than fully at random. lLBCS could benefit form
+periodically re-computing the list of upper boundsρ. Recent works such as Zibetti et al.
+(2020) also showed the benefits of heuristics for mask design. For instance, they bias the
+selection of candidates based on the current line-wise NMSE and avoid selected elements
+at complex-conjugated position in order to accelerate the optimization procedure.
+This should however not be the main point that one takes away from this chapter. Our
+work illustrates the great benefit of moving from model-based, model-driven approaches
+for mask design to learning-based, data-driven ones: trying to maximize a performance
+metric on data (data-driven approach), rather than some abstract mathematical structure
+(model-driven approach) such as coherence enables to more efficiently use the limited
+available resources. Similarly, moving from model-based to learning-based approaches
+allows to remove the constraints on the shape of the masks that can be explored, and our
+results show that this greatly benefits the reconstruction quality. Stated differently, our
+results suggest that model-based and/or model-driven approacheslimit the performance
+of CS methods applied to MRI, through their underlying model.
+78

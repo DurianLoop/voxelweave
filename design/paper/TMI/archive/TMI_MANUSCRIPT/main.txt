@@ -1,0 +1,770 @@
+IEEE TRANSACTIONS ON MEDICAL IMAGING, MANUSCRIPT UNDER PREPARATION
+
+1
+
+Measurement Overlap Governs Disagreement-Based
+Reliability in Deterministic MRI Slice Interpolation
+Anonymous Authors
+
+Abstract—Deterministic through-plane MRI interpolation can
+produce plausible missing slices without indicating when they are
+inaccurate. Disagreement between reconstructions is a natural
+retrospective reliability signal, but it observes only differences
+between their errors and can miss common-mode failures. We test
+the hypothesis that measurement overlap controls this blindness.
+Two frozen neural interpolators (HAT and SwinIR) reconstructed
+identical missing physical planes from either disjoint ×4 anchor
+lattices or the same anchors under a maximal-overlap orderreversal control. Dense targets were used only to synthesize
+retrospective alternative acquisitions and evaluate error. On 24
+fastMRI brain T2 cases, zero-overlap disagreement correlated
+more strongly with target error than maximal-overlap disagreement (Spearman difference 0.355; case-clustered 95% CI, 0.225–
+0.557). On 22 NingXia knee T2 series from eight patients, the
+difference was 0.193 (patient-clustered 95% CI, 0.113–0.336).
+Effects remained positive for each architecture, while linear
+and cubic interpolators independently produced case-level correlations of 0.958–0.977 under disjoint sampling. Across frozen
+analyses, shared consensus error accounted for median 80.9%
+and 86.5% of squared error. Auxiliary IXI brain T2 results (115
+cases) showed highly architecture-consistent difficulty but did not
+enter the controlled overlap test. These findings support a scoped
+design principle: reliability contexts should reduce shared errorgenerating measurements rather than merely maximize output
+diversity. Low disagreement cannot certify correctness.
+Index Terms—Magnetic resonance imaging, slice interpolation,
+image reconstruction, reliability, uncertainty estimation, consistency, sampling.
+
+I. I NTRODUCTION
+NISOTROPIC magnetic resonance imaging (MRI) volumes often have substantially coarser through-plane than
+in-plane resolution. Interpolating unacquired slices can ease
+visualization and downstream volumetric processing, and modern slice-synthesis networks improve over classical interpolation in many settings [1], [2]. Yet a deterministic interpolator normally returns one image, even when the acquired
+anchors do not constrain the missing anatomy sufficiently.
+A deployment-facing reliability signal must therefore identify
+likely failure without accessing the dense target that is missing
+in practice.
+Model ensembles, stochastic sampling, test-time augmentation (TTA), and cross-context consistency estimate reliability
+from variation among plausible outputs [3]–[6]. Their common
+premise is useful but one-sided: disagreement witnesses that at
+least one prediction differs, whereas agreement need not imply
+correctness. If two reconstructions inherit the same smoothing,
+boundary limitation, or anchor-induced bias, subtracting them
+removes the very error one wishes to detect. This issue is especially relevant to interpolation because nearby reconstruction
+contexts can reuse the same acquired slices.
+
+A
+
+Disagreement observes only error differences: fₐ−fᵦ = eₐ−eᵦ
+Shared measurements
+m
+m
+
+reconstruction areconstruction b
+
+|fₐ−fᵦ|
+
+aligned errors cancel
+
+Disjoint measurements
+m
+m
+
+reconstruction areconstruction b
+
+|fₐ−fᵦ|
+
+context-sensitive errors remain visible
+
+Fig. 1. Consensus blindness. When contexts reuse error-generating measurements, aligned errors cancel in output disagreement. Disjoint contexts can
+reveal a larger context-sensitive component, but agreement still cannot certify
+correctness.
+
+We investigate measurement overlap as a control variable
+for error observability (Fig. 1). The same missing physical
+plane is reconstructed twice at the same nominal factor. In
+one condition, the two contexts draw from phase-shifted ×4
+anchor lattices with no shared slices. In the maximal-overlap
+control, they use the identical anchor lattice but reverse its
+through-plane order before mapping the output back. Case,
+target, model, plane, evaluation support, and number of measurements remain paired. The control has a known limitation—
+reversal changes ordering—so we interpret it as a mechanistic
+retrospective intervention, not a complete causal identification
+of overlap alone.
+The study makes four contributions. First, it formalizes
+consensus blindness as cancellation of aligned reconstruction
+errors and links the observable fraction of squared error
+to context diversity. Second, it conducts a target-preserving
+measurement-overlap intervention in brain and knee T2 MRI,
+with corrected patient-level inference for the multi-series knee
+cohort. Third, it tests architecture, analytical-interpolator, rawdiversity, and stable-wrong boundaries. Fourth, it evaluates
+a methodological consequence: whether disjoint-context disagreement retrospectively ranks the benefit of denser sampling.
+All claims concern deterministic MRI slice interpolation; we
+do not claim calibrated uncertainty, prospective acquisition
+benefit, or clinical safety.
+II. R ELATED W ORK
+A. MRI Slice Synthesis and Interpolation
+Classical linear and cubic splines estimate missing samples from smoothness assumptions [7]. Deep slice-synthesis
+methods instead learn anatomical priors. SAINT conditions
+synthesis on spatial position and supports variable upsampling
+factors [1]; I3Net combines inter- and intra-slice information
+for medical slice synthesis [2]. These approaches primarily
+optimize reconstruction fidelity. Our question is complemen-
+
+IEEE TRANSACTIONS ON MEDICAL IMAGING, MANUSCRIPT UNDER PREPARATION
+
+tary: given a frozen deterministic interpolator, which targetpreserving contexts expose its retrospective error?
+
+2
+
+Zero anchor overlap
+
+Maximum shared anchors + order reversal
+
+B. Reconstruction Uncertainty and Reliability
+MRI reconstruction uncertainty has been estimated through
+variational latent models, SURE, Bayesian parameter distributions, and posterior sampling [5], [6]. In neuroimage
+enhancement, predictive uncertainty has also been evaluated
+against errors and distribution shift [8]. These methods address
+probabilistic reconstruction or learned uncertainty. We do not
+estimate a calibrated posterior; we study why a broad class
+of output-disagreement signals can be blind when errors are
+shared.
+C. Consistency, Diversity, and Shared Error
+Deep ensembles and stochastic perturbations use diversity
+as evidence of uncertainty [3], [4]. Ensemble theory emphasizes that diversity interacts with, rather than replaces,
+individual predictor accuracy [9], [10]. Self-consistency also
+has a long history in MRI reconstruction, including measurement consistency in SPIRiT [11]. Our closest distinction is
+intervention-level: we manipulate overlap of acquired throughplane measurements for the same target and quantify reliability
+ranking, rather than interpreting arbitrary output dispersion as
+uncertainty.
+III. T HEORY: C ONSENSUS E RROR AND D ISAGREEMENT
+B LINDNESS
+Let y be a missing target slice and let two deterministic
+contexts produce
+fa = y + ea ,
+
+fb = y + eb .
+
+(1)
+
+(2)
+
+and squared disagreement satisfies
+∥ea − eb ∥2 = ∥ea ∥2 + ∥eb ∥2 − 2⟨ea , eb ⟩.
+
+(3)
+
+Positive error alignment therefore reduces observable disagreement at fixed marginal error energy. Define the context mean
+ē = (ea + eb )/2 and half-difference δ = (ea − eb )/2. The
+exact identity
+2
+2
+2
+2
+1
+2 (∥ea ∥ + ∥eb ∥ ) = ∥ē∥ + ∥δ∥
+
+(4)
+
+separates shared consensus error from context-observable diversity. This is an algebraic decomposition, not a calibrated
+uncertainty partition. It also does not identify which reconstruction is wrong.
+For any metric d obeying the triangle inequality,
+d(fa , fb ) ≤ d(fa , y) + d(fb , y).
+
+2
+
+4
+6 phase-0
+8 anchor
+through-plane index zsame target
+
+phase-2 anchor
+
+0
+
+2
+
+4
+6
+through-plane index z
+
+8
+
+Fig. 2. Paired ×4 design. Stars mark the same evaluated missing targets. The
+zero-overlap condition changes the phase lattice; the maximal-overlap control
+reuses the phase-0 anchors under order reversal.
+
+IV. M EASUREMENT-OVERLAP H YPOTHESIS
+A target-preserving context is a set of acquired anchors
+and reconstruction operations that predicts the same physical
+missing plane. Measurement overlap is the number of identical
+acquired slices shared by the two bracketing contexts. At factor
+four, phase-0 anchors are z = 0, 4, 8, . . . and phase-2 anchors
+are z = 2, 6, 10, . . .. Targets with z mod 4 ∈ {1, 3} are
+missing from both grids, and the two grids share no anchors
+(Fig. 2).
+The maximal-overlap control uses the phase-0 anchors in
+both contexts, reverses the sparse sequence for one run, and
+maps its prediction back to physical z. It shares two bracketing
+anchors for each interior target. Our prespecified directional
+prediction is that greater overlap increases error alignment,
+lowers the observable error fraction, and weakens ranking of
+target error by disagreement. Only the final ranking comparison was available in the frozen TMI evidence; covariancearrow tests and cleaner flip controls are reserved for the
+separated exploratory conference branch.
+V. M ATERIALS AND M ETHODS
+A. Data and Units of Analysis
+
+Their difference contains no target term:
+fa − fb = ea − eb ,
+
+0
+
+(5)
+
+Thus large disagreement lower-bounds the sum of errors only
+in a one-sided sense, while small disagreement gives no upper
+bound. A pair can be stably wrong with ea ≈ eb ̸= 0.
+Equation (3) motivates the hypothesis that reducing overlap of
+error-generating measurements decreases ⟨ea , eb ⟩ and makes
+error more observable.
+
+Table I summarizes the frozen cohorts. The expanded
+fastMRI-brain-T2 subset contained 160 NIfTI volumes split
+112/24/24; all controlled analyses used the 24-case test partition. The underlying fastMRI resource is public and deidentified [12], [13]. NingXia-T2 contained 22 knee MRI series
+from eight patients. Predictions were strictly out of fold under
+eight patient-group folds; all new inferential resampling uses
+the patient prefix rather than treating 22 series as independent.
+This corrects the historical record without changing stored
+point estimates. IXI-T2 [14] contributed 115 held-out brain
+MRI cases at ×4 to frozen auxiliary analyses of architectureindependent difficulty and input-derived difficulty. It did not
+enter the zero-versus-maximal overlap comparison reported
+here.
+Inclusion required matching case identity, finite arrays,
+equal in-plane dimensions, and a valid NIfTI affine. Generated
+planes were matched in world coordinates by their affinederived origins within 0.001 mm. Acquired anchors were
+excluded. No registration or post-validation resampling was
+allowed.
+B. Reconstruction Methods
+The decisive controlled experiment used frozen 2.5-D HAT
+and SwinIR interpolators. They process adjacent acquired
+
+Cohort
+
+Site
+
+Unit N
+
+r
+
+Role
+
+fastMRI
+T2
+
+brain
+
+24 cases
+
+2/4/6
+
+Main overlap; models; analytical; benefit
+OOF main overlap
+and replication
+Auxiliary
+frozen
+difficulty replication
+
+NingXia
+T2
+IXI T2
+
+knee
+brain
+
+8 patients /
+22 series
+115 cases
+
+2/4/6
+4
+
+slices and synthesize the missing interval; checkpoints and
+predictions were fixed before the Plan-4 overlap analyses.
+I3Net was included in the broader frozen factor and TTA
+comparisons but excluded from the disjoint phase intervention
+because most fastMRI volumes provided only three phaseshifted anchors while the frozen implementation required
+four; we did not pad uncovered outputs. Linear and cubic
+interpolation were evaluated as non-neural families under the
+same disjoint phase construction.
+C. Reliability Scores and Endpoints
+For paired predictions a, b, the primary plane score was
+mean absolute disagreement on the deployment mask |a| >
+0.01 max |a|. The retrospective endpoint was mean absolute
+error of the stored phase-0 prediction on that identical mask.
+Dense targets entered only phase-grid simulation and evaluation, never the reliability score. Examination or model–series
+scores were medians across matched generated planes.
+Frozen secondary comparators included: (i) target-excluded
+committee disagreement; (ii) Physical Consistency (PC-v1),
+the median absolute difference among NIfTI-affine matched
+predictions at ×2, ×4, and ×6; (iii) four-view flip-TTA; and
+(iv) adjacent-anchor RMSE, computed before reconstruction.
+Ranking used Spearman correlation and normalized area under the risk–coverage curve (nAURC). The latter normalizes
+empirical selective risk between oracle and reverse-oracle
+rankings. Densification benefit was the realized reduction in
+reconstruction MAE from stored ×4 to ×2 outputs.
+D. Statistical Analysis
+Repeated planes, factors, and architectures were not treated
+as independent patients. Primary intervals used 5,000 cluster
+bootstrap replicates, resampling 24 fastMRI cases or eight
+NingXia patient groups with all subordinate observations
+retained. The PC–TTA comparison used whole-cluster score
+swaps; its historical NingXia 22-series permutation was superseded by a 10,000-swap patient-group analysis. Plane-level
+correlations describe ranking across evaluated planes, with
+clustered intervals quantifying sensitivity to independent-unit
+sampling. Analyses were paired by dataset, case, model, and
+plane. No multiple-comparison-adjusted universal superiority
+claim is made.
+VI. E XPERIMENTS AND R ESULTS
+A. Consensus Error Dominates Context Diversity
+Applying Eq. (4) to frozen paired context errors assigned
+median 80.9% of total squared error to the shared consensus
+
+3
+
+fastMRI brain T2 (24 cases)
+Spearman 0.959 vs 0.582
+120
+100
+80
+60
+zero overlap
+max shared + reversal
+
+40
+25
+
+50
+75
+100 125 150 175
+prediction-only disagreement (MAE)
+
+200
+
+retrospective reconstruction MAE
+
+TABLE I
+C OHORTS AND FROZEN EXPERIMENTAL ROLES
+
+retrospective reconstruction MAE
+
+IEEE TRANSACTIONS ON MEDICAL IMAGING, MANUSCRIPT UNDER PREPARATION
+
+NingXia knee T2 (8 patients / 22 series)
+Spearman 0.892 vs 0.684
+350
+300
+250
+200
+150
+100
+50
+0
+
+50
+100
+150
+200
+250
+300
+prediction-only disagreement (MAE)
+
+Fig. 3. Same-target controlled result. Each point is a model–plane observation;
+inference is clustered by case (fastMRI) or patient (NingXia). Zero-overlap
+scores rank retrospective MAE better than the shared-anchor reversal control.
+TABLE II
+Z ERO VERSUS MAXIMAL SHARED - ANCHOR RELIABILITY
+Cohort
+
+Model
+
+ρ0
+
+ρmax
+
+∆ρ
+
+95% CI
+
+fastMRI
+
+pooled
+HAT
+SwinIR
+pooled
+HAT
+SwinIR
+
+.960
+.967
+.958
+.891
+.892
+.890
+
+.605
+.626
+.582
+.699
+.764
+.632
+
+.355
+.340
+.375
+.193
+.128
+.258
+
+[.225,.557]
+[.205,.559]
+[.233,.586]
+[.113,.336]
+[.025,.233]
+[.133,.513]
+
+NingXia
+
+component on fastMRI and 86.5% on NingXia; observable
+diversity accounted for 19.1% and 13.5% (Fig. 5a). The
+identity residual was negligible relative to squared-error scale.
+Consistent difficulty also extended beyond a single pair:
+median pairwise error-rank correlation was 0.961 among 11
+fastMRI neural models and 0.991 among six methods on
+the 115-case IXI panel. These descriptive results establish a
+substantial common component but do not prove that every
+shared error originates from measurements.
+
+B. Controlled Measurement-Overlap Intervention
+Figure 3 and Table II report the primary comparison. On
+fastMRI, zero-overlap disagreement had plane-level Spearman
+ρ = 0.960 with phase-0 MAE, versus 0.605 for the maximaloverlap reversal control, a difference of 0.355 (case-clustered
+95% CI, 0.225–0.557). On NingXia, the corresponding values
+were 0.891 and 0.699, a difference of 0.193. Correct resampling of eight patient groups gave a 95% CI of 0.113–0.336.
+Endpoint differences were exactly zero because both scores
+were evaluated against the same stored phase-0 error.
+
+C. Architecture and Analytical Generalization
+The effect was positive for HAT and SwinIR separately in
+both cohorts (Table II; Fig. 4a). Under zero-overlap grids,
+classical linear and cubic interpolation also produced strong
+case-level reliability: Spearman correlations were 0.977 and
+0.974 on fastMRI and 0.958 and 0.967 on NingXia (Fig. 4b).
+These analytical results show that the useful witness is not
+uniquely tied to neural stochasticity. Because the analytical
+experiment lacked a frozen matched maximal-overlap comparator, it supports disjoint-context generality rather than the
+overlap contrast itself.
+
+Neural architecture robustness
+0.5
+0.4
+0.3
+0.2
+0.1
+0.0
+
+ri
+tm
+fas HAT
+
+Analytical interpolators
+
+1.00
+
+0.6
+case-level Spearman
+
+Δ Spearman (zero − maximum)
+
+IEEE TRANSACTIONS ON MEDICAL IMAGING, MANUSCRIPT UNDER PREPARATION
+
+0.98
+0.96
+0.94
+0.92
+0.90
+
+ri
+tm
+fas INIR
+SW
+
+ia
+gx T
+nin HA
+
+ri
+tm c
+fas ubi
+c
+
+ia
+gx R
+nin INI
+SW
+
+ri
+tm r
+fas inea
+l
+
+ia
+gx c
+nin cubi
+
+ia
+gx r
+nin inea
+l
+
+1.0
+0.8
+
+Most error is shared
+
+Retrospective top-25% densification
+40
+
+shared consensus
+observable diversity
+
+x4→x2 MAE reduction
+
+median fraction of squared error
+
+Fig. 4. Generalization. (a) Architecture-specific zero-minus-maximal rankcorrelation differences. (b) Case-level disjoint-context correlation for linear
+and cubic interpolation. Historical NingXia neural intervals were recomputed
+by eight patient clusters.
+
+0.6
+0.4
+0.2
+0.0
+
+random
+
+disjoint score
+
+oracle
+
+30
+
+20
+
+10
+
+4
+
+reduced variation while preserving error. Conversely, no natural stable-wrong plane met the same quartile rule in fastMRI,
+so prevalence did not replicate.
+Input-side difficulty also had a mixed interpretation.
+Adjacent-anchor RMSE predicted raw error across fastMRI
+(ρ = 0.719), NingXia (ρ = 0.780), and IXI (ρ = 0.982 across
+six methods), but correlations with range-normalized error fell
+to 0.503, 0.465, and 0.251. A fully normalized feature was
+robust only on IXI (ρ = 0.644). A curvature–spacing model
+improved held-out fastMRI prediction over spacing alone, but
+absolute transfer to NingXia failed. These negative results
+reject a universal input-only error law.
+Finally, PC beat flip-TTA in all nine frozen fastMRI profiles
+(mean ∆nAURC = −0.034, case-clustered permutation p =
+0.0035). Although all nine NingXia point estimates favored
+PC, correcting the independent unit to eight patients changed
+the mean difference to −0.047 with p = 0.742. We therefore
+do not claim statistically supported PC superiority on NingXia,
+nor superiority over arbitrary perturbation families.
+
+0
+fastMRI
+
+NingXia
+
+fastMRI
+
+NingXia
+
+Fig. 5. Error decomposition and consequence. (a) Most paired squared error
+is shared. (b) At a fixed retrospective 25% budget, disjoint-score selection
+yields larger stored ×4 → ×2 MAE reduction than random selection and
+approaches the oracle.
+
+D. Raw Diversity Is Not Sufficient
+On fastMRI, zero-overlap median raw disagreement was
+only 59.1% (HAT) and 77.2% (SwinIR) of maximal-overlap
+disagreement, yet its error ranking was substantially stronger.
+Thus a condition can produce larger output differences while
+being a worse reliability ranker. NingXia showed the opposite
+magnitude ordering, so raw scale is cohort dependent. The
+conclusion is deliberately narrow: larger raw output diversity
+is neither necessary nor sufficient for better ranking in these
+controls.
+E. Retrospective Predictive Consequence
+Disjoint ×4 disagreement predicted the realized ×4 → ×2
+reduction in reconstruction MAE with ρ = 0.811 (95% CI,
+0.592–0.904) on 48 fastMRI model–case units and ρ = 0.626
+on 44 NingXia model–series units; patient-cluster correction
+gave 95% CI 0.200–0.844. At a prespecified top-25% retrospective densification budget, score-ranked MAE reductions
+were 33.36 versus 21.37 for random selection on fastMRI and
+35.39 versus 24.25 on NingXia (Fig. 5b). The fastMRI policy
+captured 97.6% of the oracle gain above random; NingXia
+captured 76.5%. This is retrospective predictive validity using
+already dense targets, not prospective or clinical acquisition
+optimization.
+F. Failure Boundary and Negative Results
+Agreement is not a correctness certificate. Frozen localization analyses found 14 NingXia planes simultaneously in the
+lowest PC quartile and highest error quartile; 12 occurred
+at the first generated ×4–×6 position, suggesting shared
+boundary-context failure. Controlled common blur similarly
+
+VII. D ISCUSSION
+The experiments support a mechanistic account of disagreement blindness in deterministic MRI interpolation. Reconstruction contexts can share a large consensus error, and
+Eq. (3) shows why aligned errors disappear under subtraction.
+The controlled phase-grid intervention changes the acquired
+information supporting the same target. Disjoint grids rank
+error better than a same-anchor reversal context across two
+anatomies and two neural architectures, while analytical interpolation provides an estimator-family replication. The result
+is stronger than observing that perturbations produce different
+outputs: the paired endpoint is fixed, measurement identity is
+recorded, and a raw-magnitude control demonstrates that more
+output variation is not itself the operative goal.
+The findings also clarify what disagreement can and cannot
+mean. High disjoint-context disagreement is useful evidence
+of context-sensitive failure. Low disagreement is ambiguous
+because both contexts may share bias. In practice, reliability
+systems should therefore seek contexts that reduce dependence
+in error-generating information, while retaining explicit stablewrong safeguards. This principle complements probabilistic
+reconstruction: even posterior or ensemble samples can underestimate risk if their construction does not vary the source
+of shared error.
+The retrospective densification result offers a methodological consequence. Cases with larger disjoint disagreement
+tended to realize larger gains from denser stored sampling.
+That relationship is promising for acquisition-allocation research because the score itself uses only alternative sparse contexts. However, constructing two disjoint ×4 grids consumes
+the union of measurements equivalent to denser coverage in
+this simulation. A practical policy would require a lowercost pilot, sequential sampling, or a pre-inference surrogate
+evaluated prospectively. The present study does not solve that
+deployment problem.
+The IXI evidence adds scale and a second brain cohort to
+the broader observation that interpolation difficulty is largely
+
+IEEE TRANSACTIONS ON MEDICAL IMAGING, MANUSCRIPT UNDER PREPARATION
+
+shared across methods. It does not constitute an IXI replication of the frozen overlap intervention, and we intentionally
+keep newer IXI overlap experiments outside this manuscript’s
+evidence freeze. This separation prevents exploratory upgrades
+from silently strengthening a journal claim.
+VIII. L IMITATIONS
+All phase grids are retrospective simulations from dense
+volumes; no scanner prospectively changed its sampling. The
+primary controlled evidence includes one brain T2 cohort and
+one small knee T2 cohort; NingXia has only eight independent
+patient groups despite 22 series. IXI contributes auxiliary
+difficulty evidence, not the main intervention. Only HAT and
+SwinIR support the decisive neural phase-grid experiment;
+I3Net was infeasible without artificial padding. The maximaloverlap reversal control changes through-plane ordering and
+may invoke equivariance effects beyond overlap. A strict
+multi-level overlap ladder with fixed two-anchor distances is
+geometrically infeasible; cleaner controls remain exploratory.
+Intensity-derived MAE and disagreement require comparable preprocessing within each paired profile and do not
+support cross-cohort absolute calibration. The study has no
+reader task, pathology label, clinical endpoint, prospective
+adaptive acquisition, or safety analysis. It cannot identify
+which output is wrong, guarantee accuracy from agreement,
+or establish universal superiority over uncertainty estimators.
+Common-mode blur and boundary failures remain explicit
+counterexamples. Finally, parts of the evidence were generated
+after inspecting earlier results; except where a protocol was
+historically frozen, analyses are labeled exploratory rather than
+confirmatory.
+IX. E THICS AND DATA AVAILABILITY
+fastMRI and IXI are publicly accessible human-derived
+MRI resources; use here was retrospective and involved locally
+prepared deidentified images. The exact consent, institutionalreview, and data-use wording for the particular fastMRIbrain and IXI releases must be copied from their governing records before submission. NingXia is an internal human MRI cohort. [ETHICS INFORMATION REQUIRED
+FROM AUTHORS: approving or exempting institution,
+decision/approval identifier where applicable, consent or
+waiver, and permitted data-use statement.]
+Code, immutable historical experiment records, case-level
+manifests, and derived numerical outputs are organized in the
+accompanying repository. Raw public data remain under their
+source licenses; internal NingXia images are not redistributed.
+An anonymized repository URL and any sharing restrictions
+must be supplied before submission. No generative-AI content
+disclosure is asserted here; authors must add the disclosure
+required by current IEEE policy if applicable to manuscript
+preparation.
+X. C ONCLUSION
+In deterministic MRI slice interpolation, disagreement observes differences between reconstruction errors, not error
+itself. Shared measurements can align errors and conceal
+
+5
+
+them. Across paired brain and knee T2 experiments, targetpreserving disjoint anchor grids ranked retrospective error
+more effectively than a maximal-shared-anchor reversal control, and the effect persisted across two neural architectures
+and analytical interpolation. The supported principle is narrow:
+design reliability contexts to reduce shared error-generating
+information. Agreement alone cannot certify correctness.
+R EFERENCES
+[1] C. Peng, W.-A. Lin, H. Liao, R. Chellappa, and S. K. Zhou,
+“SAINT: Spatially aware interpolation network for medical slice
+synthesis,” in Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition, 2020, pp. 7750–7759. [Online].
+Available:
+https://openaccess.thecvf.com/content CVPR 2020/html/
+Peng SAINT Spatially Aware Interpolation NeTwork for Medical
+Slice Synthesis CVPR 2020 paper.html
+[2] H. Song, X. Mao, J. Yu, Q. Li, and Y. Wang, “I3net: Inter-intra-slice
+interpolation network for medical slice synthesis,” IEEE Transactions
+on Medical Imaging, vol. 43, no. 9, pp. 3306–3318, 2024.
+[3] Y. Gal and Z. Ghahramani, “Dropout as a bayesian approximation:
+Representing model uncertainty in deep learning,” Proceedings of the
+33rd International Conference on Machine Learning, vol. 48, pp.
+1050–1059, 2016. [Online]. Available: https://proceedings.mlr.press/
+v48/gal16.html
+[4] B. Lakshminarayanan, A. Pritzel, and C. Blundell, “Simple and scalable
+predictive uncertainty estimation using deep ensembles,” Advances in
+Neural Information Processing Systems, vol. 30, 2017.
+[5] V. Edupuganti, M. Mardani, S. Vasanawala, and J. M. Pauly, “Uncertainty quantification in deep MRI reconstruction,” IEEE Transactions on
+Medical Imaging, vol. 40, no. 1, pp. 239–250, 2021.
+[6] D. Narnhofer, A. Effland, E. Kobler, K. Hammernik, F. Knoll, and
+T. Pock, “Bayesian uncertainty estimation of learned variational MRI
+reconstruction,” IEEE Transactions on Medical Imaging, vol. 41, no. 2,
+pp. 279–291, 2022.
+[7] C. de Boor, A Practical Guide to Splines. New York: Springer, 1978.
+[8] R. Tanno, D. E. Worrall, E. Kaden, A. Ghosh, F. Grussu, A. Bizzi, S. N.
+Sotiropoulos, A. Criminisi, and D. C. Alexander, “Uncertainty modelling
+in deep learning for safer neuroimage enhancement: Demonstration in
+diffusion MRI,” NeuroImage, vol. 225, p. 117366, 2021.
+[9] G. Brown, J. Wyatt, R. Harris, and X. Yao, “Diversity creation methods:
+A survey and categorisation,” Information Fusion, vol. 6, no. 1, pp. 5–
+20, 2005.
+[10] L. A. Ortega, R. Cabañas, and A. Masegosa, “Diversity and
+generalization in neural network ensembles,” in Proceedings of the
+25th International Conference on Artificial Intelligence and Statistics,
+vol. 151. PMLR, 2022, pp. 11 720–11 743. [Online]. Available:
+https://proceedings.mlr.press/v151/ortega22a.html
+[11] M. Lustig and J. M. Pauly, “SPIRiT: Iterative self-consistent parallel
+imaging reconstruction from arbitrary k-space,” Magnetic Resonance in
+Medicine, vol. 64, no. 2, pp. 457–471, 2010.
+[12] J. Zbontar, F. Knoll, A. Sriram, M. J. Muckley, M. Bruno, A. Defazio,
+M. Parente, K. J. Geras, J. Katsnelson, H. Chandarana, Z. Zhang,
+M. Drozdzal, A. Romero, M. Rabbat, P. Vincent, J. Pinkerton, D. Wang,
+N. Yakubova, E. Owens, C. L. Zitnick, M. P. Recht, D. K. Sodickson,
+and Y. W. Lui, “fastMRI: An open dataset and benchmarks for
+accelerated MRI,” in arXiv preprint arXiv:1811.08839, 2018. [Online].
+Available: https://arxiv.org/abs/1811.08839
+[13] F. Knoll, J. Zbontar, A. Sriram, M. J. Muckley, M. Bruno, A. Defazio,
+M. Parente, K. J. Geras, J. Katsnelson, H. Chandarana, Z. Zhang,
+M. Drozdzal, A. Romero, M. Rabbat, P. Vincent, J. Pinkerton, D. Wang,
+N. Yakubova, E. Owens, C. L. Zitnick, M. P. Recht, D. K. Sodickson,
+and Y. W. Lui, “fastMRI: A publicly available raw k-space and DICOM
+dataset of knee images for accelerated MR image reconstruction using
+machine learning,” Radiology: Artificial Intelligence, vol. 2, no. 1, p.
+e190007, 2020.
+[14] Biomedical Image Analysis Group, Imperial College London, “IXI
+dataset,” 2014, accessed: 2026-08-13. [Online]. Available: https:
+//brain-development.org/ixi-dataset/
+
+

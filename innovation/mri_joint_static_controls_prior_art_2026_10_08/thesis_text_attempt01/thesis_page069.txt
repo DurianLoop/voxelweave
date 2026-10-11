@@ -1,0 +1,39 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+5.4.1 Experimental setting
+Dataset. Our experiments were carried out on three different datasets.
+• Cardiac dataset. The data set was acquired in seven healthy adult volunteers with
+a balanced steady-state free precession (bSSFP) pulse sequence on a whole-body
+Siemens 3T scanner using a 34-element matrix coil array. Several short-axis cine
+images were acquired during a breath-hold scan. Fully sampled Cartesian data
+were acquired using a256× 256 grid, with relevant imaging parameters including
+320× 320 mm field of view (FoV),6 mm slice thickness, 1.37× 1.37 mm spatial
+resolution, 42.38 ms temporal resolution, 1.63/3.26 ms TE/TR, 36◦ flip angle,
+1395 Hz/px readout bandwidth. There were13 phase encodes acquired for a frame
+during one heartbeat, for a total of25 frames after the scan.
+The Cartesian cardiac scans were then combined to single coil data from the initial
+256× 256× 25× 34 size, using adaptive coil combination (Walsh et al., 2000;
+Griswold et al., 2002b). This single coil image was then cropped to a152× 152× 17
+image. This was done because a large portion of the periphery of the images
+are static or void, and also to enable a greater computational efficiency. In the
+experiments, we used three volumes for training and four for testing.
+• Vocal dataset. The vocal dataset that we used in the experiments comprised4
+vocaltract scans with a 2D HASTE sequence (T2 weighted single-shot turbo spin-
+echo) on a 3T Siemens Tim Trio using a 4-channel body matrix coil array. The
+study was approved by the local institutional review board, and informed consent
+was obtained from all subjects prior to imaging. Fully sampled Cartesian data
+were acquired using a256× 256 grid, with 256× 256 mm field of view (FoV),5 mm
+slice thickness, 1× 1 mm spatial resolution,98/1000 ms TE/TR, 150◦ flip angle,
+391 Hz/px readout bandwidth, 5.44 ms echo spacing (256 turbo factor). There was
+a total of 10 frames acquired, which were recombined to single coil data using
+adaptive coil combination as well (Walsh et al., 2000; Griswold et al., 2002b).
+• fastMRI. The fastMRI dataset was obtained from the NYU fastMRI initiative
+(Zbontar et al., 2019). The anonymized dataset comprises raw k-space data from
+more than 1,500 fully sampled knee MRIs obtained on 3 and 1.5 Tesla magnets.
+The dataset includes coronal proton density-weighted images with and without fat
+suppression.
+Reconstruction algorithms. We consider two reconstruction algorithms, namelyk-t
+FOCUSS (KTF) (Jung et al., 2009), andALOHA(Jin et al., 2016). Their parameters were
+selected to maintain a good empirical performance across all sampling rates considered.
+KTF aims at reconstructing a dynamic sequence by enforcing its sparsity in the x-f
+56

@@ -1,0 +1,89 @@
+based segmentation with registration; (2) machine learn￾ing models with hand-crafted features; (3) deep learning
+models. Atlas-based segmentation [Aljabar et al., 2009;
+Artaechevarria et al., 2009] requires accurate registration and
+is time-consuming, so it is impractical in real applications
+that require fast speed. In the second class, manually de￾signed features are fed into classifiers, e.g., 3D Haar/spatial
+features into random forests [Wang et al., 2015]. These
+hand-crafted features are not very flexible in encode di￾verse patterns within MRI data. Recently deep learning
+based models have been propose,d such as a 2D convolu￾tional neural network [Nie et al., 2016; Moeskops et al.,
+2016], a 3D convolutional neural network [C¸ ic¸ek et al., 2016;
+Chen et al., 2017], and parallelized long short-term memory
+(LSTM) [Stollenga et al., 2015]. They can learn semantic im￾age features from data, leading to the state-of-the-art perfor￾mance in MRI segmentation. However, these MRI segmenta￾tion models do not take the input quality into consideration,
+but assume full measurements.
+Compressed Sensing MRI We denote the underlying vec￾torized MRI x ∈ C
+P ×1 which we seek to reconstruct from the
+sub-sampled vectorized k-space data y ∈ C
+Q×1
+(Q  P).
+CS-MRI is then typically formulated as
+x = arg min kFux − yk
+2
+2 + fθ (x), (1)
+where the Fu ∈ C
+Q×P denotes the under-sampled Fourier
+matrix. The `2 term is the data fidelity and fθ (·) represents
+a regularization with parameter θ to constrain the solution
+space.
+The main research focus of CS-MRI is proposing better fθ
+and efficient optimization techniques. In the first CS-MRI
+work called SparseMRI [Lustig et al., 2007], wavelet domain
+`1 sparsity plus image total variation are imposed as regular￾izations. More complicated wavelet variants are designed for
+CS-MRI in PANO [Qu et al., 2014] and GBRWT [Lai et al.,
+2016]. Dictionary learning techniques are also introduced in
+CS-MRI, e.g., DLMRI [Ravishankar and Bresler, 2011] and
+BPTV [Huang et al., 2014]. These works can all be cate￾gorized as sparsity-based CS-MRI methods; they model the
+MRI with a “shallow” sparse prior, which often tends to over￾smooth the image.
+Recently, deep neural networks have been introduced to
+CS-MRI. Researchers have directly applied convolutional
+neural networks (CNN) to learn a direct mapping from the
+zero-filled MRI F
+H
+u
+y (obtained by zero-padding the unsam￾pled positions in k-space) to the true MRI [Wang et al., 2016].
+A deep residual architecture was also proposed for this same
+mapping [Lee et al., 2017]. Data fidelity terms have been in￾corporated into the deep neural network by [Schlemper et al.,
+2017] to add more guidance. These deep learning based CS￾MRI models have achieved higher reconstruction quality and
+faster reconstruction speed.
+Combining visual tasks The combination of different vi￾sual tasks in a unified model has been investigated in the field
+of computer vision. For example, a joint blind image restora￾tion and recognition model [Zhang et al., 2011] based sparse
+1 32 32
+64 64
+128
+2402
+1202
+602
+128 64
+64 32 32
+Conv 3×3 BN Relu
+Shortcut and concat
+Max pooling 2×2
+Deconv 3×3 
+1
+Encoder Decoder
+Figure 1: The MSN architecture composed of an encoder and de￾coder. It is used to assess the segmentation accuracy on different
+reconstructed MRI produced by various CS-MRI methods.
+coding was proposed for face recognition with low-quality
+images. In the image dehazing model AOD-Net [Li et al.,
+2017], the researchers discuss detection in the presence of
+haze by performing dehazing during detection. In the MRI
+field, 3T-obtained images have been used in joint segmenta￾tion and super-resolution (7T) image generation [Bahrami et
+al., 2017].
+3 Methodology
+In this section, we give a detailed description of the pro￾posed SegNetMRI model. First, we propose a segmentation
+network baseline and test popular CS-MRI methods on the
+well-trained model. Next we propose a MRI reconstruction
+network formed by cascading basic blocks. We show the
+proposed MRI reconstruction network achieves better perfor￾mance on segmentation over conventional sparsity based CS￾MRI models, but still inferior to the full-sampled MR image.
+We further propose the SegNetMRI model to merge the MRI
+reconstruction and segmentation into an single model.
+3.1 Illustration: Segmentation after CS-MRI
+We first test several popular CS-MRI outputs on an automatic
+MRI segmentation model to assess the impact of compressed
+sensing for this task. Inspired by the state-of-the-art medical
+image segmentation model U-Net [Ronneberger et al., 2015],
+we propose the MRI segmentation network (MSN) shown in
+Figure 1. The segmentation encoder (SE) component, using
+convolution and pooling, can extract features from the input
+image at different scales, and the segmentation decoder (SD)
+component, using a deconvolution operation, predicts the the
+pixel-wise segmentation class from these features. Shortcut

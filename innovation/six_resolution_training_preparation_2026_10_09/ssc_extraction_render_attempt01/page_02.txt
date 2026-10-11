@@ -1,0 +1,35 @@
+188 M.P. Heinrich et al.
+the intra-operative ultrasound to the MRI scan (which has a higher quality and
+can give a better guidance for tumour resection).
+2 Previous Work
+Mutual information (MI) has been frequently used in rigid multi-modal registra￾tion [10,17]. However, for deformable multi-modal registration, many disadvan￾tages have been identified for MI-based similarity measures [13]. In particular,
+the locally varying noise distribution and speckle pattern of ultrasound make the
+estimation of a global intensity mapping difficult. The results in [14] suggest that
+using standard MI is insufficient for US-MRI registration. The authors propose
+the use a multi-feature α-MI metric as presented in [16]. This, however, comes
+at a great computational cost, which is a disadvantage for this time sensitive ap￾plication. Another possible approach is to use a simulated ultrasound-like image
+based on an MRI [1] or computed tomography (CT) scan [19] for registration.
+An accurate ultrasound simulation is, however, far from trivial, especially for
+interventional scans.
+For these reasons, structural image representations have gained great interest
+for deformable multi-modal registration. The motivation is that, once the images
+are transformed into a representation independent of the underlying image ac￾quisition, efficient monomodal optimisation techniques can be employed. In [18],
+a scalar structural representation based on local entropy has been successfully
+applied to the deformable registration of different MRI modalities and the rigid
+alignment of MRI and CT brain scans. De Nigris et al. [2] used gradient orienta￾tion to drive a rigid multi-modal registration of brain scans. In [4], we proposed
+a multi-dimensional “modality independent neighbourhood descriptor” (MIND)
+based on the concept of local self-similarities (LSS) [15] and applied it to the
+non-rigid registration of CT and MRI chest scans. Self-similarities were also em￾ployed in [14], however, not as a structural representation, but instead using the
+Earth Mover’s Distance as self-similarity distance within the multi-dimensional
+feature-space of α-MI. There are a number of limitations of these approaches.
+First, scalar representations [18] are often not sufficiently discriminative to drive
+a non-rigid registration with many degrees of freedom. Second, high-dimensional
+descriptors are often computationally too expensive for the use in interventional
+applications. Third, the inherent strong noise and imaging artefacts of US make
+a robust estimation of structural image representations challenging.
+In this work, we address these challenges by introducing a novel contextual
+image descriptor: the “self-similarity context” (SSC). The motivation and deriva￾tion of SSC is presented in Sec. 3.1. A descriptor quantisation and an efficient
+point-wise distance metric are proposed. In Sec. 3.2 the employed discrete op￾timisation framework is described and a simple approach is presented, which
+ensures symmetric transformations. Quantitative experiments of a neurosurgi￾cal application are presented in Sec. 4 for an evaluation of our approach and a
+comparison to other similarity metrics and previously published methods on the
+same dataset, based on manual landmark correspondences.

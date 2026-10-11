@@ -1,0 +1,7 @@
+# ds007045 original T2 acquisition metadata audit
+
+Frozen after the `sub-BA3` public sidecar showed `MRAcquisitionType=2D`, `SliceThickness=5 mm`, `SpacingBetweenSlices=6 mm`, and before any ds007045 model inference. The 1-mm MNI processed T2 cannot be treated as 1-mm independently acquired source truth on that case.
+
+- Request the exact public raw-T2 BIDS JSON sidecar `ds007045/<id>/anat/<id>_T2w.json` for every one of the 363 IDs in the current official pair inventory. No NIfTI or patient pixels. At most 10,000 bytes per object, one request stream at a time, at most one retry for transport errors. Keep all responses, hashes, failures, and the unchanged current v2.0.1 dataset-description hash.
+- Extract only published metadata: `MRAcquisitionType`, `SliceThickness`, `SpacingBetweenSlices`, voxel geometry if present, `ImageType`, and site prefix. Do not infer through-plane resolution from the 1-mm derivative. Report full cohort and site-stratified counts, missing fields, and how many are 3D with slice thickness <=1.5 mm or 2D with both thickness and spacing <=1.5 mm. These are metadata screens, not proofs of independent 2D target acquisitions.
+- Hold the prepared processed-grid model replication until this screen is reviewed. If most current images are thick 2D resampled to 1 mm, a global claim about recovering native x4 missing slices from this cohort is rejected. A processed-release sensitivity study may still be run, but it cannot close the original-acquisition or clinical truth gate and must be judged against its compute cost and prior art.

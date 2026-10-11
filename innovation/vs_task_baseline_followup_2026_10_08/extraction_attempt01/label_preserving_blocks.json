@@ -1,0 +1,970 @@
+[
+  {
+    "index": 0,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "abstract"
+    ],
+    "text": "ABSTRACT"
+  },
+  {
+    "index": 1,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract"
+    ],
+    "text": "Inner ear segmentation supports the diagnosis and treatment planning of auditory‐related disorders such as Meniere's disease. However, manual annotation of inner ear structures on MR images is both time‐consuming and labor‐intensive. To address this limitation, we developed a deep learning method that takes T2‐weighted MR images as input and segments the inner ear into three subregions: the cochlear basal turn, the cochlear mid‐to‐apical turn, and the vestibule including the semicircular canals. A total of 74 three‐dimensional (3D) T2‐weighted MR images were retrospectively collected and divided into 50 training cases and 24 internal test cases. In addition, eight MR images from the publicly available Vestibular‐Schwannoma‐SEG dataset were used as an independent external test set. Ground‐truth segmentations for both the internal and external datasets were manually annotated by an experienced radiologist. A 3D transformer‐based deep learning model was trained using these annotated data. To further improve segmentation performance, particularly for the thin and intricate semicircular canals, a label‐preserving data augmentation strategy was introduced and compared with a conventional data augmentation approach. Segmentation performance was evaluated using quantitative and qualitative assessments. Quantitative evaluation included the Dice similarity coefficient (DSC), Intersection over union (IoU), and Hausdorff distance (HD). On the internal test set, the proposed method achieved a mean DSC of 0.905 (vs. 0.904), a mean IoU of 0.828 (vs. 0.824), and a mean HD of 2.75 (vs. 3.04) compared with the conventional augmentation approach. On the external dataset, the proposed method demonstrated larger improvements, achieving a mean DSC of 0.919 (vs. 0.847), a mean IoU of 0.852 (vs. 0.738), and a mean HD of 3.92 (vs. 4.45). These results demonstrate that the proposed label‐preserving data augmentation method improves the robustness and accuracy of inner ear subregion segmentation, particularly for thin and intricate structures."
+  },
+  {
+    "index": 2,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract",
+      "kwd-group1"
+    ],
+    "text": "Keywords: deep learning, inner ear, MRI, segmentation, semicircular canals"
+  },
+  {
+    "index": 3,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract"
+    ],
+    "text": "A deep learning segmentation model was proposed for automated inner ear subregion segmentation using 3D T2‐weighted MRI. A transformer‐based model with label‐preserving data augmentation improves delineation of thin and complex structures such as the semicircular canals. Automated and reliable inner ear subregion segmentation may support quantitative assessment and aid diagnosis for auditory‐related disorders such as Meniere's disease."
+  },
+  {
+    "index": 4,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0001"
+    ],
+    "text": "Introduction"
+  },
+  {
+    "index": 5,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0001"
+    ],
+    "text": "The contrast enhancement of the inner ear, an essential component of the auditory system, is frequently evaluated in clinical diagnoses of disorders such as Meniere's disease, sudden sensorineural hearing loss, and vestibular neuritis [1, 2, 3]. In these diagnostic processes, delayed post‐contrast MR images are commonly employed because the degree of contrast enhancement serves as a key diagnostic marker [4, 5, 6, 7, 8, 9]."
+  },
+  {
+    "index": 6,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0001"
+    ],
+    "text": "Segmentation of the inner ear fluid space can serve as a mask to enable planimetric [10] or volumetric measurements [11] providing a more comprehensive and quantitative assessment of enhancement patterns over visual or region of interest‐based analysis. The inner ear consists of the cochlea, vestibule, and three semicircular canals, each with distinct functions and associated clinical symptoms when affected, and contrast enhancement patterns observed in specific subregions have been shown to correlate with distinct clinical parameters [12] and may possess differing prognostic value [13] or even differentiate various types of hearing loss [14]. When evaluating Meniere's disease, endolymphatic hydrops is visually graded separately in the cochlear and vestibular compartments [15]. Therefore, subregion‐based segmentation may offer potential for further refinement of diagnostic and prognostic assessments [16]. In addition, segmentation of the inner ear fluid space can also be used for morphometric analysis [17] or serve as a mask for signal intensity measurement [18] and radiomic analysis [18]. However, manual annotation for this purpose is both time‐consuming and labor‐intensive [19]. Consequently, several studies have focused on developing automatic segmentation methods for inner ear structures [10, 20, 21, 22, 23, 24, 25, 26]."
+  },
+  {
+    "index": 7,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0001"
+    ],
+    "text": "Previous studies have investigated algorithm‐based methods for inner ear segmentation [20, 26]. For example, Todd et al. examined a region‐growing algorithm [20], but this approach suffers from limited robustness because it is sensitive to data resolution variations and relies heavily on seed point placement, which can lead to inconsistent results. Similarly, Xianfen et al. explored a narrow‐band level set method [26] but encountered challenges in segmenting complex structures, such as the semicircular canals, and in achieving full automation. Atlas‐based segmentation has also been examined [21]; however, this technique depends greatly on the accuracy of expert segmentations used to construct the atlas, and the inverse transformation process necessary to restore the segmentation to its original shape can introduce distortions."
+  },
+  {
+    "index": 8,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0001"
+    ],
+    "text": "Recently, advancements in deep learning have led to an increasing number of studies on inner ear segmentation [10, 22, 23, 24, 25]. Nonetheless, prior deep learning‐based approaches have either lacked full automation [22] or did not segment the inner ear into detailed subregions [23, 24, 25], which are essential for more comprehensive analysis. Although Cho et al. differentiated between the cochlea and vestibule, their study omitted the semicircular canals [10]."
+  },
+  {
+    "index": 9,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0001"
+    ],
+    "text": "To address these limitations, we developed a fully automated, deep learning‐based method for subregion segmentation of the entire inner ear. Our method delineates the inner ear into three regions: the cochlear basal turn, the cochlear mid‐to‐apical turn, and the vestibule, including the semicircular canals. Moreover, previous studies have reported difficulties in accurately segmenting the semicircular canals, which are thin and complex structures within the inner ear, primarily due to the partial volume effect [26]. To overcome this challenge, we propose a simple augmentation method that has the potential to enhance training for intricate and thin structures such as the semicircular canals."
+  },
+  {
+    "index": 10,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002"
+    ],
+    "text": "Materials and Methods"
+  },
+  {
+    "index": 11,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002"
+    ],
+    "text": "This retrospective study was approved by the local institutional review board, and the requirement for written informed consent was waived."
+  },
+  {
+    "index": 12,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0003"
+    ],
+    "text": "Study Population"
+  },
+  {
+    "index": 13,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0003"
+    ],
+    "text": "A total of 74 ear MRI examinations were collected from the hospital PACS system. All images were anonymized and then divided into a training set of 50 MRI examinations and a temporally independent test set of 24 MRI examinations. Additionally, eight T2‐weighted images from the publicly available Vestibular‐Schwannoma‐SEG collection, released on The Cancer Imaging Archive (TCIA), were included as independent test data [27]."
+  },
+  {
+    "index": 14,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0004"
+    ],
+    "text": "MRI Acquisition"
+  },
+  {
+    "index": 15,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0004",
+      "nbm70266-sec-0005"
+    ],
+    "text": "Internal Dataset"
+  },
+  {
+    "index": 16,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0004",
+      "nbm70266-sec-0005"
+    ],
+    "text": "For training and evaluation of the inner ear subregion segmentation model, 3D T2‐weighted images were collected. All images were acquired using a fast spin echo sequence at a 3‐T MRI system (Signa Architect, GE Healthcare, Milwaukee, WI, USA) with a 48‐channel head coil. The sequence parameters were as follows: repetition time = 1500 ms, echo time = 80 ms, in‐plane resolution = 0.3125 mm, slice thickness = 0.4 mm, field of view = 160 × 160 × 20.8 mm3, and acquisition time = 6 min 45 s [28]."
+  },
+  {
+    "index": 17,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0004",
+      "nbm70266-sec-0006"
+    ],
+    "text": "External Dataset"
+  },
+  {
+    "index": 18,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0004",
+      "nbm70266-sec-0006"
+    ],
+    "text": "Validation was conducted on an external public dataset with varying imaging protocols and contrasts to assess the generalizability of the trained model. T2‐weighted images from the Vestibular‐Schwannoma‐SEG collection were acquired by a 1.5‐T MRI system (Magnetom Avanto, Siemens, Erlangen, Germany) with a single‐channel head coil. The sequence parameters were either a constructive interference steady‐state sequence (repetition time = 9.4 ms, echo time = 4.23 ms, in‐plane resolution = 0.47 mm, slice thickness = 1.5 mm, and field of view = 210.56 × 210.56 × 120 mm3) or a fast spin echo sequence (repetition time = 750 ms, echo time = 121 ms, in‐plane resolution = 0.55 mm, slice thickness = 1.5 mm, and field of view = 211.2 × 211.2 × 60 mm3) [27]."
+  },
+  {
+    "index": 19,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0007"
+    ],
+    "text": "Ground‐Truth Determination"
+  },
+  {
+    "index": 20,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0007"
+    ],
+    "text": "The ground‐truth segmentations were created by an experienced radiologist. As shown in Figure 1, the inner ear was divided into three subregions: the cochlear basal turn, the cochlear mid‐to‐apical turn, and the vestibule, including the semicircular canals."
+  },
+  {
+    "index": 21,
+    "kind": "fig",
+    "id": "nbm70266-fig-0001",
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0007"
+    ],
+    "text": "FIGURE 1Representative MR images and annotations of the inner ear structure. Sixteen successive axial‐plane MR images, cropped to the region of interest, and their corresponding annotations are shown on the left. 3D renderings of the inner ear structure, with both the MR images and their corresponding annotations, are visualized on the right. Panel (a) represents the cochlear basal turn, Panel (b) represents the cochlear mid‐to‐apical turn, and Panel (c) represents the vestibule, including the semicircular canals."
+  },
+  {
+    "index": 22,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0008"
+    ],
+    "text": "Label‐Preserving Data Augmentation"
+  },
+  {
+    "index": 23,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0008"
+    ],
+    "text": "In this study, we observed that conventional augmentation techniques, particularly rotation and scaling, often lead to the loss or distortion of labels. This issue is most pronounced in the semicircular canals, the thinnest parts of our labels (see red arrowheads and green circles in Figure 2a). When transforming labels, nearest‐neighbor interpolation is typically used to maintain their discreteness. However, this method is inadequate for thin structures like the semicircular canals, where there is a high risk of mistakenly assigning background voxels to regions that should belong to the foreground. These interpolation errors can degrade the model's ability to accurately segment thin structures, ultimately reducing its overall performance."
+  },
+  {
+    "index": 24,
+    "kind": "fig",
+    "id": "nbm70266-fig-0002",
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0008"
+    ],
+    "text": "FIGURE 2Comparison of two different data augmentation methods: a conventional augmentation method and the proposed method for rotation and scaling. MR images of the vestibule, including the semicircular canals, are shown with their corresponding labels. Red arrowheads and green circles indicate distortions in the conventional augmentation method. Blue arrows indicate linear interpolation, orange arrows indicate nearest‐neighbor interpolation, and red arrows indicate no transformation."
+  },
+  {
+    "index": 25,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0008"
+    ],
+    "text": "To address this issue, we propose a label‐preserving augmentation method that applies geometric transformations and their inverses sequentially, but only to the input images, while keeping the labels unchanged [29, 30]. The overall workflow of the proposed method, demonstrated for rotation and scaling, is illustrated in Figure 2b. Even after applying the inverse transformations, the resulting images exhibit alterations due to interpolation in finite space. However, because the underlying structure is preserved, the original labels can still be used without modification. For rotation, a random degree of θ and its inverse, −θ, were applied sequentially along the x‐axis. Similarly, random scaling and its inverse were applied in sequence. We evaluated the effectiveness of our proposed method by comparing it with a conventional augmentation approach (Figure 2a), hereafter referred to as the baseline method, which applies transformations to both images and labels without reverting the input image to its original form."
+  },
+  {
+    "index": 26,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0009"
+    ],
+    "text": "Segmentation Model and Training Procedure"
+  },
+  {
+    "index": 27,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0009"
+    ],
+    "text": "In our study, fully automated end‐to‐end segmentation was performed using Swin UNETR [31], a 3D U‐shaped model based on the Swin‐transformer. As shown in Figure 3, the model received heavily T2‐weighted MR images as input, which were randomly cropped to a consistent size of 96×96×32 voxels. The corresponding ground‐truth segmentations, matched in size and location, were used as labels. To reduce the risk of overfitting, we applied various data augmentation techniques, including random Gaussian noise addition, random smoothing and sharpening, and random flipping along the horizontal, vertical, and depth axes, during the training phase for both the baseline and the proposed method. Notably, while all other augmentation strategies were applied identically, the rotation and scaling operations were implemented differently between the baseline and proposed models, as outlined in Figure 2. We utilized a combined loss function, incorporating both Dice loss [32] and cross‐entropy loss [33] with equal weighting. The model's parameters were optimized using the AdamW optimizer [34], with a learning rate of 10−4 and a weight decay of 10−3, over a training period of 500 epochs to ensure convergence of the loss function. The models were implemented using PyTorch version 2.1.2 [35] and the MONAI version 1.3.0 [36]. All training was conducted on a single NVIDIA Titan XP GPU with 12 GB of memory."
+  },
+  {
+    "index": 28,
+    "kind": "fig",
+    "id": "nbm70266-fig-0003",
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0009"
+    ],
+    "text": "FIGURE 3Overview of the training and testing procedures. The upper section illustrates the training procedure, while the lower section shows the testing procedure."
+  },
+  {
+    "index": 29,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0010"
+    ],
+    "text": "Post Processing"
+  },
+  {
+    "index": 30,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0010"
+    ],
+    "text": "The output from our model was a four‐channel probability map, comprising probability distributions for one background and three distinct foreground elements. To eliminate false positives, we first generated masks for the foreground elements by applying connected‐component labeling to a thresholded foreground probability map derived from the model's output. The corresponding foreground probability maps were then multiplied by these masks, effectively removing false positives. Subsequently, we refined the background probability map using the masked foreground probability maps. The final segmentation was obtained by applying the argmax function across all probability maps. This systematic approach effectively preserved thin structures, such as the semicircular canals, while efficiently eliminating false positives."
+  },
+  {
+    "index": 31,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0011"
+    ],
+    "text": "Evaluation"
+  },
+  {
+    "index": 32,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0011"
+    ],
+    "text": "The segmentation results were evaluated using both an internal dataset (N = 24) and an external dataset (N = 8). Inner ear structures on the left and right sides were identified and analyzed independently, with metrics calculated separately for each side, yielding 48 samples for the internal dataset and 16 samples for the external dataset. The evaluation included both quantitative and qualitative analyses."
+  },
+  {
+    "index": 33,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0002",
+      "nbm70266-sec-0011"
+    ],
+    "text": "For the quantitative analysis, we calculated the Dice Similarity Coefficient (DSC), Intersection over Union (IoU), and Hausdorff Distance (HD) for each region (the cochlear basal turn, the cochlear mid‐to‐apical turn, and the vestibule, including the semicircular canals), focusing exclusively on the foreground. The distributions of these metrics were visualized using box plots to provide a clear and comprehensive overview. Additionally, t‐tests were performed to compare the segmentations obtained from the baseline method with those generated by the proposed method for each region, with a p‐value < 0.05 indicating statistical significance. For the qualitative analysis, two experienced radiologists visually assessed the accuracy and reliability of the segmentations."
+  },
+  {
+    "index": 34,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012"
+    ],
+    "text": "Results"
+  },
+  {
+    "index": 35,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013"
+    ],
+    "text": "Internal Test Set"
+  },
+  {
+    "index": 36,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0014"
+    ],
+    "text": "Qualitative Analysis"
+  },
+  {
+    "index": 37,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0014"
+    ],
+    "text": "Figures 4 and 5 illustrate the segmentation results on the internal test set. The proposed method markedly reduced discontinuities in the semicircular canals compared to the baseline method (see yellow arrowheads in Figures 4 and 5). This improvement was consistently observed across the majority of the internal test cases."
+  },
+  {
+    "index": 38,
+    "kind": "fig",
+    "id": "nbm70266-fig-0004",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0014"
+    ],
+    "text": "FIGURE 4Representative segmentation images generated using two different methods on the internal dataset. The first row shows the input T2‐weighted images, the second row shows the ground truth, and the third and fourth rows display the results from the baseline method and the proposed method, respectively. On the left are 10 consecutive slices of axial images cropped to the inner ear structure, while on the right are 3D renderings. Yellow arrowheads highlight areas where the proposed method demonstrates superior performance."
+  },
+  {
+    "index": 39,
+    "kind": "fig",
+    "id": "nbm70266-fig-0005",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0014"
+    ],
+    "text": "FIGURE 53D rendered images of internal dataset. Panels (a), (b), and (c) represent different subjects. The first column shows the input T2‐weighted images, the second column shows the ground truth, and the third and fourth columns display the results from the baseline method and the proposed method, respectively. Yellow arrowheads highlight areas where the proposed method demonstrates superior performance."
+  },
+  {
+    "index": 40,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0015"
+    ],
+    "text": "Quantitative Analysis"
+  },
+  {
+    "index": 41,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0015"
+    ],
+    "text": "Table 1 summarizes the segmentation performance on the internal dataset. The DSC indicated minor improvements in the cochlear basal turn and slight enhancements in the vestibule, including the semicircular canals, with the proposed method, whereas the cochlear mid‐to‐apical turn showed minimal differences between methods. Similarly, the IoU indicated that the proposed method slightly outperformed the baseline in the cochlear basal turn and vestibule, while remaining largely unchanged in the cochlear mid‐to‐apical turn. In contrast, the HD demonstrated consistently superior performance across all regions with the proposed method, indicating a closer alignment with the ground‐truth segmentation boundaries. These improvements, particularly in the vestibule including the semicircular canals, were statistically significant for both DSC and IoU, as illustrated by the box plots in Figure 6."
+  },
+  {
+    "index": 42,
+    "kind": "table-wrap",
+    "id": "nbm70266-tbl-0001",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0015"
+    ],
+    "text": "TABLE 1Quantitative results of the inner ear segmentation on the internal dataset (N = 48).DSC IoU HD Cochlear basal turnCochlear mid‐to‐apical turnVestibule, including semicircular canalsCochlear basal turnCochlear mid‐to‐apical turnVestibule, including semicircular canalsCochlear basal turnCochlear mid‐to‐apical turnVestibule, including semicircular canalsBaseline0.902 (0.024) 0.881 (0.020) 0.926 (0.025)0.823 (0.039) 0.787 (0.032) 0.863 (0.042)3.27 (1.65)2.35 (0.485)3.49 (2.91)Proposed 0.905 (0.024) 0.880 (0.027) 0.929 (0.025) 0.827 (0.039) 0.787 (0.042) 0.869 (0.043) 2.90 (1.39) 2.15 (0.467) 3.21 (2.76) Note: Values are presented as mean (standard deviation).Abbreviations: DSC, Dice similarity coefficient; HD, Hausdorff distance; IoU, Intersection over union."
+  },
+  {
+    "index": 43,
+    "kind": "fig",
+    "id": "nbm70266-fig-0006",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0013",
+      "nbm70266-sec-0015"
+    ],
+    "text": "FIGURE 6Dice Similarity Coefficient (DSC), Intersection over Union (IoU), and Hausdorff distance (HD) distributions of the segmentation results from two different methods (baseline and proposed) on the internal dataset across three regions (cochlear basal turn, cochlear mid‐to‐apical turn, and vestibule, including the semicircular canals). p‐values are indicated as follows: * for p‐value < 0.05, ** for p‐value < 0.01, and *** for p‐value < 0.001."
+  },
+  {
+    "index": 44,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016"
+    ],
+    "text": "External Test Set"
+  },
+  {
+    "index": 45,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0017"
+    ],
+    "text": "Qualitative Analysis"
+  },
+  {
+    "index": 46,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0017"
+    ],
+    "text": "Figure 7 illustrates the segmentation outcomes on the external test set. The proposed method substantially reduced the discontinuities in the semicircular canals observed with the baseline method. Additionally, improvements were noted in the segmentation of both the cochlear basal turn and the cochlear mid‐to‐apical turn (see yellow arrowheads in Figure 7). This trend was consistently observed across the majority of the external test data."
+  },
+  {
+    "index": 47,
+    "kind": "fig",
+    "id": "nbm70266-fig-0007",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0017"
+    ],
+    "text": "FIGURE 7Representative segmentation images generated using two different methods on the external dataset. These are 10 consecutive axial slices cropped to the inner ear structure. The first row shows the input T2‐weighted images, the second row shows the ground truth, and the third and fourth rows display the results from the baseline method and the proposed method, respectively. Panels (a) and (b) represent different subjects. Yellow arrowheads highlight areas where the proposed method demonstrates superior performance."
+  },
+  {
+    "index": 48,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0018"
+    ],
+    "text": "Quantitative Analysis"
+  },
+  {
+    "index": 49,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0018"
+    ],
+    "text": "Table 2 summarizes the segmentation performance of the baseline and proposed methods on the external dataset. As indicated by Table 2, the proposed method outperformed the baseline method across all quantitative metrics. The box plots in Figure 8 demonstrate this statistical significance. Notably, p‐values for DSC and IoU were < 0.001 across all regions, strongly underscoring this result."
+  },
+  {
+    "index": 50,
+    "kind": "table-wrap",
+    "id": "nbm70266-tbl-0002",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0018"
+    ],
+    "text": "TABLE 2Quantitative results of the inner ear segmentation on the external dataset (N = 16).DSC IoU HD Cochlear basal turnCochlear mid‐to‐apical turnVestibule, including semicircular canalsCochlear basal turnCochlear mid‐to‐apical turnVestibule, including semicircular canalsCochlear basal turnCochlear mid‐to‐apical turnVestibule, including semicircular canalsBaseline0.872 (0.035)0.802 (0.061)0.866 (0.020)0.775 (0.052)0.674 (0.079)0.764 (0.032)3.70 (2.04)3.90 (1.60)5.74 (2.18)Proposed 0.956 (0.015) 0.887 (0.054) 0.913 (0.031) 0.915 (0.027) 0.801 (0.078) 0.841 (0.053) 3.22 (0.683) 3.35 (1.53) 5.20 (1.93) Note: Values are presented as mean (standard deviation).Abbreviations: DSC, Dice similarity coefficient; HD, Hausdorff distance; IoU, Intersection over union."
+  },
+  {
+    "index": 51,
+    "kind": "fig",
+    "id": "nbm70266-fig-0008",
+    "scope": [
+      "body",
+      "nbm70266-sec-0012",
+      "nbm70266-sec-0016",
+      "nbm70266-sec-0018"
+    ],
+    "text": "FIGURE 8Dice Similarity Coefficient (DSC), Intersection over Union (IoU), and Hausdorff distance (HD) distributions of the segmentation results from two different methods (baseline and proposed) on the external dataset across three regions (cochlear basal turn, cochlear mid‐to‐apical turn, and vestibule, including the semicircular canals). p‐values are indicated as follows: * for p‐value < 0.05, ** for p‐value < 0.01, and *** for p‐value < 0.001."
+  },
+  {
+    "index": 52,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019"
+    ],
+    "text": "Discussion"
+  },
+  {
+    "index": 53,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019"
+    ],
+    "text": "In this study, we developed a model for inner ear subregion segmentation, dividing the inner ear into three regions: the cochlear basal turn, cochlear mid‐to‐apical turn, and the vestibule, including the semicircular canals. Additionally, we proposed a label‐preserving augmentation method designed to improve the segmentation of complex and thin structures, with a specific focus on the semicircular canals."
+  },
+  {
+    "index": 54,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019"
+    ],
+    "text": "Both quantitative and qualitative evaluations on the internal and the external datasets demonstrated that the proposed label‐preserving augmentation method significantly improved performance, particularly for thin structures such as the semicircular canals. The vestibule, including the semicircular canals, which was the main focus of this study, showed improved performance across all metrics compared to the baseline. Minor improvements were also observed in other regions, further supporting the overall effectiveness of the proposed method. Although the visual assessment revealed clear improvements with the proposed method, the statistical analysis on the internal test set did not reach significance. This discrepancy may stem from the limitations of overlap‐based metrics such as DSC and IoU, which are less sensitive to the topology or continuity of small, thin anatomical structures. To confirm that the observed improvements were not architecture‐dependent, we additionally applied the proposed augmentation strategy to a U‐Net architecture [37], which has been commonly used in previous inner ear segmentation studies [25, 26]. Our proposed method achieved improved performance compared to conventional augmentation in both Swin UNETR and U‐Net, demonstrating its generalizability (Figure S1 and Tables S1 and S2). In addition, Swin UNETR is recommended as the backbone network due to its strong overall performance compared to U‐Net architectures, which do not incorporate transformers."
+  },
+  {
+    "index": 55,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019"
+    ],
+    "text": "A notable difference between the external dataset and the training data lies in the z‐axis resolution, with the external data exhibiting significantly lower resolution in this dimension. Despite this challenge, our proposed method demonstrated strong performance in segmenting the inner ear, which is characterized by intricate and thin structures that are more susceptible to distortion at lower resolutions. In addition, although the external dataset included the constructive interference steady‐state sequence, which exhibits mixed T1/T2 contrast slightly different from the T2‐weighted contrast in the training set, our method still maintained strong performance. These results highlight the robustness of the proposed label‐preserving augmentation method, showing that it handles variations in resolution more effectively than the baseline and underscoring its potential for broader applicability to datasets with varying image quality."
+  },
+  {
+    "index": 56,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019"
+    ],
+    "text": "Similar to our study, previous research has addressed label distortion caused by nearest‐neighbor interpolation by applying linear interpolation to labels and utilizing soft labels [38]. However, since linear interpolation produces labels with continuous values, such methods are limited to binary segmentation. In contrast, our proposed method shows potential for application to multiclass segmentation, offering greater versatility and broader applicability."
+  },
+  {
+    "index": 57,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019"
+    ],
+    "text": "The automatic generation of accurate inner ear subregion segmentation, enhanced by the proposed method, can facilitate the evaluation of various inner ear disorders without the need for expert labor. By enabling the precise quantification of contrast enhancement within each of the three distinct regions (the cochlear basal turn, cochlear mid‐to‐apical turn, and the vestibule, including the semicircular canals), this segmentation approach has the potential to contribute to a more accurate diagnosis."
+  },
+  {
+    "index": 58,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019",
+      "nbm70266-sec-0020"
+    ],
+    "text": "Limitations"
+  },
+  {
+    "index": 59,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019",
+      "nbm70266-sec-0020"
+    ],
+    "text": "This study has several limitations. As shown in Figure 9, when the input image has low contrast, particularly in the semicircular canals, both the baseline and proposed methods struggle to accurately segment the inner ear structure (see yellow arrowheads in Figure 9). Additionally, the validation of our method was limited to rotation and scaling, with rotation confined to the x‐axis. Given the promising results, future work should explore extending this method to other axes of rotation and incorporating additional geometric transformations. Furthermore, it is important to verify the generalizability of the method to other complex or small structures beyond the inner ear, particularly those susceptible to partial volume effects."
+  },
+  {
+    "index": 60,
+    "kind": "fig",
+    "id": "nbm70266-fig-0009",
+    "scope": [
+      "body",
+      "nbm70266-sec-0019",
+      "nbm70266-sec-0020"
+    ],
+    "text": "FIGURE 9Representative segmentation images showing failure cases for both methods on the internal dataset. The first row shows the input T2‐weighted images, the second row shows the ground truth, and the third and fourth rows display the results from the baseline method and the proposed method, respectively. On the left are 10 consecutive slices of axial images cropped to the inner ear structure, and on the right are 3D renderings. Yellow arrowheads highlight areas where both the baseline and proposed methods performed poorly."
+  },
+  {
+    "index": 61,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019",
+      "nbm70266-sec-0021"
+    ],
+    "text": "Conclusion"
+  },
+  {
+    "index": 62,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0019",
+      "nbm70266-sec-0021"
+    ],
+    "text": "In this study, we introduced a deep learning‐based inner ear subregion segmentation method, enhanced by a label‐preserving data augmentation technique. This method delineates the inner ear into three distinct regions: the cochlear basal turn, the cochlear mid‐to‐apical turn, and the vestibule, including the semicircular canals. This approach has the potential to support the diagnosis of inner ear disorders by enabling more precise quantification of regional contrast enhancement."
+  },
+  {
+    "index": 63,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0022"
+    ],
+    "text": "Author Contributions"
+  },
+  {
+    "index": 64,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0022"
+    ],
+    "text": "Wooseung Kim: data curation, methodology, writing – original draft, formal analysis, validation, visualization. Yeonah Kang: resources, data curation, validation. Seokhwan Lee: resources, data curation, validation. Ho‐Joon Lee: conceptualization, supervision, data curation, validation, writing – review and editing. Yoonho Nam: conceptualization, supervision, funding acquisition, writing – review and editing."
+  },
+  {
+    "index": 65,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0024"
+    ],
+    "text": "Conflicts of Interest"
+  },
+  {
+    "index": 66,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0024"
+    ],
+    "text": "The authors declare no conflicts of interest."
+  },
+  {
+    "index": 67,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "sec24"
+    ],
+    "text": "Supporting information"
+  },
+  {
+    "index": 68,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "sec24"
+    ],
+    "text": "Figure S1: Representative 3D‐rendered segmentation results using U‐Net as the backbone network. (a), (b), and (c) represent different subjects. The first column shows the input T2‐weighted images, the second column shows the ground truth, and the third and fourth columns display the results from the baseline method and the proposed method, respectively. Consistent with the observations in the Swin‐UNETR architectures, the proposed method demonstrates improved performance, as highlighted by the yellow arrowheads."
+  },
+  {
+    "index": 69,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "sec24"
+    ],
+    "text": "Table S1: Quantitative results of the inner ear segmentation on the internal dataset (N = 48)."
+  },
+  {
+    "index": 70,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "sec24"
+    ],
+    "text": "Table S2: Quantitative results of the inner ear segmentation on the external dataset (N = 16)."
+  },
+  {
+    "index": 71,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0023"
+    ],
+    "text": "Acknowledgments"
+  },
+  {
+    "index": 72,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0023"
+    ],
+    "text": "This work was supported by the National Research Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (No. RS‐2023‐00248100)."
+  },
+  {
+    "index": 73,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "_ci93_"
+    ],
+    "text": "Contributor Information"
+  },
+  {
+    "index": 74,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ci93_"
+    ],
+    "text": "Ho‐Joon Lee, Email: hojoon.lee@paik.ac.kr."
+  },
+  {
+    "index": 75,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ci93_"
+    ],
+    "text": "Yoonho Nam, Email: yoonhonam@hufs.ac.kr."
+  },
+  {
+    "index": 76,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0026"
+    ],
+    "text": "Data Availability Statement"
+  },
+  {
+    "index": 77,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0026"
+    ],
+    "text": "Internal dataset: The internal dataset used in this study was acquired at our local institution and is not publicly available due to institutional privacy and data‐sharing restrictions."
+  },
+  {
+    "index": 78,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0026"
+    ],
+    "text": "External dataset: The external dataset used in this study can be accessed from The Cancer Imaging Archive (https://www.cancerimagingarchive.net/collection/vestibular‐schwannoma‐seg/)."
+  },
+  {
+    "index": 79,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-sec-0026"
+    ],
+    "text": "The code for the proposed augmentation approach, model training, and inference is available at the following GitHub repository: https://github.com/wooseung‐kim/InnerEar‐Seg."
+  },
+  {
+    "index": 80,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "nbm70266-bibl-0001"
+    ],
+    "text": "References"
+  },
+  {
+    "index": 81,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_"
+    ],
+    "text": "Associated Data"
+  },
+  {
+    "index": 82,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adsm93_"
+    ],
+    "text": "Supplementary Materials"
+  },
+  {
+    "index": 83,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adsm93_"
+    ],
+    "text": "Figure S1: Representative 3D‐rendered segmentation results using U‐Net as the backbone network. (a), (b), and (c) represent different subjects. The first column shows the input T2‐weighted images, the second column shows the ground truth, and the third and fourth columns display the results from the baseline method and the proposed method, respectively. Consistent with the observations in the Swin‐UNETR architectures, the proposed method demonstrates improved performance, as highlighted by the yellow arrowheads."
+  },
+  {
+    "index": 84,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adsm93_"
+    ],
+    "text": "Table S1: Quantitative results of the inner ear segmentation on the internal dataset (N = 48)."
+  },
+  {
+    "index": 85,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adsm93_"
+    ],
+    "text": "Table S2: Quantitative results of the inner ear segmentation on the external dataset (N = 16)."
+  },
+  {
+    "index": 86,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adda93_"
+    ],
+    "text": "Data Availability Statement"
+  },
+  {
+    "index": 87,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adda93_"
+    ],
+    "text": "Internal dataset: The internal dataset used in this study was acquired at our local institution and is not publicly available due to institutional privacy and data‐sharing restrictions."
+  },
+  {
+    "index": 88,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adda93_"
+    ],
+    "text": "External dataset: The external dataset used in this study can be accessed from The Cancer Imaging Archive (https://www.cancerimagingarchive.net/collection/vestibular‐schwannoma‐seg/)."
+  },
+  {
+    "index": 89,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "_ad93_",
+      "_adda93_"
+    ],
+    "text": "The code for the proposed augmentation approach, model training, and inference is available at the following GitHub repository: https://github.com/wooseung‐kim/InnerEar‐Seg."
+  }
+]

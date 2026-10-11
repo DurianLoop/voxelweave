@@ -1,0 +1,1135 @@
+
+=== PDF PAGE 1 ===
+                                                            Computers in Biology and Medicine 198 (2025) 111261
+
+
+                                                                   Contents lists available at ScienceDirect
+
+                                                      Computers in Biology and Medicine
+
+                                                     journal homepage: www.elsevier.com/locate/compbiomed
+
+
+Taming diffusion transformers for high-fidelity MRI super-resolution
+Xinyue Tu        a    , Guangyuan Li           b    , Zhongwen Fana                 , Xinjiang Ding          a    , Yuanxing Liua              ,∗
+
+
+aDivision of Hepatobiliary and Pancreatic Surgery, Department of Surgery, First Affiliated Hospital, Zhejiang University School of
+Medicine,  Hangzhou,  310003,  China
+bCollege of Computer Science and Technology, Zhejiang University,  Hangzhou,  310027,  China
+
+
+A R T I C L E   I N F O                                   A B S T R A C T
+
+Keywords:                                                 Recent MRI super-resolution (SR) methods increasingly adopt diffusion models to enhance reconstruction
+MRI super-resolution                                      quality. While these approaches have achieved promising improvements in image quality, they still face
+Diffusion transformer                                     two challenges. First, the diffusion models employed in these methods are typically constructed upon U-Net
+Vision mamba                                              architectures. Although U-Net offers advantages in capturing local structures, it struggles with modeling global
+                                                          context and long-range dependencies, which are essential for faithfully recovering complex anatomical details.
+                                                          Moreover, the U-Net architecture exhibits limited scalability and struggles to handle images with complex
+                                                          anatomical structures. In contrast, Transformer-based diffusion models exhibit stronger capabilities in global
+                                                          reasoning and multi-scale dependency modeling, yet they remain underexplored in the context of MRI super-
+                                                          resolution. Second, they often lack a powerful and efficient decoding mechanism in the latent space, making
+                                                          it difficult to accurately reconstruct high-fidelity MR images from the generated latent representations. To
+                                                          address these challenges, we tame the Diffusion Transformer for MRI super-resolution, and propose a novel
+                                                          framework called DiTMSR. Specifically, we design a conditional Diffusion Transformer that progressively
+                                                          denoises a noisy latent input to recover structurally faithful MR latent features. To reconstruct high-fidelity
+                                                          MR images from these latent features, we design a hybrid Mamba decoder consisting of two key components:
+                                                          a content preservation module that retains structural information, and a hybrid Mamba block combining a
+                                                          MambaVision Mixer and feedforward network to improve decoding performance and efficiency. Extensive
+                                                          experiments on both public and clinical datasets demonstrate that DiTMSR achieves superior performance
+                                                          compared to state-of-the-art methods.
+
+
+1. Introduction                                                                                14]. By iteratively denoising pure Gaussian white noise, diffusion mod-
+                                                                                               els generate high-fidelity images. Compared to other generative net-
+    Magnetic resonance imaging (MRI) is a widely used clinical imaging                         works [15], DMs can more precisely generate target distributions, while
+technique that provides detailed structural and functional information                         avoiding instability and mode collapse issues during the optimization
+of tissues, with the advantages of being non-invasive and radiation-                           process. When applying diffusion models to MRI super-resolution tasks,
+free. However, obtaining high-resolution (HR) MRI images remains                               two major challenges arise. (1) The diffusion process typically requires
+challenging due to limitations in the data acquisition process [1,2].                          numerous iterative denoising steps to generate high-frequency details.
+Super-resolution (SR) [3] seeks to convert low-resolution (LR) images                          However, unlike MRI synthesis tasks that aim to generate full anatom-
+into high-resolution (HR) ones, thereby improving visual fidelity and                          ical content from scratch, MRI reconstruction only seeks to refine an
+utility for downstream tasks. Beyond medical imaging, SR has been                              already available low-quality image. Thus, adopting a full generative
+deployed across diverse application scenarios, including text SR for                           diffusion framework for this purpose can result in excessive compu-
+                                                                                               tational overhead. (2) The stochastic nature of the generative process
+readability and OCR robustness [4,5], face SR for surveillance and                             may introduce artifacts and distort structural fidelity, which is critical
+recognition [6,7], and remote-sensing SR to recover fine structures over                       in clinical applications where accurate anatomical representation is
+large scenes [8,9].                                                                            essential.
+    Currently, researchers are beginning to explore the use of diffu-                              Several recent approaches [16–19] attempt to address these chal-
+sion models [10] for super-resolution reconstruction. Diffusion models                         lenges by either compressing the denoising network to reduce computa-
+demonstrate excellent performance in MR image generation tasks [11–                            tional overhead, or redesigning encoder architectures to mitigate image
+
+
+
+  ∗  Corresponding author.
+     E-mail address:   liuyuanxing@zju.edu.cn (Y. Liu).
+
+https://doi.org/10.1016/j.compbiomed.2025.111261
+Received 31 August 2025; Received in revised form 15 October 2025; Accepted 25 October 2025
+Available online 1 November 2025
+0010-4825/© 2025 The Authors. Published by Elsevier Ltd. This is an open access article under the CC BY license ( http://creativecommons.org/licenses/by/4.0/ ).
+
+=== PDF PAGE 2 ===
+X. Tu et al.                                                                                                                  Computers in Biology and Medicine 198 (2025) 111261
+
+distortion  during  reconstruction.  However,  these  methods  still  face                  2. Related works
+critical limitations. First, the diffusion models they employ are typically
+built upon U-Net architectures. While U-Net excels at capturing local                       2.1. Diffusion-based MRI super-resolution
+structural details, it struggles to model global context and long-range                         Diffusion models (DMs) [10] are probabilistic generative models
+dependencies, which are essential for faithfully recovering complex                         that generate the desired data samples from Gaussian noise through a
+anatomical structures. Moreover, U-Net-based designs exhibit limited                        random iterative denoising process. In MRI super-resolution (SR) tasks,
+scalability and often fail to handle images with intricate anatomical                       DMs have shown impressive performance [18,25–30]. Mao et al. [25]
+variations. Second, these methods often lack a powerful and effective                       propose a disentangled conditional diffusion model dedicated to multi-
+decoding mechanism in the latent space, making it difficult to accu-                        contrast brain MRI super-resolution reconstruction. PDMs [26] speed
+rately reconstruct high-fidelity MR images from the generated latent                        up diffusion MRI SR by substituting HR latents with LR latents be-
+representations.                                                                            yond a noise threshold and aligning them via latent interpolation,
+    To  address the  above  challenges,  we  seek  to  improve  diffusion                   yielding competitive quality with far fewer denoising steps and re-
+models for MRI super-resolution reconstruction from a novel archi-                          maining compatible with other accelerations. Li et al. [18] present
+tectural perspective. First, Diffusion Transformers (DiTs) [20,21] offer                    an efficient diffusion model architecture for multi-contrast MRI super-
+                                                                                            resolution reconstruction, which effectively combines the advantages
+significant advantages over U-Net-based diffusion models in terms of                        of both diffusion models and Transformers. Han et al. [27] propose
+global context modeling, scalability, computational efficiency, cross-                      an arbitrary-scale super-resolution diffusion model that combines im-
+modal representation learning, and the ability to capture long-range                        plicit neural representation with a denoising diffusion probabilistic
+dependencies. By leveraging the Transformer backbone, DiTs are more                         model to achieve arbitrary-scale, high-fidelity medical image super-
+capable of modeling extended spatial relationships, thereby providing                       resolution. Ma et al. [28] leverage a Denoising Diffusion Probabilistic
+greater  global  consistency  and  detail  fidelity  in  image  generation.                 Model (DDPM) and cross-attention to maintain data fidelity while fully
+Therefore, we replace the U-Net-based diffusion backbone with a DiT                         exploiting available conditions, yielding high-quality image restoration.
+architecture in our MRI super-resolution framework to better align                          Goswami et al. [29] present LearnDiff, a diffusion probabilistic model
+                                                                                            with learnable noise for the super-resolution of MRI images. Safari
+with the specific demands of this task. Second, to improve the quality                      et al. [30] develop Res-SRDiff, a novel diffusion-based SR framework
+and efficiency of the decoding process in the latent space, we de-                          incorporating residual error shifting into the forward diffusion process.
+sign a hybrid mamba decoder that combines the efficiency of state                           However, most diffusion models in existing methods are based on the
+space modeling [22] with the global reasoning capability of atten-                          U-Net architecture, which has certain limitations in modeling global
+tion mechanisms. Specifically, the decoder integrates a MambaVision                         context and capturing long-range dependencies. Given the critical im-
+Mixer [23,24], which employs a selective state update mechanism to                          portance of long-range dependencies for generating high-quality or
+enable efficient long-range dependency modeling. This hybrid design                         finely restored images, we choose to replace the U-Net structure with
+achieves accurate high-fidelity MRI super-resolution while significantly                    a Transformer-based diffusion model.
+
+reducing computational complexity.                                                          2.2. Diffusion model architecture
+    Building upon the above insights, we adapt the diffusion Trans-
+former for MRI super-resolution, and propose a novel framework named                            Previous diffusion-based methods [10,31–33] predominantly rely
+DiTMSR. Specifically, we design a conditional diffusion Transformer                         on U-Net [34] architectures as the denoising backbone, often enhanced
+that progressively denoises latent inputs corrupted by noise, recovering                    with residual blocks [35] and structural priors to improve represen-
+structurally faithful latent representations of MRI images. To further                      tational capacity. While effective for local feature extraction, U-Net
+enhance the representational capacity and improve reconstruction fi-                        architectures suffer from scalability limitations and struggle to cap-
+                                                                                            ture long-range dependencies, which are critical for high-resolution
+delity, we introduce a reference branch that injects multi-contrast MRI                     image reconstruction. Diffusion Transformers (DiTs) [20] represent a
+images into the diffusion process. This branch serves as an auxiliary                       paradigm  shift  by  adopting  a  fully  Transformer-based  architecture,
+pathway, providing complementary anatomical information that guides                         offering improved scalability, stronger global modeling capability, and
+the model toward more accurate super-resolution outputs. To recon-                          better adaptation to diverse vision tasks. Subsequent works [21,36–38]
+struct high-fidelity MRI images from the denoised latent space, we                          further validate the effectiveness of DiT-based designs across a vari-
+develop a hybrid Mamba decoder comprising two key components:                               ety of applications. For instance, EDiffSR [39] introduces a diffusion-
+(1)  a  content  preservation  module,  which  retains  global  structural                  probabilistic  framework  for  remote-sensing  SR  that  replaces  heavy
+information throughout the decoding process, and (2) a hybrid Mamba                         U-Nets with a lightweight efficient activation network for noise predic-
+                                                                                            tion and adds a conditional prior enhancement module to inject richer
+block composed of a MambaVision mixer and a feedforward network,                            priors, achieving perceptually pleasing reconstructions with lower com-
+designed to improve the decoder’s expressiveness and computational                          pute. U-ViT [40] preserves the long-range skip connections of U-Net
+efficiency. This design ensures that DiTMSR not only produces per-                          while discarding traditional downsampling and upsampling operations.
+ceptually and structurally accurate reconstructions but also maintains                      Cheng et al. [21] proposed an efficient DiT for image super-resolution
+scalability and runtime efficiency for clinical applications. The main                      that integrates prior-based guidance to enhance visual quality. DiT-
+contributions are summarized as follows:                                                    SR [41] is a U-shaped diffusion transformer with uniform isotropic
+    (1) We propose DiTMSR, a novel diffusion-based framework for                            blocks  and  frequency-adaptive  time-step  conditioning,  trained  from
+MRI super-resolution, which incorporates a conditional diffusion Trans-                     scratch, surpassing prior scratch diffusion SR methods. DiT4SR [42]
+                                                                                            adapts a large-scale DiT to real image SR by integrating LR embeddings
+former and a multi-contrast reference branch to progressively refine                        directly into DiT attention for bidirectional interaction across diffusion
+latent representations with enhanced structural fidelity.                                   steps and adding a cross-stream convolution to inject local cues, provid-
+    (2)  We  design  a  hybrid  Mamba  decoder  that  combines  a  con-                     ing progressively refined LR guidance for high-quality reconstruction.
+tent preservation module with a MambaVision mixer block, enabling                           Yang et al. [38] developed an infinite-resolution DiT model capable
+efficient and high-fidelity reconstruction from denoised latent features.                   of handling inputs with arbitrary shapes and resolutions through a
+    (3) Extensive experiments on both public and clinical MRI datasets                      scalable upsampling strategy. Inspired by these advances, we adopt a
+                                                                                            latent DiT architecture for the MRI super-resolution task, aiming to
+demonstrate that DiTMSR outperforms existing state-of-the-art methods                       reconstruct high-quality MR images with improved global consistency
+in both qualitative and quantitative evaluations.                                           and modeling flexibility.
+
+
+                                                                                        2
+
+=== PDF PAGE 3 ===
+X. Tu et al.                                                                                                                   Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 1. Inference pipeline of DiTMSR. The target LR image is encoded by the LR encoder and concatenated with noise along the channel dimension, forming the
+input to the conditional diffusion Transformer. Simultaneously, the reference HR image is processed by a conditional encoder to produce condition latents, which
+guide the denoising process within the DiT blocks. After 𝑇 iterative denoising steps, a clean latent is obtained. This latent is then fed into the Hybrid Mamba
+Decoder to reconstruct the final SR image. To ensure faithful reconstruction, the Content Preservation Module revisits the global topological structure of the LR
+image.
+
+2.3. Vision Mamba                                                                           T1-weighted images obtained with short scan times can provide com-
+                                                                                            plementary information to low-resolution T2-weighted images acquired
+    Since the introduction of Mamba, numerous studies have focused                          over longer durations. It is worth noting that the use of the reference
+on exploring its potential in visual applications. For instance, Vision-                    contrast image is optional and can be omitted during inference if not
+Mamba [24] proposes a bidirectional SSM-based approach that pro-                            available.
+cesses tokens in both forward and backward directions based on the                              Condition DiT backbone. We adopt a condition Diffusion Trans-
+same Mamba formulation, capturing richer global context and enhanc-                         former (DiT) to denoise a latent restored from the target LR MR image
+ing spatial understanding. EfficientVMamba [43] introduces a dilated                        while being guided by a reference MR image. The LR image is 64 × 64
+selective scanning and skip-sampling strategy for efficiently extracting                    and the reference image is 256 × 256; both are treated as complex-
+global spatial dependencies. Vamba [44] presents a general-purpose                          valued, two-channel inputs (real and imaginary). An LR encoder built
+Mamba-based vision backbone and designs a Cross-Scan Module (CSM)                           from ResBlocks reduces the spatial size by 4-fold, producing LR   ∈
+                                                                                               ℎ
+to extend the global receptive field through one-dimensional selective                      𝑅  4 × 𝑤4 ×𝐶; a condition encoder of the same style reduces the HR refer-
+                                                                                                                                        𝐻
+scanning. FMSR [45] is a frequency-assisted Mamba SR framework                              ence by 16-fold, yielding Ref  ∈ 𝑅16 × 𝑊16 ×𝐶. Both streams use channel
+for RSI that captures long-range dependencies with linear complex-                          width 𝐶 = 64. The features are patchified into tokens and fed to a 12-
+ity. DVMSR [46] is a lightweight SR network that stacks Residual                            block DiT. Cross-attention conditions the LR tokens on the reference
+State Space Blocks with Vision Mamba modules and applies knowl-                             tokens at every block, and the internal hidden size remains 𝐶 = 64.
+edge distillation, achieving state-of-the-art parameter efficiency. De-                     The diffusion process runs for 𝑇 = 15 denoising steps, after which the
+formMamba [47] uses a deformable–Mamba two-branch encoder, a                                clean latent is passed to the decoder.
+multi-view context bottleneck, and a Vision-Mamba decoder with con-                             Hybrid Mamba decoder. The decoder upsamples the clean latent
+trastive edge loss, achieving competitive MR SR results. MambaIR [48]                       to SR MR image through four stages to reach 256 × 256 (overall scale
+incorporates residual state-space blocks as its core components, com-                       𝑠 = 4). Each stage comprises: (i) an Upsample operator (2× when
+bining convolution and channel attention mechanisms to enhance the                          needed); (ii) a Content Preservation module applied once per stage,
+performance of standard Mamba. SMamba-UNet [49] proposes a self-                            which reshapes the clean latent and stage-specific target feature into to-
+prior-guided Mamba-UNet network for medical image super-resolution,                         ken sequences, forms Q/K/V via LN+Linear, and performs attention to
+leveraging lightweight long-range modeling and fully exploring the po-                      fuse global topology and coarse semantics; (iii) a Hybrid Mamba mixer
+tential of super-resolution features. MambaIRv2 [50] integrates Mamba                       repeated 6 times per stage, combining Linear and Conv1D projections
+with ViT-like non-local modeling capabilities to enable fine-grained                        with a state-space core to model long-range dependencies efficiently;
+reconstruction in state space models. To better adapt to the charac-                        and (iv) a terminal self-attention layer for local refinement. After the
+teristics of MRI reconstruction, we design a hybrid Mamba decoder,                          final stage, a projection produces the super-resolved MR image. This
+which consists of a content preservation module, a MambaVision mixer,                       design couples strong conditional denoising in the DiT with content-
+and a self-attention mechanism. Specifically, the content preservation                      preserving fusion and linear-time sequence modeling in the decoder,
+module is responsible for injecting global topological information of                       yielding faithful anatomy and sharp details at high resolution.
+the  MR  image  to  enhance  structural  fidelity.  In  addition,  inspired                     The following sections provide detailed descriptions of the condition
+by [51], we incorporate self-attention into the hybrid Mamba decoder                        Diffusion  Transformer,  the  hybrid  Mamba  decoder,  as  well  as  the
+to strengthen its ability to capture global context and long-range spatial                  training and inference strategies.
+dependencies.                                                                               3.2. Latent diffusion transformer
+
+3. Methodology                                                                              3.2.1. Diffusion-based conditional reconstruction
+                                                                                                Diffusion models have demonstrated strong generative capabilities
+3.1. Overall pipeline                                                                       by learning to map complex data distributions to a tractable Gaussian
+                                                                                            prior, from which the original data can be progressively recovered.
+    The overall pipeline of DiTMSR is illustrated in Fig.  1. The model                     In the context of MRI super-resolution, the diffusion model aims to
+takes a low-resolution (LR) image with the target contrast and a high-                      learn a conditional distribution 𝑞(𝒙0   ∣  LR), where 𝒙0 denotes the
+resolution (HR) image with a reference contrast as inputs. Through                          HR latent, and LR represents its corresponding LR counterpart. The
+iterative denoising and decoding, it generates a super-resolved im-                         diffusion model consists of two core processes: the forward diffusion
+age with the target contrast. We utilize multi-contrast MR images,                          process, which gradually corrupts the original data into Gaussian noise,
+where different imaging protocols produce varied contrast while pre-                        and the reverse generation process, which learns to denoise the corrupted
+serving consistent anatomical structures. For example, high-resolution                      data and reconstruct the target image.
+
+
+                                                                                         3
+
+=== PDF PAGE 4 ===
+X. Tu et al.                                                                                                                      Computers in Biology and Medicine 198 (2025) 111261
+
+Forward  diffusion  process.  The  forward  process  is  formulated  as  a                         Within each DiT block, we incorporate a cross-attention mechanism
+Markov chain that progressively adds Gaussian noise to the data over                           to inject reference information into the main denoising pathway. Let
+𝑇 steps. Starting from the clean HR image 𝒙0  ∼ 𝑝data, the noisy latent                        𝑡  ∈ R𝐿×𝐶 denote the token sequence derived from the noisy latent
+𝒙𝑡 at timestep 𝑡 is sampled as:                                                                𝒙𝑡, and let ref  ∈  R𝐿×𝐶 represent the tokenized reference latent ex-
+          ) =     (                     ) 𝑰)                                                  tracted from the reference MR image. We employ a standard multi-head
+𝑞 (𝒙𝑡 ∣ 𝒙0          𝒙𝑡;√̄𝛼𝑡𝒙0,(1 − ̄𝛼𝑡         ,                                               (1)cross-attention formulation, where the queries are generated from the
+
+where 𝛼𝑡  ∈  (0, 1) denotes the noise scaling factor at step 𝑡, and ̄𝛼𝑡  =                     primary token sequence 𝑡, while the keys and values are computed
+∏𝑡                                                                                             from the reference tokens ref:
+  𝑠=1 𝛼𝑠 is the cumulative product over time. As 𝑡 increases, 𝒙𝑡 becomes
+increasingly noisy and eventually approximates an isotropic Gaussian                                                              (        )
+distribution  (0, 𝑰).                                                                         CrossAttn(𝑡,ref) = softmax          𝑄𝐾⊤√     𝑉 ,                                             (4)
+Reverse denoising process.  The reverse process aims to recover 𝒙0 from                                                                 𝑑
+the noisy latent 𝒙𝑡 by iteratively predicting the noise component using                        where
+a learnable neural network 𝝐𝜃(⋅). Conditioned on the LR image 𝒚, the
+model reconstructs the image through the following reverse step:                               𝑄 = 𝑡𝑊𝑄, 𝐾 = ref𝑊𝐾, 𝑉  = ref𝑊𝑉 ,                                                     (5)
+              (                     (𝒙𝑡,Ref, 𝑡))                                              and 𝑊𝑄, 𝑊𝐾, 𝑊𝑉   ∈ R𝑑×𝑑 are learnable projection matrices, where 𝑑
+𝒙𝑡−1 =    1√𝛼𝑡   𝒙𝑡 −   1 − 𝛼𝑡√  𝝐𝜃                 + √1 − 𝛼𝑡𝝐𝑡,                      (2)      is the token embedding dimension. This attention mechanism enables
+                         1 − ̄𝛼𝑡
+where 𝝐𝑡  ∼  (0, 𝐈) is standard Gaussian noise. The model is trained                          the  model  to  selectively  retrieve  relevant  anatomical  context  from
+to predict the added noise 𝝐𝜃 given the current latent 𝒙𝑡, the timestep                        the reference tokens based on the current noisy content in 𝑡. This
+𝑡, and the condition  ′𝑐. Through 𝑇 iterative steps, the reverse process                      cross-attention design allows for direct spatial and semantic alignment
+refines the latent representation and reconstructs the high-resolution                         between the target latent and the reference contrast representation.
+output,  enabling  faithful  recovery  of  anatomical  structures  in  MRI                     Unlike early fusion strategies or naïve concatenation, this token-wise
+scans.                                                                                         interaction enables the model to dynamically attend to informative
+                                                                                               regions in the reference image, which is particularly useful when the
+3.2.2. Dit block with conditioning                                                             low-resolution target contrast suffers from poor visibility or ambiguity.
+    Condition diffusion Transformer (CDiT) is composed of multiple                             As a result, the denoising process is more guided and context-aware,
+DiT blocks, as shown in Fig.  1. Given the low-resolution latent feature                       leading to structurally faithful and high-quality super-resolved outputs.
+            ℎ
+𝐹LR   ∈  R4 × 𝑤4 ×𝐶 and a sampled noise tensor of the same shape, we                               In cases where a high-quality reference contrast MR image is un-
+concatenate them along the channel dimension to obtain the noisy                               available, our model gracefully degrades to a purely self-attention-
+                 ℎ
+input 𝒙𝑡  ∈  R    4 × 𝑤4 ×2𝐶. This representation serves as the input to the                   based  mechanism.  Specifically,  we  apply  standard  multi-head  self-
+CDiT, together with the diffusion timestep 𝑡.                                                  attention directly on the noisy latent tokens 𝑡:
+                                                                                                                          ( 𝑄𝑠𝐾⊤𝑠    )
+Patchification.  To make the spatial latent compatible with the Trans-                         SelfAttn(𝑡) = softmax          √        𝑉𝑠,                                                    (6)
+former architecture, we flatten the spatial dimensions of 𝒙𝑡 into a                                                              𝑑
+token sequence. Specifically, 𝒙𝑡 is reshaped from a 3D tensor of shape
+( ℎ                                                                                            where 𝑄𝑠  = 𝑡𝑊 𝑠𝑄, 𝐾𝑠  = 𝑡𝑊 𝑠𝐾, and 𝑉𝑠  = 𝑡𝑊 𝑠𝑉 , with 𝑊 𝑠𝑄, 𝑊 𝑠𝐾, 𝑊 𝑠𝑉   ∈
+ 4 ,  𝑤4 , 𝐶) into a 2D sequence of length 𝐿  =    ℎ4    ⋅  𝑤4  with embedding                 R𝑑×𝑑 as learnable projection matrices. This allows the model to rely
+dimension 𝐶:
+𝑡 = Patchify(𝒙𝑡) ∈ R𝐿×𝐶,    where    𝐿 =  ℎ                                                   solely on the information available within the target latent, without
+                                                  4   ⋅ 𝑤4 ,                                  (3)requiring any external conditioning. The ability to switch between
+where 𝑡 denotes the token sequence resulting from patchification of                           cross-attention and self-attention makes our model flexible and broadly
+the latent feature map, which serves as the input to the Transformer.                          applicable in both reference-assisted and reference-free settings, which
+Additionally, the diffusion timestep 𝑡 is embedded using a learnable                           is crucial for real-world clinical deployment where reference contrast
+positional encoding and is added to the token sequence to enable                               images may not always be available.
+timestep-aware modeling. The resulting sequence is then fed into the
+CDiT blocks for iterative denoising.                                                           Feedforward network.  Following the attention layers in each DiT block,
+                                                                                               we apply a position-wise feedforward network (FFN) to further enhance
+Reference condition.  To provide informative guidance during the de-                           the feature representation of each token. The FFN consists of two linear
+noising process, we introduce a conditional reference branch, which                            layers with a GELU activation function in between:
+incorporates a high-resolution MR image with a reference contrast
+as an auxiliary input to the DiT blocks. MRI can generate images                               FFN( ) = GELU( 𝑊1 + 𝑏1)𝑊2 + 𝑏2,                                                     (7)
+with identical anatomical structures but different contrasts by adjust-
+ing scanning parameters. Studies [25,52–59] have shown that T1 HR                              where 𝑊1  ∈  R𝑑×𝑑ff and 𝑊2  ∈  R𝑑ff×𝑑 are learnable weight matrices,
+images with shorter scanning times can provide important supplemen-                            and 𝑑ff is the hidden dimension of the intermediate layer. After passing
+tary information for T2 LR images with longer scanning times. The                              through multiple DiT layers with attention and FFN operations, the
+reference image is first processed by a condition encoder to extract                           output token sequence is reshaped back into a 2D latent feature map
+structural features, and the resulting latent feature map is then re-                          via an unpatching operation. Specifically, the sequence 𝑡  ∈ R𝐿×𝐶 is
+                                                                                                                                                   ℎ
+shaped into a sequence of tokens via patchification. These reference                           rearranged into a spatial tensor  ̂𝒙𝑡   ∈  R        4 × 𝑤4 ×𝐶, restoring the spatial
+tokens are subsequently fused into the main diffusion stream through                           structure required for subsequent decoding:
+cross-attention mechanisms within each DiT block. This design allows
+the model to leverage complementary anatomical information captured                            ̂𝒙𝑡 = Unpatchify(𝑡).                                                                              (8)
+under a different contrast setting, thereby compensating for the struc-
+tural ambiguity often present in low-resolution target contrast images.                            Through 𝑇 iterative denoising steps, the diffusion model progres-
+Conditioning the denoising process on reference features helps the                             sively refines the latent representation, ultimately producing a clean
+model generate reconstructions that are both perceptually faithful and                         low-resolution latent ̂𝒙0, which serves as the input to the hybrid Mamba
+structurally consistent with the underlying anatomy.                                           decoder for final reconstruction.
+
+
+                                                                                           4
+
+=== PDF PAGE 5 ===
+X. Tu et al.                                                                                                                     Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 2. Left: Architecture of the Content Preservation Module, which provides global topological structure and coarse semantic guidance for MR images, enhancing
+fidelity and structural consistency. Right: Architecture of the Hybrid Mamba Block, which enables efficient long-range dependency modeling with significantly
+reduced computational complexity.
+
+3.3. Hybrid Mamba decoder                                                                     query comes from the clean latent and the key and value come from
+                                                                                              the target features:
+3.3.1. Overview                                                                               𝑄 = Norm(clean)𝑊𝑄, 𝐾 = Norm(tar)𝑊𝐾, 𝑉  = Norm(tar)𝑊𝑉 ,            (9)
+    To enhance the structural fidelity of the reconstructed MR images,
+we design a dedicated decoding module named the Hybrid Mamba                                  where 𝑊𝑄, 𝑊𝐾, 𝑊𝑉  ∈ R𝐶×𝑑 are learnable projection matrices. The fused
+Decoder (HMD), as illustrated in Fig.  2. The HMD serves as the final                         tokens are computed via standard scaled dot-product attention:
+stage of our framework and is composed of three main components: a                                                (        )
+Content Preservation Module (CPM), six stacked Hybrid Mamba Blocks                            fuse = Softmax       𝑄𝐾⊤√      𝑉 .                                                               (10)
+(HMB), and a self-attention layer.                                                                                      𝑑
+    Although the diffusion process excels at synthesizing fine-grained                        The fused feature sequence is then linearly projected and reshaped
+details, it is inherently stochastic and locally focused, which often leads                   back into the 2D feature map, and added to the original clean latent
+to the loss of global structural integrity in the generated latent. This is                   via residual connection. This residual-guided fusion enriches the clean
+especially critical in MRI reconstruction, where preserving anatomical                        latent with global structure preserved in the LR image, ensuring that
+topology is essential for clinical interpretability. To mitigate this issue,                  the final reconstruction remains anatomically faithful.
+we introduce the content preservation module at the beginning of
+the  decoder.  The  core  idea  behind  CPM  is  to  reintroduce  reliable                    3.3.3. Hybrid Mamba block
+structural priors derived from the original low-resolution MR image.                              The Hybrid Mamba Block (HMB) is the core computational unit
+By incorporating this global context, the decoder is better guided to                         in our decoder, designed to jointly leverage the long-range modeling
+restore faithful anatomical structures and reduce distortion caused by                        capacity of Mamba and the local feature representation strength of
+the uncertainty of the diffusion process.                                                     Transformer-like architectures. As shown in Fig.  2(Right), each HMB
+    Following CPM, the output is processed through a series of hybrid                         contains a MambaVision Mixer followed by a feedforward network
+mamba blocks. Each HMB is designed to combine the strengths of both                           (FFN),  both  equipped  with  residual  connections  and  normalization
+Mamba and Transformer architectures. Specifically, it leverages the                           layers.
+linear-time efficiency and long-range modeling capability of Mamba’s                              Given an input feature fuse from the Content Preservation Module,
+state  space  representation,  while  also  retaining  the  explicit  token-                  we first flatten the spatial dimensions and apply layer normalization:
+to-token interaction and flexibility of Transformer-style feedforward                         in = LayerNorm(Flatten(fuse)) ∈ R𝐿×𝐶,                                           (11)
+layers. This hybrid design enables effective feature extraction with
+global dependency modeling, while maintaining high computational                              where  𝐿   =   𝐻    ⋅  𝑊 .  Inspired  by  [51],  we  introduce  a  state-space
+efficiency—an  essential  property  for  high-resolution  medical  image                      mixing mechanism to encode long-range dependencies in a hardware-
+reconstruction.                                                                               efficient manner. The mixer starts by generating a pair of intermediate
+    To further strengthen global contextual reasoning, we append a                            sequences using learnable linear projections and 1D convolution:
+self-attention layer at the end of the decoder. While Mamba excels
+at modeling sequence-level dynamics, self-attention explicitly enhances                       1 = Conv1D(Linear(in)),                                                          (12)
+token-level spatial relationships, helping refine the semantic coherence                      2 = Conv1D(Linear(in)).                                                          (13)
+of the final reconstruction. The following sections present the detailed
+designs of CPM, HMB, and the self-attention module.                                           These sequences are activated via SiLU non-linearity and passed into a
+                                                                                              learnable state-space model (SSM), which captures dynamic temporal
+3.3.2. Content preservation module                                                            features across the sequence:
+    The Content Preservation Module (CPM) is designed to compensate                           ssm = SSM(SiLU(1)) ∥ SiLU(2),                                                        (14)
+for potential structural information loss caused by the stochastic nature
+of the diffusion process. Although the denoising model can recover fine-                      where ∥ denotes concatenation. The fused representation is linearly
+grained textures, it may underrepresent global anatomical structures                          projected back to the latent space dimension and added to the input
+that are critical in MR image reconstruction. To mitigate this, CPM                           through a residual connection:
+introduces structural priors extracted from the original low-resolution                       mix = in + Linear(ssm).                                                                    (15)
+input into the clean latent representation through a cross-attention
+mechanism. As illustrated in Fig.  2(Left), CPM takes as input the clean                      Following the MambaVision Mixer, we apply a standard two-layer FFN
+latent feature ̂𝒙0 produced by the denoising process, and the shallow                         with another residual connection:
+structural feature 𝑭 tar ∈ Rℎ×𝑤×𝐶 extracted from the original LR image.                        ffn = FFN(LayerNorm(mix)),                                                      (16)
+Both feature maps are reshaped into sequences of 𝐿  =  ℎ  ⋅ 𝑤 tokens:
+clean,tar  ∈ R𝐿×𝐶. We apply a cross-attention mechanism where the                           out = mix + ffn.                                                                (17)
+
+
+                                                                                           5
+
+=== PDF PAGE 6 ===
+X. Tu et al.                                                                                                                      Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 3. Training strategy of DiTMSR. The first stage focuses on training the LR and HR encoders, while the second stage is dedicated to training the diffusion
+model.
+
+Finally, we reshape the token sequence back to the 2D feature map.                             where 𝜖𝜃 is the predicted noise by the denoising network and 𝜖𝑡 is
+This hybrid architecture enables efficient sequence modeling and hier-                         the true sampled noise at timestep 𝑡. Here, 𝑅𝑒𝑓 denotes the reference
+archical feature extraction, contributing to accurate and coherent MRI                         features from the condition encoder. We empirically set 𝜆1  =  1 and
+super-resolution reconstruction.                                                               𝜆2 = 0.001 to balance the contribution of each term.
+
+3.3.4. Self-attention layer                                                                    Frequency-domain consistency loss.  Unlike natural images, MR images
+    To  further  enhance  the  model’s  capacity  to  capture  long-range                      are inherently acquired in the frequency domain, also known as k-
+spatial dependencies and global contextual relationships, we introduce                         space. Therefore, ensuring data consistency in k-space is crucial for the
+a self-attention layer at the end of the decoder. While the MambaV-                            accurate reconstruction of high-fidelity MR images. To enforce this, we
+ision Mixer efficiently models sequential dependencies, self-attention                         introduce a frequency-domain loss that measures the fidelity between
+complements it by explicitly learning spatial correlations across all                          reconstructed and ground-truth MR data in the Fourier domain. Specifi-
+locations within the feature map. This dual mechanism allows the                               cally, we apply a 2D Fourier transform to both the reconstructed image
+decoder to maintain fine structural details while ensuring that glob-                          𝐼SR and the ground-truth image  𝐼HR to obtain their corresponding
+ally coherent anatomical patterns are preserved, which is particularly                         k-space representations 𝐾SR and 𝐾HR. A predefined sampling mask
+important  in  medical  image  reconstruction  tasks  where  subtle  but                       𝑀, typically based on a k-space downsampling pattern [54,56], is
+spatially distributed features often carry significant diagnostic value.                       then used to simulate the acquisition process. For sampled frequency
+                                                                                               locations (𝑎, 𝑏) ∈ 𝑀, we partially substitute 𝐾SR with the ground-truth
+3.4. Training strategy                                                                         value 𝐾HR to preserve the acquired fidelity, following the strategy:
+                                                                                                             {𝐾SR[𝑎, 𝑏],               if (𝑎, 𝑏) ∉ 𝑀
+    Inspired by [18], we adopt a two-stage training strategy for the                           𝐾DC[𝑎, 𝑏] =      𝐾SR[𝑎,𝑏]+𝑛𝐾HR[𝑎,𝑏]
+proposed DiTMSR framework, as illustrated in Fig.  3. This progressive                                                  1+𝑛          ,    if (𝑎, 𝑏) ∈ 𝑀,                                   (20)
+scheme is designed to decouple the training of the latent encoder and                          where 𝐾DC denotes the data-consistent k-space, and 𝑛 ≥ 0 is a weighting
+decoder from the diffusion denoising process, allowing for more stable                         coefficient (interpretable as noise level or blending factor). Finally, the
+convergence and effective feature learning.                                                    mean squared error between 𝐾DC and the fully-sampled 𝐾HR is used to
+                                                                                               define the frequency-domain consistency loss:
+Stage one: Latent representation learning.  In the first stage, we train the
+LR encoder, HR encoder, and Hybrid Mamba Decoder to learn latent                               dc = ‖‖𝐾DC − 𝐾HR‖‖2 .                                                                         (21)
+features and decoding mappings independently of the diffusion model.                           This loss helps retain anatomical fidelity by enforcing signal consis-
+Specifically, the LR image 𝐼LR and HR image 𝐼HR are separately encoded                         tency in the frequency domain, effectively reducing hallucinations and
+into latent representations via the LR encoder and HR encoder. These                           enhancing the realism of the reconstructed MR images.
+latent codes are then fused and decoded by the Hybrid Mamba Decoder
+to reconstruct the super-resolved image 𝐼SR. The goal of this stage is                         4. Experiments
+to ensure the clean latent representation captures sufficient anatomical
+detail and structural fidelity. The optimization is guided by a composite                      4.1. Datasets and baselines
+loss:
+1stage = 𝜆1‖𝐼SR − 𝐼HR‖1 + 𝜆2‖𝐾DC − 𝐾HR‖2,                                       (18)          Datasets. We conducted experiments on two public datasets and two
+                                                                                               clinical datasets. The public datasets include the FastMRI knee dataset
+where 𝐾DC and 𝐾HR are the fidelity-processed and ground-truth k-space                          [60] and the BraTs dataset [61]. For the FastMRI dataset, the source
+representations, respectively.                                                                 contrast  is  Proton  Density  (PD),  and  the  target  contrast  is  Fat-
+Stage  two:  Diffusion  denoising  optimization.  In  the  second  stage,  we                  Suppressed PD (FS-PD). A total of 3200 slices were selected, with a
+freeze the LR and HR encoders and focus on training the denoising                              training, validation, and test split ratio of 7:1:2. For the BraTs dataset,
+Diffusion Transformer (DiT), the conditional encoder, and the Hybrid                           the  source  contrast  is  T1  and  the  target  contrast  is  T2.  Similarly,
+Mamba Decoder. The LR encoder is used to generate the latent code,                             3200 slices were selected and split with the same ratio for training,
+which is perturbed by Gaussian noise through the forward diffusion                             validation, and testing. The clinical datasets include a brain dataset
+process. The DiT is then optimized to iteratively remove the noise using                       and a pelvic dataset. In the brain dataset, the source contrast is T1 and
+both the noisy latent and the reference latent features provided by                            the target contrast is T2-FLAIR. It comprises 2568 slices from healthy
+the condition encoder. The final clean latent is decoded to reconstruct                        subjects and 305 slices from tumor subjects. Among them, 2048 healthy
+𝐼SR.  The  stage-two  loss  combines  pixel-wise  and  frequency-domain                        subject slices are used for training, while 520 healthy slices are used
+supervision, along with the noise prediction loss for diffusion training:                      for validation and testing. The 305 tumor slices are used for additional
+                                                                                               testing purposes. In the pelvic dataset, the source contrast is T1 and
+                                                                                               the target contrast is T2. This dataset contains 3200 slices, with a split
+2stage = 𝜆1‖𝐼SR − 𝐼HR‖1 + 𝜆2‖𝐾DC − 𝐾HR‖2 + ‖𝜖𝜃(𝒙𝑡,𝑅𝑒𝑓 , 𝑡) − 𝜖𝑡‖22,  (19)                    ratio of 7:1:2 for training, validation, and testing.
+
+
+                                                                                           6
+
+=== PDF PAGE 7 ===
+X. Tu et al.                                                                                                                   Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 4. Qualitative comparison of different diffusion-based SCSR methods on three MRI datasets with an upsampling factor of 4×. From top to bottom:
+FastMRI [60], Clinical Brain, and Clinical Pelvic. Each example shows the reconstructed image, a zoom-in region highlighted with a red box, and its corresponding
+pixel-wise error map in blue. Compared with existing methods, our approach recovers sharper anatomical details with fewer artifacts and lower residuals,
+demonstrating better structure preservation and higher perceptual quality across all datasets.
+
+
+Table 1                                                                                     4.2. Implementation details
+Parameter counts of each module in DiTMSR.
+ Component                Count    Params                                                       We implement our method in PyTorch [68] with two NVIDIA A6000
+ LR Encoder ResBlock      4        4 × 106,944 = 427,776                                    GPUs. We first apply a Fourier transform to convert the 256 × 256
+ Condition Encoder        4        4 × 106,944 = 427,776                                    images from fastMRI and BraTS into k-space. We then retain only the
+ ResBlock                                                                                   central 64 × 64 k-space region and discard the remaining frequencies.
+ Condition DiT            12       599,808                                                  Finally, we perform an inverse Fourier transform to return to the image
+ Hybrid Mamba             4        1,478,400
+ Decoder                                                                                    domain and set the data type to complex.
+ Total                    –        427,776 + 427,776 + 599,808 + 1,478,400 = 𝟐,𝟗𝟑𝟑,𝟕𝟔𝟎          Training Protocols. We train in two stages for 500k iterations
+                                                                                            in total using Adam (𝛽1 = 0.9, 𝛽2 = 0.999). The base learning rate
+                                                                                            is 2  ×  10−4 with step-wise decay by 0.5 at 250k, 400k, 450k, and
+    All clinical datasets were acquired using a 3T Philips Ingenia MRI                      475k iterations. Each iteration uses a batch size of 8. LR inputs are
+Scanner. The scanning parameters for the brain data are: TE (T1) =                          64 × 64 and HR targets are 256 × 256 (upsampling scale 𝑠 = 4).
+                                                                                            MR images are represented as two channels (𝑟𝑒𝑎𝑙/𝑖𝑚𝑎𝑔). We adopt
+2.3 ms and TE (T2-FLAIR) = 120 ms. For the pelvic data, the scanning                        a standard diffusion objective to predict 𝜖 with total denoising steps
+parameters are: TE (T1) = shortest and TE (T2) = 130 ms. The sum-of-                        𝑇 = 15. The condition DiT (12 blocks, 6 heads, 𝐶 = 64) performs
+squares (SOS) method was applied for coil combination. The clinical                         cross-attentive denoising conditioned on encoded reference features.
+datasets were collected in compliance with institutional ethical guide-                     The hybrid mamba decoder upsamples across four stages; each stage
+lines and anonymized prior to use. All necessary approvals for data                         applies one content preservation module, six hybrid mamba modules,
+usage and publication were obtained from the relevant medical insti-                        and one self-attention layer to recover high-frequency and structural
+tutions, and the data are used strictly for non-commercial, academic                        details. Unless otherwise stated, inference uses the same 𝑇 = 15 step
+research.                                                                                   schedule.
+Baselines. For single-contrast MRI super-resolution, we compare our                             Module Parameters. Table  1 reports the parameter sizes of each
+method with several state-of-the-art diffusion-based MRI reconstruc-                        module in DiTMSR. Both encoders contain 4 ResBlocks; with 106,944
+tion approaches, including DiffuseRecon [62], MC-DDPM [63], Score-                          parameters per block, the LR encoder and the condition encoder each
+MRI  [64],  AdaDiff  [65],  and  DiffMSR-SCSR  [18].  We  additionally                      have 427,776 parameters. The condition DiT contributes 599,808 pa-
+compare recent Transformer-based diffusion and Mamba-based super-                           rameters. The hybrid mamba decoder totals 1,478,400 parameters. The
+resolution methods, including Inf-DiT [38], DiT-SR [41], DiT4SR [42],                       overall model size is 2,933,760 parameters, providing a clear baseline
+                                                                                            for reproducibility and computational comparison.
+MambaIR [48], and MambaIRv2 [48]. For multi-contrast MRI super-
+resolution, we compare our method with several recent state-of-the-art                      4.3. Comparisons with SCSR methods
+methods, including MINet [53], MASA [66], WavTrans [55], McMRSR
+[54], MC-VarNet [67], DisC-Diff [25], and DiffMSR-MCSR [18]. We                             4.3.1. Qualitative results
+focus on 4× upscaling reconstruction in our experiments. We evaluate                            Fig.  4 illustrates the qualitative comparison of various diffusion-
+with PSNR, SSIM, FID, and LPIPS.                                                            based SCSR methods across three datasets: FastMRI, Clinical Brain, and
+
+
+                                                                                        7
+
+=== PDF PAGE 8 ===
+X. Tu et al.                                                                                                                    Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 5. Qualitative comparison of DiT-based and Mamba-based SR methods on three MRI datasets with an upsampling factor of 4×. From top to bottom:
+FastMRI [60], Clinical Brain, and BraTS [61].
+
+Clinical Pelvic. For each case, we highlight zoom-in regions using red                       4.3.3. Comparison with DiT-based and Mamba-based SR methods
+boxes and provide pixel-wise error maps in blue to emphasize structural                          From Fig.  5, on FastMRI, Clinical Brain, and BraTS, Ours-SCSR
+differences with the ground truth. On the FastMRI example (top row),                         shows the sharpest details and the least texture distortion in the zoomed
+our method demonstrates superior fidelity in restoring fine anatomical                       regions. The corresponding error maps are almost entirely blue, in-
+details in the knee structure. Competing methods such as DiffuseRecon,                       dicating the lowest reconstruction error. MambaIRv2 ranks second,
+MC-DDPM, and Score-MRI exhibit noticeable blurriness or structural                           preserving structure well but with slight smoothing. DiT4SR and DiT-SR
+distortion in the cartilage region, while our result preserves sharper                       exhibit varying degrees of over-smoothing or ringing in fine textures,
+edges and cleaner textures, reflected by the lowest error in the residual                    while Inf-DiT presents the most noticeable artifacts and noise. Overall,
+maps.  In  the  Clinical  Brain  case  (middle  row),  our  reconstruction                   our method delivers the best visual quality and structural consistency
+yields the most faithful gray and white matter boundaries, where other                       across all three clinical scenarios. Table  3 reports the quantitative
+methods either oversmooth or introduce artifacts around cortical folds.                      results on FastMRI, Clinical Brain, and BraTS. Ours-SCSR achieves the
+Particularly, DiffMSR-SCSR shows competitive quality but still suffers                       highest PSNR/SSIM and the lowest FID/LPIPS on all three datasets,
+from residual edge artifacts, whereas our method provides a more                             and  maintains  consistent  advantages  across  different  data  distribu-
+accurate and natural rendering with reduced pixel-wise error. For the                        tions, demonstrating that it balances structural fidelity and perceptual
+Clinical Pelvic sample (bottom row), our approach recovers the intri-                        quality.
+cate muscular and organ boundaries with significantly better sharpness
+and contrast, maintaining consistency with the HR reference. Methods                         4.4. Comparisons with MCSR methods
+like AdaDiff and Score-MRI tend to smooth over subtle textures and fail
+to resolve finer tissue structures, as evidenced by their higher residual                    4.4.1. Qualitative results
+errors.
+                                                                                                 Fig.  6 presents a comprehensive qualitative comparison of different
+4.3.2. Quantitative results                                                                  methods across five datasets, namely FastMRI, BraTs, Clinical Brain,
+    Table  2  summarizes  the  performance  of  various  diffusion-based                     Clinical Tumor, and Clinical Pelvic. As observed from the visual results,
+SCSR  methods  on  MR  image  reconstruction  tasks  across  FastMRI,                        our method consistently delivers the most faithful reconstructions with
+Clinical Brain, and Clinical Pelvic datasets. Our method consistently                        sharper boundaries and clearer textures. For the FastMRI sample, our
+achieves the highest PSNR and SSIM, confirming its superior fidelity                         model preserves fine anatomical details and restores smooth cartilage
+and structural preservation in high-resolution MR image reconstruc-                          regions with minimal artifacts, while other methods suffer from blurry
+tion. The performance gain is largely attributed to two key components                       edges or aliasing artifacts. In the BraTs case, which involves tumor-
+of our design. First, the DiT backbone enables more effective global                         containing MR images, our approach accurately captures the tumor
+context modeling during the denoising process, which is crucial for re-                      structure with reduced noise and enhanced lesion contrast, demonstrat-
+constructing complex anatomical structures under heavy degradation.                          ing its superior ability to handle challenging pathological regions. In
+Second, our proposed HMD decoder further enhances the reconstruc-                            the clinical brain example, our model reconstructs high-contrast white
+tion by adaptively fusing local and global features with hybrid blocks.                      and gray matter with fine boundary definition, outperforming other
+Compared to conventional Transformer or plain Mamba decoders, HMD                            methods that produce oversmoothed or noisy results. For the clinical
+achieves a better trade-off between accuracy and efficiency. It pro-                         tumor case, our method significantly improves tumor edge clarity and
+motes anatomical consistency and effectively refines textures without                        intensity consistency, avoiding the distortion or texture corruption seen
+over-smoothing, which is particularly important for clinical MR images.                      in baseline methods. Finally, in the clinical pelvic region, our model
+
+
+                                                                                         8
+
+=== PDF PAGE 9 ===
+X. Tu et al.                                                                                                                               Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 6. Qualitative comparison of different methods with an upsampling factor of 4× on five datasets: FastMRI, BraTs, Clinical Brain, Clinical Tumor, and
+Clinical Pelvic. Each row corresponds to a specific dataset, and each column shows the reconstructed results of a representative method. For each method, we
+present the reconstructed image, a zoomed-in region marked by a red box, and the corresponding error map, where pixel-wise differences are visualized using
+a blue jet colormap. Compared with existing approaches, our method produces sharper details, more accurate anatomical boundaries, and significantly reduced
+residual artifacts across both public and clinical MR datasets, demonstrating its superior reconstruction fidelity and perceptual quality.
+
+
+                    Table 2
+                    Quantitative comparison of diffusion-based SCSR methods on FastMRI, Clinical Brain, and Clinical Pelvic. Red indicates the best
+                    performance and blue the second best.
+                                       DiffuseRecon [62]       MC-DDPM [63]           Score-MRI [64]         AdaDiff [65]         DiffMSR-SCSR [18]           Ours-SCSR
+                      FastMRI [60]
+                      PSNR (std)         31.72 (0.214)          32.14 (0.197)          32.48 (0.183)         32.78 (0.173)           33.43 (0.199)           34.51 (0.193)
+                      SSIM (std)        0.8235 (0.0046)        0.8293 (0.0042)       0.8328 (0.0039)       0.8384 (0.0040)         0.8713 (0.0037)         0.8824 (0.0039)
+                      FID                    175.0                   163.0                 145.0                 130.0                   112.0                   105.0
+                      LPIPS (std)        0.172 (0.038)          0.163 (0.036)          0.151 (0.035)         0.145 (0.034)           0.128 (0.033)           0.120 (0.032)
+                      Clinical Brain
+                      PSNR (std)         32.86 (0.178)          33.27 (0.166)          33.63 (0.155)         33.86 (0.149)           33.87 (0.131)           34.88 (0.139)
+                      SSIM (std)        0.8349 (0.0047)        0.8412 (0.0040)       0.8437 (0.0040)       0.8489 (0.0041)         0.9309 (0.0039)         0.8921 (0.0036)
+                      FID                    161.0                   152.0                 138.0                 126.0                   110.0                   102.0
+                      LPIPS (std)        0.165 (0.037)          0.155 (0.035)          0.146 (0.034)         0.136 (0.033)           0.124 (0.032)           0.118 (0.031)
+                      Clinical Pelvic
+                      PSNR (std)         33.51 (0.189)          33.94 (0.182)          34.44 (0.168)         34.73 (0.153)           35.01 (0.121)           35.67 (0.126)
+                      SSIM (std)        0.8872 (0.0041)        0.8916 (0.0037)       0.8971 (0.0036)       0.9034 (0.0034)         0.9548 (0.0034)         0.9651 (0.0035)
+                      FID                    149.0                   140.0                 130.0                 118.0                   104.0                    96.0
+                      LPIPS (std)        0.150 (0.035)          0.142 (0.033)          0.134 (0.032)         0.126 (0.031)           0.114 (0.029)           0.108 (0.028)
+
+
+generates smooth muscle textures and precise bony outlines, main-                                    4.4.2. Quantitative results
+taining structural integrity that is often lost in other reconstructions.                                 Tables  4   and   5 summarize the quantitative comparison results be-
+In all cases, our method achieves the lowest visual error maps and                                   tween our proposed DiTMSR and several state-of-the-art multi-contrast
+the best perceptual quality, highlighting its robustness and superior                                MRI super-resolution methods under a 4× upsampling setting. As shown
+generalization capability across both public and clinical MR domains.                                in Table  4, our method achieves the highest PSNR and SSIM scores on
+
+
+                                                                                                 9
+
+=== PDF PAGE 10 ===
+X. Tu et al.                                                                                                                        Computers in Biology and Medicine 198 (2025) 111261
+
+                   Table 3
+                   Quantitative comparison across FastMRI, Clinical Brain, and BraTS. The table compares both DiT-based and Mamba-based SR
+                   baselines alongside our method. Red indicates the best and blue indicates the second best.
+                                       Inf-DiT [38]         DiT-SR [41]          DiT4SR [42]         MambaIR [48]        MambaIRv2 [48]           Ours-SCSR
+                     FastMRI [60]
+                     PSNR (std)       31.05 (0.210)        31.68 (0.200)        32.31 (0.190)        33.12 (0.180)         33.79 (0.170)         34.51 (0.193)
+                     SSIM (std)      0.8120 (0.0044)      0.8260 (0.0041)      0.8425 (0.0038)      0.8630 (0.0036)       0.8742 (0.0035)      0.8824 (0.0039)
+                     FID                  188.0                171.0                156.0                 128.0                114.0                 105.0
+                     LPIPS (std)      0.176 (0.041)        0.166 (0.039)        0.153 (0.036)        0.137 (0.033)         0.129 (0.032)         0.121 (0.032)
+                     Clinical Brain
+                     PSNR (std)       32.10 (0.160)        32.74 (0.155)        33.18 (0.150)        34.01 (0.145)         34.47 (0.142)         34.88 (0.139)
+                     SSIM (std)      0.8531 (0.0038)      0.8620 (0.0037)      0.8735 (0.0036)      0.8837 (0.0035)       0.8889 (0.0035)      0.8921 (0.0036)
+                     FID                  176.0                160.0                146.0                 120.0                108.0                 102.0
+                     LPIPS (std)      0.171 (0.040)        0.160 (0.037)        0.149 (0.035)        0.133 (0.033)         0.125 (0.031)         0.118 (0.031)
+                     BraTS [61]
+                     PSNR (std)       32.85 (0.205)        33.30 (0.192)        33.82 (0.183)        34.40 (0.172)         34.65 (0.165)         35.07 (0.116)
+                     SSIM (std)      0.8826 (0.0039)      0.8907 (0.0037)      0.8959 (0.0036)      0.8986 (0.0035)       0.8988 (0.0035)      0.9011 (0.0037)
+                     FID                  173.0                151.0                139.0                 131.0                107.0                 99.0
+                     LPIPS (std)      0.163 (0.036)        0.153 (0.034)        0.141 (0.032)        0.125 (0.030)         0.117 (0.029)         0.110 (0.028)
+
+
+             Table 4
+             Quantitative comparison on public datasets (FastMRI and BraTs) in terms of PSNR (dB) ↑, SSIM ↑, FID ↓, and LPIPS ↓. We report mean
+             and standard deviation for each metric. Red indicates the best performance, and blue indicates the second best.
+               Methods                                           FastMRI [60]                                                         BraTs [61]
+                                         PSNR (std)          SSIM (std)         FID        LPIPS (std)       PSNR (std)           SSIM (std)         FID       LPIPS (std)
+               MINet [53]               30.19 (0.29)      0.8101 (0.0035)      180.0     0.172 (0.040)      31.05 (0.249)      0.8284 (0.0043)      168.0     0.165 (0.038)
+               MASA [66]                30.51 (0.141)     0.8192 (0.0053)      170.0     0.165 (0.038)      31.36 (0.114)      0.8342 (0.0027)      160.0     0.158 (0.036)
+               WavTrans [55]            30.95 (0.219)     0.8343 (0.0057)      155.0     0.152 (0.036)      31.78 (0.212)      0.8493 (0.0045)      148.0     0.146 (0.035)
+               McMRSR [54]              30.96 (0.117)     0.8345 (0.0058)      154.0     0.151 (0.036)      31.82 (0.160)      0.8506 (0.0051)      142.0     0.145 (0.035)
+               MC-VarNet [67]           31.65 (0.235)     0.8412 (0.0048)      142.0     0.145 (0.034)      32.46 (0.277)      0.8621 (0.0052)      134.0     0.138 (0.033)
+               DisC-Diff [25]           32.24 (0.193)     0.8530 (0.0042)      132.0     0.138 (0.033)      33.02 (0.154)      0.8726 (0.0040)      125.0     0.131 (0.032)
+               DiffMSR-MCSR [18]        33.78 (0.201)     0.8765 (0.0037)      115.0     0.126 (0.031)      34.17 (0.228)      0.8862 (0.0039)      110.0     0.122 (0.030)
+               Ours-MCSR                34.83 (0.167)     0.8873 (0.0034)      103.0     0.115 (0.030)      35.25 (0.144)      0.9017 (0.0036)      98.0      0.109 (0.028)
+
+
+both FastMRI and BraTs datasets. Compared to the strongest baseline                             evaluating  the  influence  of  different  backbone  architectures.  When
+DiffMSR [18], DiTMSR yields absolute gains of +1.05 dB and +1.08 dB                             replacing our proposed DiT with a conventional U-Net, the performance
+in PSNR on FastMRI and BraTs, respectively, along with noticeable                               consistently drops across all decoder variants. For example, with a
+SSIM improvements. These results clearly demonstrate the superior-                              simple ResBlock decoder, the U-Net backbone achieves only 32.84
+ity of our framework in recovering global anatomical structures and                             PSNR and 0.8571 SSIM, while DiT improves these metrics to 33.41
+fine-grained textures on public datasets.                                                       and 0.8633, respectively. This improvement trend continues with more
+    Furthermore, as reported in Table  5, DiTMSR consistently outper-                           advanced decoders: using DiT in place of U-Net results in consistent
+forms all competing methods across three challenging clinical datasets:                         gains with both Transformer and HMD decoders. These results highlight
+Clinical Brain, Clinical Tumor, and Clinical Pelvic. These datasets ex-                         the advantage of DiT in modeling global dependencies and capturing
+hibit diverse anatomical patterns and contrast variations, making accu-                         complex noise structures within the diffusion process.
+rate reconstruction particularly difficult. Despite this, our method de-                            We further investigate the impact of decoder architectures. Regard-
+livers significant improvements over diffusion- and transformer-based                           less of the backbone used, the proposed HMD consistently outperforms
+baselines. For instance, DiTMSR improves PSNR by +1.13 dB on Clini-                             both the ResBlock and Transformer decoders. Notably, the combination
+cal Brain and +1.06 dB on Clinical Tumor compared to DiffMSR, while                             of DiT and HMD achieves the best overall performance, yielding 34.83
+achieving the highest SSIM across all clinical settings. The consistent                         PSNR and 0.8873 SSIM, clearly outperforming all other variants. This
+superiority of DiTMSR on both public and clinical benchmarks high-                              demonstrates the effectiveness of HMD in aggregating long-range con-
+lights the effectiveness of our proposed design, including the latent                           textual information while preserving fine anatomical details, which is
+diffusion transformer backbone, hybrid Mamba decoder, and multi-                                critical in medical image reconstruction.
+contrast conditioning strategy. These components collectively enable                                In summary, these ablation results substantiate the importance of
+DiTMSR to achieve more faithful structure preservation, better contrast                         both the DiT-based backbone and the HMD decoder. Their synergy
+restoration, and higher visual fidelity in MR image super-resolution.                           enables our model to effectively balance denoising precision and struc-
+4.5. Ablation study                                                                             tural fidelity, leading to superior MR image reconstruction quality.
+
+    We perform ablation studies to assess the effectiveness of each key                         4.5.2. Effect of other component
+component of the proposed method. The variants are trained and tested                               To further understand the impact of key components in our pro-
+on the FastMRI dataset with an upsampling factor of 4×, under the same                          posed architecture, we conduct four ablation experiments: (1) removing
+experimental setting.                                                                           the reference MR image guidance, (2) eliminating the Content Preser-
+                                                                                                vation Module (CPM), (3) replacing the Hybrid Mamba Block (HMB)
+4.5.1. Effect of CDiT and hybrid Mamba decoder                                                  with standard Mamba, and (4) removing the final self-attention layer
+    To comprehensively assess the contributions of the backbone and                             in the decoder. The results are summarized in Table  8.
+
+decoder designs in our framework, we conduct a series of ablation                               Impact of reference guidance.  To assess the contribution of reference
+experiments by varying the combinations of feature extractors and                               guidance, we remove the reference encoder and the cross-attention
+decoding modules, with results summarized in Table  7. We begin by                              mechanism  during  the  denoising  process  (𝑤∕𝑜  Reference).  Without
+
+
+                                                                                            10
+
+=== PDF PAGE 11 ===
+X. Tu et al.                                                                                                                         Computers in Biology and Medicine 198 (2025) 111261
+
+Table 5
+Quantitative comparison on clinical datasets (Clinical Brain, Clinical Tumor, and Clinical Pelvic). Red indicates the best and blue indicates the second best.
+                    MINet [53]           MASA [66]           WavTrans [55]         McMRSR [54]         MC-VarNet [67]        DisC-Diff [25]      DiffMSR-MCSR [18]           Ours-MCSR
+  Clinical Brain
+  PSNR (std)       30.93 (0.252)        31.17 (0.165)        32.42 (0.148)         32.48 (0.196)        32.74 (0.177)        32.85 (0.144)           34.12 (0.133)          35.25 (0.129)
+  SSIM (std)      0.9049 (0.0045)      0.9076 (0.0047)      0.9215 (0.0050)      0.9217 (0.0051)       0.9231 (0.0046)      0.9285 (0.0044)        0.9362 (0.0039)         0.9481 (0.0036)
+  FID                  172.0                164.0                 150.0                149.0                137.0                 127.0                  109.0                   97.0
+  LPIPS (std)      0.169 (0.038)        0.162 (0.037)        0.151 (0.035)         0.150 (0.035)        0.142 (0.033)        0.134 (0.032)           0.121 (0.030)          0.111 (0.028)
+  Clinical Tumor
+  PSNR (std)       30.57 (0.278)        30.81 (0.219)        31.99 (0.176)         32.07 (0.188)        32.16 (0.229)        32.64 (0.165)           33.85 (0.156)          34.91 (0.141)
+  SSIM (std)      0.8962 (0.0039)      0.8981 (0.0041)      0.9107 (0.0043)      0.9121 (0.0042)       0.9153 (0.0038)      0.9187 (0.0040)        0.9274 (0.0036)         0.9377 (0.0038)
+  FID                  178.0                170.0                 156.0                154.0                143.0                 133.0                  117.0                  104.0
+  LPIPS (std)      0.173 (0.039)        0.166 (0.038)        0.154 (0.036)         0.153 (0.036)        0.146 (0.035)        0.138 (0.033)           0.125 (0.031)          0.116 (0.029)
+  Clinical Pelvic
+  PSNR (std)       30.75 (0.192)        30.94 (0.182)        32.15 (0.207)         32.19 (0.162)        33.51 (0.204)        34.26 (0.182)           35.47 (0.123)          36.01 (0.118)
+  SSIM (std)      0.8861 (0.0034)      0.8879 (0.0046)      0.9054 (0.0049)      0.9063 (0.0045)       0.9265 (0.0041)      0.9388 (0.0044)        0.9607 (0.0034)         0.9684 (0.0035)
+  FID                  158.0                150.0                 140.0                139.0                125.0                 116.0                  102.0                   90.0
+  LPIPS (std)      0.157 (0.036)        0.151 (0.035)        0.143 (0.034)         0.142 (0.034)        0.134 (0.032)        0.126 (0.031)           0.113 (0.029)          0.104 (0.028)
+
+
+Table 6
+Comparison of model size, FLOPs, inference speed, and GPU memory for LR input (64 × 64 → 256 × 256), measured on an NVIDIA RTX A6000 GPU.
+ Method                            MINet               MASA                WavTrans            McMRSR              MC-VarNet            DisC-Diff           DiffMSR            Ours
+ Param                             11.9 M              4.0 M               2.1 M               3.5 M               5.7 M                86.1 M              6.8 M              2.9 M
+ FLOPs                             866.933 G           180.134 G           162.889 G           269.860 G           139.862 G            461.002 G           58.617 G           147.361 G
+ Inference speed                   115 ms              110 ms              173 ms              168 ms              97 ms                1455 ms             39 ms              185 ms
+ Inference GPU memory              12.70 G             7.63 G              8.8 G               10.7 G              17.4 G               26.3 G              12.97 G            11.1 G
+
+
+Table 7
+Ablation study on different combinations of backbone and decoder. Mean and standard deviation of PSNR and SSIM are reported.
+ Metrics              U-Net & ResBlock               CDiT & ResBlock              U-Net & Trans                CDiT & Trans                 U-Net & HMD                 CDiT & HMD
+ PSNR (↑)             32.84 (0.185)                  33.41 (0.169)                33.38 (0.152)                34.16 (0.143)                33.94 (0.137)               34.83 (0.167)
+ SSIM (↑)             0.8571 (0.0046)                0.8633 (0.0043)              0.8665 (0.0039)              0.8776 (0.0041)              0.8752 (0.0037)             0.8873 (0.0034)
+
+
+                Table 8
+                Ablation study on key components of our architecture. The table shows PSNR (dB) and SSIM (mean ± std) on the FastMRI dataset.
+                 Metric                𝑤∕𝑜 HMB                    𝑤∕𝑜 CPM                     𝑤∕𝑜 self-attention            𝑤∕𝑜 reference              Full model
+                 PSNR (↑)              33.85 (0.222)              34.08 (0.189)               34.26 (0.207)                 34.51 (0.193)              34.83 (0.167)
+                 SSIM (↑)              0.8698 (0.0038)            0.8755 (0.0036)             0.8789 (0.0041)               0.8824 (0.0039)            0.8873 (0.0034)
+
+
+this conditional guidance, the model struggles to incorporate external                           self-attention layer significantly enhance the contextual modeling ca-
+anatomical  priors,  leading  to  degraded  reconstruction  quality.  This                       pacity. These results validate that all four components collaboratively
+demonstrates the importance of reference information in enhancing                                contribute to the superior reconstruction performance of our method.
+structure-aware denoising.
+Effect of the content preservation module.  We ablate the CPM (𝑤∕𝑜 CPM)                          4.5.3. Computational complexity analysis
+in the decoder, which is responsible for injecting structural information                            Beyond reconstruction quality, computational efficiency is crucial
+from the LR image into the final latent features. The absence of this                            for practical deployment, especially in clinical scenarios. To this end,
+module results in less accurate anatomical reconstruction, indicating its                        we compare the computational cost (in terms of FLOPs) between the
+critical role in preserving structural fidelity and mitigating information                       standard  Transformer  decoder  and  our  proposed  HMD.  The  Trans-
+loss during diffusion.                                                                           former decoder incurs a total of 163.680G, whereas the HMD only
+                                                                                                 requires 69.391G, achieving a significant 57.6% reduction in com-
+Replacing hybrid mamba block.  To evaluate the advantage of the pro-                             putational  complexity.  This  notable  efficiency  gain  stems  from  the
+posed HMB, we replace it with a standard Mamba block (𝑤∕𝑜 HMB).                                  design of HMD, which integrates the sequential modeling strength of
+The simplified block fails to capture rich spatial dependencies and                              Mamba with the expressive capacity of Transformer in a lightweight
+long-range interactions, leading to weaker representational capacity.                            structure. Specifically, Mamba enables efficient long-range dependency
+This confirms that combining Mamba with transformer-style attention                              modeling with linear complexity, while the hybrid design strategically
+enhances both modeling flexibility and performance.                                              incorporates attention without incurring the full quadratic cost as-
+Effect of final self-attention.  We further examine the role of the fi-                          sociated with traditional Transformer blocks. Additionally, the HMD
+nal self-attention layer by removing it from the decoder (𝑤∕𝑜 Self-                              avoids redundant attention layers, relying instead on content-aware
+Attention). The resulting model shows reduced ability to refine global                           fusion and a shallow self-attention refinement layer to preserve high-
+features in the final stage, underscoring that self-attention helps im-                          frequency details. Despite its lower complexity, HMD not only matches
+prove the consistency and contextual awareness of the reconstructed                              but even surpasses the Transformer decoder in reconstruction perfor-
+image.                                                                                           mance, as evidenced by our ablation results. This demonstrates that
+    In summary, as shown in Table  8, removing any individual com-                               HMD achieves a better trade-off between expressiveness and efficiency,
+ponent leads to performance degradation, confirming the necessity of                             making it a more suitable decoder for high-resolution medical image
+each design. In particular, the HMB and CPM modules are essential                                reconstruction tasks. HMD provides a superior balance of accuracy
+for preserving anatomical structure, while the reference guidance and                            and efficiency, reducing FLOPs while improving fidelity. This supports
+
+
+                                                                                            11
+
+=== PDF PAGE 12 ===
+X. Tu et al.                                                                                                                   Computers in Biology and Medicine 198 (2025) 111261
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 7. Failure case under large upscaling factors. While 4× preserves cortical folds and ventricle boundaries reasonably well, 6×/8× exhibit visible degradation
+— over-smoothing of thin sulci, attenuated edge contrast around ventricles, and mild ringing/texture repetition — illustrating the limitation of the model when
+the required high-frequency content exceeds what is recoverable from the LR signal.
+
+its effectiveness as a backbone component in resource-constrained or
+latency-sensitive MR imaging pipelines.
+    Table  6 compares model size, computation, speed, and memory
+under the same setting. Compared with CNN/Transformer baselines
+(e.g., MINet, McMRSR), we keep fewer parameters and lower FLOPs
+than most, with memory comparable to MINet/DiffMSR. Overall, the
+results indicate that our approach attains a favorable balance of com-
+pactness  (2.9M)  and  moderate  compute  (147.3G)  while  preserving
+practical inference cost (11.1G VRAM).
+
+4.6. User study on visual preference
+
+    To further assess the perceptual quality of reconstructed MR images,
+we conduct a user study involving 50 board-certified radiologists from
+three different hospitals. Each participant is presented with 50 ran-
+domly sampled T2-weighted MR images reconstructed by our method                             Fig. 8. User study results comparing the perceptual quality of MR images re-
+and DiffMSR [18], shown side-by-side in randomized order without                            constructed by our method and DiffMSR. We invited 50 radiologists to choose
+revealing the method identity. For each image pair, the radiologists are                    their preferred results without knowing the source method. Among them,
+asked to select the image that offers better diagnostic quality in terms                    73.4% preferred our results, 18.5% favored DiffMSR, and 8.1% expressed no
+of tissue boundary clarity, structural fidelity, and overall sharpness. In                  clear preference, demonstrating the superiority of our method in perceptual
+cases where both images are judged equally, participants are allowed                        quality from expert perspectives.
+to select ‘‘no preference’’.
+    Across all participants and image pairs, we collected a total of 2500
+comparisons. As summarized in Fig.  8, our method was preferred in                          to fuse the clean latent with stage-specific target features, explicitly
+73.4% of the cases, compared to only 18.5% for DiffMSR, while 8.1%                          supplying global topology and coarse semantics as alignment anchors
+of responses indicated no preference. This strong preference confirms                       for subsequent detail synthesis.
+that our DiTMSR reconstruction not only performs well in quantitative                            Hybrid Mamba Decoder. SR decoding requires both long-range
+metrics but also provides superior perceptual quality appreciated by                        context (structural/semantic consistency) and local refinement (edges/
+clinical experts. The user study reinforces the clinical utility of our                     textures). A Transformer-only decoder is quadratic and memory-heavy
+method, demonstrating its advantage in delivering visually sharper and                      at high resolution, while a CNN-only decoder lacks non-local mix-
+more diagnostically valuable MR reconstructions.                                            ing. Vision state-space models (Mamba) provide O(N) complexity with
+                                                                                            strong long-range mixing, making them naturally suited to HR decod-
+5. Discussion                                                                               ing. We therefore adopt a complementary layout per stage: CP, Mamba,
+                                                                                            and self-attention. Mamba handles linear-cost global mixing, and a
+    Our design is not a simple stacking of modules; it is purposefully                      small self-attention head restores local coherence and edge sharpness.
+constructed around the requirements of MRI super-resolution: (1) a DiT                      Compared with a Transformer-only decoder, this significantly reduces
+backbone for stable, scalable denoising; (2) attention-integrated condi-                    quadratic attention cost and KV memory; compared with a CNN-only
+tional fusion with a Content Preservation (CP) module for topological                       decoder, it retains non-local, cross-region consistency.
+alignment;  (3)  a  Mamba  decoder  that  performs  long-range  mixing
+with linear complexity, complemented by light self-attention for local                      6. Conclusion
+sharpening.
+    Latent DiT Backbone. In diffusion-based SR, multi-step denoising                             In this paper, we propose DiTMSR, a novel architecture that syn-
+and global consistency are crucial. Compared with U-Net, DiT shows                          ergistically integrates Diffusion Transformer and the visual Mamba
+better scalability and global modeling for large-scale generation. Unlike                   framework for MRI reconstruction. Specifically, DiTMSR leverages a
+U-Net denoisers — whose inductive bias is predominantly local and                           condition diffusion transformer to generate clean latent representations
+prone to structural drift at large upscales — DiT’s global attention helps                  of MRI, and introduces a dedicated condition network to guide the de-
+maintain topological consistency and long-range dependencies.                               noising process. Furthermore, we design a Hybrid Mamba Decoder that
+    Conditional  Guidance.  Prior  approaches  often  inject  reference                     effectively balances structural fidelity and modeling capacity by com-
+information via side paths or late fusion, which risks lagged guidance                      bining a Content Preservation Module and a Hybrid Mamba Block. The
+and geometric misalignment. We instead inject the condition directly                        decoder further incorporates a MambaVision Mixer and feed-forward
+into DiT’s cross-attention — updated step-by-step along the diffusion                       network to model long-range dependencies in a computationally ef-
+trajectory — and add a CP module before decoding: using Q/K/V                               ficient manner. Extensive experiments conducted on both public and
+
+
+                                                                                        12
+
+=== PDF PAGE 13 ===
+X. Tu et al.                                                                                                                                 Computers in Biology and Medicine 198 (2025) 111261
+
+clinical MRI datasets demonstrate the superior performance of our                                      References
+method over existing state-of-the-art approaches, not only in terms of
+quantitative metrics, but also in terms of visual quality and clinical                                   [1]  G. Li, J. Lv, X. Tong, C. Wang, G. Yang, High-Resolution pelvic MRI reconstruc-
+fidelity. Our results highlight the potential of combining structured                                         tion using a generative adversarial network with attention and cyclic loss, IEEE
+diffusion processes with Mamba-style sequence modeling for efficient                                          Access 9 (2021) 105951–105964.
+                                                                                                         [2]  C.-M. Feng, K. Wang, S. Lu, Y. Xu, X. Li, Brain MRI super-resolution using
+and scalable medical image reconstruction.                                                                    coupled-projection residual network, Neurocomputing 456 (2021) 190–199.
+    Limitations and Potential Failure Modes. Upscaling factors be-                                       [3]  K. Jiang, Z. Wang, P. Yi, J. Jiang, Hierarchical dense recursive network for image
+yond 4×. When the upscaling factor exceeds 4×, the reconstruction                                             super-resolution, Pattern Recognit. 107 (2020) 107475.
+quality degrades (see Fig.  7). From 64 × 64 to higher resolutions,                                      [4]  K. Ye, I.G. Dorado, M. Raptis, M. Delbracio, I. Zhu, P. Milanfar, H. Talebi, TextSR:
+                                                                                                              Diffusion Super-Resolution with multilingual OCR guidance, 2025, arXiv preprint
+the LR signal lacks the requisite high-frequency bands, which must be                                         arXiv:2505.23119.
+hallucinated; as the factor increases, the missing bandwidth widens, the                                 [5]  Y. Zhang, J. Zhang, H. Li, Z. Wang, L. Hou, D. Zou, L. Bian, Diffusion-based
+inverse problem becomes markedly more ill-posed, and over-smoothing                                           blind text image super-resolution, in: Proceedings of the IEEE/CVF Conference
+or hallucinations are more likely. In addition, since our training set is                                     on Computer Vision and Pattern Recognition, 2024, pp. 25827–25836.
+                                                                                                         [6]  K. Jiang, Z. Wang, P. Yi, T. Lu, J. Jiang, Z. Xiong, Dual-path deep fusion network
+dominated by 4× cases, the learned frequency prior (high-frequency                                            for face image hallucination, IEEE Trans. Neural Netw. Learn. Syst. 33 (1) (2020)
+statistics and texture distribution) becomes distribution-shifted at 6×/                                      378–391.
+8×, further exacerbating the mismatch.                                                                   [7]  R. Feng, C. Li, C.C. Loy, Kalman-inspired feature propagation for video face
+    Future Work. To mitigate the degradation beyond 4×, we will                                               super-resolution, in: European Conference on Computer Vision, Springer, 2024,
+                                                                                                              pp. 202–218.
+leverage multimodal priors to supplement missing high-frequency in-                                      [8]  Y. Xiao, Q. Yuan, K. Jiang, Y. Chen, S. Wang, C.-W. Lin, Multi-Axis feature
+formation. Specifically, we plan to (i) fuse textual clinical priors via                                      diversity enhancement for remote sensing video super-resolution, IEEE Trans.
+cross-modal attention to bias the generator toward anatomically plau-                                         Image Process. (2025).
+sible details; (ii) incorporate structural priors—segmentation masks,                                    [9]  Y. Wang, Z. Shao, T. Lu, X. Huang, J. Wang, Z. Zhang, X. Zuo, Lightweight
+                                                                                                              remote sensing super-resolution with multi-scale graph attention network, Pattern
+anatomical atlases, or diffusion-tensor to constrain geometry and re-                                         Recognit. 160 (2025) 111178.
+duce hallucinations; (iii) align k-space priors with the image domain                                  [10]   J. Ho, A. Jain, P. Abbeel, Denoising diffusion probabilistic models, Adv. Neural
+using dual-branch supervision so frequency content is consistent across                                       Inf. Process. Syst. 33 (2020) 6840–6851.
+scales. We will couple these with uncertainty-aware guidance to down-                                  [11]   L.  Jiang,  Y.  Mao,  X.  Wang,  X.  Chen,  C.  Li,  CoLa-Diff:  Conditional  latent
+                                                                                                              diffusion model for multi-modal MRI synthesis, in: International Conference on
+weight low-confidence regions and report calibrated confidence maps,                                          Medical Image Computing and Computer-Assisted Intervention, Springer, 2023,
+aiming for robust, clinically faithful SR at arbitrary scales.                                                pp. 398–408.
+                                                                                                       [12]   G. Müller-Franzes, J.M. Niehues, F. Khader, S.T. Arasteh, C. Haarburger, C. Kuhl,
+                                                                                                              T. Wang, T. Han, T. Nolte, S. Nebelung, et al., A multimodal comparison of latent
+CRediT authorship contribution statement                                                                      denoising diffusion probabilistic models and generative adversarial networks for
+                                                                                                              medical image synthesis, Sci. Rep. 13 (1) (2023) 12098.
+    Xinyue Tu: Writing – review & editing, Writing – original draft, Vi-                               [13]   M. Özbey, O. Dalmaz, S.U. Dar, H.A. Bedel, Ş. Özturk, A. Güngör, T. Çukur,
+                                                                                                              Unsupervised medical image translation with adversarial diffusion models, IEEE
+sualization, Supervision, Resources, Project administration, Investiga-                                       Trans. Med. Imaging (2023).
+tion, Funding acquisition, Formal analysis, Data curation. Guangyuan                                   [14]   J.S. Yoon, C. Zhang, H.-I. Suk, J. Guo, X. Li, SADM: Sequence-Aware diffusion
+Li: Writing – review & editing, Writing – original draft, Visualization,                                      model for longitudinal medical image generation, in: International Conference
+Validation,  Software,  Resources,  Methodology,  Funding  acquisition,                                       on Information Processing in Medical Imaging, Springer, 2023, pp. 388–400.
+                                                                                                       [15]   I. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A.
+Formal analysis, Conceptualization. Zhongwen Fan: Writing – review                                            Courville, Y. Bengio, Generative adversarial nets, Adv. Neural Inf. Process. Syst.
+& editing, Software, Resources. Xinjiang Ding: Writing – review & edit-                                       27 (2014).
+ing, Software, Resources. Yuanxing Liu: Writing – review & editing,                                    [16]   Z. Chen, Y. Zhang, D. Liu, J. Gu, L. Kong, X. Yuan, et al., Hierarchical integration
+Supervision, Investigation, Funding acquisition.                                                              diffusion model for realistic image deblurring, Adv. Neural Inf. Process. Syst. 36
+                                                                                                              (2024).
+                                                                                                       [17]   B. Xia, Y. Zhang, S. Wang, Y. Wang, X. Wu, Y. Tian, W. Yang, L. Van Gool,
+Ethical approval                                                                                              Diffir: Efficient diffusion model for image restoration, ICCV (2023).
+                                                                                                       [18]   G. Li, C. Rao, J. Mo, Z. Zhang, W. Xing, L. Zhao, Rethinking diffusion model for
+                                                                                                              multi-contrast mri super-resolution, in: Proceedings of the IEEE/CVF Conference
+    This study involving human participants was conducted in accor-                                           on Computer Vision and Pattern Recognition, 2024, pp. 11365–11374.
+dance with the ethical standards of the Declaration of Helsinki. All                                   [19]   C. Rao, G. Li, Z. Lan, J. Sun, J. Luan, W. Xing, L. Zhao, H. Lin, J. Dong, D.
+clinical data collection procedures were reviewed and approved by the                                         Zhang, Rethinking video deblurring with Wavelet-Aware dynamic transformer
+                                                                                                              and diffusion model, in: European Conference on Computer Vision, Springer,
+Ethics Committee of the First Affiliated Hospital, Zhejiang University                                        2025, pp. 421–437.
+School of Medicine (IIT Review Panel). The approval reference number                                   [20]   W. Peebles, S. Xie, Scalable diffusion models with transformers, in: Proceedings
+is 2023-YR0866-K. Written informed consent was obtained from all                                              of  the  IEEE/CVF  International  Conference  on  Computer  Vision,  2023,  pp.
+participants prior to data collection, and patient confidentiality was                                        4195–4205.
+                                                                                                       [21]   K. Cheng, L. Yu, Z. Tu, X. He, L. Chen, Y. Guo, M. Zhu, N. Wang, X. Gao, J.
+strictly protected throughout the study.                                                                      Hu, Effective diffusion transformer architecture for image super-resolution, 2024,
+                                                                                                              arXiv preprint arXiv:2409.19589.
+                                                                                                       [22]   A. Gu, T. Dao, Mamba: Linear-time sequence modeling with selective state
+Declaration of competing interest                                                                             spaces, 2023, arXiv preprint arXiv:2312.00752.
+                                                                                                       [23]   A. Hatamizadeh, J. Kautz, Mambavision: A hybrid mamba-transformer vision
+    The authors declare that they have no known competing finan-                                              backbone, 2024, arXiv preprint arXiv:2407.08083.
+cial interests or personal relationships that could have appeared to                                   [24]   L. Zhu, B. Liao, Q. Zhang, X. Wang, W. Liu, X. Wang, Vision Mamba: Efficient
+                                                                                                              visual representation learning with bidirectional state space model, in: Forty-First
+influence the work reported in this paper.                                                                    International Conference on Machine Learning.
+                                                                                                       [25]   Y. Mao, L. Jiang, X. Chen, C. Li, DisC-Diff: Disentangled conditional diffusion
+                                                                                                              model for multi-contrast MRI Super-Resolution, Springer, 2023,
+Acknowledgments                                                                                        [26]   K. Zhao, K. Pang, A.L.Y. Hung, H. Zheng, R. Yan, K. Sung, Mri super-resolution
+                                                                                                              with partial diffusion models, IEEE Trans. Med. Imaging (2024).
+    This work was supported in part by Zhejiang Provincial Natural                                     [27]   Z. Han, W. Huang, Arbitrary scale super-resolution diffusion model for brain MRI
+                                                                                                              images, Comput. Biol. Med. 170 (2024) 108003.
+Science Foundation of China (LZ24H030001) and the National Natural                                     [28]   J. Ma, G. Jian, J. Chen, Diffusion Model-Based MRI Super-Resolution synthesis,
+Science Foundation of China (81970543).                                                                       Int. J. Imaging Syst. Technol. 35 (2) (2025) e70021.
+
+
+                                                                                                  13
+
+=== PDF PAGE 14 ===
+X. Tu et al.                                                                                                                                            Computers in Biology and Medicine 198 (2025) 111261
+
+
+[29]   S. Goswami, A. Gupta, A. Paul, LearnDiff: MRI image super-resolution using                              [50]    H. Guo, Y. Guo, Y. Zha, Y. Zhang, W. Li, T. Dai, S.-T. Xia, Y. Li, Mambairv2:
+       a diffusion model with learnable noise, Comput. Med. Imaging Graph. (2025)                                      Attentive state space restoration, in: Proceedings of the Computer Vision and
+       102641.                                                                                                         Pattern Recognition Conference, 2025, pp. 28124–28133.
+[30]   M. Safari, S. Wang, Z. Eidex, Q. Li, R.L. Qiu, E.H. Middlebrooks, D.S. Yu, X.                           [51]    A. Hatamizadeh, J. Kautz, Mambavision: A hybrid mamba-transformer vision
+       Yang, MRI super-resolution reconstruction using efficient diffusion probabilistic                               backbone, in: Proceedings of the Computer Vision and Pattern Recognition
+       model with residual shifting, Phys. Med. Biol. 70 (12) (2025) 125008.                                           Conference, 2025, pp. 25261–25270.
+[31]   P. Dhariwal, A. Nichol, Diffusion models beat gans on image synthesis, Adv.                             [52]    Q. Lyu, H. Shan, C.R. Steber, C.A. Helis, C. Whitlow, M. Chan, G. Wang, Multi-
+       Neural Inf. Process. Syst. 34 (2021) 8780–8794.                                                                 contrast super-resolution MRI through a progressive network, IEEE Trans. Med.
+[32]   A.Q. Nichol, P. Dhariwal, Improved denoising diffusion probabilistic models, in:                                Imaging 39 (2019) 2738–2749.
+       International Conference on Machine Learning, PMLR, 2021, pp. 8162–8171.                                [53]    C.-M. Feng, H. Fu, S. Yuan, Y. Xu, Multi-contrast MRI super-resolution via a
+[33]   R. Rombach, A. Blattmann, D. Lorenz, P. Esser, B. Ommer, High-resolution                                        Multi-Stage integration network, in: International Conference on Medical Image
+       image   synthesis   with   latent   diffusion   models,   in:   Proceedings   of   the                          Computing and Computer-Assisted Intervention, 2021.
+       IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022, pp.                               [54]    G. Li, J. Lv, Y. Tian, Q. Dou, C.-Y. Wang, C. Xu, J. Qin, Transformer-empowered
+       10684–10695.                                                                                                    Multi-scale contextual matching and aggregation for Multi-contrast MRI Super-
+[34]   O. Ronneberger, P. Fischer, T. Brox, U-net: Convolutional networks for biomedi-                                 resolution, in: 2022 IEEE/CVF Conference on Computer Vision and Pattern
+       cal image segmentation, in: Medical Image Computing and Computer-Assisted                                       Recognition, 2022, pp. 20604–20613.
+       Intervention–MICCAI 2015: 18th International Conference, Munich, Germany,                               [55]    G. Li, J. Lyu, C. Wang, Q. Dou, J. Qin, WavTrans: Synergizing wavelet and Cross-
+       October 5-9, 2015, Proceedings, Part III 18, Springer, 2015, pp. 234–241.                                       Attention transformer for Multi-contrast MRI super-resolution, in: International
+[35]   K. He, X. Zhang, S. Ren, J. Sun, Deep residual learning for image recognition, in:                              Conference on Medical Image Computing and Computer-Assisted Intervention,
+       Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition,                                  2022.
+       2016, pp. 770–778.                                                                                      [56]    J. Lyu, G. Li, C. Wang, Q. Cai, Q. Dou, D. Zhang, J. Qin, Multicontrast MRI
+[36]   S. Gao, P. Zhou, M.-M. Cheng, S. Yan, Masked diffusion transformer is a strong                                  super-resolution via Transformer-Empowered multiscale contextual matching and
+       image synthesizer, in: Proceedings of the IEEE/CVF International Conference on                                  aggregation, IEEE Trans. Neural Netw. Learn. Syst. (2023).
+       Computer Vision, 2023, pp. 23164–23173.                                                                 [57]    S. Huang, J. Li, L. Mei, T. Zhang, Z. Chen, Y. Dong, L. Dong, S. Liu, M.
+[37]   A. Hatamizadeh, J. Song, G. Liu, J. Kautz, A. Vahdat, Diffit: Diffusion vision                                  Lyu, Accurate Multi-contrast MRI Super-Resolution via a dual Cross-Attention
+       transformers for image generation, in: European Conference on Computer Vision,                                  transformer network, in: International Conference on Medical Image Computing
+       Springer, 2025, pp. 37–55.                                                                                      and Computer-Assisted Intervention, Springer, 2023, pp. 313–322.
+[38]   Z.  Yang,  H.  Jiang,  W.  Hong,  J.  Teng,  W.  Zheng,  Y.  Dong,  M.  Ding,  J.                       [58]    G. Li, W. Xing, L. Zhao, Z. Lan, Z. Zhang, J. Sun, H. Yin, H. Lin, Z. Lin, DuDoINet:
+       Tang, Inf-DiT: Upsampling any-resolution image with memory-efficient diffusion                                  Dual-Domain  implicit  network  for  Multi-Modality  MR  image  Arbitrary-Scale
+       transformer, in: European Conference on Computer Vision, Springer, 2025, pp.                                    Super-Resolution, in: Proceedings of the 31st ACM International Conference on
+       141–156.                                                                                                        Multimedia, MM ’23, 2023, pp. 7335–7344, http://dx.doi.org/10.1145/3581783.
+[39]   Y. Xiao, Q. Yuan, K. Jiang, J. He, X. Jin, L. Zhang, EDiffSR: An efficient                                      3612230.
+       diffusion probabilistic model for remote sensing image super-resolution, IEEE                           [59]    G. Li, L. Zhao, J. Sun, Z. Lan, Z. Zhang, J. Chen, Z. Lin, H. Lin, W. Xing, Re-
+       Trans. Geosci. Remote Sens. 62 (2024) 1–14, http://dx.doi.org/10.1109/TGRS.                                     thinking Multi-Contrast MRI Super-Resolution: Rectangle-Window cross-attention
+       2023.3341437.                                                                                                   transformer and Arbitrary-Scale upsampling, in: Proceedings of the IEEE/CVF
+[40]   F. Bao, S. Nie, K. Xue, Y. Cao, C. Li, H. Su, J. Zhu, All are worth words: A vit                                International Conference on Computer Vision, 2023, pp. 21230–21240.
+       backbone for diffusion models, in: Proceedings of the IEEE/CVF Conference on                            [60]    J. Zbontar, F. Knoll, A. Sriram, T. Murrell, Z. Huang, M.J. Muckley, A. Defazio,
+       Computer Vision and Pattern Recognition, 2023, pp. 22669–22679.                                                 R. Stern, P. Johnson, M. Bruno, et al., fastMRI: An open dataset and benchmarks
+[41]   K. Cheng, L. Yu, Z. Tu, X. He, L. Chen, Y. Guo, M. Zhu, N. Wang, X. Gao, J.                                     for accelerated MRI, 2018, arXiv preprint arXiv:1811.08839.
+       Hu, Effective diffusion transformer architecture for image super-resolution, in:                        [61]    A. Hatamizadeh, D. Terzopoulos, A. Myronenko, End-to-end boundary aware net-
+       Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 39, 2025, pp.                               works for medical image segmentation, in: International Workshop on Machine
+       2455–2463.                                                                                                      Learning in Medical Imaging, Springer, 2019, pp. 187–194.
+[42]   Z.-P. Duan, J. Zhang, X. Jin, Z. Zhang, Z. Xiong, D. Zou, J.S. Ren, C.-L. Guo, C.                       [62]    C. Peng, P. Guo, S.K. Zhou, V.M. Patel, R. Chellappa, Towards performant
+       Li, Dit4sr: Taming diffusion transformer for real-world image super-resolution,                                 and reliable undersampled MR reconstruction via diffusion model sampling, in:
+       2025, arXiv preprint arXiv:2503.23580.                                                                          International Conference on Medical Image Computing and Computer-Assisted
+[43]   X. Pei, T. Huang, C. Xu, Efficientvmamba: Atrous selective scan for light weight                                Intervention, Springer, 2022, pp. 623–633.
+       visual mamba, 2024, arXiv preprint arXiv:2403.09977.                                                    [63]    Y. Xie, Q. Li, Measurement-conditioned denoising diffusion probabilistic model
+[44]   Y. Liu, Y. Tian, Y. Zhao, H. Yu, L. Xie, Y. Wang, Q. Ye, Y. Liu, VMamba: Visual                                 for under-sampled medical image reconstruction, in: International Conference on
+       state space model, 2024, arXiv preprint arXiv:2401.10166.                                                       Medical Image Computing and Computer-Assisted Intervention, Springer, 2022,
+[45]   Y. Xiao, Q. Yuan, K. Jiang, Y. Chen, Q. Zhang, C.-W. Lin, Frequency-Assisted                                    pp. 655–664.
+       mamba for remote sensing image super-Resolution, IEEE Trans. Multimed. 27                               [64]    H. Chung, J.C. Ye, Score-based diffusion models for accelerated MRI, Med. Image
+       (2025) 1783–1796, http://dx.doi.org/10.1109/TMM.2024.3521798.                                                   Anal. 80 (2022) 102479.
+[46]   X. Lei, W. Zhang, W. Cao, Dvmsr: Distillated vision mamba for efficient super-                          [65]    A. Güngör, S.U. Dar, Ş. Öztürk, Y. Korkmaz, H.A. Bedel, G. Elmas, M. Ozbey, T.
+       resolution, in: Proceedings of the IEEE/CVF Conference on Computer Vision and                                   Çukur, Adaptive diffusion priors for accelerated MRI reconstruction, Med. Image
+       Pattern Recognition, 2024, pp. 6536–6546.                                                                       Anal. (2023) 102872.
+[47]   Z.  Ji,  B.  Zou,  X.  Kui,  P.  Vera,  S.  Ruan,  Deform-mamba  network  for  mri                      [66]    L. Lu, W. Li, X. Tao, J. Lu, J. Jia, Masa-sr: Matching acceleration and spatial
+       super-resolution, in: International Conference on Medical Image Computing and                                   adaptation for reference-based image super-resolution, in: Proceedings of the
+       Computer-Assisted Intervention, Springer, 2024, pp. 242–252.                                                    IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2021, pp.
+[48]   H. Guo, J. Li, T. Dai, Z. Ouyang, X. Ren, S.-T. Xia, Mambair: A simple baseline for                             6368–6377.
+       image restoration with state-space model, in: European Conference on Computer                           [67]    P. Lei, F. Fang, G. Zhang, T. Zeng, Decomposition-Based variational network
+       Vision, Springer, 2025, pp. 222–241.                                                                            for Multi-Contrast MRI Super-Resolution and reconstruction, in: Proceedings
+[49]   Z. Ji, B. Zou, X. Kui, P. Vera, S. Ruan, Self-Prior guided Mamba-UNet networks                                  of  the  IEEE/CVF  International  Conference  on  Computer  Vision,  2023,  pp.
+       for  medical  image  super-resolution,  in:  International  Conference  on  Pattern                             21296–21306.
+       Recognition, Springer, 2025, pp. 160–174.                                                               [68]    A. Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen, Z. Lin,
+                                                                                                                       N. Gimelshein, L. Antiga, et al., Pytorch: An imperative style, high-performance
+                                                                                                                       deep learning library, Adv. Neural Inf. Process. Syst. 32 (2019).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                          14

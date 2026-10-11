@@ -1,0 +1,36 @@
+7.4. EXPERIMENTS
+7.4.2 Beyond Fourier sampling: image-domain conditional sampling
+Although our method was motivated by Fourier sampling, the work of Belghazi et al.
+(2019) proposed a similar, GAN-based approach for inpainting tasks. This motivated us
+to consider the problem of adaptive sampling in image domain as well.
+Experimental setting
+We carried out our experiments on the MNIST dataset. The training set contains 60000
+handwritten digits of size28× 28. We held out 10000 digits for validation purposes. The
+test set consists of 10000 digits. We zero-padded all images to32× 32 for convenience.
+We evaluated the NC approach of Belghazi et al. (2019) using their discriminator
+architecture, as well as the ResUNet and cResNet as two generators, and we compared it
+to a conditional Wasserstein GAN.
+Similarly to the MRI case, the models were trained with gradient penalty (Gulrajani
+et al., 2017) and the generators are followed with a data consistency layer as well as a
+sigmoid. All models were trained using Adam Kingma and Ba (2014) with learning rate
+10−4, β = (0.5, 0.999) and weight decay10−4. All models were trained for300 epochs.
+The images were undersampled using masks that were either drawn at random or drawn
+with a probability decaying away from the center.
+The Neural Conditioner (NC) Belghazi et al. (2019) generator and discriminator were
+updated every other round. In the WGAN case, we optimized the generator once, followed
+by four updates of the discriminator, as done in Adler and Öktem (2018a).
+Remark. Similarly to Belghazi et al. (2019), we found gradient regularization of
+the discriminator to be essential. However, we obtained very poor training results
+using the authors proposed gradient penalty, and observed that the gradient penalty
+of Gulrajani et al. (2017) led to a stable training.
+Also, Belghazi et al. (2019) aim at controlling the encoder’s Lipschitz constant by
+using spectral-normalization on the encoding part of the generator. However, we did
+not observe any effect of doing this, and did not retain it in our model.
+After training, we carried out several rounds of evaluation for different types of sampling
+as reported in Table 7.3. We found that2 samples were sufficient for the adaptive
+sampling with GAS to yield good results. We also observed that more samples20 to
+100 made little improvement in the sampling quality or image quality, except that it
+suppressed the noise of the empirical posterior mean and variance a bit more efficiently.
+Regarding the stochastic LBCS approach (Sanchez et al., 2020a), there are two parameters
+to be adjusted, namely the number of training samples to be used at each stage of the
+119

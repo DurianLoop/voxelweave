@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "stage": "prepared_pending_qualification",
+  "execution_authorized_by_user": true,
+  "GPU_authorized": true,
+  "automatic_launch": false,
+  "reason_not_launched": "Artificial full-model parameter gate failed; strong task and full real/GPU qualification pending.",
+  "cohort": {"development_patients": 11, "development_series": 19, "previously_seen_validation_patients": 4, "previously_seen_validation_series": 9, "unseen_confirmation_patients": 8, "unseen_confirmation_series": 12, "confirmation_opened": false, "locked_IXI_opened": false, "strict_LOPO_initialization": "cold_init_all_arms", "parent_19998_allowed_scope": "development_diagnosis_only"},
+  "unchanged_gates": {"patient_mean_full_Dice_min": 0.70, "patient_mean_missing_Dice_min": 0.65, "patient_mean_recall_min": 0.70, "patient_mean_abs_RVE_max": 0.50, "each_patient_full_and_missing_Dice_positive": true, "no_series_zero_TP": true, "numeric_max_error": 0.000003, "coordinate_max_error": 0.000000000003, "binary_disagreements": 0},
+  "resources": {"CPU_threads": 1, "interop_threads": 1, "own_process_priority": "below_normal", "RAM_reserve_bytes": 8000000000, "disk_reserve_bytes": 8000000000, "GPU_start_free_MiB_min": 8192, "GPU_allocator_fraction_max": 0.1, "GPU_allocator_bytes_max": 2400000000, "GPU_peak_reserved_bytes_max": 2500000000, "GPU_runtime_free_bytes_min": 4000000000, "precision": "FP32", "TF32": false, "deterministic": true, "unchanged_existing_six_arm_budget_bytes": 104156359, "new_medical_family_storage_budget_frozen": false},
+  "experiments": [
+    {"id": "E0", "question": "Restore qualified strong task before routing", "status": "pending_numeric_qualification", "required": ["full35904_actual_exit0_and_independent_audit", "full38_GPU_CPU_pipeline_qualification", "GIN_full19_three_view_two_step_qualification", "19series_runtime_and_complete_family_cost_budget"], "protocol_path": "six_resolution_training_preparation_2026_10_09/PROTOCOL.md", "steps_per_resolution_arm": 2992, "resolution_arms": 6, "development_updates_planned": 17952, "execute_now": false},
+    {"id": "E1", "question": "Acquisition information predicts patient action net benefit beyond same-information risk difference", "status": "hypothesis_unconfirmed", "required": ["E0_strong_task_six_gates_pass", "legal_fixed_observed_action_oracle_has_positive_headroom", "source_data_action_costs_and_splits_frozen"], "controls": ["identity", "strong_static", "metadata_only", "same_information_risk_difference", "agreement_SSC", "same_budget_random", "QC_defer"], "selection_target": "development_only_actual_post_action_task_delta", "evaluation_unit": "patient_within_subject_series_averaged_first", "extra_scan_measurements_allowed": false, "GT_available_at_deployment": false, "execute_now": false},
+    {"id": "E2", "question": "Action composition provides reproducible lesion benefit above strong single-action controls", "status": "hypothesis_unconfirmed_existing_joint_selection_prior_art", "required": ["E1_legal_action_headroom", "same_action_availability_history_and_compute_controls", "patient_level_joint_effect_preregistered"], "controls": ["best_single_action", "fixed_order", "one_step_greedy", "same_budget_random", "development_selected_static_combination", "mask_history_only", "within_availability_strata_image_shuffle"], "MI_is_primary_medical_endpoint": false, "execute_now": false},
+    {"id": "E3", "question": "True additional acquisition compared with processing fixed observations", "status": "pending_raw_complex_kspace_and_forward_model", "magnitude_FFT_is_measured_kspace": false, "required": ["legal_raw_complex_multicoil_measurements", "validated_forward_operator", "trajectory_and_acquisition_costs", "task_metric_and_patient_protocol"], "execute_now": false}
+  ],
+  "publication_claim_confirmed": false,
+  "goal_status": "active"
+}

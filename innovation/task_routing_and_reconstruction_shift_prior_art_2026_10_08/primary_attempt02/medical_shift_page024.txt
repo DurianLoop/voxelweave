@@ -1,0 +1,51 @@
+Wohlrapp Bubeck Rueckert Lotter
+Proof of Proportionality.When the protected attribute A takes more than two cate-
+gories (e.g., multiple races, genders, or age groups), we compare all pairsai,aj of subgroups.
+Then, we take the maximum of the pairwise disparities in true positive and false positive
+rates:
+EODD= max
+1≤i<j≤k
+hP( ˆY= 1|Y= 1,A=a i)
+−P( ˆY= 1|Y= 1,A=a j)
+
++
+P( ˆY= 1|Y= 0,A=a i)
+−P( ˆY= 1|Y= 0,A=a j)
+
+i
+Each pairwise comparison is handled exactly as in the binary case by treatinga i,aj
+as 0,1. Therefore, all the steps below—derived under a binary setup—apply pairwise to
+any two subgroups. Taking the maximum over these pairwise disparities then yields the
+multi-group measure.
+This proof is based on the derivation by (Marcinkevics et al., 2022), and adjusted for EODD.
+EODD measures the disparity between subgroups in true positive rate (TPR) and false
+positive rate (FPR). In the binary case:
+EODD=P X,Y,A( ˆY= 1|Y= 1,A= 1)
+−PX,Y|A ( ˆY= 1|Y= 1,A= 0)
++PX,Y,A( ˆY= 1|Y= 0,A= 1)
+−PX,Y,A( ˆY= 1|Y= 0,A= 0)
+This can be expressed by the following proxy function.
+EODD=
+Pn
+i=1fθ(xi)aiyiPn
+i=1aiyi
+(1)
+−
+Pn
+i=1fθ(xi)(1−a i)yiPn
+i=1(1−a i)yi
+(1)
++
+Pn
+i=1fθ(xi)ai(1−y i)Pn
+i=1ai(1−y i) (2)
+−
+Pn
+i=1fθ(xi)(1−a i)(1−y i)Pn
+i=1(1−a i)(1−y i) (2)
+To start, let’s define the conditional covariance:
+cov(A,X|Y=y) = (3)
+E[(A−E[A|Y=y])(X−E[X|Y=y])|Y=y]
+=E[AX|Y=y]−E[A|Y=y]E[X|Y=y] (3)
+We can use the law of total covariance to prove the validity:
+24

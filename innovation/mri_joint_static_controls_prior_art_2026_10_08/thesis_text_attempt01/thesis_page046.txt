@@ -1,0 +1,42 @@
+4.2. COMPRESSED SENSING AND MRI: MODEL-BASED,
+MODEL-DRIVEN APPROACHES
+ii) it does not consider the energy distribution of the signal in k-space, which is very
+concentrated around the center
+For this reason, the seminal work of Lustig et al. (2007) proposed to use a variable-density
+sampling approach, where the k-space is less undersampled near the origin (low frequency,
+high energy region) and more towards the periphery (high frequency but low energy)1.
+They used a distribution centered at the origin of k-space, where the probability of
+acquiring a location decayed at a polynomial rate as a distance of the origin, namely
+P (kx,ky) =
+(
+1− 2√p
+√
+kx +ky
+)d
+(4.3)
+with decayd> 1, and−p/2≤kx,ky≤p/2. This heuristic was proposed to imitate the
+decay in the spectrum observed on real data. The mask to be used is then estimated by
+a Monte-Carlo procedure: a set of masks are randomly sampled from Equation 4.3, and
+the mask with minimal coherence is retained.
+The idea proposed by Lustig et al. (2007) of using variable-density sampling for MRI
+was not totally novel, as variable-density sampling had previously been used in the MRI
+community to design undersampling trajectories with incoherent aliasing when using
+linear reconstructions (Marseille et al., 1996; Tsai and Nishimura, 2000). However, Lustig
+et al. (2007) were the first to integrate this heuristic within the framework of CS.
+It should be clear from the presentation that the approach of Lustig et al. (2007) is a
+model-based approach, as the masks are sampled from a heuristic probability distribution
+(eq. 4.3) and also amodel-driven approach, as the criterion used to select the masks is
+coherence, a mathematical structure prescribed by the theory of compressed sensing.
+4.2.2 Model-based, model-driven sampling in the sequel
+A similarly model-based, model-driven was followed by Gamper et al. (2008), which
+considers dynamic MRI, although from a different initial mask: they attempted at
+randomizing a deterministic mask design proposed by Tsao et al. (2003) to achieve
+incoherent sampling. Theprior in this case is given by a structured mask.
+Some refinements to variable-density sampling (VDS) were developed for instance in
+(Wang et al., 2009), but in the sequel, two broad approaches were followed to improve
+the design of sampling patterns. The first approach leveraged learning-based approaches,
+and will be discussed in the next section, while the second attempted at developing
+theoretical models that more closely captured the structure of real-world signals.
+1The name variable-density sampling originates from the very fact that k-space is not uniformly
+subsampled, but rather with a variable density (Tsai and Nishimura, 2000).
+33

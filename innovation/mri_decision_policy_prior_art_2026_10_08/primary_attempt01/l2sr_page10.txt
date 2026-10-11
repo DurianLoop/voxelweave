@@ -1,0 +1,61 @@
+Learning to Sample and Reconstruct for Accelerated MRI 10
+Proof See Appendix B.2.
+Remark 1 . Theorem 2 demonstrates that the optimal value of (3.3) is no
+greater than that of (4.8). Therefore, compared to pre-training Rsparse with the
+terminal heuristic sampling policy πh
+T for the sparse-reward POMDP, pre-training
+with any other heuristic sampling policies for the dense-reward POMDP yields no
+benefit. In particular, previous dynamic sampling methods have utilized a mixture
+of heuristic sampling policy πh
+mix = ∑∥M0∥∞+T
+t=∥M0∥∞
+ctπh
+t for pre-training reconstructors
+with the dense-reward POMDP, where ∑ct = 1. Furthermore, we will demonstrate
+empirically that using πh
+mix for pre-training is generally less effective than using πh
+T ,
+which we refer to as a distributional mismatch.
+Remark 2 . Assumption ‘ πh
+T+∥M0∥∞
+(a) > 0 for all binary column vectors a
+satisfying∥a∥1 = T +∥M0∥∞’ is necessary and easily attainable in experimental
+settings. The conclusion does not hold without this assumption, as demonstrated by
+a counter-example in Appendix B.2.
+Apart from improving inference efficiency and resolving the distributional
+mismatch, the proposed sparse-reward POMDP also offers an additional advantage. It
+decouples the sampling and reconstruction processes, which means that the sampling
+trajectories are no longer reliant on the reconstructor, but only on the sampler and
+images. This decoupling provides a viable solution for tackling the joint optimization
+problem of sparse-reward (4.6).
+4.3. Dynamic Sampling Training Framework
+In this subsection, we present a dynamic sampling training framework that utilizes a
+pretrained fixed reconstructor to solve the sparse-reward suboptimization problem
+(4.8). Our experimental results in section 5 demonstrate that this algorithm
+outperforms previous RL-based methods that rely on dense-reward POMDP, thus
+providing further evidence that eliminating distributional mismatch can improve
+reconstruction performance.
+We begin by pre-training the reconstructor using a terminal heuristic sampling
+policyπh
+T . Subsequently, we employ the proposed sparse-reward POMDP through RL
+to train the sampler with the fixed reconstructor. Mathematically, we first solve for
+θR by maximizing the expected reconstruction loss S of the reconstructor:
+θR = argmax
+θR
+Ex∼DEa∼πh
+T
+[S(R(Ma⊙F (x);θR), x)]. (4.11)
+and then solve for θπ by maximizing the expected cumulative reward Jsparse
+T under
+the sparse-reward POMDP framework:
+θπ = argmax
+θπ
+Ex∼DJsparse
+T (x;π(·;θπ),R(·;θR)). (4.12)
+To solve the optimization problem (4.11), we use a standard DL-based MRI
+reconstruction approach and train the reconstructor using the Adam optimizer [36].
+To solve the optimization problem (4.12), we leverage the proposed sparse-reward
+POMDP through RL. Specifically, we adopt the Actor-to-Critic (A2C) algorithm [37],
+an efficient deep RL method to optimize the policy π(·;θπ).
+We refer to the entire training process as L2S which stands for Learning to Sample.
+We summarize this process in algorithm 1 and illustrated it in figure 2(a).

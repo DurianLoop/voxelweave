@@ -1,0 +1,55 @@
+Learning to Sample and Reconstruct for Accelerated MRI 8
+states, which means the reconstructor should be pre-trained with a mixture of heuris-
+tic sampling policies πh
+mix = ∑∥M0∥∞+T
+t=∥M0∥∞
+ctπh
+t where ∑ct = 1, instead of only the
+terminal sampling policy πh
+T+∥M0∥∞
+. However, as we will show later, pre-training
+with the mixture of policies may not improve the final reconstruction performance,
+i.e., the optimal value of the joint optimization problem (3.1). We will justify this
+claim in theorem 2.
+4.2. Sparse-Reward POMDP
+To improve inference efficiency and eliminate distributional mismatch, we propose a
+sparse-reward POMDP that reconstructs after completing the entire trajectory and
+receives a non-zero reward after the final reconstruction. Specifically, the proposed
+sparse-reward POMDP is as follows (illustrated in figure 1(b)):
+• Observation
+yt = Mt⊙ y, t = 0, 1,··· ,T. (4.1)
+• Action setA and action at∈A
+at∼π(·| yt), t = 0, 1,··· ,T − 1, (4.2)
+where the sampler π : CN×N → ∆N is the N-dimensional discrete conditional
+probability distribution function.
+• Transition
+Mt+1 = 1(Mt + Mat), t = 0, 1,··· ,T − 1, (4.3)
+and yt is calculated by (4.1)
+• Reward {rt = 0, t = 1,··· ,T − 1
+rT = S(R(yT ), x) . (4.4)
+• Discount factor
+γ = 1. (4.5)
+It derives a sparse-reward joint optimization problem:
+max
+θπ,θR
+Ex∼DEπS(R(yT ), x)
+s.t. yt = Mt⊙F (x), t = 0, 1,··· ,T,
+at∼π(·| yt;θπ), t = 0, 1,··· ,T − 1,
+Mt+1 = 1(Mt + Mat), t = 0, 1,··· ,T − 1,
+(4.6)
+and we denote the objective function EπS(R(yT ), x) in (4.6) as Jsparse
+T (x;π,R).
+Solving the sparse-reward joint optimization problem yields a reconstructor and
+a sampler that are at least as strong as those obtained from solving the dense-reward
+joint optimization problem.
+Theorem 1 (joint optimization problem) The optimal values of optimization
+problems (3.1) and (4.6) satisfy
+sup
+π∈C(RN×N,∆N)
+R∈C(CN×N,RN×N)
+Ex∼DJ dense
+T (x)≤ sup
+π∈C(CN×N,∆N)
+R∈C(CN×N,RN×N)
+Ex∼DJ sparse
+T (x). (4.7)

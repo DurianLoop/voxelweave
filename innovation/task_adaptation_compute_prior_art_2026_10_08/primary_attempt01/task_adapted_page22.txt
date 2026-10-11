@@ -1,0 +1,59 @@
+7.3.2. Joint tomographic reconstruction and segmentation.
+T ask: Recover the probability map for segmentation of a grey scale image (see section 6.2.2
+with k = 2) from noisy parallel beam tomographic data. In this speciﬁc example, we
+consider segmenting the grey matter of CT images of the brain, which is relevant in
+imaging of neurodegerantive diseases like Alzheimers’ disease.
+Data: Elements in Y are real-valued functions on lines representing parallel beam tomo-
+graphic data, which are digitized by sampling the the angular variable at 30 uniformly
+sampled points in [0,π ] with 183 lines/angle. We furthermore add 0.1% additive Gaus-
+sian noise to data.
+Model parameter space: Elements inX are functions representing images supported on a
+ﬁxed rectangular region Ω ⊂ R2, so X :=L2(Ω, R). These are discretized by uniform
+sampling on a 128× 128 grid. The loss 𝓁X : X×X→ R is the squared L2-distance.
+Decision space: Elements in D are point-wise probability distributions over binary images
+on Ω, which can be represented by grey-scale images with values in [0 , 1] that gives
+the probability that a point is part of the segmented object. Hence, D = M
+(
+Ω, [0, 1]
+)
+with the loss function 𝓁D : D×D→ R as the cross entropy:
+𝓁D(d,d′) :=
+∫
+Ω
+[
+−
+2∑
+i=1
+d(t)(i) log
+[
+d′(t)(i)
+]]
+dt for d,d′∈ M
+(
+Ω, [0, 1]
+)
+.
+Reconstruction and task operators: ReconstructionA†
+θ : Y →X is given by the Learned
+Primal-Dual scheme in [2] and task Tϑ : X→ D is given by an “oﬀ the shelf” U-net
+convolutional neural net for segmentation [81].
+Joint training: Joint supervised data is given as 100 triplets ( xi,yi,di) where di is the seg-
+mentation (binary image). We extend joint training data by data argumentation ( ±5
+pixel translation and±10◦ rotation). There was no pre-training.
+Example outcomes are summarized in Figures 3 and 4. Note that C→ 0 corresponds to the
+sequential approach, so the image for C = 0.01 can be seen as the outcome from a sequential
+approach. Clearly, a joint approach with C≈ 0.5 or 0.9 outperforms a sequential one.
+Next, asC decreases the reconstruction becomes more adapted to the task of segmentation.
+In the limit C→ 0 the task part is viable but the reconstruction image is useless, which is
+to be expected. In the other direction, as C increases the reconstructed image becomes less
+adapted to the task and the latter becomes increasingly challenging due to the low contrast
+between white and grey matter.
+Finally, using C > 0 not only reduces the non-uniqueness as explained in (22), it fur-
+ther regularizes in the sense that information from the reconstruction guides the segmenta-
+tion, which otherwise would amount to learning the segmented image directly from the noisy
+sinogams. Intuitively there seems to be an “information exchange” between the task of re-
+construction and that of segmentation, which when properly balanced by choosing C acts as
+a regularizer for the segmentation, e.g., the white/grey matter contrast in the reconstruction
+is overemphasized for small C. This improves the interpretability since it shows how the
+reconstructed image “helps” in interpreting why a certain segmentation is taken.
+22

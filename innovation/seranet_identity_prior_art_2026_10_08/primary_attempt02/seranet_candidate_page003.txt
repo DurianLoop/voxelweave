@@ -1,0 +1,45 @@
+Title Suppressed Due to Excessive Length 3
+We present here an end-to-end architecture: Segmentation with End-to-end
+Recurrent Attention Network (SERANet) featuring a unique recurrent attention
+module that closely connects the reconstruction and the segmentation tasks.
+The intermediate segmentation is recurrently exploited as anatomical prior that
+provides guidance to recover segmentation-driven image features from the raw
+data, which in turn improves segmentation performance. Our contributions in￾clude three folds: a) We propose an approach that recurrently performs image
+segmentation directly from under-sampled k-space data; b) We introduce a novel
+attention module that guides the network to generate segmentation-driven image
+features to improve the segmentation performance; c) We present a novel work￾flow to generate under-sampled k-space data with oracle segmentation maps by
+exploiting an MRI simulator and digital brain phantoms.
+2 Methods
+In this section, we begin with a brief introduction to the problem of achieving
+segmentation directly from k-space. Then we describe our attention module and
+end-to-end recurrent framework.
+2.1 Background
+Segmentation from raw data can be generally divided into two subproblems: re￾construction and segmentation. For deep learning based reconstruction on under￾sampled k-space: x = fRec(y, m), where x ∈ R
+2×w×h
+is the reconstructed image
+(real and imaginary parts concatenated in the first dimension), y is the under￾sampled k-space data and m is the under-sampling mask indicating the position
+of sampling. fRec is a deep neural network that can be optimized by reconstruc￾tion loss, such as the l2 loss: l2(x, xgt) = kx − xgtk2. Specifically, as shown in
+Figure 1 (a), the reconstruction module consists of two basic components. One
+component is a Data Consistency (DC layer) [9] that compensates the difference
+between the estimated and the measured k-space data. The other component is
+a regularization block (Reg block) that takes as input the zero-filled fast Fourier
+transform reconstructed image x0, or the output from the DC layer xdc, and
+outputs an image x. Cascaded CNN [9] and UNet [4,11] are two popular choices
+for Reg block. Deep learning based iterative reconstruction, motivated by the
+recent success of compressed sensing in MR image reconstruction, is realized by
+cascading a series of Reg blocks and DC layers. The second step is to use the
+reconstructed image x to predict segmentation probabilities: s = fSeg(x). fSeg
+is also a deep neural network that can be optimized by segmentation loss, such
+as the cross entropy loss: lce(s, sgt) = −
+P
+s
+i∈S
+s
+i
+gt log(s
+i
+). As shown in Figure 1
+(b), the segmentation module is usually a UNet shape [8].
+2.2 Attention module
+In end-to-end training, it is beneficial to share information among different
+tasks. Therefore, we propose an attention module, as shown in Figure 1 (c) that

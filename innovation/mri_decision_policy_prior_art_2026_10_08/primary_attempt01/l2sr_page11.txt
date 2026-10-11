@@ -1,0 +1,65 @@
+Learning to Sample and Reconstruct for Accelerated MRI 11
+Train  with 
+Output  and 
+h
+Dataset 
+Heuristic Sampling Policy 
+Sampler 
+Reconstructor 
+
+
+hPre-train  with 
+(a)
+Output  and 
+Output  and 
+Train  with 
+Train  with 
+Train  with 
+h
+Dataset 
+Heuristic Sampling Policy 
+Sampler 
+Reconstructor 
+
+
+hPre-train  with 
+ iterationsL (b)
+Figure 2. Overview of (a) the training framework of dynamic sampling with
+fixed reconstructors, and (b) the alternating training framework.
+Algorithm 1 Learning to Sample (L2S)
+Require: a sampler π, a reconstructor R, a heuristic sampling policy πh, an MRI
+datasetD, and the maximum number of BP iterations n
+for i = 1 to n do
+sample a batch{x(b)}B
+b=1∼D and binary mask vectors a(b)∼πh
+computeL(θR) =− 1
+B
+∑B
+b=1 S(R(Ma(b)
+F(x(b));θR), x(b))
+optimize θR with the lossL by Adam
+end for
+build environment (sparse-reward POMDP)
+train sampler π with the environment by A2C
+Output sampler π and reconstructorR
+Remark. While we still require a heuristic policy πh, it is only used to
+initialize the reconstructor at the beginning and does not rely on human knowledge
+or design. Even random initialization is sufficient to provide a reasonable starting
+point before training (see section 5). The core of our training process involves RL-
+based optimization of π in a data-driven way, without restricting to human-designed
+heuristics. This remark also applies to algorithm 2.
+4.4. Alternating Training Framework
+In this subsection, we present an alternating training framework to solve the sparse-
+reward joint optimization problem (4.6). By jointly optimizing the sampler and
+reconstructor, this algorithm eliminates training mismatch . Mathematically, the
+optimal values of (4.6) and (4.8) satisfy the following inequality:
+sup
+θπ
+Ex∼DJsparse
+T (x;π(·;θπ),R)≤ sup
+θπ,θR
+Ex∼DJsparse
+T (x;π(·;θπ),R(·;θR)).
+We begin by pre-training the reconstructor using a terminal heuristic sampling
+policy πh
+T . During training, we alternately train the sampler with the fixed

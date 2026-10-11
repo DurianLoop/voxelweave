@@ -1,0 +1,76 @@
+6.1. REINFORCEMENT LEARNING TO OPTIMIZE SAMPLING
+TRAJECTORIES
+a non-greedyapproach to compute a Monte-Carlo (MC) estimate. They read
+∇ϕJ(ϕ)≈ 1
+q− 1 Ex∼D
+q∑
+i=1
+T∑
+t=1
+
+∇ϕ logπϕ (xt)
+T∑
+t′=t
+γt′−t
+
+ri,t′− 1
+q
+q∑
+j=1
+rj,t′
+
+
+
+ (Non-greedy), (6.7)
+∇ϕJ(ϕ)≈ 1
+q− 1 Ex∼D
+q∑
+i=1
+T∑
+t=1
+
+∇ϕ logπϕ (xt)
+
+ri,t− 1
+q
+q∑
+j=1
+rj,t
+
+
+
+ (Greedy) (6.8)
+where ri,t denotes the reward for thei-th (out ofq) MC sample at time stept. We see
+here that the non-greedy approach requires an additional sum in the expectation: for
+each time stept, a full rollout must be computed until the last acquisition step in order
+to do a single gradient update. On the contrary, a greedy approach is much faster, as
+it there is no sum inside the expectation, except the averaging over theq different MC
+samples taken.
+Note that, in the non-greedy case, Bakker et al. (2020) only sample multiple trajectories
+at the initial state, as sampling multiple ones at each state would lead to a combinatorial
+explosion. After training, inference on new environments is done by simply sampling
+from the obtained policy, i.e.p(a|s) =πϕ(a|s).
+6.1.5 LBCS as a simple RL policy
+It should be clear now to the reader that LBCS can easily be viewed as a simple greedy
+policy. Instead of training a sophisticated deep neural network, it simply relies on training
+a non-adaptive policy that does
+π(a|st) = 1 a=at, whereat = arg max
+a
+{
+r(st,a ) = Ex∼p(x)
+[
+η(x, ˆxθ;ωt+1)−η(x, ˆxθ;ωt)
+]}
+.
+where the policy is deterministic given the current state, and does not adapt to the
+current patient a gs the choice is based on the expectation over the training data. In
+this case,π(a|st) really becomesπ(a|ωt). The inference is then simply done by following
+the policy, i.e.π(a|ωt) = 1 a=at for allx∼p(x).
+6.1.6 The questions at hand
+After this primer into RL that introduced the different existing methods for RL-based
+mask design, we come back again to our initial question: What component of RL does
+matter most? How does patient-adaptivity help? What is the contribution in long-term
+planning? Are there other components of the MR pipeline that affect the performance of
+the method more than the policy?
+As the works of Pineda et al. (2020) and Bakker et al. (2020) do not compare to each
+89

@@ -1,0 +1,40 @@
+Conclusion and future works
+planning, nor adaptive samplingare able to bring a strong return on investment over
+sLBCS.
+Exploring this question led us to consider the different processing choices that were done
+in the works of Pineda et al. (2020) and Bakker et al. (2020), such as the choices of
+architecture, how the models were pretrained, the metrics used for reporting and how
+results were aggregated and presented. Surprisingly again, we showed thatinconsistencies
+in reporting could easily lead to incoherent results, and that subtle changes in the
+processing or the reporting pipeline could lead to cases where the SotA deep RL methods
+of Pineda et al. (2020); Bakker et al. (2020) were outperformed by sLBCS.
+Moreover, the return on investment of moving from sLBCS to a deep RL policy model
+was at best marginal compared to other changes such as the architecture or the mask
+distribution used to pretrain it. Indeed, our results show very clearly that the benefit
+of using a deep RL policy over sLBCS is very limited compared to the improvements
+achieved by improving the reconstruction architecture or using a distribution of sampling
+masks tailored to the acquisition horizon considered. However, there is a clear benefit of
+moving from hand-crafted heuristics such as random sampling and low-pass acquisition
+policies to alearning-based, data-driven such as sLBCS.
+These observations led us to wonder whether these results are due to current limitations
+of deep RL policies or if they describe some more fundamental limitations of the problem.
+We believe the second option to be more plausible, in light of more recent works such as
+Bakker et al. (2021), where in their case, the best performing adaptive policiesexplicitly
+learn to become non-adaptive. This also opens some further questions: could we design
+even simplerlearning-based, data-driven approaches that retain the benefits of sLBCS,
+while being even easier to train? Can we also find new paradigms of acquisition that
+would allow to further improve over thelearning-based, data-driven paradigm?
+Finally, inChapter 7, we proposed a novel approach to sampling, based on Bayesian
+modeling. Inspired by previous works to model inverse problems in a Bayesian fashion
+using GANs (Adler and Öktem, 2018a), we showed that in the context of MRI, this
+Bayesian modeling allows us to not only perform reconstruction and uncertainty quan-
+tification, but also provides anatural way to perform adaptive sampling. Indeed, we
+show that acquiring the location with the largest posterior variance provided a good,
+natural policy, without the model ever being trained explicitly to perform adaptive
+sampling. Our GAN-based approach was however outperformed by sLBCS and RL-based
+policies, but did outperform the approach of Zhang et al. (2019b). We postulated that
+the reason for this is that our GAN approach and the one of Zhang et al. (2019b) rely on
+0-step information, i.e. base their decision on the current error, rather than receiving
+feedback about how their decisionactually performed, which we describe as1- orN-step
+information.
+129

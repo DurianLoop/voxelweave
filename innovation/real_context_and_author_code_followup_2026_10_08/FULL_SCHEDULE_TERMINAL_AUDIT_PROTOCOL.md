@@ -1,0 +1,7 @@
+# 全schedule收齐后的独立journal审计（准备，未执行）
+
+只在session56132实际terminal exit0且不再返回session_id后，保存ACTUAL_FULL_SCHEDULE_TERMINAL_TOOL.json（原工具完整返回，增加observed_unified_exec_session=56132），再运行audit_full_schedule_terminal.py。不根据进度到5984、receipt complete或经过时间提前认证terminal。
+
+独立读取gzip全部5984行，检查无重复缺步、原schedule/患者分母/2992step、每患者272步、active原seed、全部数值门槛和摘要计数。仅开发19labels，使用原已冻结sample_batch及broadcast全零dummy image复原各步geometry/motherlabel；dummy只是让原sampler不读MRI，并非真实医疗输入或训练。验证label-only新sampler与原sample_batch在**全部2992步**逐位一致，19label source/full SHA绑定不变。
+
+此另进程审计覆盖journal与原采样器重放；它不重复整个支持mask数值计算。mask的全体素独立SciPy由qualification逐字段实际完成，审计逐行检查其gate记录。仍不证患者分割效益。CPU1/低优先级、wall900秒、stage5MB、8GB磁盘/RAM储备，不读验证/确认/lockedIXI、原训练rolling或MRI/model；零其他PID干预。

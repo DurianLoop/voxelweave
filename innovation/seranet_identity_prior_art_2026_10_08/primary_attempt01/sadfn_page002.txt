@@ -1,0 +1,32 @@
+2 Fan et al
+(a) Full-sampled (b) Under-sampled (c) Seg Label
+(d) Whole (e) BG (f) GM (g) WM (h) CSF
+(i) Whole (j) BG (k) GM (l) WM (m) CSF
+Fig. 1. A full-sampled MR image in Figure 1(a), its under-sampled counterpart in
+Figure 1(b) and segmentation labels in Figure 1(c). We plot the histograms of under￾sampled MRI (second row) and full-sampled MRI (third row) on training MRI datasets.
+dynamic MRI because of long imaging period [2]. Thus compressed sensing tech￾nique is introduced to accelerate the MRI by measuring less k-space samples
+called compressed sensing MRI (CS-MRI) [3]. The CS-MRI is a classic inverse
+problem in computation imaging requiring proper regularization for accurate
+reconstruction.
+The standard CS-MRI can be formulated as
+xˆ = arg min
+x
+kFux − yk
+2
+2 +
+X
+i
+αiΨi (x), (1)
+where x ∈ C
+P ×1
+is the complex-valued MR image to be reconstructed, Fu ∈
+CM×P is the under-sampled Fourier operator and y ∈ CM×1
+(M  P) are
+the k-space measurements by the MRI machine. The first data fidelity term en￾sures consistency between the Fourier coefficients of the reconstructed image and
+the measured k-space data, while the second prior term regularizes the recon￾struction to encourage certain image properties such as sparsity in a transform
+domain.
+In conventional CS-MRI methods, the sparse and nonlocal are common priors
+for the inverse recovery in situ, which brings three limitations: (1) The common
+complex patterns hiding massive MRI datasets are overlooked in the capacity￾limited “shallow” prior [4]. (2) The sparse or nonlocal regularization lacks se￾mantic representation ability, which is difficult to distinguish between the image
+structure details and structural artifacts brought by under-sampling. (3) The
+optimization for conventional priors requires tons of iterations to reach the con￾vergence, which brings long reconstruction time consumption [5].

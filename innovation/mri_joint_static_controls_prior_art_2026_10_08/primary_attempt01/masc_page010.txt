@@ -1,0 +1,42 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+Table 1:Comparison with baseline acquisition strategies at10×acceleration (2
+initial + 18 budget lines).Baselines are evaluated with and without MAR.
+Results are mean±std on the test set. Best results inbold. All improvements
+are statistically significant (p<0.001, paired t-test).
+Method MAR SSIM↑PSNR↑MSE↓NMSE↓MAE↓
+Random ×0.3214±0.0440 11.72±1.11 0.0695±0.0173 0.3374±0.0929 0.2199±0.0333
+✓0.6949±0.0463 18.79±1.42 0.0140±0.0049 0.0680±0.0243 0.0708±0.0143
+Random-LowBias ×0.3556±0.0444 12.70±1.38 0.0566±0.0193 0.2696±0.0718 0.1877±0.0332
+✓0.6929±0.0516 19.10±1.45 0.0131±0.0056 0.0635±0.0241 0.0716±0.0170
+Equispaced ×0.2648±0.0380 11.26±0.92 0.0764±0.0152 0.3716±0.0846 0.2331±0.0297
+✓0.4085±0.0478 12.82±1.05 0.0538±0.0131 0.2607±0.0659 0.1546±0.0237
+Center-out ×0.5022±0.0519 14.23±3.17 0.0488±0.0360 0.2249±0.1352 0.1507±0.0619
+✓0.5532±0.0568 16.33±1.47 0.0248±0.0101 0.1194±0.0421 0.1107±0.0252
+DQN ×0.4660±0.0429 14.88±2.53 0.0392±0.0282 0.1823±0.1049 0.1362±0.0475
+✓0.6411±0.0601 18.18±1.49 0.0163±0.0077 0.0791±0.0334 0.0846±0.0219
+SS-DDQN ×0.4637±0.0425 14.90±2.41 0.0385±0.0273 0.1798±0.1017 0.1355±0.0460
+✓0.6248±0.0641 17.78±1.46 0.0178±0.0074 0.0865±0.0350 0.0868±0.0207
+MASC (Ours)✓0.7224±0.0408 19.73±1.28 0.0111±0.0036 0.0546±0.0190 0.0640±0.0121
+(Random + MAR), MASC achieves 4.0% improvement in SSIM and 20.7% reduction in
+MSE. Compared to Center-out without MAR, the improvements are 43.9% in SSIM and
+77.3% reduction in MSE. This improvement stems from end-to-end joint optimization, where
+MASC learns sampling patterns tailored to the MAR network’s correction capabilities.
+Figure 4 provides qualitative comparison and acquisition dynamics. The top panel shows
+that Random and Random-LowBias produce severe aliasing, while Equispaced results in
+structured aliasing patterns. Center-out preserves gross anatomy but loses fine details.
+DQN and SS-DDQN show improved structure but retain visible artifacts. In contrast,
+MASC produces reconstructions closest to ground truth with substantially darker error
+maps.
+The bottom panel reveals the temporal dynamics of acquisition. MASC exhibits a
+steeper improvement trajectory in early steps, suggesting the learned policy prioritizes k-
+space lines with maximal information gain. The widening performance gap indicates that
+MASC’s sequential decisions compound beneficially, whereas baseline methods lack this
+adaptive capability. MASC also maintains consistently lower variance (narrower shaded re-
+gions), demonstrating robust performance across diverse anatomical structures and artifact
+patterns.
+4.2. Ablation Study
+We conduct an ablation study to analyze the contribution of each component in our pro-
+posed MASC framework. Table 2 presents results of five configurations that systematically
+evaluate the effects of training data, MAR integration, and end-to-end optimization. Fur-
+ther visualizations are shown in Appendix E.
+10

@@ -1,0 +1,39 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+21
+The application of the same RD-ViT architecture to two fundamentally different segmentation tasks—
+cardiac MRI (4 classes, low-contrast soft tissue, anisotropic voxels) and dental CBCT (33 classes, high￾contrast mineralized tissue, isotropic voxels)—demonstrates the architecture’s domain-agnostic nature. The 
+only modifications between the two applications are the segmentation head (4-class vs multi-head with 
+offsets/seeds/FDI) and the augmentation strategy (flipping enabled for cardiac, disabled for dental). The 
+core RD-ViT components—LTI injection, ACT, LoRA, MoE—transfer unchanged across domains, 
+supporting the claim that recurrent depth is a general architectural principle rather than a domain-specific 
+trick.
+7.6 Limitations and Future Work
+Several limitations should be acknowledged. First, our cardiac experiments use relatively small models 
+(2.6–10.3M parameters) on a single dataset (ACDC, 100 patients). Scaling to larger models and multi-site 
+data would strengthen the conclusions. Second, the 3D MoE variant is approximately 2× slower than the 
+baseline due to expert routing overhead. Third, we did not evaluate Multi-Latent Attention (MLA) from 
+OpenMythos, which could improve memory efficiency for 3D volumes. Fourth, the tooth segmentation 
+results are from a single-phase model without comparison against multi-phase baselines on the official 
+ToothFairy2 test server; direct benchmark comparison is needed. Fifth, the training curves on both tasks 
+suggest that longer training (400+ epochs) would improve results, but computational constraints limited 
+our experiments to 100–200 epochs. Sixth, deeper analysis of MoE expert specialization for dental 
+structures—tracking whether experts align with incisors, canines, premolars, and molars—would validate 
+the tooth-group specialization hypothesis.
+8 Conclusion
+We have presented RD-ViT, a recurrent-depth vision transformer for semantic and instance segmentation 
+that adapts the Recurrent-Depth Transformer architecture from OpenMythos to dense prediction tasks. 
+Through comprehensive experiments on two distinct medical imaging benchmarks—ACDC cardiac MRI 
+and ToothFairy2 dental CBCT—we have demonstrated that: (1) recurrent depth with MoE achieves 99.4% 
+of standard ViT performance at 53% of the parameter count on cardiac segmentation; (2) MoE experts 
+spontaneously specialize for different anatomical structures; (3) ACT halting maps provide interpretable 
+spatial compute allocation with decreasing ponder time during training; (4) data efficiency is confirmed in 
+2D slice segmentation; (5) depth extrapolation works without degradation, providing a free inference-time 
+compute knob; and (6) the same architecture generalizes to single-phase tooth instance segmentation and 
+numbering, achieving 89.1% FDI classification accuracy by leveraging the transformer’s long-range 
+attention for jaw-quadrant context. All results are real, reproducible, and released with companion code and 
+notebooks.
+Acknowledgments
+This work extends architectural ideas from OpenMythos [1] by Kye Gomez, which reconstructs the 
+hypothesized Recurrent-Depth Transformer architecture.
+References
+[1] Gomez, K. (2025). OpenMythos: Reconstructing the Recurrent-Depth Transformer. github.com/kyegomez/OpenMythos.

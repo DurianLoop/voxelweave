@@ -1,0 +1,32 @@
+for a practical architectural solution designed to train corruption-robustness
+directly into the hetero-modal segmentation pipeline without diluting the
+representational capacity of the modality-specific encoders.
+This paper makes the following contributions:
+1. We establish the first benchmark for joint hetero-modal segmentation
+of co-occurring WMH and ISL by leveraging a dataset of patients with
+subacute and chronic ISL and various degrees of vascular pathology,
+with ground truth annotations for both pathologies, and four MRI
+sequences.
+2. We show that hetero-modal learning can train significantly better mod￾els than fixed-modality baselines under a training data distribution
+containing only a small (10%) full-modality subset, with the remainder
+being strictly uni-modal.
+3. We demonstrate that hetero-modal learning can produce models capa￾ble of performing inference on unseen combinations of modalities.
+4. To address the vulnerability of hetero-modal networks to silent data
+degradation, we introduce the Multimodal Attention Router (MMAR)
+block, an architectural solution designed to for dynamic feature routing,
+ensuring robustness against corrupted inputs.
+5. We show that when trained with a “corruption augmentation” strategy,
+our MMAR-based model maintains strong performance in the face of
+catastrophic noise, severe bias field corruption, and modalities incor￾rectly identified as being present.
+2. Experimental setup
+2.1. Dataset and processing
+We performed our experiments on the Mild Stroke Study 3 dataset (Clancy
+et al., 2021)—a prospective observational cohort study of patients presenting
+with clinically evident stroke syndromes, which was granted ethical approval
+by Southeast Scotland Regional Ethics Committee (ref. 18/SS/0044). T1w
+(3D protocol, 1.0 × 1.0 × 1.0 mm voxels), T2w (3D protocol, 0.9 × 0.9 × 0.9
+mm voxels), FLAIR (3D protocol, 1.0 × 1.0 × 1.0 mm voxels), and DWI (2D
+protocol, 2.0×2.0×2.0 mm voxels) MRI scans were acquired using a 3 Tesla
+Siemens Prisma MRI scanner. An expert manually delineated ISL masks,
+and WMH masks were produced via a semi-automatic approach and subse￾quently corrected by an expert (Valdés Hernández et al., 2023). We selected
+5

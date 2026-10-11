@@ -1,0 +1,89 @@
+"""Independent all-raw-header reread, matrix geometry and inverse integer label grid."""
+import os
+os.environ['CUDA_VISIBLE_DEVICES']='-1'
+for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS'):os.environ[k]='1'
+import csv,hashlib,io,itertools,json,math,sys,traceback,zipfile
+from pathlib import Path
+from datetime import datetime,timezone
+import nibabel as nib
+import numpy as np
+import pydicom
+from vs_seg_task_cpu_support import resource_gate
+ROOT=Path(__file__).resolve().parents[1];HEAD=ROOT/'literature/source_cache/mc_rc_011_013_headers_2026-10-03';OUT=ROOT/'experiments/mc_rc_011_013_label_grid'
+def read(p):return json.loads(Path(p).read_text(encoding='utf-8'))
+def sha(p):
+    h=hashlib.sha256()
+    with Path(p).open('rb') as s:
+        for b in iter(lambda:s.read(1048576),b''):h.update(b)
+    return h.hexdigest()
+def corners(shape):return np.array([[*v,1] for v in itertools.product(*[(0,n-1) for n in shape])],dtype=float).T
+def main():
+    sys.stdout.reconfigure(encoding='utf-8');resource_gate();path=OUT/'independent_all230_headers_and_5_labels.json';assert not path.exists()
+    r=read(OUT/'attempt_01.json');h=read(HEAD/'attempt_01.json');s=read(ROOT/'experiments/mc_rc_source_roles_metadata_preparation/attempt_01.json')
+    proof=dict(created_utc=datetime.now(timezone.utc).isoformat(),script_sha256=sha(__file__),label_result_sha256=sha(OUT/'attempt_01.json'),header_result_sha256=sha(HEAD/'attempt_01.json'),
+               complete=False,errors=[],raw_dicom_headers_verified=0,labels_verified=0,passed_series=0,patients=[],series=[],MR_pixel_arrays_decoded=False,
+               new_neural_forwards=0,torch_imported=False,scientific_confirmation_patients=0,publication_claim_confirmed=False)
+    try:
+        assert r['complete'] and h['complete'] and not r['errors'] and not h['errors']
+        for b in r['source_bindings']:assert sha(ROOT/b['path'])==b['sha256']
+        for b in h['helper_bindings']:assert sha(ROOT/b['path'])==b['sha256']
+        assert sha(ROOT/'literature/download_mc_rc_011_013_headers_2026_10_03.py')==h['script_sha256']
+        assert sha(ROOT/'MC_RC_011_013_HEADER_AND_LABEL_PLAN_2026-10-03.md')==h['plan_sha256']
+        assert sha(ROOT/'experiments/mc_rc_source_roles_metadata_preparation/attempt_01.json')==h['selection_sha256']
+        expected={x['series_uid']:x for x in s['next_nonpixel_qualification_series']};assert len(expected)==5
+        assert set(expected)=={x['source']['SeriesInstanceUID'] for x in h['series']}=={x['series_uid'] for x in r['series']}
+        prior=read(ROOT/'literature/source_cache/mc_rc_three_patient_headers_2026-10-02/attempt_01.json');labelzip=ROOT/prior['labels']['transfer']['file'];assert sha(labelzip)==prior['labels']['transfer']['sha256']
+        lab={x['series_uid']:x for x in r['series']}
+        with zipfile.ZipFile(labelzip) as official:
+            for row in h['series']:
+                resource_gate();src=row['source'];uid=src['SeriesInstanceUID'];x=lab[uid];summary=row['summary']
+                zp=ROOT/row['transfer']['file'];hp=HEAD/row['header_file'];assert sha(zp)==row['transfer']['sha256'] and sha(hp)==row['header_sha256']
+                saved={z['sop_uid']:z for z in read(hp)['records']};datasets=[]
+                with zipfile.ZipFile(zp) as archive:
+                    for member in archive.infolist():
+                        if member.is_dir() or not member.filename.lower().endswith('.dcm'):continue
+                        with archive.open(member) as stream:d=pydicom.dcmread(stream,stop_before_pixels=True)
+                        assert not any(tag in d for tag in ('PixelData','FloatPixelData','DoubleFloatPixelData'))
+                        assert str(d.PatientID)==src['PatientID'] and str(d.StudyInstanceUID)==src['StudyInstanceUID'] and str(d.SeriesInstanceUID)==uid and str(d.Modality)=='MR'
+                        z=saved[str(d.SOPInstanceUID)]
+                        for tag,key in [('ImagePositionPatient','ipp'),('ImageOrientationPatient','iop'),('PixelSpacing','pixel_spacing')]:assert np.array_equal(np.asarray(d.get(tag),dtype=float),z[key])
+                        for tag,key in [('Rows','rows'),('Columns','columns'),('SliceThickness','slice_thickness')]:assert float(d.get(tag))==z[key]
+                        assert list(d.get('ImageType',[]))==z['image_type'] and str(d.get('MRAcquisitionType',''))==z['mr_acquisition_type'] and str(d.FrameOfReferenceUID)==z['frame_uid']
+                        datasets.append(d);proof['raw_dicom_headers_verified']+=1
+                n=len(datasets);assert n==src['ImageCount']==len(saved)==len({str(d.SOPInstanceUID) for d in datasets})
+                iop=np.asarray(datasets[0].ImageOrientationPatient,dtype=float);normal=np.cross(iop[:3],iop[3:]);pos=np.array([d.ImagePositionPatient for d in datasets],dtype=float);pos=pos[np.argsort(pos@normal)]
+                origin,step=np.linalg.lstsq(np.column_stack((np.ones(n),np.arange(n))),pos,rcond=None)[0]
+                residual=float(np.linalg.norm(pos-origin-np.arange(n)[:,None]*step,axis=1).max());gaps=np.diff(pos@normal)
+                a=np.eye(4);a[:3,0]=iop[3:]*float(datasets[0].PixelSpacing[0]);a[:3,1]=iop[:3]*float(datasets[0].PixelSpacing[1]);a[:3,2]=step;a[:3,3]=origin;a=np.diag([-1.,-1.,1.,1.])@a
+                assert np.allclose(a,summary['affine_rcz_ras'],rtol=0,atol=1e-9) and abs(residual-summary['max_affine_position_residual_mm'])<=1e-9
+                ps=np.asarray(datasets[0].PixelSpacing,dtype=float);consistent=len({(int(d.Rows),int(d.Columns),str(d.FrameOfReferenceUID)) for d in datasets})==1
+                consistent=consistent and all(np.max(abs(np.asarray(d.ImageOrientationPatient,dtype=float)-iop))<=1e-6 and np.max(abs(np.asarray(d.PixelSpacing,dtype=float)-ps))<=1e-6 and int(d.get('NumberOfFrames',1))==1 for d in datasets)
+                ortho=max(abs(np.linalg.norm(iop[:3])-1),abs(np.linalg.norm(iop[3:])-1),abs(iop[:3]@iop[3:]))<=1e-4
+                geometry=consistent and ortho and residual<=.02 and gaps.min()>1e-4 and abs(gaps-np.median(gaps)).max()<=.02
+                original=all('ORIGINAL' in [str(v).upper() for v in d.get('ImageType',[])] and 'DERIVED' not in [str(v).upper() for v in d.get('ImageType',[])] for d in datasets)
+                derivative=any(any(token in (' '.join(str(v) for v in d.get('ImageType',[]))+' '+str(d.get('SeriesDescription',''))+' '+str(d.get('DerivationDescription',''))).upper() for token in ('MPR','REFORMAT','LOCALIZER')) for d in datasets)
+                spacing=[float(ps[0]),float(ps[1]),float(np.linalg.norm(step))];thin=max(spacing)<=1.5 and max(float(d.SliceThickness) for d in datasets)<=1.5
+                qualified=bool(geometry and original and not derivative and thin and all(str(d.get('MRAcquisitionType',''))=='3D' for d in datasets));assert qualified==summary['header_qualified_candidate']==x['header_qualified_candidate']
+                lp=ROOT/x['label_file'];assert sha(lp)==x['label_sha256'] and official.read(x['label_zip_member'])==lp.read_bytes()
+                img=nib.load(lp);assert list(img.shape)==x['label_shape'] and np.allclose(img.affine,x['label_affine_xyz_ras'],rtol=0,atol=1e-12)
+                fg=0;values=set()
+                # Plane-wise reread differs from producer multi-plane slab order.
+                for z in range(img.shape[2]):
+                    block=np.asanyarray(img.dataobj[:,:,z]);assert np.isfinite(block).all();fg+=int(np.count_nonzero(block));values.update(np.unique(block).tolist())
+                assert fg==x['label_foreground_voxels'] and sorted(values)==x['label_values']
+                transform=np.linalg.solve(a,img.affine);integer=np.rint(transform);valid=np.allclose(transform,integer,atol=1e-4,rtol=0)
+                valid=bool(valid and np.array_equal(integer[3],[0,0,0,1]) and np.all(abs(integer[:3,:3]).sum(axis=0)==1) and np.all(abs(integer[:3,:3]).sum(axis=1)==1))
+                dc=[int(datasets[0].Rows),int(datasets[0].Columns),n];lc=corners(img.shape);mapped=integer@lc
+                valid=bool(valid and np.array_equal(mapped[:3].min(axis=1),[0,0,0]) and np.array_equal(mapped[:3].max(axis=1),np.asarray(dc)-1))
+                cornererror=float(np.linalg.norm(((a@integer-img.affine)@lc)[:3],axis=0).max());samegrid=valid and cornererror<=.05
+                assert samegrid==x['grid']['same_native_grid'];assert math.isclose(cornererror,x['grid']['max_corner_world_error_mm'],abs_tol=1e-8)
+                qc,sc=int(img.header['qform_code']),int(img.header['sform_code']);formerr=float(np.linalg.norm(((img.get_qform()-img.get_sform())@lc)[:3],axis=0).max()) if qc>0 and sc>0 else None
+                consistentforms=formerr is None or formerr<=.05;passed=bool(qualified and samegrid and values<={0,1} and fg>0 and consistentforms and (qc>0 or sc>0));assert passed==x['header_and_label_grid_preflight_passed']
+                proof['labels_verified']+=1;proof['passed_series']+=int(passed);proof['series'].append(dict(patient=src['PatientID'],series_uid=uid,raw_objects=n,native_spacing_rcz_mm=spacing,least_squares_residual_mm=residual,header_qualified=qualified,grid_max_corner_error_mm=cornererror,label_foreground_voxels=fg,source_preflight_passed=passed))
+        assert proof['raw_dicom_headers_verified']==230 and proof['labels_verified']==5 and proof['passed_series']==r['source_preflight_series_passed']==3
+        proof['patients']=sorted({x['patient'] for x in proof['series'] if x['source_preflight_passed']});assert proof['patients']==r['source_preflight_patient_ids']
+        proof['torch_imported']='torch' in sys.modules;assert not proof['torch_imported'];proof['complete']=True
+    except Exception as exc:proof['errors'].append(type(exc).__name__+': '+str(exc));proof['traceback']=traceback.format_exc()
+    proof['finished_utc']=datetime.now(timezone.utc).isoformat();path.write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print(json.dumps({k:v for k,v in proof.items() if k!='series'},ensure_ascii=False));return int(not proof['complete'])
+if __name__=='__main__':raise SystemExit(main())

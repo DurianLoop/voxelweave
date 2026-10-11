@@ -1,0 +1,17 @@
+# 可继续执行的依赖与准备
+
+1. session29823整体真实exit0且没有session_id后，保存ACTUAL_TRAINING_TERMINAL_TOOL.json（observed_unified_exec_session=29823），运行原capture_training_terminal.py。它需四last2992、11968journal及每患者272，失败不挑已完成分支。随后原evaluate_matched.py→实际terminal保存→capture_evaluation_terminal.py→summarize_matched.py。仅原已见4患者/9series、36production+36functional完整FOV，六医学/严格数值门槛不降。这项医学评价优先。
+
+2. 新271场强度资格2ce605真实exit0，独立身份/数值审计b422fd exit0已取得；只gamma mean/std改float64，独立reference未改。完整新重放session90446从0开始35904，旧6216前缀不继承。等待真实terminal，成功后保存ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json（observed_unified_exec_session=90446），执行full_real_intensity_v2目录既有audit_full_real_terminal.py。滚动receipt与日志不是终止证据。失败保存failed_field和原输出，不放宽3e-6/3e-12/二值零差。
+
+3. 新常规增强对照必须统一使用production v2：同输入intensity-only、intensity+resolution、intensity+support合法roundtrip均用同gamma统计，不能把旧legacy四臂与新v2差异都归因低通。每输入同原父19998/schedule2992（272/患者）/lr与wd1e-4/AdamW重置/last；native与raw父权重不同照实保留。resolution模式、support不足时各臂匹配的identity政策、各series有效增强数和成本都由已有冻结来源约束。35904合格仍不等于医学或资源training-ready。
+
+4. 训练资源需再次用fresh GPU totals≥8192MiB及冻结runtime余量；原CPU训练不迁移。当前实际1394MiB；磁盘储备外约29MB，而且仍要预留原训练最后state、3MB评价和新完整数值stage。已有last文件每份约5.62MB，六份final仅payload就约33.73MB，未加journal/临时原子写。普通六臂或严格11折训练现在不能假定可容纳，不删除历史证据腾空间，也不安装外部SynthSR/FreeSurfer。准备文件不等于启动资格。
+
+5. 任务能力足够且仍有冻结动作余量之后，11开发患者分折，所有series按patient归组。任务网、定位、QC/绝对error、gain/cost、校准全部折内；合法初始化不能见任何外折GT。对原冻结候选动作逐一测真实完整FOV/missing病灶损害差，未观测GT仅用于允许训练监督和最终评分，不进入部署特征或ROI。原全11父checkpoint可做开发能力实验，不能冒充cross-fit。
+
+6. 最小科学对照：强raw/直接observed任务/充分常规增强；same-information、same-capacity QC与error-cost/defer；static、random、always-action；同收益头删采集特征/仅spacing与metadata。动作组合需实际联合输入与联合优化控制。费用包括原输入处理、定位/配准、QC、每动作、后续任务、失败fallback及模型/标签生成训练成本。保留拒绝与失败患者，不只报accepted Dice。
+
+7. 能力不足则补普通强基线；强基线消除真实动作余量则保留反证。仅任务目的冲突、采集mask几何资格、无GT相关性或漂亮图像都不构成发表结果。独立task复核及所有资源/控制齐备才冻结一次8患者确认；当前继续关闭。未安装、不委派、不干预其他PID，goal保持active。
+
+PSACNN2019（PMC6688920）本批仅索引，后续需要完整原文来核显式pulse参数自适应是否进一步碰撞可见采集特征；没有用其摘要代替正文。SynthSR外部补充FigsS1/S2与landmark清单、VSRAD分析脚本/原paired数据仍未核，不向作者发消息。

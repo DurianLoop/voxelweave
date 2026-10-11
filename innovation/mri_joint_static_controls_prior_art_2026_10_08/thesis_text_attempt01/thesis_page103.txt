@@ -1,0 +1,38 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+other, and work in very different settings, it is not possible to answer these questions
+directly from their respective works.
+We chose to use LBCS (Gözcü et al., 2018) as starting point as it is clear that it implements
+a learning-based, data-driven policy that isnot adaptive nor long-term planning. This
+method will provide the baseline from which we can quantify the improvements brought
+by adaptivity and long-term planning.
+Secondly, as the methods of Bakker et al. (2020) and Pineda et al. (2020) are preprocessed
+fairly differently before being used to train RL policies, we wish to understand how these
+policies are sensitive to changes in parameters such as the training of the reconstruction
+algorithm, or changes in the image field of view, or the way that k-space is undersampled.
+In particular, this will help us understand whether the seemingly contradictory conclusions
+originate from different processing of the data, or whether they reflect something more
+fundamental. In the sequel, we will first define the processing pipeline precisely, before
+carrying thorough evaluations of these methods.
+6.2 The MRI data processing pipeline
+In this section, we will step through the stages of the MRI data processing pipeline as
+shown in Figure 6.2. Such considerations are not reflected in the mathematical model
+representing the acquisition as presented in Equation 2.12. Recall that we consider an
+inverse problem, where we seek to recover a signalx∈ CP from partial observations
+y∈ CN, N≪P obtained by subsampling a Fourier transformF∈ CP×P:
+yω =PωFx +ϵ, (6.9)
+whereϵ∈ CN is the noise,ω⊆ [P ] :={1,...,P } is the index of sampling locations, with
+cardinality N, andPω is a diagonal matrix such that(Pω)ii = 1 if i∈ ω, 0 otherwise.
+This problem is inherently ill-posed, due toN≪P, and we first construct an estimate
+ˆxω;θ =fθ(yω,ω )oftheoriginalsignal x, wherefθ isareconstructionmethodparametrized
+byθ.
+We turn now to the description of the practical pipeline, which is independent of the
+sampling method and simply operates on a given mask. We will also highlight a few
+common caveats.
+As we will show in Section 6.3.2, seemingly trivial changes at even a single of these
+stages can affect the results of the evaluation and lead to changes in the ordering of the
+performance of different policies, an observation that we will refer to asreversal. We
+already stress that the main reason for such reversals to occur is that the RL policies
+generally do not generally bring a large or consistent improvement over sLBCS. We mark
+sections where we observed changes leading to reversals with∗ and sections here they
+90

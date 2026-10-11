@@ -1,0 +1,65 @@
+{
+  "scope": "weak_selector_only_LOPO_on_historical_validation",
+  "patients": 23,
+  "features": [
+    "gap_mm",
+    "base_mean",
+    "base_std",
+    "delta_mean_absolute",
+    "delta_rms"
+  ],
+  "learner": "ridge penalty 10, subtract 0.1 beta then floor to 0.1 grid",
+  "summary": {
+    "loo_cohort_guard_fixed": {
+      "mean_beta": 0.10869565217391307,
+      "strict_patient_guard_passes": 14,
+      "psnr": 25.598110667744482,
+      "ssim": 0.8355517188970023,
+      "mae": 0.0245468823997201,
+      "mse": 0.003070994489804754,
+      "ncc": 0.9400635770113961,
+      "dice_proxy": 0.9772270989578138,
+      "hd95_proxy": 5.428337223039294,
+      "tail10_mse": 0.026706642825390606,
+      "psnr_gain_vs_base_db": 0.03664165759715843
+    },
+    "loo_ridge_conservative": {
+      "mean_beta": 0.3173913043478261,
+      "strict_patient_guard_passes": 11,
+      "psnr": 25.663878443848112,
+      "ssim": 0.8362922131650024,
+      "mae": 0.024425560245751547,
+      "mse": 0.0030312845769656814,
+      "ncc": 0.9410129053370292,
+      "dice_proxy": 0.9774009810889622,
+      "hd95_proxy": 5.4127618517910046,
+      "tail10_mse": 0.026327240516658624,
+      "psnr_gain_vs_base_db": 0.10240943370078881
+    },
+    "target_assisted_patient_oracle": {
+      "mean_beta": 0.4695652173913043,
+      "strict_patient_guard_passes": 23,
+      "psnr": 25.69893437514106,
+      "ssim": 0.8366223345470438,
+      "mae": 0.024354286386615867,
+      "mse": 0.0030014882250090635,
+      "ncc": 0.9414737815950223,
+      "dice_proxy": 0.9774500172053832,
+      "hd95_proxy": 5.3736058284569665,
+      "tail10_mse": 0.026044199966138847,
+      "psnr_gain_vs_base_db": 0.13746536499373718
+    }
+  },
+  "source_sha256": {
+    "innovation/experiments/local_oracle_paired_arrays_val23/paired_predictions.npz": "de8fa2986f732b5b5ad6db7914d1bc57fbf796404d6b575989499c2b268db2b1",
+    "innovation/experiments/oracle_guard_frontier_per_patient.csv": "2e3f40ebc44ef58467fe6c8e5971284dae1fba64117143683ec78aaa79b7abfa",
+    "innovation/experiments/patient_guard_oracle_per_patient.csv": "9ce9c69cc6bd71fc4625db726af2e47b91c46147fb120c7530b4cf0885d1e8d4",
+    "design/pastnet_v2/manifests/fastmri/fold_00.json": "ee471bd92e48696050a694f371a86483f86f832c5b26571c81137b5dcc6ad4df"
+  },
+  "limitations": [
+    "The image-level patch correction used to build the frontier already sees the target; only beta prediction is held out.",
+    "Both frozen checkpoints were selected on these same validation patients.",
+    "Patient features are low-dimensional and the cohort has only 23 patients; this is a falsification probe, not a calibrated risk certificate.",
+    "The structure metrics are intensity-threshold proxies."
+  ]
+}

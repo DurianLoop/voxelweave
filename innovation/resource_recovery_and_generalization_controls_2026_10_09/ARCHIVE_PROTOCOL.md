@@ -1,0 +1,9 @@
+# 6923文件链后的增量归档
+
+固定上一APPEND_CAPACITY_INDEX SHA3d4514b07456ea239c7f91ba20af3f36902362613f50ff72fe5ddb5cb07f2a96和PROOF SHA399977a77f7f76132d15a84e75f8623e85baa1dae7c727e6709d9c99a8461197。遍历其prior_chain并逐文件完整SHA/bytes验证全部6923；NTFS仅物理属性改变，冻结逻辑内容必须仍匹配。
+
+新增仅本资源stage、上一UQ stage顶层未归档交接，以及已真实fdcb62结束的full_real_intensity_v2整个stage。确认旧来源bindings/本地Markdown链接，累计去重计数；完整资格失败不隐去，全部rolling outputs在整体exit1后终态冻结，此链不得标为35904成功。已有index/proof不改，不删除history。
+
+先验证3篇主文/414块/16表记录、5toy实质结果、40压缩hash、完整forecast、14673前缀审计/单字段重放/精确witness及actual终态。下载/提取不计阅读，任何软件通过不作医学确认。保存新INDEX与PROOF，另外追加实际archive工具返回及最终公开回复；自生成index不能递归包含自身，post archive文件下一增量纳入。
+
+CPU1/below-normal、wall1200秒，本stage总2MB并留后附20kB，磁盘/RAM8GB，不查控其他PID、不安装、不委派、8确认12series/lockedIXI关闭。科研goal active。

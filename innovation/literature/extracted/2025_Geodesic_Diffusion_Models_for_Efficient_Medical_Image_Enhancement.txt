@@ -1,0 +1,647 @@
+
+=== PDF PAGE 1 ===
+           Geodesic Diffusion Models for Efficient Medical Image Enhancement
+
+
+                           Teng Zhang1     Hongxu Jiang1     Kuang Gong2,1       Wei Shao3,1,4       *
+   1Department of Electrical and Computer Engineering, University of Florida, Gainesville, FL, USA
+             2Department of Biomedical Engineering, University of Florida, Gainesville, FL, USA
+                        3Department of Medicine, University of Florida, Gainesville, FL, USA
+                   4Intelligent Clinical Care Center, University of Florida, Gainesville, FL, USA
+
+                     {zhangt,hongxu.jiang}@ufl.edu     KGong@bme.ufl.edu     weishao@ufl.edu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 1.   Overview of Geodesic Diffusion Models (GDM). By constraining the diffusion process to follow geodesic paths with minimal
+energy in probability space, GDM improves both efficiency and fidelity.  The radar plot shows performance on the CT denoising task,
+where GDM achieves higher accuracy and substantially faster training and sampling compared to prior diffusion-based methods.
+
+                             Abstract                                           der the Fisher–Rao metric.  Based on these schedules, we
+                                                                                propose Geodesic Diffusion Models (GDMs), which signif-
+Diffusion models generate data by learning to reverse a for-                    icantly improve training and sampling efficiency by mini-
+ward process,  where samples are progressively perturbed                        mizing the energy required to transform between probabil-
+with Gaussian noise according to a predefined noise sched-                      ity distributions. This efficiency further enables sampling to
+ule.   From  a  geometric  perspective,  each  noise  schedule                  start from an intermediate distribution in conditional image
+corresponds  to  a  unique  trajectory  in  probability  space                  generation, achieving state-of-the-art results with as few as
+from the data distribution to a Gaussian prior.   However,                      6 steps. We evaluated GDM on two medical image enhance-
+prior  diffusion  models  rely  on  empirically  chosen  sched-                 ment  tasks:   CT  image  denoising  and  MRI  image  super-
+ules that may not be optimal.  This inefficiency necessitates                   resolution.  Experimental results show that GDM achieved
+many  intermediate  time  steps,  resulting  in  high  computa-                 state-of-the-art  performance  while  reducing  training  time
+tional costs during both training and sampling.  To address                     by 20–30× compared to Denoising Diffusion Probabilistic
+this,  we  derive  a  family  of  geodesic  noise  schedules  cor-              Models (DDPMs) and 4–6× compared to Fast-DDPM, and
+responding  to  the  shortest  paths  in  probability  space  un-               accelerating sampling by 160–170× and 1.6×, respectively.
+                                                                                These gains support the use of GDM for efficient model de-
+   *Corresponding author: Wei Shao (weishao@ufl.edu).
+   †This  work  was  supported  by  the  Department  of  Medicine  and  the     velopment  and  real-time  clinical  applications.   Our  code
+Intelligent  Clinical  Care  Center  at  the  University  of  Florida  College  ofis publicly available at:https://github.com/mirthAI/GDM-
+Medicine.  The authors express their sincere gratitude to the NVIDIA AI         VE.
+Technology Center at the University of Florida for their invaluable feed-
+back, technical guidance, and support throughout this project.
+
+
+                                                                           1
+
+=== PDF PAGE 2 ===
+1. Introduction                                                                  structural  information  close  to  the  target  distribution,  en-
+Diffusion  models  [9, 26, 27]  have  emerged  as  powerful                      abling sampling to begin from an intermediate noised state
+tools for high-quality image generation, surpassing gener-                       rather than pure noise. This truncated sampling strategy fur-
+ative adversarial networks in both fidelity and diversity [4].                   ther reduces the number of required denoising steps.   We
+In the forward process, an image is progressively perturbed                      evaluate GDM on two conditional medical image-to-image
+into  Gaussian  noise,  while  the  reverse  process  is  learned                generation tasks:  CT denoising using a single conditional
+by a neural network that iteratively denoises random noise                       image and MRI super-resolution using two conditional im-
+back into a high-quality image. Owing to their training sta-                     ages. The key contributions of this work are summarized as
+bility and ability to generate high-fidelity images, diffusion                   follows:
+models have been increasingly adopted in medical imaging                         1.Geodesic  Diffusion  Model  (GDM):We  propose  a
+[11,23,24,31]. However, achieving state-of-the-art perfor-                          principled formulation of diffusion processes in which
+mance requires hundreds to thousands of denoising steps,                            noise  schedules  follow  geodesic  trajectories  under  the
+which impose substantial computational costs in both train-                         Fisher–Rao metric, improving information propagation
+ing and sampling and thereby limit applicability in real-time                       and generative fidelity.
+medical settings.                                                                2.Computational efficiency:GDM reduces training time
+   We argue that this inefficiency is attributable to the sub-                      by 20–30× compared to DDPM and 4–6× compared to
+optimal design of noise schedules. From a geometric stand-                          Fast-DDPM, while accelerating sampling by 160–170×
+point, the forward diffusion process defines a trajectory on                        relative to DDPM and 1.6× relative to Fast-DDPM.
+the manifold of Gaussian distributions, between a Gaussian                       3.Clinical relevance through conditional enhancement:
+concentrated at the data sample with near-zero variance and                         We adapt GDM to conditional medical image enhance-
+an isotropic Gaussian prior.   The most efficient trajectory                        ment with truncated sampling, enabling state-of-the-art
+should correspond to a geodesic, that is, the shortest path                         results in CT denoising and MRI super-resolution with
+between probability distributions under a suitable Rieman-                          substantially fewer timesteps.
+nian metric. The Fisher–Rao metric is a natural choice, as it                    2. Related Work
+endows the statistical manifold with an intrinsic geometry
+by quantifying divergences induced by infinitesimal pertur-                      2.1. Fast Sampling of Diffusion Models
+bations.  However,  most existing diffusion models [9,22]                        To address the computational cost of diffusion models, most
+rely  on  empirically  specified  schedules  that  deviate  from                 efforts have focused on accelerating sampling.  Advanced
+geodesic paths.  As a result, the diffusion trajectory passes                    solvers integrate the reverse SDE or ODE more accurately,
+through redundant intermediate states, which hinders infor-                      reducing sampling to tens of steps without degrading im-
+mation  propagation  and  increases  the  computational  cost                    age quality [6,18,19,33].  Training-based approaches em-
+of  training  and  sampling.   Defining  noise  schedules  that                  ploy knowledge distillation to compress multi-step teach-
+align the diffusion process with geodesic trajectories under                     ers into faster student models [20,25].  Rectified flow [17]
+the  Fisher–Rao  geometry  provides  a  principled  approach                     straightens the generative trajectory through multiple recti-
+to eliminating these inefficiencies while preserving image                       fications, while Consistency Models [28] enforce trajectory
+quality.                                                                         invariance between timesteps, both accelerate sampling but
+   We  introduce  the  Geodesic  Diffusion  Model  (GDM),                        incur higher training cost. Loss reweighting strategies have
+which constrains the diffusion process to follow a geodesic                      also been proposed to improve training efficiency [7,8]. Re-
+path between the data distribution and a Gaussian prior un-                      cently, Fast-DDPM [14] was proposed for conditional im-
+der the Fisher–Rao metric. This ensures that diffusion pro-                      age generation and improves both training and sampling ef-
+ceeds along the shortest trajectory in both the forward and                      ficiency by aligning the timesteps used in training and in-
+reverse processes.  With a geodesic noise schedule, GDM                          ference.
+transforms  the  Gaussian  prior  into  the  target  distribution
+along a engery-minimizing path without redundant interme-                        2.2. Noise Schedules for Diffusion Models
+diate states, thereby accelerating convergence during train-
+ing.    Since  the  diffusion  path  follows  a  geodesic  in  the               The noise schedule specifies the amount of noise injected
+Fisher–Rao manifold, fewer timesteps are required to solve                       during diffusion, thereby determining the signal-to-noise ra-
+the underlying differential equation,  leading to significant                    tio  (SNR)  at  each  timestep  and  strongly  influencing  both
+improvement in sampling efficiency.                                              the  efficiency  and  quality  of  the  model.    The  design  of
+   In this study, we focus on conditional medical image en-                      the  noise  schedule  is  thus  critical  to  the  overall  perfor-
+hancement, where efficiency is particularly critical as clin-                    mance of diffusion models.  Fixed, hand-crafted schedules
+ical  applications  require  substantially  faster  training  and                have been widely used in diffusion models, where the co-
+sampling.  In this context,  the conditional image provides                      efficients(α      t,σt)are predefined, and the SNR monotoni-
+
+                                                                            2
+
+=== PDF PAGE 3 ===
+Figure 2.  Training and sampling pipeline of GDM. During training, the model learns an efficient continuous geodesic diffusion process.
+During sampling,  noise is first added into condition image to simulate the intermediate image,  and then only a few discrete steps are
+required to generate a high-quality image.
+
+
+cally decreases acrosst∈[0,1].  Common choices include                               is  typically  a  monotonically  decreasing  function,  starting
+Linear-β[9],  Cosine-α[22],  and Sigmoid/Laplace sched-                              from a very large value att=  0(high signal, low noise)
+ules  [8, 13].    While  straightforward  to  implement,  such                       and approaching zero ast→1(pure noise).
+handcrafted  schedules  are  not  universally  optimal.   Prior                          We can interpret the process in Equation (1) as a trajec-
+work has shown that the optimal design of the noise sched-                           tory  in  the  space  of  Gaussian  distributions  with  isotropic
+ule can be data- and task-dependent [2,10].                                          covariance, evolving fromt= 0tot= 1. This trajectory is
+   To  overcome  these  limitations,  adaptive  or  learnable                        fully determined by the pair(α    t,σt), commonly referred to
+schedulers  have  been  proposed,  parameterizing  the  noise                        as  thenoise  scheduleof  the  diffusion  process.   A  widely
+schedule  with  trainable  variables  and  optimizing  jointly                       adopted  choice  is  the  variance-preserving  (VP)  schedule
+with the denoiser. For example, Variational Diffusion Mod-                           proposed in DDPM [9].   However,  from a geometric per-
+els (VDM) [16] employ a monotonic neural networkγ     η(t)                           spective this schedule is suboptimal:  under a Riemannian
+to define the time-dependent variance and SNR. Diffusion                             metric on the probability space, it fails to follow a geodesic
+Normalizing Flow (DiffFlow) [32] learns the drift term in                            (i.e., shortest path) between the endpoints, introducing inef-
+the forward SDE instead of fixing it, enabling adaptive noise                        ficiencies in both training and sampling.
+schedules that better fit the data distribution.
+3. Methods                                                                           3.1.2. The Fisher–Rao Metric
+                                                                                     The  Fisher–Rao  metric  [3]  is  a  natural  Riemannian  met-
+3.1. Mathematical Background                                                         ric  that  measures  path  length  in  the  space  of  parameter-
+3.1.1. Diffusion Models                                                              ized probability distributions, enabling the identification of
+The forward diffusion process for a high-quality image sam-                          geodesics (shortest paths) between them.   Given a proba-
+plex      0∼p    data can be viewed as a continuous-time stochas-                    bility  distributionp(x;θ                  1,...,θk)parameterized  byθ =
+tic process that gradually transforms a near-zero–variance                           (θ  1,...,θk)T , the Fisher information matrixI(θ)is defined
+Gaussian distribution centered atx   0 into an isotropic Gaus-                       as
+sian prior (pure noise). Formally, it is defined as                                                        "                    ∂logp(x;θ)          T#
+                                                                                              I(θ) =E         ∂logp(x;θ)                                  .     (3)
+        q(x  t|x 0) =N  xt;α tx0,σ2t In,  t∈[0,1],    (1)                                                          ∂θ                   ∂θ
+whereα     t andσ   t are continuous, scalar-valued functions of
+the normalized time indext,I  n denotes then×nidentity                               It  quantifies  the  sensitivity  of  the  distribution  to  parame-
+matrix,  andnis the data dimension.   The signal-to-noise                            ter variations by capturing the expected curvature (second
+ratio,                                                                               derivative) of the log-likelihood function. The Fisher infor-
+                             SNR(t) =     α2t                                        mation matrix induces a Riemannian metric on the statis-
+                                            σ2t,                             (2)     tical manifold, where the infinitesimal distance element is
+
+
+                                                                                 3
+
+=== PDF PAGE 4 ===
+given by                     q
+                     ds=        dθ(t)   TI(θ(t))dθ(t).                  (4)
+
+3.2. Geodesic Diffusion Models
+3.2.1. Geodesic Noise Schedules
+Building on the Fisher–Rao metric, we derive a family of
+geodesic  noise  schedules  that  characterize  the  most  effi-
+cient  diffusion  trajectories.   Specifically,  we  consider  the
+isotropic  Gaussian  distribution  parameterized  asθ(t)   =
+(α tx0,σt)⊤  in Equation (1).  Under this parameterization,
+the corresponding Fisher information matrix is                                             Figure 3.  A family of geodesic noise schedulers for differentα           1
+                                        1                                                  andσ       1
+                          I(θ) =        σ2I    00        2n.                         (5)
+                                                 σ2
+    Using this metric, the squared distance of an infinitesi-                                                         θ0 = arcosh          Ar    ,                        (13)
+                                                                                                                                           σ0
+mal change along the trajectory is
+                                                                                                                   δ=θ      0−arcosh          Ar    .                    (14)
+                                                                                                                                              σ1
+                      ds2 = A2 ˙α 2 + 2n˙σ       2σ2    dt2,                    (6)            In practice,  the forward diffusion process typically be-
+                                                                                           gins with a Gaussian distribution centered atx   0 and a very
+whereA:=∥x                      0∥2 denotes the Euclidean norm ofx    0.  Ac-              small  standard  deviationσ             0,  withα        0  =  1andσ         0  com-
+cordingly, the kinetic energy of the path can be expressed                                 monly  set  to0.002[15, 28].   As  diffusion  progresses,σ                   t
+as                                  ds 2 = A2 ˙α  2 + 2n˙σ       2                         increases whileα    t decreases or remains unchanged, reduc-
+          L(α,σ,˙α,˙σ) =            1                                                      ing  the  signal-to-noise  ratio  to  a  very  small  value  (e.g.,
+                                 2    dt                  2σ  2    .      (7)              1/6400[15,28]). By selecting different(α                                 1,σ1)pairs, one
+    As  shown  in  Appendix  1.1,  a  constant-speed  geodesic                             defines the Gaussian prior that serves as the terminal distri-
+is both length-minimizing and locally energy-minimizing.                                   bution of the forward process.  Figure3illustrates a family
+This implies that the trajectory must satisfy two conserva-                                of geodesic noise schedules corresponding to different pri-
+tion laws:                                                                                 ors, where each curve of         1√
+    (i) Momentum alongα.SinceLdoes not depend explic-                                                                             SNR(t)  =σ t/αt represents the
+itly onα,                                                                                  energy-minimizing path under the Fisher–Rao metric.
+                                                                                           3.2.2. Model Training
+              pα := ∂L∂˙α     = A2σ2  ˙α=c  (cconstant),           (8)                     Based   on   the   geodesic   noise   schedules,   we   propose
+                                                                                           Geodesic Diffusion Models (GDMs) for conditional image
+    (ii) Constant speed (energy).BecauseLis quadratic in                                   enhancement, where the goal is to reconstruct a high-quality
+velocities and independent of time,                                                        imagex           0 from its conditional inputc, as illustrated in Fig-
+                  A2 ˙α  2 + 2n˙σ       2                                                  ure2. We denote the joint distribution of images and condi-
+                          σ2           =k    2,   k>0.              (9)                    tions byp      joint(x  0,c), with the marginal distribution of con-
+                                                                                           ditions denoted asp  c(c).
+    Solving  Equations  (S8)  and  (S9)  (see  Appendix  1.2)                                  During   training,   pairs(x           0,c) ∼p         joint(x  0,c) and
+yields the closed-form geodesic scheduler:                                                 timestepst∼U([0,1])are randomly sampled.  The clean
+                                                                                           imagex           0 is then perturbed according to
+                       σ(t) =Arsech(θ                    0−δt),                   (10)                                  xt =α tx0 +σ tϵ,                        (15)
+
+     α(t) =α          0−r √2n[tanhθ                0−tanh(θ               0−δt)].     (11) whereϵ∼N(0,I)is Gaussian noise, andα             t,σt follow the
+    Given  boundary  conditions(α                     0,σ0) att  =   0and                  geodesic schedule defined in EquationsS13–S14. A U-Net
+(α  1,σ1)att= 1, the parameters are determined as                                          denoiser is trained by minimizing the following objective:
+                √             σ21−σ    20                            2                                   E(x  0,c),t,ϵ ϵ−ϵ  θ αtx0 +σ tϵ,c,t2,        (16)
+     r=            2n
+            2|α    0−α    1|          A2     + (α  0−α    1)22n                            whereϵ     θ estimates the score function (up to a scaling factor)
+                                                         !1/2                (12)          at eachx   t, i.e.,ϵ=−σ      t∇xt logp(x    t).
+                               + 2σ  21(α  0−α    1)2           ,                              The  complete  training  procedure  for  GDM  is  summa-
+                                           A2n                                             rized in Algorithm1.
+
+
+                                                                                      4
+
+=== PDF PAGE 5 ===
+ Algorithm   1:Training   of   Geodesic   Diffusion                                 Algorithm  2:Sampling  of  Geodesic  Diffusion
+ Model                                                                              Model
+   repeat                                                                             Hyperparameter:number of sampling stepsN,
+        t∼U([0,1])                                                                     start point of samplingt       N
+        (x  0,c)∼p         joint(x  0,c)                                              ϵ∼N(0,I)
+        ϵ∼N(0,I)                                                                      c∼p       c(c)
+        Gradient descent:                                                             xtN  =α tNc+σ  tNϵ
+            ∇θ∥ϵ−ϵ   θ(α(t)x          0 +σ(t)ϵ,c,t)∥               2                  fork=N,···,1do
+   untilconverged;                                                                         xtk−1     =x tk + (t k−1 −h ˙α tk                       i
+                                                                                            tk)   αtkxtk + ( ˙σ tk−  ˙α tkαtkσtk)ϵ θ(x tk,c,tk)
+3.2.3. Model Sampling                                                                 end
+                                                                                      returnx           0
+In image enhancement tasks, the condition imagecis a de-
+graded version of the high-quality targetx      0  (e.g.,  a noisy
+image  for  denoising  or  a  low-resolution  image  for  super-                  scans were acquired at standard clinical dose levels, while
+resolution).   Sincecalready  preserves  structural  and  in-                     low-dose scans were simulated at 10% of the routine dose.
+tensity  information  aboutx          0,  the  sampling  process  does            The dataset includes 48 patients, with 33 used for training,
+not  need  to  start  from  pure  noise.    This  motivates  trun-                5 for validation, and 10 for evaluation, resulting in 11,416,
+cated sampling, where generation begins at an intermediate                        1,795, and 3,501 pairs of 2D low-dose/normal-dose CT im-
+noise level instead of the maximum.  This motivates trun-                         ages, respectively.  All images were resized to256×256
+cated sampling,  where generation begins at an intermedi-                         pixels and normalized to the range[−1,1].
+ate noise level instead of the maximum,  thereby reducing
+computational cost while still preserving fidelity to the un-                     4.1.2. Prostate MRI Dataset
+derlying data distribution. We proposeGeodesic Truncated                          This  publicly  available  dataset  [29]  consists  of  MRI  vol-
+Sampling(GTS), which ensures that truncated sampling fol-                         umes with an in-plane resolution of 0.547 mm × 0.547 mm
+lows the constant-speed geodesic derived under the Fisher–                        and a through-plane resolution of 1.5 mm. For training, val-
+Rao  metric.   By  constraining  the  trajectory  to  remain  on                  idation, and testing, we constructed triplets of three consec-
+this geodesic, every intermediate image remains consistent                        utive slices, using the first and third slices as input and the
+with the diffusion process,  leading  to  both efficiency and                     middle slice as the ground truth. In total, we extracted 6,689
+fidelity.  Concretely, GTS starts by drawing random noise                         triplets  from  115  MRI  volumes  for  training,  290  triplets
+ϵ∼N(0,I)and sampling a conditionc(a single image for                              from 5 volumes for validation, and 580 triplets from 10 vol-
+denoising or two images for super-resolution).  The initial-                      umes for evaluation.  All slices were resized to256×256
+ization is defined as                                                             pixels and normalized to the range[−1,1].
+                        xtN  =α tNc+σ  tNϵ,                                       4.1.3. Evaluation Metrics
+wherex     tN <1and the ratio   σtNαtN   specifies the truncated                  To evaluate the quality of generated images, we used Peak
+noise level.  Sampling is then initialized directly from this                     Signal-to-Noise Ratio (PSNR), Structural Similarity Index
+truncated  state,  rather  than  from  pure  noise,  substantially                Measure (SSIM), Multi-Scale SSIM (MS-SSIM), and High-
+reducing the number of required steps. The detailed proce-                        Frequency Error Norm (HFEN). PSNR measures the ratio
+dure is summarized in Algorithm2.                                                 between maximum signal power and reconstruction error,
+                                                                                  with higher values indicating better fidelity. SSIM assesses
+4. Experiments and Results                                                        perceived image quality by comparing luminance, contrast,
+We  evaluated  our  proposed  Geodesic  Diffusion  Model                          and structural details, offering a more perceptually relevant
+(GDM)  on  two  medical  image  enhancement  tasks:   CT                          evaluation than PSNR. MS-SSIM extends SSIM to multi-
+image denoising,  conditioned on low-dose CT scans,  and                          ple image scales, capturing both coarse and fine structures.
+multi-image  MRI  super-resolution,   conditioned  on  two                        HFEN  emphasizes  high-frequency  components  by  apply-
+neighboring MR slices.                                                            ing  a  Laplacian-of-Gaussian  filter  to  both  generated  and
+                                                                                  ground-truth images and measuring their difference.
+4.1. Experimental Details                                                         4.1.4. Implementation Details
+4.1.1. Low-Dose and Normal-Dose Lung CT Dataset                                   Our  model  adopts  the  U-Net  denoiser  architecture  from
+This  publicly  available  dataset  [21]  contains  paired  low-                  DDIM [26].   We use the Adam optimizer with a learning
+dose  and  normal-dose  chest  CT  volumes.    Normal-dose                        rate of2×10   −4    and a batch size of 16.  All experiments
+
+
+                                                                             5
+
+=== PDF PAGE 6 ===
+were  implemented  in  Python  3.10.6  with  PyTorch  1.12.1
+and run on four NVIDIA A100 GPUs with 80 GB mem-
+ory each.  Following prior work [15,28], we setα                 0  =  1,
+σ0  =  0.002,α            1  =  1, andσ         1  =  80.  Truncated sampling
+was initialized at a noise level ofσ  tN/αtN  = 3.
+
+4.2. CT Image Denoising
+To enable a comprehensive comparison,  we evaluated six
+representative methods for CT denoising in terms of both
+image quality and computational efficiency: four diffusion-
+based  models  (DDPM  [9],  DDIM  [26],  DPM-Solver++
+[19],  and  Fast-DDPM  [14]),  a  convolution-based  model
+(RED-CNN [1]), and a GAN-based model (DU-GAN [12]).
+As  shown  in  Table1,   our  GDM  variants  consistently
+achieve  the  best  denoising  performance  across  all  met-
+rics  (PSNR,  SSIM,  MS-SSIM,  and  HFEN),  outperform-
+ing CNN-, GAN-, and other diffusion-based baselines.  In
+particular,  GDM  with  GTS  achieves  the  highest  PSNR
+while  maintaining  top  performance  on  SSIM,  MS-SSIM,
+and HFEN.
+   Beyond accuracy, GDM also offers substantial efficiency
+improvements.  Training time is reduced by33×compared
+to DDPM and6×compared to Fast-DDPM, requiring only
+4.25 hours—comparable to training a convolutional model.
+At  inference,  GDM  further  accelerates  runtime  by171×                       Figure  4.    Qualitative  results  for  CT  image  denoising.    Com-
+relative to DDPM and1.7×relative to Fast-DDPM, achiev-                           pared with CNN- (RED-CNN) and GAN-based (DU-GAN) meth-
+ing high-quality reconstructions with as few as six sampling                     ods, which blur or lose fine anatomical structures, diffusion-based
+steps. This dual advantage in accuracy and efficiency high-                      models  better  preserve  lung  fissures.   Our  proposed  GDM  pro-
+lights GDM’s ability to overcome the efficiency bottleneck                       duces  the  sharpest  and  most  continuous  fissure  reconstruction,
+of diffusion models.                                                             closely matching the normal-dose reference.
+   Figure4shows qualitative comparisons on lung CT de-
+noising.   While RED-CNN and DU-GAN fail to preserve
+fine-grained  anatomical  structures  such  as  lung  fissures,                  regression-based models.  This dual advantage underscores
+diffusion-based models retain these details more effectively.                    GDM’s potential as a practical solution for real-world MRI
+Among them, GDM produces the sharpest and most contin-                           super-resolution,  where  both  accuracy  and  scalability  are
+uous fissure reconstruction, closely resembling the normal-                      critical.
+dose reference and supporting accurate downstream analy-                             Figure5provides  qualitative  comparisons  on  prostate
+sis.                                                                             MRI, where the center slice is reconstructed from adjacent
+4.3. MR Image Super-Resolution                                                   slices.  CNN-based models such as miSRCNN yield over-
+                                                                                 smoothed  predictions,  achieving  higher  PSNR  but  lower
+For  MRI  super-resolution,  we  compared  GDM  against  a                       SSIM.  Diffusion-based  models  preserve  more  detail,  yet
+convolution-based  model  (miSRCNN  [5]),  a  GAN-based                          most fail to recover the bright regions in the upper-left cor-
+model (miSRGAN [30]), and the same four diffusion-based                          ner. In contrast, GDM reconstructs these regions with sharp
+baselines as in CT denoising.  As shown in Table1, GDM                           structural  fidelity,  closely  matching  the  ground  truth  and
+achieves state-of-the-art performance, surpassing all base-                      demonstrating robustness in handling challenging anatomi-
+lines.  Even without truncated sampling, GDM ranks sec-                          cal variations.
+ond overall, consistently outperforming prior methods. This
+demonstrates  the  effectiveness  of  geodesic  trajectories  in                 4.4. Ablation Study
+recovering subtle anatomical structures while suppressing
+noise.  Beyond accuracy, GDM also delivers substantial ef-                       To evaluate the effectiveness and robustness of our proposed
+ficiency  gains,  reducing  training  time  by  more  than20×                    approach, we conducted three sets of ablation studies: vary-
+compared  to  DDPM  and4×compared  to  Fast-DDPM,                                ing the number of sampling steps, adjusting the truncated
+while pushing inference speed closer to that of lightweight                      noise scale, and analyzing different noise schedules.
+
+                                                                             6
+
+=== PDF PAGE 7 ===
+Table 1.  Quantitative results for CT image denoising and MRI super-resolution.  The best results are shown inbold red, and the second-
+best inunderlined blue         .  Training and inference times are reported as hours and seconds per volume, respectively.  GDM converged after
+70k iterations for CT denoising and 100k iterations for MRI super-resolution,  compared with 2M and 400k iterations for DDPM and
+Fast-DDPM, respectively.
+
+ Task                           Methods                              # Steps         PSNR↑      SSIM↑    MS-SSIM↑ HFEN↓   Training↓ Inference↓
+                           RED-CNN [1]                               –                36.37           0.910           0.987           0.124    3 h            0.5 s
+                           DU-GAN [12]                               –                36.25           0.902           0.986           0.128            20 h           3.8 s
+                              DDPM [9]                               1000             35.30           0.872           0.982           0.138           141 h           1284 s
+                             DDIM [26]                                 10               37.39           0.913  0.989                          0.109            26 h            12.5 s
+                       DPM-Solver++ [19]                         10               37.02           0.904           0.988           0.114            26 h            12.5 s
+                         Fast-DDPM [14]                            10               37.46  0.916                            0.989             0.108             26 h            12.5 s
+                     GDM w/o GTS (ours)                                  15              37.85             0.923            0.990             0.103            4.25 h             18 s
+                            GDM (ours)                                    6              37.92             0.923            0.990             0.103            4.25 h            7.5 s
+                           miSRCNN [5]                               –                26.48           0.870           0.959           0.346    1 h           0.01 s
+                          miSRGAN [30]                              –                26.79           0.880           0.965           0.331            40 h          0.04 s
+                              DDPM [9]                               1000             25.28           0.829           0.951           0.385           136 h            222 s
+                             DDIM [26]                                 10               26.58           0.877           0.963           0.340            26 h             2.3 s
+                       DPM-Solver++ [19]                         10               26.49           0.872           0.960           0.345            26 h             2.3 s
+                         Fast-DDPM [14]                            10               27.05           0.887  0.967                              0.314            26 h             2.3 s
+                     GDM w/o GTS (ours)                                  15              27.59             0.894            0.970             0.299             6.5 h            3.5 s
+                            GDM (ours)                                    6              27.61             0.896            0.970             0.297             6.5 h            1.4 s
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 5.  Qualitative results of MRI image super-resolution.  While CNN- (miSRCNN) and GAN-based (miSRGAN) methods produce
+blurry outputs and other diffusion models lose fine details,  our proposed GDM reconstructs sharper anatomical structures and closely
+matches the ground-truth center slice.
+
+
+Impact  of  Sampling  Steps.Table2examines  how  the                                               show  that  GDM  maintains  consistently  high  performance
+number  of  sampling  steps  affects  GDM  performance  un-                                        with 5–9 steps,  achieving its best results at 6 steps.   This
+der a fixed truncated noise levelσ tN/αtN  = 3. The results                                        demonstrates both the sampling efficiency of the geodesic
+
+
+                                                                                              7
+
+=== PDF PAGE 8 ===
+trajectory and robustness to variation in step size.  In con-                      Table  3.    Effect  of  truncated  noise  levelsσ       tN/αtN   on  GDM
+trast, reducing the number of steps below 5 causes a sharp                         performance.    GDM  remains  stable  across  a  wide  range,  with
+collapse in PSNR and SSIM for both denoising and super-                            σtN/αtN  = 3achieving the best trade-off between accuracy and
+resolution, indicating that a minimal step budget is still re-                     efficiency.
+quired for reliable generation.                                                                             Denoising                  Super Resolution
+                                                                                     σtN/αtN
+Table 2. Effect of sampling steps on GDM performance with fixed                                       PSNR↑           SSIM↑          PSNR↑           SSIM↑
+truncated noise levelσ     tN/αtN  =  3.  GDM maintains stable per-                       80           37.85           0.923          27.61          0.894
+formance  within  5–9  steps,  peaking  at  6,  but  collapses  sharply                   60           37.89           0.923          27.59          0.895
+when reduced below 5 steps.                                                               50           37.89           0.922          27.61          0.894
+                                                                                          20           37.91           0.923          27.64          0.895
+                                                                                          10           37.91           0.923          27.63          0.895
+ Steps                 Denoising                       Super Resolution                   5            37.88           0.923          27.57          0.895
+             PSNR↑         SSIM↑         PSNR↑         SSIM↑                              3            37.92           0.923          27.61          0.896
+                                                                                          2            37.73           0.918          27.50          0.894
+   9          37.51            0.915            27.59           0.894                     1            37.50           0.916          27.55          0.896
+
+   8          37.61            0.917            27.57           0.894
+   7          37.68            0.920            27.54           0.894              preserving energy-minimizing trajectories to maximize the
+   6          37.92            0.923            27.61           0.896              effectiveness of diffusion models.
+   5          37.53            0.917            26.33           0.877
+   4           8.22            0.038            25.19           0.094              Table 4.   Effect of varying terminal parameters(α                        1,σ1)att =
+   3           5.50            0.011            5.64            0.031              1on GDM performance.   GDM remains stable across moderate
+                                                                                   schedule variations, but quality degrades when noise increases too
+                                                                                   abruptly near the end of the diffusion process.
+
+Impact of Truncated Noise Scale.Table3examines the                                   σ1   α1                  Denoising                 Super Resolution
+effect of different truncated noise levelsσ  tN/αtN  on GDM                                             PSNR↑       SSIM↑       PSNR↑       SSIM↑
+performance.  The results show that GDM maintains con-
+sistently high PSNR and SSIM across a wide range of noise                            80        1         37.92          0.923          27.61         0.896
+scales, demonstrating strong robustness to this hyperparam-                          72      0.9         37.91          0.922          27.61         0.896
+eter.    Notably,  settingσ     tN/αtN   =  3provides  the  best                     56      0.7         37.90          0.922          27.59         0.896
+balance, yielding peak performance while requiring fewer                             40      0.5         37.90          0.922          27.57         0.896
+sampling steps. This robustness reduces the need for exten-                          24      0.3         37.90          0.923          27.56         0.896
+sive hyperparameter tuning,  making GDM more practical                                8      0.1         34.09          0.762          26.30         0.866
+for real-world applications.                                                          1    0.0125        21.15          0.501          17.34         0.474
+
+
+Impact  of  Noise  Schedule.We  evaluated  the  sensitiv-
+ity  of  GDM  to  the  geodesic  noise  scheduling  trajectory                     5. Discussion and Conclusion
+by varying the terminal parameters(α                      1,σ1).  Although all
+configurations  share  the  same  initial  and  final  signal-to-                  This paper introduced Geodesic Diffusion Models (GDMs),
+noise  ratios  (SNR),  they  define  different  geodesic  trajec-                  which optimize the diffusion process by constraining trans-
+tories starting from distinct Gaussian priors,  as illustrated                     formations between data distributions to follow the short-
+in Figure3.  As shown in Table4, GDM remains remark-                               est path in probability space.  This principled formulation
+ably stable across the first five configurations, consistently                     reduces  inefficiencies  and  enables  a  more  direct,  compu-
+reaching around 37.9 dB PSNR for denoising and 27.6 dB                             tationally  effective  generative  process.    Experimental  re-
+for super-resolution with nearly identical SSIM values. This                       sults show that GDM achieves state-of-the-art performance
+highlights strong robustness to schedule variations and val-                       across  medical  image  enhancement  tasks  while  substan-
+idates the geometric principles underlying GDM.                                    tially  reducing  computational  overhead,  underscoring  its
+   In  contrast,  performance  collapses  under  the  final  two                   potential to advance medical imaging research and support
+configurations, where the effective noise rises too abruptly                       real-time clinical applications.
+neart= 1. Such late-stage noise injection disrupts learning                            Future  work  will  extend  GDM  to  3D  image  genera-
+signals during the last diffusion steps,  severely degrading                       tion  and  investigate  its  applicability  to  multi-modal  med-
+reconstruction quality. These results provide practical guid-                      ical  imaging,  enabling  deeper  integration  across  diverse
+ance:  noise schedules should ensure smooth growth while                           data sources.  The flexibility and efficiency of GDM estab-
+
+                                                                               8
+
+=== PDF PAGE 9 ===
+lish it as a promising direction for future developments in                                    image-to-image generation.IEEE Journal of Biomedical and
+diffusion-based generative modeling.                                                           Health Informatics, 2025.2,6,7
+                                                                                        [15]Tero  Karras,  Miika  Aittala,  Timo  Aila,  and  Samuli  Laine.
+References                                                                                     Elucidating  the  design  space  of  diffusion-based  generative
+                                                                                               models.Advances in neural information processing systems,
+ [1]Hu Chen, Yi Zhang, Mannudeep K. Kalra, Feng Lin, Yang                                      35:26565–26577, 2022.4,6
+      Chen,  Peixi Liao,  Jiliu Zhou,  and Ge Wang.   Low-dose ct                       [16]Diederik Kingma, Tim Salimans, Ben Poole, and Jonathan
+      with  a  residual  encoder-decoder  convolutional  neural  net-                          Ho.  Variational diffusion models.Advances in neural infor-
+      work.IEEE Transactions on Medical Imaging, 36(12):2524–                                  mation processing systems, 34:21696–21707, 2021.3
+      2535, 2017.6,7                                                                    [17]Xingchao  Liu,  Chengyue  Gong,  and  Qiang  Liu.     Flow
+ [2]Ting Chen. On the importance of noise scheduling for diffu-                                straight and fast: Learning to generate and transfer data with
+      sion models.arXiv preprint arXiv:2301.10972, 2023.3                                      rectified flow, 2022.2
+ [3]Sueli  IR  Costa,  Sandra  A  Santos,  and  Joao  E  Strapasson.                    [18]Cheng Lu, Yuhao Zhou, Fan Bao, Jianfei Chen, Chongxuan
+      Fisher information distance: A geometrical reading.Discrete                              Li, and Jun Zhu. Dpm-solver: A fast ode solver for diffusion
+      Applied Mathematics, 197:59–69, 2015.3                                                   probabilistic model sampling in around 10 steps.Advances
+ [4]Prafulla Dhariwal and Alexander Nichol.  Diffusion models                                  in  Neural  Information  Processing  Systems,  35:5775–5787,
+      beat gans on image synthesis.Advances in neural informa-                                 2022.2
+      tion processing systems, 34:8780–8794, 2021.2                                     [19]Cheng Lu, Yuhao Zhou, Fan Bao, Jianfei Chen, Chongxuan
+ [5]Chao  Dong,  Chen  Change  Loy,  Kaiming  He,  and  Xiaoou                                 Li, and Jun Zhu. Dpm-solver++: Fast solver for guided sam-
+      Tang.  Image super-resolution using deep convolutional net-                              pling of diffusion probabilistic models.Machine Intelligence
+      works.IEEE Transactions on Pattern Analysis and Machine                                  Research, pages 1–22, 2025.2,6,7
+      Intelligence, 38(2):295–307, 2016.6,7                                             [20]Eric Luhman and Troy Luhman.  Knowledge distillation in
+ [6]Martin  Gonzalez,   Nelson  Fernandez  Pinto,   Thuy  Tran,                                iterative  generative  models  for  improved  sampling  speed.
+      Hatem Hajri, Nader Masmoudi, et al. Seeds: Exponential sde                               arXiv preprint arXiv:2101.02388, 2021.2
+      solvers for fast high-quality sampling from diffusion mod-                        [21]C McCollough, B Chen, D Holmes, X Duan, Z Yu, L Xu,
+      els.Advances  in  Neural  Information  Processing  Systems,                              S Leng, and J Fletcher.   Low dose ct image and projection
+      36:68061–68120, 2023.2                                                                   data (ldct-and-projection-data)(version 4).Med. Phys,  48:
+ [7]Tiankai  Hang,  Shuyang  Gu,  Chen  Li,  Jianmin  Bao,  Dong                               902–911, 2021.5
+      Chen, Han Hu, Xin Geng, and Baining Guo.  Efficient diffu-                        [22]Alexander Quinn Nichol and Prafulla Dhariwal.   Improved
+      sion training via min-snr weighting strategy. InProceedings                              denoising  diffusion  probabilistic  models.   InInternational
+      of the IEEE/CVF international conference on computer vi-                                 conference on machine learning, pages 8162–8171. PMLR,
+      sion, pages 7441–7451, 2023.2                                                            2021.2,3
+ [8]Tiankai  Hang,  Shuyang  Gu,  Xin  Geng,  and  Baining  Guo.
+      Improved  noise  schedule  for  diffusion  training.arXiv                         [23]Muzaffer         ¨Ozbey,  Onat Dalmaz,  Salman UH Dar,  Hasan A
+      preprint arXiv:2407.03297, 2024.2,3                                                      Bedel, S¸aban  ¨Ozturk, Alper G¨ung¨or, and Tolga C¸ ukur.  Un-
+ [9]Jonathan Ho, Ajay Jain, and Pieter Abbeel.  Denoising dif-                                 supervised medical image translation with adversarial diffu-
+      fusion probabilistic models.Advances in neural information                               sion models.IEEE Transactions on Medical Imaging, 2023.
+      processing systems, 33:6840–6851, 2020.2,3,6,7                                           2
+[10]Emiel Hoogeboom, Jonathan Heek, and Tim Salimans. sim-                              [24]Walter  HL  Pinaya,  Petru-Daniel  Tudosiu,  Jessica  Dafflon,
+      ple diffusion:  End-to-end diffusion for high resolution im-                             Pedro F Da Costa,  Virginia Fernandez,  Parashkev Nachev,
+      ages.    InInternational  Conference  on  Machine  Learning,                             Sebastien Ourselin,  and M Jorge Cardoso.   Brain imaging
+      pages 13213–13232. PMLR, 2023.3                                                          generation with latent diffusion models.  InMICCAI Work-
+[11]Xinrong Hu, Yu-Jen Chen, Tsung-Yi Ho, and Yiyu Shi. Con-                                   shop on Deep Generative Models, pages 117–126. Springer,
+      ditional diffusion models for weakly supervised medical im-                              2022.2
+      age segmentation, 2023.2                                                          [25]Tim  Salimans  and  Jonathan  Ho.    Progressive  distillation
+[12]Zhizhong Huang, Junping Zhang, Yi Zhang, and Hongming                                      for  fast  sampling  of  diffusion  models.arXiv  preprint
+      Shan.  Du-gan:  Generative adversarial networks with dual-                               arXiv:2202.00512, 2022.2
+      domain  u-net-based  discriminators  for  low-dose  ct  denois-                   [26]Jiaming   Song,    Chenlin   Meng,    and   Stefano   Ermon.
+      ing.IEEE Transactions on Instrumentation and Measure-                                    Denoising   diffusion   implicit   models.arXiv   preprint
+      ment, 71:1–12, 2022.6,7                                                                  arXiv:2010.02502, 2020.2,5,6,7
+[13]Allan Jabri, David J. Fleet, and Ting Chen. Scalable adaptive                       [27]Yang Song, Jascha Sohl-Dickstein, Diederik P Kingma, Ab-
+      computation for iterative generation.  InProceedings of the                              hishek Kumar, Stefano Ermon, and Ben Poole.  Score-based
+      40th International Conference on Machine Learning, pages                                 generative  modeling  through  stochastic  differential  equa-
+      14569–14589, 2023.3                                                                      tions.arXiv preprint arXiv:2011.13456, 2020.2
+[14]Hongxu Jiang, Muhammad Imran, Teng Zhang, Yuyin Zhou,                               [28]Yang   Song,   Prafulla   Dhariwal,   Mark   Chen,   and   Ilya
+      Muxuan  Liang,  Kuang  Gong,  and  Wei  Shao.   Fast-ddpm:                               Sutskever.          Consistency    models.arXiv    preprint
+      Fast  denoising  diffusion  probabilistic  models  for  medical                          arXiv:2303.01469, 2023.2,4,6
+
+
+                                                                                   9
+
+=== PDF PAGE 10 ===
+[29]Geoffrey  A  Sonn,  Shyam  Natarajan,  Daniel  JA  Margolis,
+      Malu  MacAiran,  Patricia  Lieu,  Jiaoti  Huang,  Frederick  J
+      Dorey, and Leonard S Marks.  Targeted biopsy in the detec-
+      tion of prostate cancer using an office based magnetic reso-
+      nance ultrasound fusion device.The Journal of urology, 189
+      (1):86–92, 2013.5
+[30]Rewa  R.  Sood,  Wei  Shao,  Christian  Kunder,  Nikola  C.
+      Teslovich,  Jeffrey B.  Wang,  Simon J.C.  Soerensen,  Nikhil
+      Madhuripan,  Anugayathri  Jawahar,  James  D.  Brooks,  Pe-
+      jman  Ghanouni,  Richard  E.  Fan,  Geoffrey  A.  Sonn,  and
+      Mirabela Rusu.  3d registration of pre-surgical prostate mri
+      and histopathology images via super-resolution volume re-
+      construction.Medical Image Analysis, 69:101957, 2021.6,
+      7
+[31]Boxiao  Yu,  Savas  Ozdemir,  Yafei  Dong,  Wei  Shao,  Tinsu
+      Pan,  Kuangyu Shi,  and Kuang Gong.   Robust whole-body
+      pet image denoising using 3d diffusion models:  evaluation
+      across various scanners, tracers, and dose levels.European
+      Journal of Nuclear Medicine and Molecular Imaging, pages
+      1–14, 2025.2
+[32]Qinsheng Zhang and Yongxin Chen.  Diffusion normalizing
+      flow.  Advances  in  neural  information  processing  systems,
+      34:16280–16291, 2021.3
+[33]Wenliang  Zhao,  Lujia  Bai,  Yongming  Rao,  Jie  Zhou,  and
+      Jiwen Lu.  Unipc:  A unified predictor-corrector framework
+      for fast sampling of diffusion models.Advances in Neural
+      Information Processing Systems, 36:49842–49869, 2023.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                   10
+
+=== PDF PAGE 11 ===
+Supplementary  Material  for  Geodesic  Diffu-                                           A.2. Closed-Form Geodesic Noise Schedule
+sion Models                                                                              We now derive a closed-form geodesic noise schedule from
+A. Extended Mathematical Derivations                                                     the Fisher–Rao Lagrangian.
+                                                                                             A  path  is  geodesic  if  it  makes  the  energy  functional
+A.1.    Energy–Length    Relationship    under    the                                    E= R 10 Ldtstationary under endpoint-fixed perturbations.
+         Fisher–Rao Metric                                                               Choosingtas an affine (constant–speed) parameter yields
+The squared distance of an infinitesimal change is                                       two conservation laws.
+                                                                                             (i) Momentum alongα.SinceLdoes not depend onα,
+                     ds2  = A2 ˙α 2 + 2n˙σ       2σ2    dt2.                 (S1)                      pα := ∂L                     ),         (S8)
+The corresponding kinetic energy (Lagrangian) is                                                                 ∂˙α     = A2σ2  ˙α=c  (cconstant
+                                ds     2 = A2 ˙α  2 + 2n˙σ       2                       hence˙α=cσ                   2/A2.
+      L(α,σ,˙α,˙σ) =            1                                                            (ii) Constant speed (energy).BecauseLis quadratic in
+                             2    dt                  2σ  2    .       (S2)              velocities and time-independent,
+Define thespeedof the path as      r                                                                      A2 ˙α  2 + 2n˙σ       2
+             v(t)  :=   ds             A2 ˙α  2 + 2n˙σ       2                                                     σ2           =k    2,   k>0.            (S9)
+                           dt  =               σ2   ≥0.        (S3)                          Combining (S8) and (S9) eliminates˙α, yielding the ODE
+Then the path length and energy on[0,1]are                                                    ˙σ=α  ∗σp        1−B      2σ2,  α∗ :=  k√
+               Z  1                               Z  1                                                                                         2n , B:= |c|Ak.
+       ℓ =                                      2                                                                                                                 (S10)
+                 0 v(t)dt,   E=           1         0 v(t)      2dt.    (S4)             Separating variables and integrating gives
+
+Cauchy–Schwarz       inequality.   Applying       Cauchy–                                   σ(t) =λsech(θ                 0−δt),  λ:=            1B  = Ak|c| , δ:=   k√2n .
+Schwarz on[0,1]withf=vandg= 1gives                                                                                                                                (S11)
+                       Z  1         2≤     Z  1                                          From (S8), integration yields
+               ℓ2 =                                                                                                     tanhθ         0−tanh(θ               0−δt) .    (S12)
+                          0 vdt              0 v2dt= 2E.          (S5)                       α(t) =α          0− cλ2
+Thus                                                                                                            A2δ
+                                 E≥  ℓ2                                                      Definingr:=k/|c|>0givesλ=Ar. Substituting, the
+                                           2.                               (S6)         geodesic scheduler is
+Equality condition.Equality holds iffv(t)is constant. In                                                        σ(t) =Arsech(θ                    0−δt),                 (S13)
+this casev(t)≡c≥0,  soℓ=          R 1R 1          0 vdt=c,  andE=                            α(t) =α          0−r √2n[tanhθ                0−tanh(θ               0−δt)].    (S14)
+1                                                                                        Given boundary conditions(α                     0,σ0)att= 0and(α                  1,σ1)
+2   0 c2dt=      12ℓ2, matching (S6).
+                                                                                         att= 1, we have             σ21−σ    20
+General  interval[a,b].   If  the  time  interval  has  length                                          √2n                                                2
+T=b−a, the inequality generalizes to                                                         r=     2|α    0−α    1|         A2     + (α  0−α    1)22n
+                                 E≥  ℓ2                                                                                                         !1/2              (S15)
+                                          2T ,                               (S7)                                      + 2σ  21(α  0−α    1)2          ,
+with equality iffvis constant.                                                                                                    A2n
+
+Consequences.Fixing  endpoints  in  a  convex  neighbor-                                                            θ0 = arcosh         Arσ0  ,                      (S16)
+hood:
+                                                                                                                 δ=θ      0−arcosh        Ar     .                  (S17)
+1.For  any  given  geometric  curve  of  lengthℓ,  energy  is                                                                              σ1
+    minimized by its constant–speed parameterization, with
+    minimal valueE        min =ℓ    2/2.                                                 Special case.Ifα     t remains fixed (α  0 =α    1), then˙α≡0
+2.Among  all  nearby  curves,  the  unique  geodesic  mini-                              andc= 0.  From (S9),˙σ=δσwithδ=                   k√2n  , giving the
+    mizes lengthℓ. Endowed with constant speed, its energy                               exponential scheduler:
+    isE=ℓ          2geo/2, and no competitor can achieve lower en-                                                                        σ1 t
+    ergy.                                                                                                     σ(t) =σ          0eδt =σ    0 σ0      ,              (S18)
+Thus a constant–speed geodesic is simultaneously length–
+and energy–minimizing.                                                                   a degenerate case of the general geodesic solution.
+
+
+                                                                                   11

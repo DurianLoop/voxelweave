@@ -1,0 +1,35 @@
+Segmentation-Aware MRI Reconstruction 55
+Fig. 1. Segmentation-aware reconstruction framework. During training the network is
+trained end-to-end with stabilization. During inference an image is recollected from only
+the reconstruction network, along with an auxiliary segmentation map. Stabilization
+technique is illustrated by the sample inputs on the left across epochs
+segmentation networks. Training of such compound networks is prone to unde￾sirable convergence onto local minima where either network yields undesirably
+poor performance. During initial stages of training, the segmentation network
+receives an input computed by an insufficiently trained reconstruction network,
+so the input will contain a high degree of reconstruction artifacts. This will
+inevitably compromise the learning process for the segmentation stage, resulting
+in inaccurate segmentation maps. Note that the segmentation maps are then
+provided as guidance to the reconstruction network, so a vicious circle can be
+created where both network are compromised.
+To address this critical issue, we propose to use a novel stabilization method
+where the undersampling rate of the acquisitions are gradually ramped up during
+the course of training. In the initial stages, the reconstruction network receives
+lightly undersampled data that is easy to reconstruct with few artifacts. Thus,
+the segmentation network receives as input high-quality reconstructions that
+will improve its learning capabilities. Once both network adapt to the instant
+acceleration rate, then the degree of undersampling can be elevated. Overall,
+the learning signals generated from the high-quality inputs in earlier epochs are
+propagated back to “warm-up” the model for the increasingly lower quality sam￾ples that are to come in later epochs. In particular, we impose an epoch-specific
+undersampling rate starting from 1 −  reaching to the desired undersampling
+rate r in an exponential manner as follows:
+ri =
+⎧
+⎨
+⎩
+(1 − )
+ r
+1−
+(i−1)/P
+1 ≤ i ≤ P
+r i>P
+(1)

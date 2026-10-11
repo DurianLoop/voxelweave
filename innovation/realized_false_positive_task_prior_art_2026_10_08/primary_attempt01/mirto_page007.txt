@@ -1,0 +1,173 @@
+MIRTO 7
+Ψa
+Ψc
+b
+βˆa < b
+g¯a > 0
+βˆc ≈ b, g¯c ≈ 0
+• validation τˆb
+◦ test-matched τ
+⋆
+b
+mean realised burden β on test
+mean Dice
+(a) threshold transfer
+thresholding
+relaxation
+τm → τ
+fixed-τ effect thresholding, τ hysteresis + pruning, τ
+thresholding, τm
+total at
+matched β
+β = βpp(τ)
+mean realised burden β on test
+mean Dice
+(b) post-processing at matched burden
+0 1
+0
+1
+critical thresholds ti
+(n+1)α−1
+n
+τˆ = t(k)
+Pr[new scan > b | cal.]
+= 1 − F (t(k)) ∼ Beta(n+1−k, k)
+threshold τ
+empirical risk ˆRn(τ)
+(c) conformal risk control as an order statistic
+Fig. 3. Operating-point geometry (schematic). (a) Each method traces mean Dice against mean realised burden on test,
+Ψm. The validation threshold lands at a realised burden βˆm that need not equal the nominal b; the transfer gap g¯m is the rise of
+Ψm between βˆm and b (Identity 1). (b) A post-processed map at threshold τ realises a smaller burden than plain thresholding
+at the same τ ; its gain over plain thresholding at equal burden splits exactly into an effect at fixed τ and a relaxation of the
+plain threshold from τm to τ (Identity 5). (c) For the loss 1[FP > b], CRC selects an order statistic of the per-subject critical
+thresholds, which yields the known Beta law of Lemma 1.
+whose Dice is positively associated with pi + Gi
+. Because
+pi tends to grow with Gi
+, pooling gives large tumours
+most of the weight, and a method that segments large
+tumours well but small ones poorly gains from pooling
+relative to the subject mean. This is the mechanism be￾hind several aggregation reversals in Section 3.4.
+Voxel AUROC and AUPRC. Per subject, inside the sup￾port, AUROC is the Mann–Whitney statistic [47,32] with
+mid-ranks,
+AUROCi =
+1
+n
++
+i n
+−
+i
+X
+x∈Ci
+X
+y∈Si\Ci
+
+1[s(x) > s(y)]
++
+1
+2
+1[s(x) = s(y)]
+,
+(18)
+and AUPRC is average precision with tied scores col￾lapsed to one threshold. Ties matter: out-of-view vox￾els set to zero form a large tie block, and ordinal ranks
+would resolve it by array order. Both metrics are invari￾ant to τ and to post-processing, so they cannot support
+a claim about delineation. Pooled values are computed
+from per-subject histograms of the normalised score with
+4,096 bins.
+Identity 3 (Pooled AUROC mixes within- and
+between-subject comparisons). With N ± =
+P
+i
+n
+±
+i
+and Aij the probability that a positive voxel of subject i
+outscores a negative voxel of subject j (ties counted one
+half ),
+AUROCpool =
+X
+i
+n
++
+i n
+−
+i
+N +N −
+AUROCi +
+X
+i̸=j
+n
++
+i n
+−
+j
+N +N −
+Aij .
+(19)
+This block structure is that of the nonparametric
+clustered-ROC estimator of Obuchowski [52], in which
+the pooled area averages comparisons within and be￾tween clusters; here the clusters are subjects. The sec￾ond term, which carries weight 1 −
+P
+i
+n
++
+i n
+−
+i
+/(N +N −),
+rewards scores that are comparable across subjects. A
+score can therefore rank voxels well inside each subject
+(high subject-mean AUROC) and still pool poorly if its
+scale drifts between subjects. We use Eq. (19) to interpret
+the FLAIR reversal of Section 3.8; it is an interpretation,
+not a test.
+Lesions and their matching. Reference lesions are the 6-
+connected components of Ci of at least 50 mm3
+; predicted
+components use the same connectivity. Components are
+matched one to one by maximum-weight bipartite match￾ing on the IoU matrix [39], and a lesion counts as detected
+if its matched IoU is at least 0.10. With H hits amongst
+NL reference lesions the pooled sensitivity is H/NL. Be￾cause no sub-floor fragment was hit in our data, changing
+the floor changes NL but not H, and the sensitivity scales
+by the ratio of denominators (Section 3.7). We do not use
+“matched Dice” computed on the reference region alone: if
+P ⊆ C, then D = 2r/(1+r) with coverage r = |P|/|C|, so
+it measures coverage only. Lesions are called small below
+17,414.67 mm3
+, the first tertile of above-floor validation
+lesion volumes, computed on validation data only.
+Slice-level AUROC and anatomy. A slice is scored by
+its maximum normalised value and labelled positive if it
+contains tumour. The marginal AUROC averages within￾subject AUROCs. To separate detection from anatomy we
+use the covariate-adjusted ROC of Janes and Pepe [36]:
+each positive slice j with covariates zj (brain area, relative
+position) receives the placement value
+πj = P
+
+s
+− < sj
+
+ z
+− ≈ zj
+
++
+1
+2
+P
+
+s
+− = sj
+
+ z
+− ≈ zj
+
+,
+AROC = 1
+n+
+X
+j
+πj ,
+(20)
+estimated amongst negative slices of the same subject
+by brain-area quintile strata (the primary estimator),
+nearest-neighbour matching with calipers of 0.2, 0.1 and

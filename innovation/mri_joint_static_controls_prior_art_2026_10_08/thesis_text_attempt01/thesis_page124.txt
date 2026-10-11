@@ -1,0 +1,41 @@
+7.2. GAN BASED ADAPTIVE SAMPLING
+NLL, transforming the samples into Fourier and taking the maximum variance to
+guide the acquisition does not work.
+In addition, if one wishes to deploy such adaptive sampling in a clinical setting, the
+inference time must be shorter than the repetition time (TR), which is typically in
+the order of102-103 ms. While our approach and the one of Zhang et al. (2019b)
+satisfy this constraint, this is not the case for all generative approaches. In particular,
+autoregressive models (Van Oord et al., 2016) or score-based sampling approaches
+suffer from long inference times (Song et al., 2021).
+An important distinction between our current approach and the ones that were discussed
+previously is theinformation horizon used by the different policies. The information
+horizon refers to how far ahead rollouts occur in order to train a given policy, and is
+described on Table 7.1 for different policy models. While it is clear that policies that
+integrate long horizon planning leverageN-step information, other methods can make
+use of 0-step or 1-step information.
+Sampling policy Adaptive Long horizon Information horizon
+LBCS (Gözcü et al., 2018) ✗ ✗ 1-step
+AlphaGo (Jin et al., 2019) ✓ ✓ N-step
+DDQN (Pineda et al., 2020) ✗(✓) ✓ N-step
+Policy Gradient (Bakker et al., 2020) ✓ ✗ (✓) 1-step
+Evaluator (Zhang et al., 2019b) ✓ ✗ 0-step
+GAN (Ours) ✓ ✗ 0-step
+Table 7.1: Methods that will be considered in the paper. This table extends the perspective given
+in Table 6.1. Different methods make use of0/1/N-step information in their sampling policy.
+The distinction lies in the fact that our GAN-based approach and the one of Zhang et al.
+(2019b) make their choice based on the location with the maximum error at the current
+step, while LBCS or the Policy Gradient approach (Bakker et al., 2020) integrate the
+actual error that remains when adding a location in the mask. Formally, given a test
+imagex, greedily trained1-step policies aim at acquiring the location which yield to the
+best performance at the next step
+vt+1 = arg max
+v∈[P ]
+η(x, ˆxωt∪v). (7.10)
+Evaluating this for a given point requirescomputing a reconstruction for each candidate
+v, in order to compute theactual performance gain that would be achieved by adding
+v to the maskωt. 0-step information methods rely instead on acquiring the location
+feature the largestcurrent error
+vt+1 = arg max
+v∈[P ]
+∥PvF (x− ˆxωt)∥. (7.11)
+111

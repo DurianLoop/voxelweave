@@ -1,0 +1,25 @@
+A Segmentation-aware Deep Fusion Network for Compressed Sensing MRI 13
+Table 4. The comparison in runtime (seconds) between the compared models.
+TLMRI GBRWT PANO Pre-RecNet5 Liu[26] SADFN5-WOS SADFN5
+Runtime 127.67 100.60 11.37 0.03 0.03 0.07 0.06
+margins with different model capacity, meaning the supervision information can
+robustly improve the reconstruction accuracy.
+(a) PSNR (b) SSIM
+Fig. 6. The comparison in averaged PSNR and SSIM index on the test MRI data.
+5.2 Different Under-sampling Patterns
+We also test the proposed SADFN model on the 20% Random under-sampling
+mask shown in Figure 5. The SADFN5 achieves the optimal performance, proving
+it can be well generalized on various kind of under-sampling patterns.
+5.3 The Evaluation on the Segmentation Performance
+With the reconstructed MR images produced by different CS-MRI models, we
+input them into the pre-trained automatic segmentation models in Section 3.2
+to evaluate the effect of different reconstruction models on the segmentation
+task. We adopt the Dice Coefficient (DC), the 95th-percentile of the Hausdoff
+distance (HD) and the absolute volume difference (AVD) as objective evaluation
+indexes for segmentation as recommended in [28]. The higher DC, lower HD and
+lower AVD values indicate better segmentation accuracy. Details on evaluation
+of segmentation performance can be referred to [28]. The segmentation results
+with full-sampled MR image inputs are the performance upper bounds. We show
+the averaged segmentation results with compared models on the test MRI data
+set in Table 5. We observe the proposed SADFN5 achieves the best accuracy on
+the segmentation task of the compared models.

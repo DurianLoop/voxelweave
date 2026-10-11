@@ -1,0 +1,99 @@
+require image-adaptive inference complexity [26, 19]. On the other,
+the difficulty variability of image ASSR emerges as higher upsampling
+scales usually need larger computational burden [2]. Considering
+an input image and the corresponding upsampling scale factor as an
+ASSR task, it is essential to develop task-aware feature extractors
+with adaptive inference based on the difficulty of ASSR tasks.
+For this goal, in this work, we propose the Task-Aware Dynamic
+Transformer (TADT) as an efficient feature extractor, with dynamic
+computational graphs upon different ASSR tasks. Specifically, our
+feature extractor TADT has a feature extraction backbone and a Task￾Aware Routing Controller (TARC). The backbone contains multiple
+Multi-Scale Transformer Blocks (MSTBs) to exploit multi-scale rep￾resentation [29, 51, 52]. Our TARC predicts the inference path of the
+backbone for each ASSR task, realizing task-aware inference with dy￾namic architectures. It is a two-branch module to transform the input
+image and SR scale into a probability vector and an intensity indica￾tor respectively. The probability vector is modulated by the intensity
+indicator to produce the sampling probability vector, which is used to
+predict the final routing vector by Bernoulli Sampling combined with
+the Straight-Through Estimator [3, 24]. The routing vector determines
+the computational graph of the feature extraction backbone in our
+TADT to make it aware of input images and scales for image ASSR.
+To make TADT more efficient, we further design a loss function
+to penalize the intensity indicator. Experiments on ASSR demon￾strate that, TADT outperforms mainstream feature extractors by fewer
+parameter amounts and computation costs, and better ASSR perfor￾mance when working with arbitrary-scale upsamplers of MetaSR [18],
+LIIF [9], and LTE [27] (a glimpse is provided in Figure 1).
+Our main contributions can be summarized as follows:
+• We propose the Task-Aware Dynamic Transformer (TADT) as a
+new feature extractor for efficient image ASSR. The main backbone
+of our TADT is built upon cascaded multi-scale transformer blocks
+(MSTBs) to learn expressive feature representations.
+• We develop a task-aware routing controller to predict adaptive in￾ference paths within the main backbone of TADT feature extractor
+for different ASSR tasks defined by the input image and SR scale.
+• We devise an intensity loss function to guide the prediction of infer￾ence paths in our feature extraction backbone, leading to efficient
+image ASSR performance.
+2 Related Work
+2.1 Arbitrary-Scale Image Super-Resolution
+Arbitrary-Scale Super-Resolution (ASSR) methods learn a single SR
+model to tackle the image super-resolution of arbitrary scale fac￾tors [18]. Meta-SR [18] represents one of the earliest endeavors in
+image ASSR, which dynamically predicts weights of filters for differ￾ent scales by the meta-upscale module inspired by the meta-learning
+scheme [13]. Then, LIIF [9] pioneers local implicit neural repre￾sentation for continuous image upsampling. Following this direction,
+Ultra-SR [49] integrates spatial encoding with implicit image function
+to improve the recovery of high-frequency textures. LTE [27] trans￾forms the spatial coordinates into the Fourier frequency domain and
+learns implicit representation for detail enhancement. Attention [40]
+is also exploited in the methods of ITSRN, Ciao-SR [4] and CLIT [6].
+These methods mainly focus on designing scale-aware upsamplers,
+but often employ input-agnostic feature extractors [31, 54, 30] leading
+to inferior image ASSR performance [42, 5, 46].
+To mitigate this, recent ASSR methods [42, 5, 46] incorporate scale
+information into the feature extractors. ArbSR [42] and EQSR [46]
+dynamically predicts filter weights from scale-conditioned feature 9733.65 G
+SwinIR TADT (Ours) SwinIR TADT (Ours) SwinIR TADT (Ours)
+7210.47 G 9733.65 G 9733.65 G
+(-25.9%)
+7339.82 G
+(-24.6%)
+7392.88 G
+(-24.0%)
+×  ×  × 
+1020 × 768 Input
+Figure 2. Computational FLOPs of SwinIR [30] and our TADT on one
+image from DIV2K at different SR scales. The arbitrary-scale upsampler is
+LIIF [9]. Our TADT uses less computational costs for smaller SR scales.
+extraction. Differently, LISR [5] and IDM [14] learn scale-conditioned
+attention weights to modulate scale-aware feature channels. These
+methods mainly extract scale-aware feature by feature or parameter
+level modulation, but with fixed inference architectures. This still
+limits their efficiency to tackle the versatile images and SR scale
+factors in ASSR. In this work, we propose a hyper-network [16] as the
+feature extractor that is aware of both the image and scale to achieve
+dynamic ASSR inference with adaptive computational efficiency.
+2.2 Dynamic Networks
+The dynamic inference is explored mainly from three aspects for ex￾pressive representation power and adaptive inference efficiency [17]:
+spatially-adaptive [8, 7], temporal-adaptive [47, 15, 41], and sample￾adaptive [45]. By taking input image and SR scale as an inference
+sample, our Task-Aware Dynamic Transformer (TADT) based ASSR
+network belongs to the category of sample-adaptive dynamic infer￾ence. Sample-adaptive dynamic networks have been developed mainly
+to learn dynamic parameters or architectures [17]. Parameter-dynamic
+methods [12, 35] only tailor the network parameters according to the
+input, but under fixed network architectures. Architecture-dynamic
+methods mainly perform inference from three aspects: dynamic depth
+[21], dynamic width [28, 25], and dynamic routing [33, 56]. The
+depth-dynamic inference mainly resort to early exiting [17] or layer
+skipping [45]. The width-dynamic inference [28, 25] typically lever￾age dynamic channel or neuron pruning techniques [32]. Dynamic in￾ference routing is usually employed to learn sample-specific inference
+architecture [33, 56]. In this work, we develop a transformer-based
+multi-branch feature extractor, and arm it with a task-aware network
+routing controller for architecture-dynamic image ASSR inference.
+3 Methodology
+3.1 Motivation
+Scale-agnostic feature extractors for ASSR consume the same compu￾tation overhead for super-resolution of different images or scales, and
+ignore the variance of super-resolution difficulty for diverse ASSR
+tasks (input images and SR scales) [2]. This brings computational
+redundancy to these feature extractors upon relatively “easy” ASSR
+tasks. To illustrate this point, in Figure 2, we compare the SR images
+of LIIF [9] using SwinIR [30] or our method (will be introduced
+later) as the feature extractor on one 1020 × 768 image from the
+DIV2K dataset. One can see that SwinIR needs a constant FLOPs of
+9733.65G to extract features for ASSR task with SR scales of ×2,
+×3, and ×4. On the contrary, our TADT needs less computational
+costs for SR tasks of lower scales, and enables LIIF [9] to output SR
+images with similar or even better image quality than those of SwinIR.
+In the end, it is promising to develop a feature extractor with dynamic
+computational graphs for image ASSR, which is the main motivation
+of our work. Next, we will elaborate our method for image ASSR.

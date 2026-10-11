@@ -1,0 +1,5 @@
+# 资格程序V2：修正线程入口和fixture生命周期，不改算子
+
+首跑16bc17 exit1：已有项目模块已设置interop=1，资格main再次调用set_num_interop_threads导致RuntimeError，发生在attempt目录创建、synthetic/MRI/GT加载之前。原脚本和实际返回保留。
+
+新脚本V2改为断言既有interop==1，并将synthetic cache的释放移到该cache所有geometry完成之后。后者是首跑前中止后静态核查发现的fixture生命周期错误，首跑没有运行到它。生产resolution_control.py、独立SciPy实现、270fields/17952metadata记录范围和全部数值/患者/资源门槛不改。没有依赖安装或根环境修改。

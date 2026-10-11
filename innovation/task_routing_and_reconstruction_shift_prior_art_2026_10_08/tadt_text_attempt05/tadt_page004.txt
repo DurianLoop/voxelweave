@@ -1,0 +1,187 @@
+(a) (b)
+Figure 4. Illustration of (a) local self-attention and (b) global self-attention.
+ure 3 (b), the MSTB block in each MSTG mainly has three local
+self-attention (LSA) branches with different window sizes {m1, m2,
+m3} to learn abundant multi-scale representation and a global self￾attention (GSA) to provide global insight. It first splits the reshaped
+feature map Fin ∈ R
+(H×W)×C into four groups along the channel
+dimension, yielding {Fj}
+4
+j=1 of size (H × W) ×
+C
+4
+. The routing
+sub-vector r
+i
+indicates the forward path of four split feature maps
+{Fj}
+4
+j=1. If the routing value r
+i
+j = 1, the split feature map Fj will
+be fed into the j-th self-attention (LSA or GSA) branch. Otherwise if
+r
+i
+j = 0, the split feature map Fj will be set as a comfortable zero ten￾sor and bypass the j-the attention branch. The outcome split feature
+Oj of this process can be expressed as:
+Oj =
+(
+SAj (Fj ), ri
+j = 1,
+0, ri
+j = 0,
+(1)
+where SAj is the j-th self-attention branch of this MSTB.
+Subsequently, the outcome split features of four branches {Oj}
+4
+j=1
+are concatenated to obtain the outcome feature Ocat. The Ocat is
+further fed into our efficient slice-able linear projection. The resulting
+outcome feature O is then added to the input feature Fin, and further
+processed by a standard MLP in transformer blocks to output the
+feature Fout of this MSTB.
+Local self-attention (LSA). As illustrated in Figure 4 (a), given an
+input feature of size (H × W) ×
+C
+4
+, the LSA branch first expands
+the channel dimension to 3C
+4
+by a linear layer and then splits it along
+the channel dimension into a Query matrix Q, a Key matrix K, and a
+Value matrix V , all of size (H ×W)×
+C
+4
+. The local window attention
+partitions Q, K, V into windows of size mj × mj (j = 1, 2, 3) and
+computes the attention map within each window. After performing
+self-attention along the window dimension, the LSA branch reshapes
+the attention feature ×
+C
+4
+and output it for feature concatenation along
+the channel dimension.
+Global self-attention (GSA). As shown in Figure 4 (b), our GSA
+branch is similar to the LSA branch on the first three steps of linear
+projection, feature split, and window partition. Since self-attention in
+large window size suffers from huge computational costs, we apply a
+dimension reduction on the Key matrix K and Value matrix V after
+the window partition step of our GSA branch, as suggested in [43, 44].
+The window size of K and V is reduced from m × m to d × d
+(d < m) by max-pooling, with proper reshape operations on the
+window dimensions. The dimension-reduced matrices K˜ and V˜ are
+used to perform self-attention with the Query matrix Q. Finally, the
+GSA branch reshapes the attention feature into (H × W) ×
+C
+4
+and
+output it for feature concatenation.
+Slice-able linear projection. The output concatenated feature Ocat
+Figure 5. Illustration of our slice-able linear projection.
+will be fused by linear projection in vanilla self-attention [34]. As
+shown in Figure 5, denoting W ∈ R
+C×C as the weight matrix of
+linear projection, we split it along the row dimension and get four
+sub-matrices of W1, W2, W3, and W4, all of size C
+4 × C. The
+vanilla linear projection is equivalent to multiplying the feature matrix
+Oj with the corresponding weight matrix Wj for j ∈ {1, 2, 3, 4}.
+In our MSTB, if the j-th branch is bypassed, its output split feature
+Oj ∈ R
+(H×W)×C/4 will be a comfortable zero tensor, and the cor￾responding matrix multiplication in linear projection also outputs a
+zero tensor and hence can be bypassed.
+To save possible computational costs, we design a slice-able linear
+projection by removing the zero tensors in the output feature Ocat
+and the corresponding sub-matrices in the weight matrix W. In our
+slice-able version, we multiply the outcome split feature Oj and the
+corresponding weight sub-matrix Wj with a routing value of r
+i
+j = 1
+for j =1, 2, 3, 4, and denote them as Oj (r
+i
+j = 1) and Wj (r
+i
+j = 1),
+respectively. Thus, the vanilla linear projection in our MSTB can be
+equally computed as
+Ocat × W =
+h
+Oj (r
+i
+j = 1)i
+×
+h
+W⊤
+j (r
+i
+j = 1)i⊤
+. (2)
+The proposed slice-able linear projection reduces the computa￾tional complexity of the vanilla linear projection from O(HW C2
+) to
+O(
+1
+4
+P4
+j=1 r
+i
+jHW C2
+). Figure 5 gives an example of r
+i
+2 = r
+i
+4 = 0,
+where Ocat × W = [O1, O3] ×
+W⊤
+1 ,W⊤
+3
+⊤
+.
+3.3.2 Task-Aware Routing Controller
+The goal of our Task-Aware Routing Controller (TARC) is to predict
+the inference path of the feature extraction backbone for each ASSR
+task, consisting of an LR image and an SR scale. As shown in Figure 3
+(c), our TARC is a two-branch module to process the LR image and SR
+scale, respectively. The image branch estimates a sampling probability
+vector e ∈ R
+4N for the 4N branches from the LR image, while the
+scale branch refines the probability vector by predicting an intensity
+scalar β to indicate the difficulty of ASSR on this SR scale.
+For the image branch, we estimate the sampling probability vector
+e from the LR image I
+LR through two 3 × 3 convolutions followed
+by an average pooling and a linear projection. For i ∈ {1, .., N}
+and j ∈ {1, 2, 3, 4}, the element e
+i
+j of probability vector e is the
+probability of whether using the j-th self-attention branch of MSTBs
+in the i-th MSTG, estimated from the LR image I
+LR. Therefore, the
+probability vector e varies for different LR images, which makes our
+TARC image-aware.
+To further make our TARC module aware of SR scales (i.e., scale￾aware), its scale branch transforms the SR scale s to a scale-aware
+intensity scalar β via three linear layers, as shown in Figure 3 (c).
+Then the scale-aware intensity scalar β is used to refine the probability
+vector e to output the task-aware probability vector p:
+p
+i
+j = min 
+β × 4N × σ
+
+e
+i
+j
+
+/
+XN
+i=1
+X4
+j=1
+σ
+
+e
+i
+j
+
+, 1
+!
+, (3)

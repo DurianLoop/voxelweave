@@ -1,0 +1,41 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+discussing
+Generically trained generative reconstruction method.The current generative
+model was trained in a generic fashion andnot specifically to optimize the quality of
+masks designed through it. The ability for designing masks stems purely from training
+it as a rigorous Bayesian modeling of the continuum of inverse problems. This allows
+the posterior to be conditioned on incrementally collected information in a closed loop
+fashion. However, one could imagine ways to improve the quality of the policy, by
+explicitly training the model to not only provide good samples, but simulate arollout of
+samples. The discriminator could be then trained to distinguish not between samples
+but sequences of samples.
+Alternatively, our method could easily be incorporated in a reinforcement learning-based
+framework aimed at jointly training reconstruction and sampling such as Jin et al. (2019).
+This could give the best of both worlds, giving principled uncertainty estimates to the
+RL sampler, moving beyond greedy sampling and possibly speeding up the training of
+the reconstruction method by focusing on regions with less reliable variance estimates
+instead of using masks sampled from parametric distributions as in this work.
+Limitations of the model.While our approach and the one of Belghazi et al. (2019)
+are successfully producing conditioned samples on unseen masks shapes, we observe
+that they nonetheless depend on the type of masks used throughout training. For
+instance, our method, being trained on pixel-wise undersampling for MNIST, would not
+be as good in the inpainting of large holes. Hand-crafting the type of masks that we
+want to condition on in the future remains an important step towards obtaining good
+generalization performance, and further work needs to be done to have a method able to
+truly condition on arbitrarily structured observations.
+We also observed an expected trade-off in performance between models trained on a single
+type of masks and a single sampling rate and models trained on varying types of masks
+and sampling rates. In this sense, adaptive sampling comes at a cost: a small drop in
+performance compared to a methodspecialized on a more restricted setting. Quantifying
+precisely this trade-off is beyond the scope of this work and should be further studied.
+Impact of data consistency.We found the data-consistency layer to be a fundamental
+piece in all settings, as it forces the model to incorporate observed data into the output
+image, and the model is then much less prone to hallucinating unlikely features as more
+observations are being acquired. In addition, this ensures the fact that the input will
+never be discarded by the generator, and prevents the model from collapsing into a mode
+that is inconsistent with observations.
+Limitations of the posterior estimation.We leveraged the approach of (Adler and
+Öktem, 2018a), which is the first of its kind to allow to construct a posterior estimator
+from samples of the joint distribution. While it works well empirically, the authors did
+124

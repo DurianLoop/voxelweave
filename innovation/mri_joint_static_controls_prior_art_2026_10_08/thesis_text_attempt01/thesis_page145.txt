@@ -1,0 +1,34 @@
+Conclusion and future works
+variance to the training procedure, and it is difficult to estimate its impact. Although a
+few works considered this problem (Jin et al., 2019; Van Gorp et al., 2021; Yin et al.,
+2021), it remains to be understood whether joint training mainly results in stronger
+reconstruction models by enabling them to focus on a more restricted set of masks, in
+stronger policies by co-designing them with the reconstruction model, or if both, or none,
+of these conclusions hold. Answering these questions would be an important step towards
+designing end-to-end, data-driven MRI pipelines.
+A crucial interrogation relates however to the clinical value of optimized sampling masks
+for MRI sampling. It is known that there are some significant artifacts introduced by
+prospective undersampling, but their effect has not been sufficient studied in the case
+of deep learning-based MRI reconstruction (Yu et al., 2022). However, there have not
+been any studies that consider the distortion of a prospective acquisition when using an
+optimized sampling. Are there ways to design masks that are robust to the distortions of
+prospective sampling and can retain good performance? Although robustness is a growing
+concern in MRI reconstruction (Antun et al., 2020; Johnson et al., 2021; Darestani et al.,
+2021), most works only consider retrospective undersampling.
+Additionally, the world of MR imaging is not restricted to Cartesian imaging, and many
+exciting recent works also aim at optimizing sampling trajectories for non-Cartesian
+acquisitions (Lazarus et al., 2019; Weiss et al., 2019; Wang et al., 2021; Chaithya and
+Ciuciu, 2022). Non-Cartesian acquisitions can be in practice much faster than Cartesian
+trajectories, and although they suffer from different limitations, they are definitely a
+topic that would be worth further investigating.
+Beyond these more conceptual directions, many technical questions need also to be
+addressed for the field of MRI sampling optimization to really mature into a clinically
+relevant application. We should clarify what really matters at different levels, first in
+terms of metrics: what kind of metrics do we want to use? Where does the reconstruction
+quality matters? In terms of the problems considered themselves: should we care
+about sequential reconstruction or optimize a fixed mask? Do we want to jointly train
+reconstruction methods and sampling policies? How can we ensure that a trained policy
+would be robust in a prospective acquisition?
+These questions leave many avenues of research open, and promises exciting discoveries
+in the years to come.
+132

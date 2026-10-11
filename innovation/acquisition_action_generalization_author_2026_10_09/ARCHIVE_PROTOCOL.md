@@ -1,0 +1,9 @@
+# 旧6997链之后的本轮增量保存
+
+核旧APPEND_INDEX SHA af51442f0daab1459e40de7a17ca6c0332ca1aa206a7a05f0def71a9a016a4bf及PROOF SHA6b3d95d59b2eb8ee6075c5db04b16101808b2eb69c5540b26a8207a9f13614d2。读取prior_chain并核旧6997每个逻辑bytes/SHA，NTFS压缩保持逻辑内容；不更写旧archive。
+
+追加本轮3主文/341提取块/11表与作者定向源码、4合成诊断、完整542两参考资格及真实terminal/audit、1000冻结文本压缩、GPU全部失败与最终checkpointed图诊断、35904静态协议/源码/启动记录、已可见对话/工具返回及最终公开答复。新增JSON source bindings和本地链接逐一核验，闭包去重。
+
+正在跑的full_certified_schedule_2026_10_09/full_real_pipeline_attempt01输出全排除，只可保存静态session启动/工具进度快照，不把progress当terminal通过。所有被绑定/运行代码不编辑，失败和后继版本分别留存。自生成index/proof不能递归包含自身；archive工具terminal与归档后新增记录以下一增量接续。
+
+CPU1/below-normal、RAM/disk十进制8GB，本作者stage总2MB，保留其他stage16.8MB（15.8MB原预算与GPU1MB）及后附20KB，wall1200秒。不安装、不委派、不控制任何其他进程、不删除历史。确认8患者12series和lockedIXI关闭，研究goal active、发表claim未确认。

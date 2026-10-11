@@ -1,0 +1,44 @@
+To summarize, we cannot resort to “information bottleneck” type of arguments as an
+explanation for why the joint approach should outperform only training a task operator in
+this general setting. On the other hand, the above argument hints that an explanation must
+involve either the choice of architecture or the training protocol. Both of these are examples of
+classical and widely studied problems in deep learning concerning why deep learning “works”
+and these remain largely unsolved. Another argument in favor of a joint approach is that it
+is highly non-trivial to select an appropriate architecture for parametrizing C, whereasT and
+A† are easier to parametrize by means of neural networks. Another possible reason is that the
+operations, like evaluatingB or its inverseB−1, may not be stable. Finally, as we have seen
+from the examples, using knowledge about the reconstruction may in fact act as a regularizer,
+either by improving the trainability or the generalization properties.
+9. Discussion and outlook. A key aspect for the implementation of the joint task adapted
+reconstruction method in (21) is that both decision rules are given by trainable neural net-
+works, which after joint training forms a single intertwined neural network. In such case, the
+problem reduces to solving (29).
+The neural network for the reconstruction should here preferably incorporate knowledge
+about how data is generated. Learned iterative methods, like the Learned Primal-Dual
+method, are therefore well suited for this task since they are given by a (deep) neural network
+that embeds the forward operator and a statistical model for the nose in measured data [1, 2].
+Next, as shown in sections 6.2 and 6.3, a wide range of tasks can be interpreted as applying
+an optimal decision rule on the model parameters. The abstract framework for task adapted
+reconstruction (section 7.1) works with any task that can be represented by a neural network
+as long as the parametrization and the loss functions are diﬀerentiable, like those listed in
+sections 6.2 and 6.3. Hence, our approach opens up for truly task adapted reconstruction
+that goes well beyond performing reconstruction jointly with simple feature extraction . In
+particular, more advanced tasks, such as image caption generation or image-processing steps
+in radiomics [31, 56], can be performed jointly with reconstruction. This potential is also
+mentioned in the editorial for the special issue on machine learning for image reconstruction
+in IEEE Transactions on Medical Imaging [93] where the editors for the special issue introduce
+the term rawdiomics (on p. 1294) for task adapted reconstruction applied to radiomics.
+An important advantage that comes with a joint approach is increased robustness. Ad-
+vanced tasks, like radiomics, commonly rely on deep neural networks that are trained on
+images in a supervised setting. Images are however inferred in a pre-processing step from
+measured data, so contrast and texture may depend on the instrumentation used for ac-
+quiring the data and the reconstruction method used for computing the images. Hence, a
+neural network that has been trained against images acquired from a particular equipment,
+or obtained using a particular reconstruction method, may generalize poorly when either of
+these factors change. This is especially the case for tasks involving elements of visual clas-
+siﬁcation, such as semantic segmentation, that can be sensitive to variations in texture and
+contrast. In contrast, task adapted reconstruction acts on measured data instead of images
+(model parameters). Using a reconstruction step that incorporates a physics guided model
+for how measured data is generated results in a joint approach that is much more robust
+against variations in how data is acquired and processed. As an example, jointly training a
+27

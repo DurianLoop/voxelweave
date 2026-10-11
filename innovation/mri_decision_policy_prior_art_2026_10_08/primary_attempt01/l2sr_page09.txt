@@ -1,0 +1,78 @@
+Learning to Sample and Reconstruct for Accelerated MRI 9
+Proof See Appendix B.1.
+Remark. In our optimization problems (3.1) and (4.6), the sampler and
+reconstructor are parameterized by θπ and θR, reflecting their potential practical
+implementation as neural networks with learnable parameters. However, in theorem 1,
+we place them within the broader continuous function space, which provides analytical
+convenience for theoretical explorations. This remark also applies to the following
+theorem 2.
+Theorem 1 gives us the confidence to switch from solving the dense-reward joint
+optimization problem defined in equation (3.1) to solving the sparse-reward joint
+optimization problem defined in equation (4.6).
+Next, we can demonstrate that the sparse-reward POMDP is more computation-
+ally efficient than the dense-reward POMDP. The inference process of the dense-reward
+POMDP can be represented as follows:
+y0
+R
+−→x0
+π
+− →
+y
+y1
+R
+−→x1
+π
+− →
+y
+y2··· yT
+R
+−→xT.
+On the other hand, the proposed sparse-reward POMDP can be represented as:
+y0
+π
+− →
+y
+y1
+π
+− →
+y
+y2··· yT
+R
+−→xT.
+It can be observed that the sparse-reward POMDP does not require reconstruction
+at the sampling stage. Thus, the sparse-reward POMDP is computationally more
+efficient.
+Then, we provide a theoretical explanation of how sparse-reward POMDP avoids
+the distributional mismatch in dense-reward POMDP. In the sparse-reward POMDP,
+the reconstructor only operates on the terminal state to obtain the reward, and a
+terminal heuristic sampling policy πh
+T is used to pre-train the reconstructor R(·).
+We can learn samplers with the proposed sparse-reward POMDP by solving the
+suboptimization problem of (4.6) with a fixed pre-trained reconstruction model R(·):
+max
+θπ
+Ex∼DJsparse
+T (x;π(·;θπ),R). (4.8)
+The following theorem ensures that the sparse-reward suboptimization problem (4.8)
+produces a sampler that is no weaker than the dense-reward one (3.3), thus supporting
+the claim in the previous section.
+Theorem 2 (distributional mismatch) Let the terminal sampling policyπh
+T+∥M0∥∞
+satisfies πh
+T+∥M0∥∞
+(a) > 0 for all binary column vectors a satisfying∥a∥1 = T +
+∥M0∥∞. Suppose that there exits a reconstructor Rsparse satisfying
+Rsparse∈ argmax
+R∈C(CN×N,RN×N)
+Ex∼DEa∼πh
+T +∥M0∥∞
+S(R(Ma⊙F (x)), x). (4.9)
+Then, for any continuous reconstructor Rdense, we have
+sup
+π∈C(RN×N,∆N)
+Ex∼DJ dense
+T (x;π,Rdense)≤ sup
+π∈C(CN×N,∆N)
+Ex∼DJ sparse
+T (x;π,Rsparse).
+(4.10)

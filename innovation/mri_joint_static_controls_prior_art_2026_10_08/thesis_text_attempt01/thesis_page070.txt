@@ -1,0 +1,33 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+domain. Formally, it aims at solving
+minz ∥z∥1 subject to∥yω−PωFF−1
+t z∥2≤ϵ
+whereF−1
+t denotes the inverse temporal Fourier transform. It tackles the problem by
+using a reweighted quadratic approach (Jung et al., 2007).
+ALOHA (Jin et al., 2016) is an annihilating filter based low-rank Hankel matrix ap-
+proach. ALOHA exploits the duality between sparse signals and their transform domain
+representations, cast as a low-rank Hankel matrix, and effectively transforms CS re-
+construction into a low-rank matrix completion problem. We refer the reader to their
+detailed derivation for further details.
+Mask selection baselines:
+• Coherence-VD(Lustig et al., 2007): We consider a randomvariable-density sampling
+mask with Gaussian density and optimize its parameters to minimize coherence.
+This is an instance of amodel-based, model-driven approach.
+• Golden (Li et al., 2018): This approach designs a Cartesian mask by adding
+progressively lines according to the golden ratio. This is amodel-based, model-
+driven approach.
+• LB-VD (Gözcü et al., 2018; Gözcü et al., 2019): Instead of minimizing the coherence
+as inCoherence-VD, we perform a grid search on the parameters using the training
+set to optimize reconstruction according to the same performance metric as our
+method. This makes this approachmodel-based, data-driven.
+We also consider several variants of LBCS and sLBCS that we will use throughout the
+experiments. We define abbreviations for conciseness:
+• G-v1 is the original LBCS algorithm.
+• G-v2 is a version of sLBCS that uses a batch of training datal and cycles through
+the frames.
+• SG-v1 is a version of the stochastic LBCS algorithm that considers a batch of
+sampling locationsk but uses all training data, i.e.l =|m|.
+• SG-v2 is sLBCS, using a batch of sampling locationsk, a batch of training datal
+and cycling through the frames.
+57

@@ -1,0 +1,34 @@
+Towards Realtime Multimodal Fusion
+for Image-Guided Interventions Using
+Self-similarities
+Mattias Paul Heinrich1,2, Mark Jenkinson2, Bartlomiej W. Papie˙z1,
+Sir Michael Brady3, and Julia A. Schnabel1
+1 Institute of Biomedical Engineering,
+Department of Engineering, University of Oxford, UK 2 Oxford University Centre for Functional MRI of the Brain, UK 3 Department of Oncology, University of Oxford, UK
+mattias.heinrich@eng.ox.ac.uk
+http://users.ox.ac.uk/~shil3388
+Abstract. Image-guided interventions often rely on deformable multi￾modal registration to align pre-treatment and intra-operative scans.
+There are a number of requirements for automated image registration for
+this task, such as a robust similarity metric for scans of different modali￾ties with different noise distributions and contrast, an efficient optimisa￾tion of the cost function to enable fast registration for this time-sensitive
+application, and an insensitive choice of registration parameters to avoid
+delays in practical clinical use. In this work, we build upon the concept of
+structural image representation for multi-modal similarity. Discrimina￾tive descriptors are densely extracted for the multi-modal scans based on
+the “self-similarity context”. An efficient quantised representation is de￾rived that enables very fast computation of point-wise distances between
+descriptors. A symmetric multi-scale discrete optimisation with diffu￾sion regularisation is used to find smooth transformations. The method
+is evaluated for the registration of 3D ultrasound and MRI brain scans for
+neurosurgery and demonstrates a significantly reduced registration error
+(on average 2.1 mm) compared to commonly used similarity metrics and
+computation times of less than 30 seconds per 3D registration.
+Keywords: multimodal similarity, discrete optimisation, neurosurgery.
+1 Introduction
+Deformable multi-modal registration plays an important role for image-guided
+interventions, where scans are often acquired using different modalities, e.g.
+to propagate segmentation information for image-guided radiotherapy [9]. The
+alignment of multi-modal scans is difficult, because there can be a large amount
+of motion between scans, the intra-operative scan is often of lower scan quality
+than diagnostic scans and no functional relationship between intensities across
+modalities exists. In this work, we address the registration of intra-operative
+3D ultrasound (US) to pre-operative magnetic resonance imaging (MRI) for
+image-guided neurosurgery. The brain tissue exhibits non-rigid deformations af￾ter opening the skull (brain shift [11]), which needs to be compensate to relate
+K. Mori et al. (Eds.): MICCAI 2013, Part I, LNCS 8149, pp. 187–194, 2013.
+c Springer-Verlag Berlin Heidelberg 2013

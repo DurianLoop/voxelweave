@@ -1,0 +1,33 @@
+56 M. Acar et al.
+where i denotes the epoch number starting from 1, P governs the stabilization
+patience and  is a small number close to 0. Therefore, the sub-optimal con￾vergence problem can be mitigated with small perturbations on the task and
+both networks can be updated for P epochs with healthy gradients to prime
+the segmentation network to generate meaningful learning signal in focusing
+the reconstructions around the regions of interest which are dominated by the
+segmentation maps.
+2.3 Model Architectures
+We tested our proposed method with various configurations of reconstruction and
+segmentation networks. First, we used the U-Net architecture with depth of 4 and
+filter configuration of (32, 64, 128, 256) with kernel size 3 × 3 across all layers
+to implement the reconstruction and segmentation networks [11]. This cascaded
+model with two sequential U-Nets was used to analyze the influence of end-to￾end training and stabilization. For enhanced performance, we then adopted the
+Cascade Network for reconstruction and Multiscale Attention Network (MANet)
+for segmentation [12,13]. Cascade Network follows an unrolled architecture with
+interleaved data consistency and regularization blocks, and progressively sup￾presses aliasing artifacts in reconstructions. The regularization blocks include
+residual connections to carry the input signal to the output and force the network
+to learn required the residual information [12]. In our setup, we used 6 cascades
+with 5 layers of 64 filters each. MANet improves upon UNet with multiscale infor￾mation extraction achieved by point-wise and multiscale attention blocks [11,13].
+Using dilated convolutions in the decoder distills multiscale information processed
+with the squeeze-and-excitation attention mechanism to capture dependencies
+among feature maps [14]. We used ResNet34 in the encoder with a depth of 4
+and filter sizes (32, 64, 128, 256) for MANet [15]. Finally, a multi-decoder archi￾tecture where the decoder head is split to separately perform reconstruction and
+segmentation is added to the experiments as an additional baseline [16]. For Multi￾Decoder UNet, a common encoder of depth 4 with filter configuration (32, 64, 128,
+256) is created for reconstruction and segmentation tasks, taking the undersam￾pled images as input. The encoder is used to obtain disentangled feature represen￾tations which are then fed to the first decoder head to reconstruct the underlying
+image and to the second decoder to create the segmentation map.
+2.4 Implementation Details
+All networks were trained using the Adam optimizer with parameters β1 =0.99
+and β2 =0.999, a learning rate of 10−4 and batch size of 16. Models were
+implemented using PyTorch library and executed on NVIDIA RTX 3090 GPUs.
+Experiments were conducted on fully-sampled MRI data from the public OCMR
+dataset containing CINE scans from 74 subjects [10]. Subjects had varying num￾ber of slices and frames, yielding a total of 183 slices, which were coil combined
+to simulate single-coil data acquisition. Data were split into independent train￾ing (155 slices) and test (28 slices) sets, with no subject overlap between the two

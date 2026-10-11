@@ -1,0 +1,58 @@
+{
+  "actual_archive": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "1192c5",
+      "wall_time_seconds": 0.0000099,
+      "exit_code": 0,
+      "original_token_count": 228,
+      "output": "{\"complete\": true, \"errors\": [], \"append_index\": {\"path\": \"acquisition_action_generalization_author_2026_10_09/APPEND_INDEX.json\", \"bytes\": 45240, \"sha256\": \"8cfc6bc2738b05f1a530ea42af3f502c2ea9d100a54776d53d03b6a864332f52\"}, \"previous6997_frozen_hashes_verified\": true, \"new_frozen_hashes_verified\": true, \"newly_bound_files\": 183, \"cumulative_frozen_evidence_files\": 7180, \"live_full35904_outputs_excluded\": true, \"full35904_qualification_passed\": false, \"checkpointed_GPU_graph_passed\": true, \"training_ready\": false, \"publication_claim_confirmed\": false, \"goal_status\": \"active\", \"resources\": {\"workspace_free_bytes\": 8063488000, \"available_ram_bytes\": 107515629568, \"own_process_below_normal\": true, \"cpu_threads\": 1, \"disk_reserve_bytes\": 8000000000, \"new_stage_max_saved_bytes\": 250000000, \"other_processes_enumerated\": false, \"other_processes_modified\": false}, \"elapsed_seconds\": 12.278962700045668}\r\n"
+    }
+  },
+  "latest_full_progress": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "87cf59",
+      "wall_time_seconds": 5.0123308,
+      "session_id": 44317,
+      "original_token_count": 214,
+      "output": "{\"fields_completed\": 1680, \"expected_fields\": 35904, \"max_errors\": {\"pre_intensity_error\": 0, \"shared_post_intensity_error\": 0, \"isolated_intensity_error\": 0, \"full_chain_error\": 0, \"support_error\": 0, \"coordinate_error\": 5.684341886080802e-14}, \"elapsed_seconds\": 593.7553311000811}\r\n{\"fields_completed\": 1800, \"expected_fields\": 35904, \"max_errors\": {\"pre_intensity_error\": 0, \"shared_post_intensity_error\": 0, \"isolated_intensity_error\": 0, \"full_chain_error\": 0, \"support_error\": 0, \"coordinate_error\": 5.684341886080802e-14}, \"elapsed_seconds\": 712.3952766000293}\r\n{\"fields_completed\": 1920, \"expected_fields\": 35904, \"max_errors\": {\"pre_intensity_error\": 0, \"shared_post_intensity_error\": 0, \"isolated_intensity_error\": 0, \"full_chain_error\": 0, \"support_error\": 0, \"coordinate_error\": 5.684341886080802e-14}, \"elapsed_seconds\": 862.0266438000835}\r\n"
+    }
+  },
+  "auditor_source_read": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "4e5454",
+      "wall_time_seconds": 1.5133486999999999,
+      "exit_code": 0,
+      "original_token_count": 1127,
+      "output": "\"\"\"Audit completed 35904-field journal against immutable original geometry and metadata decisions.\"\"\"\r\nimport os\r\nfor key in ('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS'):os.environ[key]='1'\r\nimport sys,time,json,gzip,itertools,collections,traceback\r\nfrom pathlib import Path\r\nHERE=Path(__file__).resolve().parent;ROOT=HERE.parent\r\nOLD=ROOT/'resolution_degradation_controls_2026_10_08'\r\nsys.path.insert(0,str(ROOT/'final_training_medical_execution_2026_10_08'))\r\nfrom archive_completed_stage import read,sha,entry,bind,dump,resource_guard\r\n\r\n\r\ndef main():\r\n    sys.stdout.reconfigure(encoding='utf-8');started=time.perf_counter();resource_guard()\r\n    terminalpath=HERE/'ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json'\r\n    terminal=read(terminalpath)\r\n    assert terminal['exit_code']==0 and 'session_id' not in terminal\r\n    assert terminal['observed_unified_exec_session']==read(HERE/'ACTUAL_FULL_REAL_PIPELINE_SESSION.json')['actual_unified_exec_session']\r\n    live=HERE/'full_real_pipeline_attempt01';receiptpath=live/'receipt.json'\r\n    r=read(receiptpath);configpath=live/'frozen_config.json';config=read(configpath)\r\n    assert r['complete'] and r['status']=='completed' and not r['errors']\r\n    assert r['all35904_full_target_MRI_and_intensity_fields_verified']\r\n    assert r['frozen_config_sha256']==sha(configpath) and r['fields_completed']==35904\r\n    for b in r['source_bindings']:bind(b)\r\n    journal=ROOT/r['journal_path'];assert sha(journal)==r['journal_sha256']\r\n    assert journal.stat().st_size==r['journal_bytes']<config['journal_limit_bytes']\r\n    oldpath=ROOT/'real_context_and_author_code_followup_2026_10_08/full_schedule_attempt01/receipt.json'\r\n    old=read(oldpath);original=ROOT/old['journal_path'];assert sha(original)==old['journal_sha256']\r\n    with gzip.open(original,'rt',encoding='utf-8') as f:geometries={(v['step'],v['patch']):v for v in map(json.loads,f)}\r\n    metapath=OLD/'geometry_and_synthetic_attempt01/receipt.json';metadata=read(metapath)\r\n    controlpath=bind(metadata['metadata_journal'])\r\n    with gzip.open(controlpath,'rt',encoding='utf-8') as f:\r\n        decisions={(v['step'],v['patch'],v['mode']):v for v in map(json.loads,f)}\r\n    assert len(geometries)==5984 and len(decisions)==17952\r\n    out=HERE/'full_real_terminal_audit_attempt01';out.mkdir(exist_ok=False)\r\n    sources=[Path(__file__),HERE/'FULL_REAL_PIPELINE_PROTOCOL.md',terminalpath,\r\n             receiptpath,configpath,journal,oldpath,original,metapath,controlpath,HERE/'ACTUAL_FULL_REAL_PIPELINE_SESSION.json']\r\n    result=dict(complete=False,errors=[],MRI_arrays_loaded=0,GT_arrays_loaded=0,\r\n                model_arrays_loaded=0,training_updates=0,patient_neural_forwards=0,\r\n                confirmation_patients_opened=False,lockedIXI_opened=False,\r\n                actual_fields_not_reexecuted_in_this_audit=True,training_ready=False,\r\n                publication_claim_confirmed=False,goal_status='active')\r\n    try:\r\n        expected=set(itertools.product(range(1,2993),range(2),range(2),range(3)))\r\n        seen=set();series=collections.defaultdict(collections.Counter)\r\n        patients=collections.defaultdict(collections.Counter);maxima=collections.Counter()\r\n        columns=config['journal_columns'];cases=r['case_index']\r\n        assert columns==r['journal_columns'] and len(cases)==19\r\n        with gzip.open(journal,'rt',encoding='utf-8') as f:\r\n            for line in f:\r\n                values=json.loads(line);assert len(values)==len(columns)\r\n{\r\n  \"complete\": true,\r\n  \"errors\": [],\r\n  \"auditors\": [\r\n    {\r\n      \"original_path\": \"certified_resolution_rounding_2026_10_09/audit_all_patient_terminal.py\",\r\n      \"original_sha256\": \"66346c47380115bc2e1b9b00dceda1244e9690865b8d346dc2ffbb8d9ba1abcd\",\r\n      \"prepared_path\": \"direct_oracle_efficiency_2026_10_09/audit_all_patient_terminal.py\",\r\n      \"prepared_sha256\": \"8de3a56ad43c5b5c12c1716a95abd0dcde27e0e7834cf68d2a4cf2def9237d81\",\r\n      \"syntax_parsed\": true,\r\n      \"executed\": false\r\n    },\r\n    {\r\n      \"original_path\": \"full_real_intensity_v2_2026_10_09/audit_full_real_terminal.py\",\r\n      \"original_sha256\": \"1da9e6650483703770f201530918fe61a81833281841b624ff4586e8b4ebb59b\",\r\n      \"prepared_path\": \"full_certified_schedule_2026_10_09/audit_full_real_terminal.py\",\r\n      \"prepared_sha256\": \"b7c2eabff9e2c6a70020ea7d48f71b9f6d31373814f778a244e80e58b7abc0bf\",\r\n      \"syntax_parsed\": true,\r\n      \"executed\": false\r\n    }\r\n  ],\r\n  \"qualification_passed\": false,\r\n  \"training_ready\": false\r\n}\r\n"
+    }
+  },
+  "actual_v2_auditor_preparation": {
+    "chunk_id": "c1126d",
+    "wall_time_seconds": 1.8428106,
+    "exit_code": 0,
+    "original_token_count": 19,
+    "output": "{\"complete\": true, \"original_auditor_unchanged\": true, \"executed\": false}\r\n"
+  },
+  "actual_final_save_verification": {
+    "chunk_id": "1299c4",
+    "wall_time_seconds": 1.8332095000000002,
+    "exit_code": 0,
+    "original_token_count": 407,
+    "output": "{'path': 'acquisition_action_generalization_author_2026_10_09/ROUND_UPDATE_2026_10_09_GPU.md', 'bytes': 3537, 'sha256': 'a3819d9b16b774af676a5ae8f3053f74a558f401858d95052df59156c5a04e8c'}\r\n{'path': 'acquisition_action_generalization_author_2026_10_09/PROJECT_EVIDENCE_AND_NARROW_CLAIM.md', 'bytes': 5033, 'sha256': 'ecd8eb7fc7c0c12622e5116c9d0d6f6a45b79a7b9db9a11c1c40b5bb7d0b611f'}\r\n{'path': 'acquisition_action_generalization_author_2026_10_09/VISIBLE_CONTINUATION_TURN42.md', 'bytes': 3324, 'sha256': 'bc7129c6c0c14819f0471b04fb5b3ece97a3290690c851bfb04dd624920688db'}\r\n{'path': 'acquisition_action_generalization_author_2026_10_09/FINAL_PUBLIC_RESPONSE.md', 'bytes': 552, 'sha256': 'cdb5fe56438c63811c54c33a996cf6bfb5f6941fa28a71ac04f8d1e65d7c0d42'}\r\n{'path': 'acquisition_action_generalization_author_2026_10_09/ACTUAL_AVAILABLE_TOOL_RETURNS.json.gz', 'bytes': 264151, 'sha256': '18d6c8dc98b740a65bbe3183a448fa9df17272c6c9ed1790363bb94c1d7b7292'}\r\n{'archive_index': {'path': 'acquisition_action_generalization_author_2026_10_09/APPEND_INDEX.json', 'bytes': 45240, 'sha256': '8cfc6bc2738b05f1a530ea42af3f502c2ea9d100a54776d53d03b6a864332f52'}, 'archive_proof': {'path': 'acquisition_action_generalization_author_2026_10_09/APPEND_PROOF.json', 'bytes': 1023, 'sha256': '806dfe4a81ea42c1727cf482d4abc2cf504bcdc3c284596c07abee4801f6e018'}, 'resources': {'workspace_free_bytes': 8063455232, 'available_ram_bytes': 107425570816, 'own_process_below_normal': True, 'cpu_threads': 1, 'disk_reserve_bytes': 8000000000, 'new_stage_max_saved_bytes': 250000000, 'other_processes_enumerated': False, 'other_processes_modified': False}}\r\n"
+  },
+  "actual_archive_launch": {
+    "chunk_id": "18c441",
+    "wall_time_seconds": 10.0080817,
+    "session_id": 28101,
+    "original_token_count": 60,
+    "output": "{\"previous6997_hashes_verified\": 1000}\r\n{\"previous6997_hashes_verified\": 2000}\r\n{\"previous6997_hashes_verified\": 3000}\r\n{\"previous6997_hashes_verified\": 4000}\r\n{\"previous6997_hashes_verified\": 5000}\r\n{\"previous6997_hashes_verified\": 6000}\r\n"
+  },
+  "all_items_after_primary_tool_export_cutoff": true,
+  "next_delta_binding_required": true,
+  "live_full_output_frozen": false,
+  "publication_claim_confirmed": false,
+  "goal_status": "active"
+}

@@ -1,0 +1,30 @@
+Segmentation-Aware MRI Reconstruction
+Mert Acar1,2(B), Tolga C¸ ukur1,2, and ˙
+Ilkay Oks¨ ¨ uz3
+1 Department of Electrical and Electronics Engineering, Bilkent University,
+Ankara, Turkey
+mert.acar@bilkent.edu.tr 2 National Magnetic Resonance Research Center, Bilkent University, Ankara, Turkey 3 Department of Computer Engineering, Istanbul Technical University,
+Istanbul, Turkey
+Abstract. Deep learning models have been broadly adopted for accel￾erating MRI acquisitions in recent years. A common approach is to train
+deep models based on loss functions that place equal emphasis on recon￾struction errors across the field-of-view. This homogeneous weighting of
+loss contributions might be undesirable in cases where the diagnostic
+focus is on tissues in a specific subregion of the image. In this paper,
+we propose a framework for segmentation-aware reconstruction based on
+segmentation as a proxy task. We leverage an end-to-end model compris￾ing reconstruction and segmentation networks; and leverage backpropa￾gation of segmentation error to devise a pseudo-attention effect to focus
+the reconstruction network. We introduce a novel stabilization method
+to prevent convergence onto a local minima with unacceptably poor
+reconstruction or segmentation performance. Our stabilization approach
+initiates learning on fully-sampled acquisitions, and gradually increases
+the undersampling rate assumed in the training set to its desired value.
+We validate our approach for cardiac MR reconstruction on the pub￾licly available OCMR dataset. Segmentation-aware reconstruction sig￾nificantly outperforms vanilla reconstruction for cardiac imaging.
+Keywords: Cardiac MRI · Reconstruction · Segmentation · Convolutional neural networks
+1 Introduction
+Magnetic resonance imaging (MRI) is an essential part of routine clinical prac￾tice for noninvasive disease detection and monitoring. Yet, its prolonged scan
+times limit broad utilization. Shortening scan durations can improve patient
+throughput and lower motion-based image artifacts. However, undersampled k￾space acquisitions elicit well-known aliasing artifacts that must be suppressed to
+obtain diagnostic-quality images. Artifact suppression involves an inverse prob￾lem solution where high-quality images are reconstructed from undersampled
+k-space data [1].
+In recent years, deep learning (DL) models have become a preferred app￾roach for accelerated MRI reconstruction [1–4]. DL models are trained to recover
+c The Author(s), under exclusive license to Springer Nature Switzerland AG 2022
+N. Haq et al. (Eds.): MLMIR 2022, LNCS 13587, pp. 53–61, 2022.
+https://doi.org/10.1007/978-3-031-17247-2_6

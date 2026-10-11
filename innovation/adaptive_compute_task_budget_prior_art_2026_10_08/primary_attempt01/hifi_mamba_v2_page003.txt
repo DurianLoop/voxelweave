@@ -1,0 +1,120 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3 Patchify Linear DConv Linear DConv1D DConv1D DConv1D Norm Norm LinearLinear Linear Linear Linear
+(f) HiFi-Mamba Block
+Linear
+Unpatchify
+Data
+Consistency
+(d) CRM (g) SF-Lap Unpatchify Data
+Consistency
+SF-Lap
+HiFi-Mamba
+Block
+CRM
+Split
+S6
+LSGP
+BH
+BL
+BG
+Router
+K=4
+DSFA
+(c) HiFi-Mamba Group X8
+(a) Mamba Unit X2 (b) DC Block
+(e) LSGP
+CRM
+(h) DFSA
+Pool
+ConV 1x1
+ConV 3x3
+DConV
+Binomial 1D
+Padding
+Vertical Conv
+stride 2x2
+Horizontal Conv
+stride 1x1
+K = 5
+Interpolate
+Kernel Gen
+Register Buffer
+Low High
+ConV 1x1
+ConV 3x3
+Norm
+Norm
+ConV 1x1
+Global Pooling
+Linear
+Linear
+Sigmoid
+Routed Expert
+Production Shared Expert
+Addition
+Activation
+Gating
+Minus
+Patchify
+Fig. 2: Overview of the proposed HiFi-MambaV2 architecture. (a) The HiFi-Mamba Unit (×2 per Group) applies the Lightweight
+SE-Guided Global Context Path (LSGP) module for residual global enhancement, followed by frequency decomposition via
+the SF-Lap module to produce stable high- and low-frequency components. Each frequency stream is processed by frequency￾aware HiFi-Mamba Blocks and routed through a hierarchical shared-routed MoE mechanism with four paths. (b) The Data
+Consistency (DC) block enforces fidelity with acquired k-space data after each Group. (c) The HiFi-Mamba Group (×8 cascades)
+stacks two Mamba Units and one DC block within an unrolled optimization pipeline. (d) Condition Refinement Module (CRM)
+performs cross-resolution feature transformation. (e) The LSGP enhances global anatomical awareness. (f) The HiFi-Mamba
+block models frequency-aware sequences using Mamba-based token mixing. (g) The Separable Frequency-Consistent Laplacian
+Pyramid (SF-Lap) achieves energy-preserving, alias-resistant multi-scale decomposition using depthwise binomial filtering and
+symmetric reconstruction. (h) The Dual-Frequency Spatial Attention (DFSA) fuses the routed experts’ outputs through adaptive
+weighting to form the final feature representation.
+can attenuate global information and introduce aliasing under
+undersampled MRI. HiFi-MambaV2 replaces this with a sep￾arable, frequency-consistent Laplacian pyramid (SF-Lap) that
+couples depthwise binomial filtering with symmetric padding,
+preserving signal energy and resisting aliasing. The resulting
+stable low- and high-frequency streams are then processed by
+shared and routed experts.
+IV. METHOD
+A. Overall Architecture
+Let x ∈ C
+H×W denote the fully-sampled MR image, and
+yc ∈ CM the undersampled k-space measurements from the
+c-th coil. Given coil sensitivity maps Sc and undersampling
+operator Fu, the multi-coil forward model is
+yc = Fu(Scx) + nc, (1)
+where nc denotes measurement noise. Reconstruction seeks to
+estimate x from {yc}
+C
+c=1 by jointly enforcing data fidelity and
+learned regularization.
+HiFi-MambaV2 addresses this inverse problem through a
+hierarchical unrolled framework that integrates frequency￾consistent decomposition, global context modeling, and
+content-adaptive computation within a data-consistency
+pipeline. At iteration t, the reconstruction update follows
+x
+(t+1) = Dθ
+
+x
+(t) − λ
+X
+c
+S
+H
+c F
+H
+u
+(Fu(Scx
+(t)
+) − yc)
+
+, (2)
+where Dθ denotes the learnable feature refinement module.
+The overall architecture consists of eight HiFi-Mamba
+Groups, each corresponding to one unrolled iteration, as
+illustrated in Fig. 2. Each group contains two HiFi-Mamba
+Units followed by one data-consistency (DC) block, forming a
+reconstruction stage that alternates between feature refinement
+in the image domain and physics-based consistency in k-space.
+Each unit contains an SF-Lap that decomposes features into
+high- and low-frequency streams, a SE-guided Global Context
+Path that captures global channel dependencies, and a Shared￾Routed MoE that adaptively modulates the fused representa￾tion, modeling both local and long-range dependencies with
+linear-time complexity. This hierarchical design progressively
+aligns frequency components and enforces anatomical coher￾ence across iterations, yielding reconstructions that preserve
+both global structure and fine spatial detail.

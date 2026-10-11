@@ -1,0 +1,41 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+3
+(3) Evidence that MoE experts within the recurrent block spontaneously specialize for different cardiac 
+structures without explicit routing supervision, providing a structural inductive bias for multi-class 
+segmentation.
+(4) Demonstration that depth extrapolation (testing with more loops than training) works without 
+degradation, enabled by the LTI-stability guarantee, providing a free inference-time accuracy knob.
+(5) A comprehensive ablation study isolating the contributions of each architectural component (MoE, 
+ACT, LoRA, loop depth, model capacity), and a complete reproducibility package with code, Colab 
+notebooks, and real experimental results.
+2 Related Work
+2.1 Vision Transformers for Dense Prediction
+The application of transformer architectures to vision began with ViT [2], which partitioned images into 
+non-overlapping patches, embedded them linearly, and processed the resulting sequence with a standard 
+transformer encoder. While ViT required pre-training on large datasets (JFT-300M or ImageNet-21K), 
+Data-efficient Image Transformers (DeiT) [3] introduced knowledge distillation from CNN teachers and 
+strong data augmentation to train ViTs effectively on ImageNet-1K alone.
+For dense prediction, SETR [4] applied ViT as a pure encoder with progressive upsampling decoders, 
+demonstrating that transformers could achieve competitive segmentation accuracy. Swin Transformer [5] 
+introduced shifted window attention to reduce the O(N
+2
+) cost of full self-attention, enabling hierarchical 
+multi-scale feature extraction. SegFormer [6] combined a hierarchical transformer encoder with a 
+lightweight All-MLP decoder, achieving strong accuracy-efficiency trade-offs. Mask2Former [15] unified 
+semantic, instance, and panoptic segmentation with masked attention and query-based prediction.
+All of these architectures use unique parameters per transformer block. The total parameter count scales 
+linearly with depth, and each layer must independently learn its feature transformation. This design, while 
+flexible, provides no mechanism for parameter sharing or adaptive computation, making these models data￾hungry.
+2.2 Weight Sharing and Recurrent Transformers
+The idea of sharing weights across transformer layers has been explored in several contexts. Universal 
+Transformers [7] pioneered this approach by applying the same transformer block repeatedly with Adaptive 
+Computation Time (ACT), showing improved sample efficiency and generalization on algorithmic tasks. 
+The key insight was that weight sharing acts as an inductive bias toward iterative refinement, where each 
+pass through the shared block progressively refines the representation.
+ALBERT [8] demonstrated that cross-layer parameter sharing in BERT-style models reduces model size 
+by 4× without proportional accuracy degradation for NLP tasks. Interestingly, ALBERT found that sharing 
+attention parameters across layers was more effective than sharing feed-forward parameters, suggesting 
+that the attention mechanism captures a more universal computation pattern.
+The Recurrent-Depth Transformer (RDT) in OpenMythos [1] extends these ideas with several innovations. 
+The LTI-stable injection mechanism parameterizes the state transition matrix A as exp(−exp(logdt + 
+logA)), which guarantees that all eigenvalues lie in (0, 1) by construction—a property critical for stable 

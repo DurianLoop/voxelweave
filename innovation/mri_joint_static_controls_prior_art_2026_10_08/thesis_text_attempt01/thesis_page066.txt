@@ -1,0 +1,47 @@
+5.3. SCALING UP LBCS
+dynamic MRI (dMRI), namely that the sampling mask should have a fixed number of
+readouts by temporal frame.
+Scalability with respect to the size of the dataset is essential for the applicability of
+sLBCS to modern datasets, which can contain several thousands of images, making it
+impractical to go through the entire dataset at each inner loop of the algorithm.
+Before describing the algorithm, let us briefly recall the dynamic MRI setting. The main
+difference with static MRI is that the signal will be a vectorized video, i.e.x∈ CP, where
+P =H×W×T instead ofH×W. As a result, the operatorAω will be constructed
+differently, and in particular, the Fourier transform will be applied frame-wise. In
+addition, the maskω will be constructed as a union of elements from a setS that will
+represent lines at different time frames, and will be described asS =S1∪... ∪ST. We
+also define the setL⊆{ 1,...,m } as a set of indices where the training data{x}m
+i=1 will
+be subsampled.
+Let us now detailhow our proposed stochastic greedy method solves the limitations1.
+and 2. of LBCS (Algo. 1). The issue1. is solved by picking uniformly at random at
+each iteration a batch possible readout linesSiter of constant sizek from a given frame
+St, instead of considering the full set of possible linesS (line 3 in Alg. 2), and is inspired
+from the stochastic greedy of Mirzasoleiman et al. (2015); the number of candidate
+locations is further reduced by iterating through the lines to be added from each frame
+St sequentially (lines 1, 3 and 11 in Algorithm 2);2. is addressed by considering a fixed
+batch of training dataL of sizel instead of the whole training set of sizem at each
+iteration (line 4 in Algorithm 2);
+Remark. We will discuss the impact of introducing the batch sizek for the readout
+lines and the subsetL to subsample training data in the results. However, we want
+to mention here that one has to be careful to pick the subsetL before the for loop
+of line 5 in Algorithm 2. Indeed, failing to do this would result in the different
+candidates S would be evaluated on different subsets of the data. As there is some
+variation within the data, for instance in terms of SNR, such an approach would
+yield performances that arenot comparable among different candidates. In turn, this
+would skew the results towards picking the candidate locationS with an associated
+subsetLS with high signal-to-noise ratio, at the expense of selecting a readout
+location for the performance improvement that it actually brings. This would be
+especially the case if|L| were small. PickingL before this for loop ensures that the
+readout line selected will indeed be the one that brings the largest performance gain
+among the candidates for the subset of dataL.
+The improvements of sLBCS allow to reduce the computational complexity from
+Θ
+(
+mr(HT )2)
+to Θ (lrkHT ), effectivelyspeedingupthecomputationbyafactor Θ( m
+l
+HT
+k ),
+wherer denotes the cost of a single reconstruction. Our results show that this is achieved
+53

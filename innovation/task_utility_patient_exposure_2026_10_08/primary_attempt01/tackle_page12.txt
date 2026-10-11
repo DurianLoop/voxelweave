@@ -1,0 +1,119 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 12
+TABLE VII
+COMPARISON OF AVERAGE TEST PSNR ( DB) BETWEEN RECONSTRUCTION
+MODELS TRAINED WITH TASK -SPECIFIC MASKS AND TACKLE RECON . ON THE
+FAST MRI KNEE DATASET
+Method
+Brain seg. Knee seg. Tumor class.
+16× 64× 16× 64× 16× 64×
+Task-specific mask+VN 38.47 33.04 32.53 30.10 44.20 37.07
+TACKLE recon. 38.44 33.13 32.63 30.24 44.48 37.26
+often adds additional textures to the images, making them look
+different from traditional reconstructions. However, this does
+not imply there is a significant loss in information that could
+be used for image reconstruction. Despite being optimized for
+task-specific objectives, our learned task-specific subsampling
+patterns can be used retrospectively for generating high-fidelity
+reconstructions. To show this, we conduct an experiment where
+we take the learned subsampling patterns of TACKLE seg. and
+TACKLE class. and train an additional reconstruction network for
+each subsampling pattern. The subsampling pattern is fixed
+during the training. This experiment mimics the scenario if
+one wants a traditional reconstruction out of the collected k-
+space samples from our task-specific sequences. In Table VII,
+we provide a comparison with TACKLE recon., which jointly
+optimizes the subsampling pattern and reconstructor, on the
+fastMRI knee dataset. One can see that the reconstruction
+models trained with task-specific masks (row 1) come close to
+TACKLE recon. (row 2) in terms of reconstruction performance.
+These results indicate that our task-specific models do not
+incur a significant loss of image information but achieve a
+better trade-off for the downstream task accuracy. It is thus
+possible to recover better images retrospectively using the k-
+space measurements collected by the task-specific sequences.
+VII. L IMITATIONS
+Building on the promising results we have achieved, we
+acknowledge opportunities for further improvement of our
+current study.
+a) Data usage: Similar to other works on task-specific
+CS-MRI co-design, our approach requires matched k-space,
+image, and annotation labels, which are of limited quantity
+in the research community. Due to this limitation, two of our
+experiments (brain segmentation and tumor classification tasks)
+are conducted with k-space data simulated from magnitude
+images.
+b) Sequence implementation: Although we have imple-
+mented a prospectively subsampling sequence with a learned
+sampling pattern by TACKLE ROI on a Siemens MRI scanner,
+it was done using only one type of 3D gradient echo se-
+quence. Other physical constraints affect the deployment of
+our method for general MRI sequences. For example, in spin-
+echo sequences, the order of sampling should be considered
+to mitigate spin-relaxation effects.
+c) Controlled study: The evaluation in the current study
+is based on conventional quantitative metrics and qualitative
+visual comparisons. The number of volunteers for testing our
+learned sequences on a Siemens MRI scanner is relatively
+small. To further assess prospective subsampling, future evalu-
+ations should involve controlled studies of image quality with
+radiologists.
+VIII. C ONCLUSION
+In this work, we generalized the objective of CS-MRI co-
+design to a variety of tasks beyond full-FOV reconstruction.
+We introduced TACKLE as a unified approach for robustly
+learning task-specific strategies. Through comprehensive ex-
+periments, we showed that TACKLE outperforms existing DL
+techniques that separately learn subsampling pattern, reconstruc-
+tion, and prediction. Additionally, TACKLE outperforms naïve
+approaches to co-design that directly learn mappings from
+measurements to predictions. We found that the optimized
+strategies sometimes circumvent the typical reconstruction in
+terms of pixel-wise accuracy, but effectively extract key visual
+information useful for task prediction. Through ablation studies,
+we justified multiple design choices with regard to architecture
+and training procedure, and showed their importance in
+effectively learning CS-MRI strategies for tasks that go beyond
+full-FOV reconstruction. We further implemented a learned
+subsampling sequence and tested it on a Siemens 3T MRI
+Skyra scanner, which led to a four-fold scan time reduction
+without sacrificing visual quality. Our study demonstrates the
+exciting promise of employing end-to-end co-design techniques,
+suggesting a future where clinical CS-MRI requirements are
+addressed with enhanced efficiency while maintaining accuracy.
+ACKNOWLEDGMENT
+The authors would like to thank Xinyi Wu for her assistance
+as a volunteer in testing our learned MRI sequence and
+collecting data.
+REFERENCES
+[1] M. Lustig, D. Donoho, and J. Pauly, “Sparse MRI: The application
+of compressed sensing for rapid MR imaging,” Magnetic resonance in
+medicine : official journal of the Society of Magnetic Resonance in
+Medicine / Society of Magnetic Resonance in Medicine , vol. 58, pp.
+1182–95, 12 2007.
+[2] M. Lustig, D. L. Donoho, J. M. Santos, and J. M. Pauly, “Compressed
+sensing MRI,” IEEE Signal Processing Magazine , vol. 25, no. 2, pp.
+72–82, 2008.
+[3] Y . Romano, M. Elad, and P. Milanfar, “The little engine that could:
+Regularization by denoising (RED),” SIAM Journal on Imaging Sciences ,
+vol. 10, 11 2016.
+[4] R. Ahmad, C. Bouman, G. Buzzard, S. Chan, S. Liu, E. Reehorst, and
+P. Schniter, “Plug-and-play methods for magnetic resonance imaging:
+Using denoisers for image recovery,” IEEE Signal Processing Magazine ,
+vol. 37, pp. 105–116, 01 2020.
+[5] J. Liu, Y . Sun, C. Eldeniz, W. Gan, H. An, and U. S. Kamilov, “RARE:
+image reconstruction using deep priors learned without groundtruth,”
+IEEE J. Sel. Top. Signal Process. , vol. 14, no. 6, pp. 1088–1099, 2020.
+[6] Y . Yang, J. Sun, H. Li, and Z. Xu, “Deep ADMM-Net for compressive
+sensing MRI,” in Advances in Neural Information Processing Systems
+29: Annual Conference on Neural Information Processing Systems 2016,
+December 5-10, 2016, Barcelona, Spain , 2016, pp. 10–18.
+[7] J. Schlemper, J. Caballero, J. V . Hajnal, A. N. Price, and D. Rueckert,
+“A deep cascade of convolutional neural networks for dynamic MR
+image reconstruction,” IEEE Trans. Medical Imaging , vol. 37, no. 2, pp.
+491–503, 2018.
+[8] J. Zhang and B. Ghanem, “ISTA-Net: Interpretable optimization-inspired
+deep network for image compressive sensing,” 06 2018, pp. 1828–1837.
+[9] C. D. Bahadir, A. V . Dalca, and M. R. Sabuncu, “Learning-based
+optimization of the under-sampling pattern in MRI,” in International
+Conference on Information Processing in Medical Imaging . Springer,
+2019, pp. 780–792.

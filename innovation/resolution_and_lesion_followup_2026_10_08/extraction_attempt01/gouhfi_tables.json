@@ -1,0 +1,824 @@
+[
+  {
+    "id": "IMAG.a.960-tb1",
+    "text": "Table 1.Summary of the datasets used for training and/or testing in this work.DatasetField StrengthResolutionContrastSubjectsVendorUseNHCP-YA3T(0.7 mm)3T1w/T2wHealthySiemensTr80/20SCAIFIELD7T (pTx)(0.6 mm)3T1w, MPM-T1w,-MTw,-PDwHealthySiemensTr/Ts31/10UltraCortex9.4T (1Tx)(0.6 mm)3/(0.8 mm)3T1wHealthySiemensTr/Ts15/12ABIDE-II ETHZ3T(0.9 mm)3T1wASDPhilipsTr34ABIDE-II EMC3T(0.9 mm)3T1wASDGETr46MPI-CBS7T (1Tx)(0.4 mm)3T1wHealthySiemensTs28STRAT-PARK7T (1Tx)(0.75 mm)3T1wPDP/HealthySiemensTs45CEREBRUM-7T7T (1Tx)(0.63 mm)3T1wHealthySiemensTs21Human Brain Atlas7T (1Tx)(0.25 mm)3T1wHealthySiemensTs1The table lists the field strength, resolution, contrast, subject type, vendor, usage, and number of subjects for each dataset. ASD: autism spectrum disorder, PDP: Parkinson’s disease patients, Tr: training, Ts: test.",
+    "rows": [
+      [
+        "Dataset",
+        "Field Strength",
+        "Resolution",
+        "Contrast",
+        "Subjects",
+        "Vendor",
+        "Use",
+        "N"
+      ],
+      [
+        "HCP-YA",
+        "3T",
+        "(0.7 mm)3",
+        "T1w/T2w",
+        "Healthy",
+        "Siemens",
+        "Tr",
+        "80/20"
+      ],
+      [
+        "SCAIFIELD",
+        "7T (pTx)",
+        "(0.6 mm)3",
+        "T1w, MPM-T1w,-MTw,-PDw",
+        "Healthy",
+        "Siemens",
+        "Tr/Ts",
+        "31/10"
+      ],
+      [
+        "UltraCortex",
+        "9.4T (1Tx)",
+        "(0.6 mm)3/(0.8 mm)3",
+        "T1w",
+        "Healthy",
+        "Siemens",
+        "Tr/Ts",
+        "15/12"
+      ],
+      [
+        "ABIDE-II ETHZ",
+        "3T",
+        "(0.9 mm)3",
+        "T1w",
+        "ASD",
+        "Philips",
+        "Tr",
+        "34"
+      ],
+      [
+        "ABIDE-II EMC",
+        "3T",
+        "(0.9 mm)3",
+        "T1w",
+        "ASD",
+        "GE",
+        "Tr",
+        "46"
+      ],
+      [
+        "MPI-CBS",
+        "7T (1Tx)",
+        "(0.4 mm)3",
+        "T1w",
+        "Healthy",
+        "Siemens",
+        "Ts",
+        "28"
+      ],
+      [
+        "STRAT-PARK",
+        "7T (1Tx)",
+        "(0.75 mm)3",
+        "T1w",
+        "PDP/Healthy",
+        "Siemens",
+        "Ts",
+        "45"
+      ],
+      [
+        "CEREBRUM-7T",
+        "7T (1Tx)",
+        "(0.63 mm)3",
+        "T1w",
+        "Healthy",
+        "Siemens",
+        "Ts",
+        "21"
+      ],
+      [
+        "Human Brain Atlas",
+        "7T (1Tx)",
+        "(0.25 mm)3",
+        "T1w",
+        "Healthy",
+        "Siemens",
+        "Ts",
+        "1"
+      ]
+    ]
+  },
+  {
+    "id": "IMAG.a.960-tb2",
+    "text": "Table 2.Median DSC and ASD values (with 95% CIs) computed for HCP subjects (n = 20) using GOUHFI and SynthSeg.HCP-T1wHCP-T2w DSC GOUHFISynthSegGOUHFISynthSegWM0.96 [0.96, 0.97]0.93 [0.92, 0.93]0.95 [0.94, 0.95]0.90 [0.90, 0.91]Cortex0.92 [0.92, 0.92]0.88 [0.88, 0.88]0.90 [0.90, 0.90]0.85 [0.85, 0.85]Putamen0.94 [0.93, 0.94]0.90 [0.89, 0.90]0.92 [0.91, 0.92]0.88 [0.88, 0.89]Thalamus0.93 [0.92, 0.93]0.91 [0.91, 0.92]0.92 [0.91, 0.92]0.92 [0.92, 0.92]Pallidum0.85 [0.84, 0.86]0.82 [0.81, 0.83]0.84 [0.83, 0.85]0.81 [0.79, 0.81]Cerebellum WM0.87 [0.87, 0.87]0.88 [0.88, 0.89]0.85 [0.85, 0.85]0.87 [0.87, 0.87]Cerebellum Cortex0.90 [0.89, 0.90]0.93 [0.92, 0.93]0.89 [0.88, 0.89]0.91 [0.90, 0.91] Median (27 labels) 0.91 [0.90, 0.91]0.89 [0.88, 0.89]0.89 [0.88, 0.89]0.87 [0.86, 0.87]HCP-T1wHCP-T2w ASD [mm] GOUHFISynthSegGOUHFISynthSegWM0.19 [0.19, 0.19]0.34 [0.33, 0.34]0.27 [0.27, 0.29]0.41 [0.40, 0.42]Cortex0.26 [0.26, 0.33]0.36 [0.36, 0.37]0.31 [0.31, 0.33]0.42 [0.42, 0.43]Putamen0.32 [0.32, 0.34]0.54 [0.53, 0.57]0.40 [0.40, 0.43]0.62 [0.60, 0.66]Thalamus0.52 [0.51, 0.57]0.56 [0.55, 0.60]0.61 [0.59, 0.65]0.54 [0.54, 0.58]Pallidum0.54 [0.51, 0.58]0.56 [0.55, 0.61]0.58 [0.57, 0.62]0.62 [0.62, 0.69]Cerebellum WM0.67 [0.63, 0.70]0.54 [0.51, 0.59]0.81 [0.79, 0.86]0.62 [0.60, 0.67]Cerebellum Cortex0.90 [0.87, 0.95]0.57 [0.56, 0.59]0.93 [0.91, 0.99]0.66 [0.64, 0.68] Median (27 labels) 0.45 [0.43, 0.47]0.50 [0.48, 0.50]0.47 [0.51, 0.54]0.55 [0.54, 0.56]The ground truth is the segmentation produced by FastSurferVINN at native resolution using the T1w images. The highest DSC (and lowest ASD) value is shown in bold.",
+    "rows": [
+      [
+        "",
+        "HCP-T1w",
+        "HCP-T2w"
+      ],
+      [
+        "DSC",
+        "GOUHFI",
+        "SynthSeg",
+        "GOUHFI",
+        "SynthSeg"
+      ],
+      [
+        "WM",
+        "0.96 [0.96, 0.97]",
+        "0.93 [0.92, 0.93]",
+        "0.95 [0.94, 0.95]",
+        "0.90 [0.90, 0.91]"
+      ],
+      [
+        "Cortex",
+        "0.92 [0.92, 0.92]",
+        "0.88 [0.88, 0.88]",
+        "0.90 [0.90, 0.90]",
+        "0.85 [0.85, 0.85]"
+      ],
+      [
+        "Putamen",
+        "0.94 [0.93, 0.94]",
+        "0.90 [0.89, 0.90]",
+        "0.92 [0.91, 0.92]",
+        "0.88 [0.88, 0.89]"
+      ],
+      [
+        "Thalamus",
+        "0.93 [0.92, 0.93]",
+        "0.91 [0.91, 0.92]",
+        "0.92 [0.91, 0.92]",
+        "0.92 [0.92, 0.92]"
+      ],
+      [
+        "Pallidum",
+        "0.85 [0.84, 0.86]",
+        "0.82 [0.81, 0.83]",
+        "0.84 [0.83, 0.85]",
+        "0.81 [0.79, 0.81]"
+      ],
+      [
+        "Cerebellum WM",
+        "0.87 [0.87, 0.87]",
+        "0.88 [0.88, 0.89]",
+        "0.85 [0.85, 0.85]",
+        "0.87 [0.87, 0.87]"
+      ],
+      [
+        "Cerebellum Cortex",
+        "0.90 [0.89, 0.90]",
+        "0.93 [0.92, 0.93]",
+        "0.89 [0.88, 0.89]",
+        "0.91 [0.90, 0.91]"
+      ],
+      [
+        "Median (27 labels)",
+        "0.91 [0.90, 0.91]",
+        "0.89 [0.88, 0.89]",
+        "0.89 [0.88, 0.89]",
+        "0.87 [0.86, 0.87]"
+      ],
+      [
+        "",
+        "HCP-T1w",
+        "HCP-T2w"
+      ],
+      [
+        "ASD [mm]",
+        "GOUHFI",
+        "SynthSeg",
+        "GOUHFI",
+        "SynthSeg"
+      ],
+      [
+        "WM",
+        "0.19 [0.19, 0.19]",
+        "0.34 [0.33, 0.34]",
+        "0.27 [0.27, 0.29]",
+        "0.41 [0.40, 0.42]"
+      ],
+      [
+        "Cortex",
+        "0.26 [0.26, 0.33]",
+        "0.36 [0.36, 0.37]",
+        "0.31 [0.31, 0.33]",
+        "0.42 [0.42, 0.43]"
+      ],
+      [
+        "Putamen",
+        "0.32 [0.32, 0.34]",
+        "0.54 [0.53, 0.57]",
+        "0.40 [0.40, 0.43]",
+        "0.62 [0.60, 0.66]"
+      ],
+      [
+        "Thalamus",
+        "0.52 [0.51, 0.57]",
+        "0.56 [0.55, 0.60]",
+        "0.61 [0.59, 0.65]",
+        "0.54 [0.54, 0.58]"
+      ],
+      [
+        "Pallidum",
+        "0.54 [0.51, 0.58]",
+        "0.56 [0.55, 0.61]",
+        "0.58 [0.57, 0.62]",
+        "0.62 [0.62, 0.69]"
+      ],
+      [
+        "Cerebellum WM",
+        "0.67 [0.63, 0.70]",
+        "0.54 [0.51, 0.59]",
+        "0.81 [0.79, 0.86]",
+        "0.62 [0.60, 0.67]"
+      ],
+      [
+        "Cerebellum Cortex",
+        "0.90 [0.87, 0.95]",
+        "0.57 [0.56, 0.59]",
+        "0.93 [0.91, 0.99]",
+        "0.66 [0.64, 0.68]"
+      ],
+      [
+        "Median (27 labels)",
+        "0.45 [0.43, 0.47]",
+        "0.50 [0.48, 0.50]",
+        "0.47 [0.51, 0.54]",
+        "0.55 [0.54, 0.56]"
+      ]
+    ]
+  },
+  {
+    "id": "IMAG.a.960-tb3",
+    "text": "Table 3.Median DSC and ASD values (with 95% CIs) computed for the four contrasts in the SCAIFIELD dataset (n = 10) using GOUHFI and SynthSeg.SCA-T1w (GTFSV)MPM (GTSynthSeg) DSC GOUHFISynthSegMPM-MTw*MPM-T1wMPM-PDwWM0.97 [0.97, 0.97]0.92 [0.92, 0.92]0.92 [0.92, 0.93]0.90 [0.90, 0.90]0.90 [0.89, 0.90]Cortex0.91 [0.90, 0.92]0.82 [0.81, 0.82]0.87 [0.87, 0.88]0.87 [0.86, 0.87]0.85 [0.84, 0.86]Putamen0.94 [0.93, 0.94]0.91 [0.90, 0.91]0.91 [0.91, 0.92]0.88 [0.87, 0.89]0.87 [0.85, 0.88]Thalamus0.94 [0.93, 0.94]0.92 [0.91, 0.92]0.91 [0.91, 0.93]0.93 [0.92, 0.93]0.92 [0.91, 0.92]Pallidum0.88 [0.86, 0.89]0.86 [0.84, 0.86]0.85 [0.80, 0.87]0.80 [0.78, 0.22]0.78 [0.74, 0.81]Cerebellum WM0.91 [0.90, 0.91]0.87 [0.87, 0.88]0.89 [0.88, 0.90]0.82 [0.81, 0.83]0.90 [0.89, 0.90]Cerebellum Cortex0.94 [0.93, 0.94]0.91 [0.90, 0.91]0.93 [0.92, 0.93]0.92 [0.91, 0.92]0.93 [0.93, 0.93] Median (27 labels) 0.91 [0.90, 0.91]0.88 [0.87, 0.88]0.89 [0.87, 0.89]0.87 [0.85, 0.86]0.84 [0.82, 0.84]SCA-T1w (GTFSV)MPM (GTSynthSeg) ASD [mm] GOUHFISynthSegMPM-MTw*MPM-T1wMPM-PDwWM0.13 [0.13, 0.14]0.36 [0.35, 0.36]0.44 [0.41, 0.46]0.54 [0.52, 0.57]0.57 [0.54, 0.61]Cortex0.23 [0.22, 0.25]0.45 [0.44, 0.46]0.50 [0.47, 0.52]0.52 [0.49, 0.58]0.61 [0.59, 0.70]Putamen0.26 [0.25, 0.31]0.47 [0.45, 0.50]0.41 [0.38, 0.44]0.54 [0.53, 0.65]0.63 [0.55, 0.67]Thalamus0.41 [0.39, 0.48]0.49 [0.49, 0.55]0.55 [0.51, 0.65]0.50 [0.48, 0.55]0.61 [0.57, 0.66]Pallidum0.43 [0.38, 0.46]0.45 [0.44, 0.51]0.72 [0.61, 0.87]0.78 [0.71, 0.82]0.79 [0.77, 1.01]Cerebellum WM0.32 [0.29, 0.34]0.45 [0.43, 0.51]0.51 [0.45, 0.54]0.69 [0.67, 0.77]0.53 [0.52, 0.58]Cerebellum Cortex0.49 [0.46, 0.55]0.65 [0.64, 0.67]0.59 [0.55, 0.63]0.65 [0.63, 0.69]0.65 [0.61, 0.65] Median (27 labels) 0.34 [0.34, 0.38]0.48 [0.48, 0.52]0.50 [0.48, 0.53]0.56 [0.56, 0.61]0.64 [0.66, 0.72]The ground truth for SCA-T1w was the segmentation produced by FastSurferVINN at native resolution using the N4-corrected pTx T1w images (GTFSV) whereas for the three MPM contrasts, the up-sampled segmentation produced by SynthSeg was used (GTSynthSeg). For the comparison of GOUHFI and SynthSeg versus FastSurferVINN, the highest DSC (and lowest ASD) value is shown in bold.*A subset of four subjects was used for MPM-MTw since several subjects did not include an MTw MPM scan.",
+    "rows": [
+      [
+        "",
+        "SCA-T1w (GTFSV)",
+        "MPM (GTSynthSeg)"
+      ],
+      [
+        "DSC",
+        "GOUHFI",
+        "SynthSeg",
+        "MPM-MTw*",
+        "MPM-T1w",
+        "MPM-PDw"
+      ],
+      [
+        "WM",
+        "0.97 [0.97, 0.97]",
+        "0.92 [0.92, 0.92]",
+        "0.92 [0.92, 0.93]",
+        "0.90 [0.90, 0.90]",
+        "0.90 [0.89, 0.90]"
+      ],
+      [
+        "Cortex",
+        "0.91 [0.90, 0.92]",
+        "0.82 [0.81, 0.82]",
+        "0.87 [0.87, 0.88]",
+        "0.87 [0.86, 0.87]",
+        "0.85 [0.84, 0.86]"
+      ],
+      [
+        "Putamen",
+        "0.94 [0.93, 0.94]",
+        "0.91 [0.90, 0.91]",
+        "0.91 [0.91, 0.92]",
+        "0.88 [0.87, 0.89]",
+        "0.87 [0.85, 0.88]"
+      ],
+      [
+        "Thalamus",
+        "0.94 [0.93, 0.94]",
+        "0.92 [0.91, 0.92]",
+        "0.91 [0.91, 0.93]",
+        "0.93 [0.92, 0.93]",
+        "0.92 [0.91, 0.92]"
+      ],
+      [
+        "Pallidum",
+        "0.88 [0.86, 0.89]",
+        "0.86 [0.84, 0.86]",
+        "0.85 [0.80, 0.87]",
+        "0.80 [0.78, 0.22]",
+        "0.78 [0.74, 0.81]"
+      ],
+      [
+        "Cerebellum WM",
+        "0.91 [0.90, 0.91]",
+        "0.87 [0.87, 0.88]",
+        "0.89 [0.88, 0.90]",
+        "0.82 [0.81, 0.83]",
+        "0.90 [0.89, 0.90]"
+      ],
+      [
+        "Cerebellum Cortex",
+        "0.94 [0.93, 0.94]",
+        "0.91 [0.90, 0.91]",
+        "0.93 [0.92, 0.93]",
+        "0.92 [0.91, 0.92]",
+        "0.93 [0.93, 0.93]"
+      ],
+      [
+        "Median (27 labels)",
+        "0.91 [0.90, 0.91]",
+        "0.88 [0.87, 0.88]",
+        "0.89 [0.87, 0.89]",
+        "0.87 [0.85, 0.86]",
+        "0.84 [0.82, 0.84]"
+      ],
+      [
+        "",
+        "SCA-T1w (GTFSV)",
+        "MPM (GTSynthSeg)"
+      ],
+      [
+        "ASD [mm]",
+        "GOUHFI",
+        "SynthSeg",
+        "MPM-MTw*",
+        "MPM-T1w",
+        "MPM-PDw"
+      ],
+      [
+        "WM",
+        "0.13 [0.13, 0.14]",
+        "0.36 [0.35, 0.36]",
+        "0.44 [0.41, 0.46]",
+        "0.54 [0.52, 0.57]",
+        "0.57 [0.54, 0.61]"
+      ],
+      [
+        "Cortex",
+        "0.23 [0.22, 0.25]",
+        "0.45 [0.44, 0.46]",
+        "0.50 [0.47, 0.52]",
+        "0.52 [0.49, 0.58]",
+        "0.61 [0.59, 0.70]"
+      ],
+      [
+        "Putamen",
+        "0.26 [0.25, 0.31]",
+        "0.47 [0.45, 0.50]",
+        "0.41 [0.38, 0.44]",
+        "0.54 [0.53, 0.65]",
+        "0.63 [0.55, 0.67]"
+      ],
+      [
+        "Thalamus",
+        "0.41 [0.39, 0.48]",
+        "0.49 [0.49, 0.55]",
+        "0.55 [0.51, 0.65]",
+        "0.50 [0.48, 0.55]",
+        "0.61 [0.57, 0.66]"
+      ],
+      [
+        "Pallidum",
+        "0.43 [0.38, 0.46]",
+        "0.45 [0.44, 0.51]",
+        "0.72 [0.61, 0.87]",
+        "0.78 [0.71, 0.82]",
+        "0.79 [0.77, 1.01]"
+      ],
+      [
+        "Cerebellum WM",
+        "0.32 [0.29, 0.34]",
+        "0.45 [0.43, 0.51]",
+        "0.51 [0.45, 0.54]",
+        "0.69 [0.67, 0.77]",
+        "0.53 [0.52, 0.58]"
+      ],
+      [
+        "Cerebellum Cortex",
+        "0.49 [0.46, 0.55]",
+        "0.65 [0.64, 0.67]",
+        "0.59 [0.55, 0.63]",
+        "0.65 [0.63, 0.69]",
+        "0.65 [0.61, 0.65]"
+      ],
+      [
+        "Median (27 labels)",
+        "0.34 [0.34, 0.38]",
+        "0.48 [0.48, 0.52]",
+        "0.50 [0.48, 0.53]",
+        "0.56 [0.56, 0.61]",
+        "0.64 [0.66, 0.72]"
+      ]
+    ]
+  },
+  {
+    "id": "IMAG.a.960-tb4",
+    "text": "Table 4.Median DSC and ASD values (with 95% CIs) for each label across all test cases (n = 21) using segmentations from CEREBRUM-7T, GOUHFI, and SynthSeg. DSC CEREBRUM-7TGOUHFISynthSegWM0.94 [0.94, 0.94]0.92 [0.91, 0.92]0.90 [0.89, 0.91]Cortex0.91 [0.90, 0.91]0.86 [0.86, 0.86]0.83 [0.83, 0.84]Basal ganglia0.89 [0.89, 0.90]0.86 [0.86, 0.87]0.87 [0.86, 0.88]Ventricles0.86 [0.85, 0.87]0.85 [0.83, 0.86]0.84 [0.83, 0.86]Brainstem0.93 [0.92, 0.93]0.91 [0.90, 0.91]0.91 [0.90, 0.91]Cerebellum0.93 [0.88, 0.94]0.92 [0.86, 0.92]0.89 [0.83, 0.90] Median 0.91 [0.90, 0.91]0.88 [0.87, 0.89]0.88 [0.86, 0.87] ASD [mm] CEREBRUM-7TGOUHFISynthSegWM0.24 [0.24, 0.25]0.35 [0.34, 0.36]0.44 [0.43, 0.45]Cortex0.28 [0.28, 0.29]0.43 [0.42, 0.44]0.50 [0.49, 0.50]Basal ganglia0.48 [0.46, 0.50]0.60 [0.56, 0.63]0.59 [0.56, 0.63]Ventricles0.35 [0.34, 0.45]0.39 [0.37, 0.46]0.38 [0.36, 0.47]Brainstem0.43 [0.41, 0.48]0.54 [0.51, 0.64]0.53 [0.50, 0.62]Cerebellum0.68 [0.63, 1.21]0.90 [0.87, 1.51]1.26 [1.18, 1.89] Median 0.38 [0.40, 0.52]0.49 [0.52, 0.66]0.51 [0.58, 0.76]Ground truth is the iGT as described in Svanera et al. (2021). The highest DSC (and lowest ASD) is shown in bold.",
+    "rows": [
+      [
+        "DSC",
+        "CEREBRUM-7T",
+        "GOUHFI",
+        "SynthSeg"
+      ],
+      [
+        "WM",
+        "0.94 [0.94, 0.94]",
+        "0.92 [0.91, 0.92]",
+        "0.90 [0.89, 0.91]"
+      ],
+      [
+        "Cortex",
+        "0.91 [0.90, 0.91]",
+        "0.86 [0.86, 0.86]",
+        "0.83 [0.83, 0.84]"
+      ],
+      [
+        "Basal ganglia",
+        "0.89 [0.89, 0.90]",
+        "0.86 [0.86, 0.87]",
+        "0.87 [0.86, 0.88]"
+      ],
+      [
+        "Ventricles",
+        "0.86 [0.85, 0.87]",
+        "0.85 [0.83, 0.86]",
+        "0.84 [0.83, 0.86]"
+      ],
+      [
+        "Brainstem",
+        "0.93 [0.92, 0.93]",
+        "0.91 [0.90, 0.91]",
+        "0.91 [0.90, 0.91]"
+      ],
+      [
+        "Cerebellum",
+        "0.93 [0.88, 0.94]",
+        "0.92 [0.86, 0.92]",
+        "0.89 [0.83, 0.90]"
+      ],
+      [
+        "Median",
+        "0.91 [0.90, 0.91]",
+        "0.88 [0.87, 0.89]",
+        "0.88 [0.86, 0.87]"
+      ],
+      [
+        "ASD [mm]",
+        "CEREBRUM-7T",
+        "GOUHFI",
+        "SynthSeg"
+      ],
+      [
+        "WM",
+        "0.24 [0.24, 0.25]",
+        "0.35 [0.34, 0.36]",
+        "0.44 [0.43, 0.45]"
+      ],
+      [
+        "Cortex",
+        "0.28 [0.28, 0.29]",
+        "0.43 [0.42, 0.44]",
+        "0.50 [0.49, 0.50]"
+      ],
+      [
+        "Basal ganglia",
+        "0.48 [0.46, 0.50]",
+        "0.60 [0.56, 0.63]",
+        "0.59 [0.56, 0.63]"
+      ],
+      [
+        "Ventricles",
+        "0.35 [0.34, 0.45]",
+        "0.39 [0.37, 0.46]",
+        "0.38 [0.36, 0.47]"
+      ],
+      [
+        "Brainstem",
+        "0.43 [0.41, 0.48]",
+        "0.54 [0.51, 0.64]",
+        "0.53 [0.50, 0.62]"
+      ],
+      [
+        "Cerebellum",
+        "0.68 [0.63, 1.21]",
+        "0.90 [0.87, 1.51]",
+        "1.26 [1.18, 1.89]"
+      ],
+      [
+        "Median",
+        "0.38 [0.40, 0.52]",
+        "0.49 [0.52, 0.66]",
+        "0.51 [0.58, 0.76]"
+      ]
+    ]
+  },
+  {
+    "id": "IMAG.a.960-tb5",
+    "text": "Table 5.Median DSC and ASD values (with 95% CIs) computed for the WM and GM segmentations (left and right hemispheres combined) produced by GOUHFI and SynthSeg for subjects with manual segments provided in the UltraCortex dataset ((0.6 mm)3 MP2RAGE nsub = 8, (0.6 mm)3 MPRAGE nsub = 3 and (0.8 mm)3 MP2RAGE nsub = 1.).(0.6 mm)3 MP2RAGE(0.6 mm)3 MPRAGE(0.8 mm)3 MP2RAGE DSC GOUHFISynthSegGOUHFISynthSegGOUHFISynthSegWhite matter0.97 [0.97, 0.97]0.94 [0.94, 0.94]0.97 [0.96, 0.97]0.93 [0.93, 0.94]0.95 [-, -]0.93 [-, -]Cortex0.91 [0.91, 0.91]0.85 [0.84, 0.85]0.90 [0.89, 0.92]0.85 [0.84, 0.87]0.89 [-, -]0.83 [-, -](0.6 mm)3 MP2RAGE(0.6 mm)3 MPRAGE(0.8 mm)3 MP2RAGE ASD [mm] GOUHFISynthSegGOUHFISynthSegGOUHFISynthSegWhite matter0.26 [0.25, 0.29]0.39 [0.37, 0.39]0.27 [0.25, 0.32]0.44 [0.43, 0.44]0.35 [-, -]0.44 [-, -]Cortex0.25 [0.25, 0.27]0.45 [0.44, 0.46]0.29 [0.26, 0.35]0.44 [0.39, 0.47]0.33 [-, -]0.48 [-, -]The highest DSC (and lowest ASD) are shown in bold.",
+    "rows": [
+      [
+        "",
+        "(0.6 mm)3 MP2RAGE",
+        "(0.6 mm)3 MPRAGE",
+        "(0.8 mm)3 MP2RAGE"
+      ],
+      [
+        "DSC",
+        "GOUHFI",
+        "SynthSeg",
+        "GOUHFI",
+        "SynthSeg",
+        "GOUHFI",
+        "SynthSeg"
+      ],
+      [
+        "White matter",
+        "0.97 [0.97, 0.97]",
+        "0.94 [0.94, 0.94]",
+        "0.97 [0.96, 0.97]",
+        "0.93 [0.93, 0.94]",
+        "0.95 [-, -]",
+        "0.93 [-, -]"
+      ],
+      [
+        "Cortex",
+        "0.91 [0.91, 0.91]",
+        "0.85 [0.84, 0.85]",
+        "0.90 [0.89, 0.92]",
+        "0.85 [0.84, 0.87]",
+        "0.89 [-, -]",
+        "0.83 [-, -]"
+      ],
+      [
+        "",
+        "(0.6 mm)3 MP2RAGE",
+        "(0.6 mm)3 MPRAGE",
+        "(0.8 mm)3 MP2RAGE"
+      ],
+      [
+        "ASD [mm]",
+        "GOUHFI",
+        "SynthSeg",
+        "GOUHFI",
+        "SynthSeg",
+        "GOUHFI",
+        "SynthSeg"
+      ],
+      [
+        "White matter",
+        "0.26 [0.25, 0.29]",
+        "0.39 [0.37, 0.39]",
+        "0.27 [0.25, 0.32]",
+        "0.44 [0.43, 0.44]",
+        "0.35 [-, -]",
+        "0.44 [-, -]"
+      ],
+      [
+        "Cortex",
+        "0.25 [0.25, 0.27]",
+        "0.45 [0.44, 0.46]",
+        "0.29 [0.26, 0.35]",
+        "0.44 [0.39, 0.47]",
+        "0.33 [-, -]",
+        "0.48 [-, -]"
+      ]
+    ]
+  },
+  {
+    "id": "IMAG.a.960-tb6",
+    "text": "Appendix Table A.1.Label name and index of all structures segmented by GOUHFI. Lh and rh stands for Left- and Right-Hemisphere, respectively.Segmented structureLabel indexCerebral white matter (lh)1Cerebral cortex (lh)2Lateral ventricle (lh)3Inferior lateral ventricle (lh)4Cerebellar white matter (lh)5Cerebellar cortex (lh)6Thalamus (lh)7Caudate (lh)8Putamen (lh)9Pallidum (lh)103rd-ventricle114th-ventricle12Brain stem13Hippocampus (lh)14Amygdala (lh)15CSF16Accumbens (lh)17Ventral DC (lh)18Choroid plexus (lh)19Cerebral white matter (rh)20Cerebral cortex (rh)21Lateral ventricle (rh)22Inferior lateral ventricle (rh)23Cerebellar white matter (rh)24Cerebellar cortex (rh)25Thalamus (rh)26Caudate (rh)27Putamen (rh)28Pallidum (rh)29Hippocampus (rh)30Amygdala (rh)31Accumbens (rh)32Ventral DC (rh)33Choroid plexus (rh)34WM-hypointensities35Extra-cerebral36**While required to generate the synthetic images used for training, the extra-cerebral label is not segmented by GOUHFI.",
+    "rows": [
+      [
+        "Segmented structure",
+        "Label index"
+      ],
+      [
+        "Cerebral white matter (lh)",
+        "1"
+      ],
+      [
+        "Cerebral cortex (lh)",
+        "2"
+      ],
+      [
+        "Lateral ventricle (lh)",
+        "3"
+      ],
+      [
+        "Inferior lateral ventricle (lh)",
+        "4"
+      ],
+      [
+        "Cerebellar white matter (lh)",
+        "5"
+      ],
+      [
+        "Cerebellar cortex (lh)",
+        "6"
+      ],
+      [
+        "Thalamus (lh)",
+        "7"
+      ],
+      [
+        "Caudate (lh)",
+        "8"
+      ],
+      [
+        "Putamen (lh)",
+        "9"
+      ],
+      [
+        "Pallidum (lh)",
+        "10"
+      ],
+      [
+        "3rd-ventricle",
+        "11"
+      ],
+      [
+        "4th-ventricle",
+        "12"
+      ],
+      [
+        "Brain stem",
+        "13"
+      ],
+      [
+        "Hippocampus (lh)",
+        "14"
+      ],
+      [
+        "Amygdala (lh)",
+        "15"
+      ],
+      [
+        "CSF",
+        "16"
+      ],
+      [
+        "Accumbens (lh)",
+        "17"
+      ],
+      [
+        "Ventral DC (lh)",
+        "18"
+      ],
+      [
+        "Choroid plexus (lh)",
+        "19"
+      ],
+      [
+        "Cerebral white matter (rh)",
+        "20"
+      ],
+      [
+        "Cerebral cortex (rh)",
+        "21"
+      ],
+      [
+        "Lateral ventricle (rh)",
+        "22"
+      ],
+      [
+        "Inferior lateral ventricle (rh)",
+        "23"
+      ],
+      [
+        "Cerebellar white matter (rh)",
+        "24"
+      ],
+      [
+        "Cerebellar cortex (rh)",
+        "25"
+      ],
+      [
+        "Thalamus (rh)",
+        "26"
+      ],
+      [
+        "Caudate (rh)",
+        "27"
+      ],
+      [
+        "Putamen (rh)",
+        "28"
+      ],
+      [
+        "Pallidum (rh)",
+        "29"
+      ],
+      [
+        "Hippocampus (rh)",
+        "30"
+      ],
+      [
+        "Amygdala (rh)",
+        "31"
+      ],
+      [
+        "Accumbens (rh)",
+        "32"
+      ],
+      [
+        "Ventral DC (rh)",
+        "33"
+      ],
+      [
+        "Choroid plexus (rh)",
+        "34"
+      ],
+      [
+        "WM-hypointensities",
+        "35"
+      ],
+      [
+        "Extra-cerebral",
+        "36*"
+      ]
+    ]
+  },
+  {
+    "id": "IMAG.a.960-tb7",
+    "text": "Appendix Table A.2.Values of the parameters used in this study for the generative model.ParameterValue arot -20 brot 20 asc 0.8 bsc 1.2 ash -0.015 bsh 0.015 atr -30 btr 30 bnonlin 4.0 aμ0 bμ255 aσ0 bσ35 bB0.9 σγ20.4 rHR None bres None aαNone bαNoneIntensity parameters assume inputs in the [0, 255] interval, rotations are expressed in degrees with spatial measures in millimeters. More details about these parameters are provided in Billot et al. (2023).",
+    "rows": [
+      [
+        "Parameter",
+        "Value"
+      ],
+      [
+        "arot",
+        "-20"
+      ],
+      [
+        "brot",
+        "20"
+      ],
+      [
+        "asc",
+        "0.8"
+      ],
+      [
+        "bsc",
+        "1.2"
+      ],
+      [
+        "ash",
+        "-0.015"
+      ],
+      [
+        "bsh",
+        "0.015"
+      ],
+      [
+        "atr",
+        "-30"
+      ],
+      [
+        "btr",
+        "30"
+      ],
+      [
+        "bnonlin",
+        "4.0"
+      ],
+      [
+        "aμ",
+        "0"
+      ],
+      [
+        "bμ",
+        "255"
+      ],
+      [
+        "aσ",
+        "0"
+      ],
+      [
+        "bσ",
+        "35"
+      ],
+      [
+        "bB",
+        "0.9"
+      ],
+      [
+        "σγ2",
+        "0.4"
+      ],
+      [
+        "rHR",
+        "None"
+      ],
+      [
+        "bres",
+        "None"
+      ],
+      [
+        "aα",
+        "None"
+      ],
+      [
+        "bα",
+        "None"
+      ]
+    ]
+  }
+]

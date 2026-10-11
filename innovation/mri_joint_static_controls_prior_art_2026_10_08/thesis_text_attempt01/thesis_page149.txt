@@ -1,0 +1,40 @@
+APPENDIX A. APPENDIX FOR CHAPTER 6
+This would correspond to a simulation of what would happen if the model of Bakker
+et al. (2020) was to be used in deployment, as one would receive undersampled complex
+observations that are only then transformed to magnitude images. While this does not
+induce anyreversal in this case, we see that in the matched setting, the gap between
+LBCS and RL shrinks. We see also again that training and evaluating on the matched
+setting leads to larger performance improvements than the ones obtained by training
+sophisticated policies.
+Policy Bakker’s Individual Matched Mismatched Complex preprocessing
+setting data range standardization setting (matched - ours)
+Random (SH) 0.6251 0.5964 0.5798 0.5595 0.5608
+LtH (SH) 0.6073 0.5762 0.5650 0.5617 0.5719
+LBCS (SH) 0.6375 0.6099 0.5928 0.5684 0.5732
+RL (SH) 0.6388 0.6112 0.5941 0.5698 0.5738
+NA Oracle (SH) 0.6383 0.6107 0.5937 0.5717 0.5738
+Table A.1: AUC on the test set, using SSIM, on various data processing on Bakker’s knee setting.
+The mismatched setting refers to the evaluation of the model trained in the setting of Bakker et al.
+(2020), but evaluated complex data preprocessing instead of magnitude data preprocessing. This
+makes the reconstruction and policy models to be out of the distribution. A model trained on the
+complex preprocessing is reported in the complex preprocessing (matched - ours) column.
+A.2.2 Exact reproduction of Bakker et al.
+In our experiments, we did not use the exact same train-val-test split and dataset
+undersampling as Bakker et al. (2020). We re-evaluated our model in the exact setting
+of Bakker et al. (2020), as illustrated on the first column of Table A.1. On Table A.2, we
+present the results at25% sampling against the ones reported in the paper of Bakker
+et al. (2020).
+Policy (SH) Our code Bakker Difference
+Random 0.6974 0.6948 +0.0026
+Equi (one) 0.7078 0.7049 +0.0029
+Equi (two) 0.7090 0.7064 +0.0026
+NA Oracle 0.7235 0.7213 +0.0022
+LBCS 0.7222 – –
+RL (Greedy) 0.7250 0.7230 +0.0020
+RL γ = 0.9 0.7250 0.7232 +0.0018
+Table A.2: SSIM at25% on the test set used by Bakker et al. (2020) and subsampling the dataset
+by a factor2, in order to replicate their setting as close as possible. We compare the numbers
+that we obtain to the ones reported in the article of Bakker et al. (2020).
+We see that the performance difference is in the same order of0.0018 to 0.0029, and
+that the relative ordering of methods is preserved. We conclude from these results that
+136

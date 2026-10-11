@@ -1,0 +1,7 @@
+# 新增记录脚本的元数据修复记录
+
+总结脚本v1（a1d4b6 exit1）错误使用生产receipt的计数字段名读取独立receipt，产生KeyError；没有输出文件或MRI数组读取。另存v2，改为独立receipt的real_folds_verified／real_counterfactuals_verified，95544f exit0，41次加载／38唯一fold／81检查事件／17特征结果成立。
+
+记录脚本v1（2c3ff1 exit1）猜测official_attempt02内receipt叫acquisition_attempt02.json，实际目录内仍叫acquisition_attempt01.json；没有写provenance／ledger等输出。7ded1c只读确认真实文件名；另存record v2（fe5dd7 exit0），绑定实际receipt并保留原失败source与退出。均没有修改科学数据、生产／独立attempt、容差、既有论文PDF或已执行文件。
+
+候选准备文档在首次被执行脚本绑定前把人工特征数修正为17；程序实际表schema及计数为17。新入口中的训练进度为撰写时snapshot，更新poll及真实archive／finalize退出另存postappendices，不回填已绑定文件。

@@ -1,0 +1,68 @@
+{
+  "scope": "fastmri_original_train_and_clean_validation_manifest_only",
+  "input_source": [
+    {
+      "path": "design/pastnet_v2/manifests/fastmri/fold_00.json",
+      "sha256": "ee471bd92e48696050a694f371a86483f86f832c5b26571c81137b5dcc6ad4df"
+    },
+    {
+      "path": "dataset/fastMRI_brain_T2/processed/metadata/fastmri_brain_t2_nifti_manifest.csv",
+      "sha256": "3d95e20cba4ee28c6c143155f8838dcfaae080d4d810541a34301794edffe106"
+    }
+  ],
+  "limitations": [
+    "DICOM SliceThickness is nominal; it does not identify the full slice response or pulse sequence.",
+    "Position-derived slice-center spacing is not the same physical quantity as thickness.",
+    "All matching series headers are checked for tag consistency; no pixel or test data are read.",
+    "Original training series includes the historical mixed-series issue; this audit does not modify repaired training data."
+  ],
+  "by_split": {
+    "train": {
+      "series": 112,
+      "thickness_tag_present": 112,
+      "between_tag_present": 112,
+      "verified_position_spacing_present": 111,
+      "thickness_unique_rounded_mm": {
+        "2.0": 2,
+        "3.0": 4,
+        "4.0": 1,
+        "5.0": 105
+      },
+      "between_unique_rounded_mm": {
+        "2.0": 2,
+        "3.0": 4,
+        "4.8": 1,
+        "5.0": 100,
+        "5.25": 1,
+        "6.0": 3,
+        "6.5": 1
+      },
+      "thickness_median_mm": 5.0,
+      "position_spacing_median_mm": 5.0,
+      "thickness_minus_position_spacing_median_mm": -4.9213149111437815e-09,
+      "absolute_difference_over_0_1mm": 6,
+      "paired_tag_and_verified_spacing": 111
+    },
+    "val": {
+      "series": 23,
+      "thickness_tag_present": 23,
+      "between_tag_present": 23,
+      "verified_position_spacing_present": 23,
+      "thickness_unique_rounded_mm": {
+        "2.0": 1,
+        "5.0": 22
+      },
+      "between_unique_rounded_mm": {
+        "2.0": 1,
+        "5.0": 21,
+        "6.5": 1
+      },
+      "thickness_median_mm": 5.0,
+      "position_spacing_median_mm": 5.0,
+      "thickness_minus_position_spacing_median_mm": 0.0,
+      "absolute_difference_over_0_1mm": 1,
+      "paired_tag_and_verified_spacing": 23
+    }
+  },
+  "issues": {}
+}

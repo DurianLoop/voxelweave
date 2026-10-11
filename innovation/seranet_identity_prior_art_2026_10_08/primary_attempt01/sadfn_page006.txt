@@ -1,0 +1,87 @@
+6 Fan et al
+Zero-filled 
+MR Image
+……
+Deep Fusion Network
+Output
+L2 Loss
+Block1
++ Block2 BlockN
+Pooling Up- Sampling
+Segmentation-aware 
+Features
+Data 
+Fidelity 
+3*3 
+Conv
+1*1 
+Conv
+Copy&
+Concat
+Softmax
+Layer
+……
+Block1
++ BlockN
+Pre-RecNet
+SADFN
+Pre-SegNet
+Segmentation-aware Feature Extraction Module
+Fused
+Feature
+concat & up-sampling
+Fig. 2. The network architecture of SADFN model.
+admit the negative values because of the global residual learning in the blocks.
+We also refer to the DC-CNN architecture as Pre-RecNet for simplicity. The
+Pre-RecNet with N blocks are called Pre-RecNetN . We train the Pre-RecNetN
+Table 1. The parameter setting of a block in the Pre-RecNet.
+Layer Input Filter Size Stride Number of Filters Activation Output
+Conv1 240*240 3*3 1 32 ReLU 240*240*32
+Conv2 240*240*32 3*3 1 32 ReLU 240*240*32
+Conv3 240*240*32 3*3 1 32 ReLU 240*240*32
+Conv4 240*240*32 3*3 1 32 ReLU 240*240*32
+Conv5 240*240*32 3*3 1 1 Linear 240*240
+Data Fidelity 240*240 N/A N/A N/A N/A 240*240
+using the under-sampled and full-sampled training data pairs by minimizing the
+following Euclidean loss function
+LRec 
+yi
+, x
+f s
+i
+; θr
+
+=
+1
+Lr
+X
+Lr
+i=1
+
+
+
+x
+f s
+i − fθr
+
+F
+H
+u
+yi
+
+
+
+
+2
+2
+. (2)
+Where the x
+f s
+i
+is the full-sampled MR image, yi
+is the under-sampled k-space
+measurements in the training batch. θr denotes the network parameter and Lr
+is the number of MRI data in the training batch.
+3.2 The MRI Segmentation Network
+To fully utilize the segmentation supervision information, we train a automatic
+segmentation network. We adopt the popular U-Net architecture as the seg-

@@ -1,0 +1,93 @@
+Learning to Sample and Reconstruct for Accelerated MRI 25
+Then, we have
+J(a⋆,RNew
+ϵ )−J(a⋆,Rsparse)
+= Ex∼D
+[
+S(RNew
+ϵ (Ma⋆
+F x),x )− S(Rsparse(Ma⋆
+F x),x )
+]
+= Ex∼D1 {Y (Ma⋆F x)≥ϵ}·
+[
+S(Rdense(Ma⋆
+F x),x )− S(Rsparse(Ma⋆
+F x),x )
+]
++ Ex∼D1 {Y (Ma⋆F x)<ϵ}·
+[
+S(RNew
+ϵ (Ma⋆
+F x),x )− S(Rsparse(Ma⋆
+F x),x )
+]
+≥ Ex∼D1 {Y (Ma⋆F x)≥ϵ}
+[
+S(Rdense(Ma⋆
+F x),x )− S(Rsparse(Ma⋆
+Fx),x )
+]
+− Ex∼D1 {Y (Ma⋆F x)<ϵ}
+> (2
+3− 1
+3)(J(a⋆,Rdense)−J(a⋆,Rsparse))
+= 1
+3(J(a⋆,Rdense)−J(a⋆,Rsparse))
+> 0.
+Therefore, it is contradicts to the maximum property of Rsparse. Therefore, for
+∀∥a∥1 =T ,
+J(a,Rdense)≤J(a,Rsparse).
+The rest proof is similar to the proof of theorem 1. Let vdense
+π (x, Mt) =
+vdense
+π,Rdense(x, Mt) and vsparse
+π (x, Mt) = vsparse
+π,Rsparse(x, Mt) as defined in theorem 1. We
+define vdense
+π (D, Mt) = Ex∼Dvdense
+π (x, Mt) and vsparse
+π (D, Mt) = Ex∼Dvsparse
+π (x, Mt).
+Indeed, vdense
+π (D, M0) is the objective function of (3.3) and vsparse
+π (D, M0) is the
+objective function of (4.8). We want to prove:
+sup
+π∈C(RN×N,∆N)
+vdense
+π (D, M0)≤ sup
+π∈C(CN×N,∆N)
+vsparse
+π (D, M0).
+For∀ϵ> 0, there exists a sampler πϵ satisfying
+sup
+π∈C(RN×N,∆N)
+vdense
+π (D, M0)−vdense
+πϵ (D, M0)<ϵ.
+Letπ∗
+ϵ∈C(CN×N, ∆N) defined as
+π∗
+ϵ (·| y) =πϵ(·|R ϵ(y)), ∀y∈ CN×N.
+We have the recursion formula for both vdense
+π (x, M0) and vsparse
+π (x, M0):
+vdense
+π (x,Mt) =
+N∑
+at=1
+π(at| xt)·vπ(x, 1 (Mt + Mat)),
+vsparse
+π (x,Mt) =
+N∑
+at=1
+π(at| yt)·vπ,R(x, 1 (Mt + Mat)).
+Since the similarity metric function S is bounded by [0, 1],vπ∈ [0, 1]. Recursively,
+we have
+vdense
+πϵ (D, MT ) = Ex∼DS(Rdense(MT⊙F (x)), x)
+≤ Ex∼D [S(Rsparse(MT⊙F (x)), x)]
+=vsparse
+π∗ϵ
+(D, MT ).

@@ -1,0 +1,65 @@
+and spatial dimensions H × W × D (i.e., Fi ∈ R
+C×H×W×D). The processing
+pipeline consists of three main stages:
+Input normalisation and patchification. To enhance the interpretability of
+the MMAR’s attention weights and stabilise gradient magnitudes across the
+independent modality encoders, we applied group normalisation to the input
+features. This layer was specifically configured with a single group encom￾passing all channels and without any learnable affine parameters. Then, a
+shared 3D convolutional layer—with a kernel size and stride of P × P × P—
+patchifies and projects each input feature Fi
+into an embedding dimension
+E. This operation yields the patch-level features F
+′
+i ∈ R
+E× H
+P × W
+P × D
+P .
+Embedding and transformer processing. Next, we flatten the spatial dimen￾sions of each F
+′
+i
+to create a 1D sequence of tokens, each of length H
+P
+·
+W
+P
+·
+D
+P
+.
+To retain spatial and modality-specific context, we add two learnable embed￾dings to these tokens: a positional embedding (shared across all modalities)
+and a modality embedding (shared across all tokens belonging to the same
+modality). The augmented tokens from all available modalities are then con￾catenated into a single sequence and passed through a series of L transformer
+blocks. Each block consists of multi-head self-attention (MHSA) and a multi￾layer perceptron (MLP). For computational efficiency, we employ windowed
+self-attention, which restricts each token to only attend to tokens within its
+local spatial window across all available modalities.
+Reconstruction and fusion. Following the transformer blocks, the processed
+sequence is reshaped back to its patchified spatial dimensions (E×
+H
+P ×
+W
+P ×
+D
+P
+).
+A 1 × 1 × 1 convolution is then used to project the embedding dimension
+back to the original C channels. We apply trilinear upsampling to these
+features to restore the original input resolution, producing the processed,
+full-resolution saliency features for each modality. We then apply a softmax
+function across the modality dimension to generate attention weight maps,
+denoted as F
+′′
+i ∈ R
+C×H×W×D. The final fused feature representation, F, is
+computed as the element-wise weighted sum of the original input features
+with these weight maps:
+F =
+N
+X−M
+i=1
+F
+′′
+i
+· Fi
+. (1)
+11

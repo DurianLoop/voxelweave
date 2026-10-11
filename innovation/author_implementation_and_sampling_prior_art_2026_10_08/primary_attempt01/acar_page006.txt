@@ -1,0 +1,36 @@
+58 M. Acar et al.
+MR images were created in-house via manual labeling with experts under the
+guidance of a senior radiologist. In all experiments, a composite loss function
+with an 1 − 2 term for the reconstruction task, and a Dice term for the seg￾mentation task [17] is employed with equal weights. Global reconstruction quality
+was assessed by measuring peak signal-to-noise ratio (PSNR), structural simi￾larity index (SSIM) and mean-squared error (MSE) between the reconstructed
+and ground-truth images. Local reconstruction quality was also measured via
+the same metrics, albeit the measurement regions containing the target tissues
+were selected based on the segmentation maps. Local measurements are denoted
+with the ‘F’ (for ‘Focused’) prefix in Table 2.
+Table 1. Performance comparisons of various baselines on cardiac MRI data across ×4
+and ×8 acceleration rates. (S) suffix signifies the stabilization technique. “F” stands
+for focused measurements that are taken over the area of diagnostic interest. Stabilized
+training aids Multi-Decoder Unet and UNet → UNet in focused metrics indicating
+improved reconstruction quality for cardiac cavity.
+Method MSE PSNR SSIM F-PSNR F-MSE F-SSIM
+×4 acceleration
+UNet 1.7693 26.9204 0.6247 25.5002 1.9009 0.5926
+Multi-Decoder UNet 1.9693 26.3084 0.6651 25.3396 2.0209 0.6318
+Multi-Decoder UNet (S) 1.7530 27.1221 0.7082 25.8338 1.7109 0.6735
+UNet → UNet 1.9509 25.4176 0.5227 24.6887 2.5709 0.5488
+UNet → UNet (S) 1.7474 27.0973 0.6729 26.4023 1.8174 0.6475
+×8 acceleration
+UNet 2.2378 25.4062 0.6583 24.3128 2.7243 0.6033
+Multi-Decoder UNet 2.4312 25.1512 0.6532 24.0712 2.9125 0.6219
+Multi-Decoder UNet (S) 2.2441 25.2193 0.6646 24.7312 2.6217 0.6422
+UNet → UNet 3.1743 23.2683 0.5491 23.0352 3.4719 0.5428
+UNet → UNet (S) 2.2782 25.2931 0.6529 24.9023 2.4174 0.6375
+3 Experimental Results
+Figure 2 illustrates reconstructions for a representative test subject at ×4 and 8x
+acceleration along with the fully-sampled ground truth. PSNR, SSIM and MSE
+of all tested methods are presented in Tables 1 and 2 along with the localized
+measurements around the heart. Table 1 underlines the results of the exper￾iments done on the UNet architecture which is taken as a baseline for both
+the reconstruction and segmentation tasks. Additionally Multi-Decoder UNet is
+introduced to the experiments to compare against the segmentation-aware recon￾struction framework. We see that in a stabilized setting, aided by segmentation,
+reconstruction of the diagnostically-relevant areas improve compared to single
+UNet. Multi-Decoder UNet seems to surpass the reconstruction-segmentation

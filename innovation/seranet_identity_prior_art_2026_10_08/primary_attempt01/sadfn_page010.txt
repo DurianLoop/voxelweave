@@ -1,0 +1,39 @@
+10 Fan et al
+4.3 Quantitative Evaluation
+We use peak signal-to-noise ratio (PSNR) and structural similarity index (SSIM)
+[30] for the reconstruction quantitative evaluation. We adopt a 30% 1D Carte￾sian pattern for under-sampling. We compare the proposed SADFN5 with other
+state-of-the-art CS-MRI models including transform learning MRI (TLMRI)
+[12], patch-based nonlocal operator (PANO) [10], graph-based redundant wavelet
+tranform (GBRWT) [11], the Pre-RecNet5 (which is also the state-ot-the-art
+DC-CNN with 5 blocks [4]). For the non-deep CS-MRI methods, we adjust the
+parameters to their best performance. We also compare the proposed SADFN5
+with the the model proposed in [26], where the pre-trained Pre-RecNet5 and Pre￾SegNet are cascaded during fine-tuning and only the parameters in Pre-RecNet5
+are adjusted for optimization. Since no name for the model is provided in the
+original work, we refer the model as Liu [26]. Besides, we compare the proposed
+SADFN model with the model without the guidance of segmentation informa￾tion (SADFN-WOS). For fair comparison, we design the building block of the
+SADFN-WOS network architecture in Table 3. Note the network architecture is
+kept unchanged with the only difference is some feature maps in SADFN come
+from Pre-SegNet while all the features come from the reconstruction network in
+SADFN5-WOS. In the model Pre-RecNet5 and SADFN5-WOS, no segmentation
+label is utilize for training, meaning the corresponding supervision information
+is overlooked.
+Table 3. The parameter setting of a block in the SADFN-WOS model
+Layer Input Filter Size Stride Number of Filters Activation Output
+Conv1 240*240 3*3 1 64 ReLU 240*240*64
+Conv2 240*240*64 1*1 1 32 ReLU 240*240*32
+Conv3 240*240*32 3*3 1 64 ReLU 240*240*64
+Conv4 240*240*64 1*1 1 32 ReLU 240*240*32
+Conv5 240*240*32 3*3 1 64 ReLU 240*240*64
+Conv6 240*240*64 1*1 1 32 ReLU 240*240*32
+Conv7 240*240*32 3*3 1 64 ReLU 240*240*64
+Conv8 240*240*64 1*1 1 32 ReLU 240*240*32
+Conv9 240*240*32 3*3 1 1 Linear 240*240
+Data Fidelity 240*240 N/A N/A N/A N/A 240*240
+We show the objective evaluation indexes in Figure 4. Note the deep-based
+models outperform most non-deep CS-MRI models in reconstruction. We observe
+the proposed SADFN5 model achieves the optimal performance in PSNR and
+SSIM indexes among the compared methods. From the standard deviation of the
+indexes. we note the improvement of the SADFN5 is quite steady for different
+MRI test data. We observe the model Liu [26] brings little improvement in
+objective evaluation indexes compared with the Pre-RecNet5. We also observe
+the SADFN5 model outperforms the comparative SADFN5-WOS around 1dB

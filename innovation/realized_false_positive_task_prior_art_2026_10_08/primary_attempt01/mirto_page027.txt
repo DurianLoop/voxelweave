@@ -1,0 +1,60 @@
+MIRTO 27
+Determinants of detection. For each above-floor lesion we model logitP[hitℓ] = β0 + β1z
+vol
+ℓ + β2z
+con
+ℓ + β3z
+pos
+ℓ + ui(ℓ)
+,
+with standardised log volume, T2 contrast (median T2 in the lesion over median T2 in normal-appearing brain on the
+same slices) and relative through-plane position, and a subject random intercept ui ∼ N (0, σ2
+u
+). Because 472 lesions
+sit in 312 subjects (87 with more than one) and volume nearly separates hits from misses, the random intercept
+is weakly identified; we therefore also fit Firth-penalised logistic regression [27], GEE with exchangeable working
+correlation [42] and a variational-Bayes GLMM, and report the Laplace fit of lme4 [7]. Firth, GEE and variational
+Bayes agree in sign and magnitude (log volume +4.8 to +6.8 per SD for the residual models); the Laplace fit did not
+converge for REFLECT.
+D Further results
+This appendix reports the analyses that support the main text in full. Unless a caption says otherwise, all methods
+were trained on IXI-HH+Guys, the cohort is the 312 test subjects, and intervals are 95% paired subject-bootstrap
+intervals. Analyses computed on the uncorrected geometry are not reported, except in Table 14, where the comparison
+between the two is the point.
+D.1 Registration, geometry and reference
+Table 14 gives the full effect of correcting the cDDPM mapping, including Dice, which the main text summarises.
+Table 15 gives the registration-gate statistics per method; the overlap of each method’s own reference with the
+canonical reference inside the field of view never fell below 0.845, and the centroid error never exceeded 1.07 mm.
+Table 14. cDDPM with the incorrect and the correct mapping (same maps; correct minus incorrect, 312 subjects). Dice rows
+compare each pipeline at its own validation threshold.
+cDDPM (IXI-HH+Guys) quantity Statistic Repaired − pre-repair [95 % CI]
+voxel AUROC mean +0.290 [0.277, 0.302]
+voxel AUROC median +0.293 [0.277, 0.306]
+voxel AUPRC mean +0.535 [0.517, 0.553]
+voxel AUPRC median +0.577 [0.549, 0.599]
+slice-max AUROC mean +0.112 [0.099, 0.125]
+slice-max AUROC median +0.083 [0.072, 0.095]
+Dice, thresholding, 5 cm3
+(correct (τ 0.5) − incorrect (τ 0.875)) mean +0.426 [0.410, 0.441]
+Dice, thresholding, 5 cm3
+(correct (τ 0.5) − incorrect (τ 0.875)) median +0.431 [0.416, 0.455]
+Dice, thresholding, 20 cm3
+(correct (τ 0.375) − incorrect (τ 0.7)) mean +0.520 [0.504, 0.537]
+Dice, thresholding, 20 cm3
+(correct (τ 0.375) − incorrect (τ 0.7)) median +0.547 [0.526, 0.564]
+Table 15. Registration gate per method on 312 test and 24 validation subjects. “Dice in FOV” is the overlap of the method’s
+own reference, mapped to the canonical grid, with the canonical reference inside the field of view; the column for the fixed
+0.95 overlap rule counts the subjects that would pass it.
+Method gate pass (test + validation) Dice in FOV, median [IQR] min centroid error median (mm) max (mm) FOV tumour fraction, median subjects with FOV fraction < 0.95 pass at overlap ≥ 0.95 gate failures (clause)
+REFLECT 336/336 0.966 [0.957, 0.972] 0.890 0.58 1.02 1.000 0 275 none
+UCCD 335/336 0.947 [0.935, 0.957] 0.845 0.85 1.07 1.000 45 93 BraTS20_Training_0044 (iii)
+cDDPM 335/336 0.947 [0.935, 0.957] 0.845 0.85 1.07 1.000 45 93 BraTS20_Training_0044 (iii)
+AnomalyDINO 336/336 0.966 [0.957, 0.972] 0.901 0.59 1.01 1.000 0 273 none
+Table 16 gives the bias of every headline metric under every injected corruption for both verified pipelines, and
+Table 17 gives the power of the rank-stability and anti-location diagnostics. Rank stability detects every geometric
+corruption at n = 30, including through-plane shifts that barely change the metrics, which is why we read it as a
+change detector. The anti-location rate detects the in-plane errors at n = 30 and otherwise reaches a power of 0.95
+only at n = 312, for two AnomalyDINO conditions (50% identifier permutation and doubled reference volume). A 5%
+permutation of subject identifiers is not detectable by either diagnostic at n ≤ 312, and a 20% permutation only by
+rank stability at n = 312. Removing sub-floor reference fragments changed no metric, as expected, since no method
+ever hit one.

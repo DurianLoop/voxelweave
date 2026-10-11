@@ -1,0 +1,204 @@
+MIRTO 19
+IXI-HH
+IXI-Guys
+IXI-HH+Guys
+MOOD+IXI-HH
+MOOD+IXI
+test-selected
+0.2
+0.3
+0.4
+0.5
+Dice
+IXI-HH
+IXI-Guys
+IXI-HH+Guys
+MOOD+IXI-HH
+MOOD+IXI
+test-selected
+0.3
+0.4
+0.5
+0.6
+voxel AUPRC
+IXI-HH
+IXI-Guys
+IXI-HH+Guys
+MOOD+IXI-HH
+MOOD+IXI
+test-selected
+0.4
+0.6
+0.8
+lesion sensitivity
+REFLECT UCCD cDDPM AnomalyDINO
+REFLECT UCCD cDDPM AnomalyDINO
+median slice Dice
+pooled Dice
+median volume Dice
+Dice at 20 cm³
+voxel AUPRC
+Dice at 20 cm³,
+nested threshold
+IXI-HH+Guys
+37%, 0.055
+IXI-Guys
+98%, 0.000
+IXI-HH+Guys
+57%, 0.000
+MOOD+IXI-HH
+27%, 0.013
+MOOD+IXI
+86%, 0.000
+IXI-Guys
+99%, 0.000
+IXI-Guys
+63%, 0.012
+IXI-HH+Guys
+36%, 0.000
+MOOD+IXI
+85%, 0.000
+IXI-Guys
+76%, 0.000
+IXI-Guys
+68%, 0.012
+MOOD+IXI
+16%, 0.005
+MOOD+IXI
+68%, 0.000
+IXI-Guys
+91%, 0.000
+IXI-Guys
+70%, 0.012
+IXI-HH+Guys
+52%, 0.000
+MOOD+IXI
+53%, 0.000
+IXI-Guys
+100%, 0.000
+IXI-HH+Guys
+83%, 0.000
+IXI-HH
+90%, 0.018
+MOOD+IXI
+67%, 0.000
+IXI-Guys
+86%, 0.000
+IXI-Guys
+70%, 0.012
+IXI-HH+Guys
+56%, 0.000
+Fig. 13. Training data. (a) Dice, voxel AUPRC and lesion sensitivity in the reference universe when all four methods share
+one training set (Table 2), and in the test-selected set, in which each method used the training set with its best test Dice. (b)
+Training set chosen on the 24 validation subjects by six selection rules; each cell gives the choice, the share of 104 bootstrap
+resamples that reproduce it (also shown by the shading) and the test Dice lost relative to the best training set.
+0.01 threshold grid used for this study, hence the small
+difference from Table 4), with above-floor sensitivity 0.631
+against 0.606. The retention criterion kept MAD ahead of
+the next-best aggregation in 10 of 16 settings for the IXI￾HH+Guys model, including the primary setting, but in
+only 5 of 16 for the MOOD+IXI model, where it lost the
+primary setting. We therefore claim the family of results
+(latent aggregation helps, latent-only scoring hurts, the
+image stream beats the published fusion), not MAD in
+particular. The hypothesis is thus supported for latent ag￾gregation as a family but not for MAD as a unique choice.
+A family of six rules specified for this experiment could
+not be computed from the stored latents; the family re￾ported here replaces it and is exploratory (Appendix D.9).
+3.11 Summary of hypotheses
+Table 9 collects the verdicts of H1 to H9 under their deci￾sion criteria. Four were supported, four were not, and one
+could be tested only in part. Seven of the eight secondary
+hypotheses held; the one that failed, a positive transfer
+gap for UCCD at 5 cm3
+, failed for the reason given in
+Section 3.3 (Appendix F, Table 63).
+4 Discussion
+The same four models produced different winners in four
+distinct ways. The metric decides whether REFLECT or
+a conditioned diffusion model leads. The aggregation de￾cides it again at a fixed budget, and Identity 2 explains
+the direction. The operating point turns an advantage of
+UCCD over cDDPM that is significant after Holm adjust￾ment into nothing once both are held to the same realised
+burden, and Identity 1 accounts for the whole difference as
+a difference in threshold transfer. And the training data,
+changed in the same way for every method, reverses a
+significant contrast. None of these is exotic. Each corre￾sponds to a decision that a typical UAD paper takes once,
+Table 9. Hypotheses H1 to H9, their decision criteria and
+verdicts (all methods trained on IXI-HH+Guys).
+Hypothesis Decision criterion Verdict; estimate
+H1 ranking
+instability
+a pair flips in ≥ 20% of
+defensible universes (lower
+bound)
+supported;
+ϕmax = 0.472 [0.414,
+0.499]
+H2
+evaluation
+dominance
+evaluation choices explain
+more variance than method,
+pooled over metrics
+supported, driven by
+the metric axis (scale);
+0.614 vs 0.162
+H3
+intensity
+baseline
+T2 within 0.05 Dice of ≥ 1
+model at equal FP
+not supported; closest
++0.098 [0.076, 0.119]
+H4 contrast
+dependence
+detection rises with T2
+contrast and oedema fraction
+in every residual model
+partly testable; not
+supported
+H5 pruning
+trade-off
+pruning helps detection at 5,
+hurts at 40 cm3
+not supported (point
+estimates)
+H6
+test-tuning
+optimism
+test-matched τ overstates
+Dice by ≥ 0.02 at 20 cm3
+(lower bound)
+not supported; cDDPM
++0.0234 [0.0199,
+0.0269], REFLECT
++0.0203 [0.0191,
+0.0216]
+H7
+diagnostic
+power
+rank stability and
+anti-location rate detect
+in-plane errors, power ≥ 0.95
+at n = 60
+supported; power 1.000
+H8
+conformal
+control
+CRC exceedance ≤ α + 0.02
+in all 128 combinations
+supported
+H9
+anatomy
+adjustment
+covariate-only matched AROC
+within 0.50 ± 0.02
+not supported; 0.668
+[0.654, 0.682]
+silently, and reports as though it were not a decision at
+all.
+What each component changes. Registration gating is the
+least visible component and, in this study, the one with
+the largest single effect: an axis-order mismatch cut a dif￾fusion model’s voxel AUROC from 0.873 to 0.583, whilst
+slice-level AUROC, a widely reported detection metric,
+barely changed. Such mismatches are not peculiar to one
+pipeline; three arose in assembling this benchmark, each
+yielding a plausible table. Any evaluation that compares
+methods with different preprocessing must map their out￾puts into a common space, and slice-level scores are in-

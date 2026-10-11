@@ -1,0 +1,32 @@
+2.2. MATHEMATICAL DESCRIPTION
+be required, and parallel imaging might not be sufficient to resolve aliasing. As a result,
+one might use a priori structure in the images to constrain the reconstruction of the
+image and obtain a good quality outcome. This is known as Compressed Sensing (Candès
+et al., 2006; Donoho, 2006), and will be discussed in Chapter 3.
+2.2 Mathematical description
+We close this chapter by introducing the mathematical framework that will be used in
+the sequel. So far, we have described our problem in a continuous fashion, where the
+signal is a function of a continuous timet or k-space location(kx,ky). However, in a
+Cartesian acquisition, the data can be represented on a finite grid as a discrete set of
+values, depending on the total number of readouts. Then, within each readout, samples
+will be recorded at a time interval∆t, and so the resolution of k-space can be described
+as
+∆kx = γ Gx∆t
+∆ky = γ ∆GPEτPE
+Note that in order to guarantee an image without aliasing,∆t and ∆GPE must be
+sufficiently small, and their precise value is dictated by the famous Nyquist-Shannon
+sampling theorem. Assuming a total ofNy phase encoding lines with each continuingNx
+samples, we can represent the signalS(kx,ky) as a matrixS∈ CNx×Ny, which can be
+written in a vectorized forms∈ CP, whereP =Nx·Ny.
+In the Cartesian case, the spin densityρ(x,y ) will be obtained by computing an inverse
+Fourier transform ons. It is common for the resulting image to be described asρ∈ CP,
+with the same dimensions ass. The inversion operation is performed by the inverse
+Fourier transformF−1, applied tos, namely
+ρ =F−1(s). (2.9)
+This operation is often represented as matrix vector multiplication, where the operator
+F−1 isexplicitedastheFFTmatrix F−1, andinaddition, onecanmodeltheimperfections
+in the measurement as additive Gaussian noiseϵ∈ CP, which yields
+ρ =F−1s +ϵ. (2.10)
+Note that in practice, Equation 2.10 is not evaluated explicitly, but rather the inverse
+Fourier transform is directly computed using the Fast Fourier Transform (FFT) algorithm.
+19

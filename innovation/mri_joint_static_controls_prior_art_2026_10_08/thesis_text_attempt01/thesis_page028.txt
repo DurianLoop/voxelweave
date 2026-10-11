@@ -1,0 +1,46 @@
+2.1. MRI PHYSICS
+Readout (R) Gradient.Finally, thex-gradient is first turned on negatively, dephasing
+the phases, followed by a rephasing stage where the observation through the ADC is
+carried out. It is enabled at the strengthGx and for a durationTS. Given the shifted
+variablet′ =t−TE, we have as a result
+S(t′) =
+∫[∫
+ρ(x,y,z 0)e
+−i2π γ GyτPEy
+dy
+]
+e
+−i2π γ Gxt′x
+dx, −TS/2≤t′≤TS/2. (2.6)
+Equation 2.6 is very interesting as one can rewrite the (x, y)-directions as spatial
+frequencies depending ont and τy, namely
+(kx,ky) = ( γ Gxt′, γ GyτPE).
+This in turns enables us to rewrite Equation 2.6 as
+S(kx,ky) =
+∫ ∫
+ρ(x,y,z 0)e−i2π(kxx+kyy)dxdy (2.7)
+which turns out to be the Fourier transform of the spin density. More precisely, the
+signal obtained in the presence of a gradient echo structure in the readout direction after
+its encoding by a fixedGy describes aline in the k-space of the Fourier transform of
+ρ(x). This implies that by acquiring several lines at differentky by varyingGy, we can
+effectively cover the k-space, as illustrated in Figure 2.4. As a result, when the k-space
+has been sufficiently densely covered, the spin-density can be recovered by taking the
+inverse Fourier transform of Equation 2.7, i.e.
+ρ(x,y,z 0) =
+∫ ∫
+S(kx,ky)e+i2π(kxx+kyy)dkxdky (2.8)
+This approach is referred to asCartesian samplingbecause it covers k-space in a grid-like
+fashion, as illustrated on Figure 2.4. Note that there exist different sequences that can
+perform Cartesian sampling, and even more sequences that arenot Cartesian. We refer
+to such approaches as non-Cartesian sampling approaches, and they can include radial
+sampling (Lauterbur, 1973), spiral sampling (Meyer et al., 1992) or even some more
+flexible coverages of k-space (Lazarus et al., 2019).
+Cartesian MRI has the advantage over these methods of enabling the use of the fast
+Fourier transform to compute the inversion of Equation 2.8, which isnot the case for
+non-Cartesian methods. These approaches require some more sophisticated inversion,
+involving gridding (O’sullivan, 1985) and non-uniform Fourier transforms (Fessler and
+Sutton, 2003). The differences are however deeper than merely the inversion technique,
+as radial trajectories are known to be more robust to motion artifacts, while spiral
+acquisitions enable fast imaging but are prone to other artifacts, and Lustig et al. (2008)
+discuss these issues in greater depth.
+15

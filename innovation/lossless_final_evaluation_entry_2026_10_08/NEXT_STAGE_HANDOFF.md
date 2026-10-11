@@ -1,0 +1,13 @@
+# 接续先医学入口，避免继续堆查新
+
+本轮新增有用软件证据：为真实磁盘余量问题另立lossless最终评价V3，不改旧冻结源码；e5978f/8c1855生成成功，V2实际1a864d=1缺experiments路径已保留。V3 e54f9e=0，14合成/56跨reader无损互操作，scientific函数与两个main AST原样（文件路径/序列化除外）。没有重跑网络/FOV合成资格。最大shape结构化9009bytes但随机4720994bytes较原4719940略增，不能外推MRI压缩比或速度。
+
+482af5 probe外层exit0、V3实际独立readiness-only exit3，MR/GT arrays0、CUDAfalse、medical_attempt03不存在；缺原final actual-exit、成功terminal、两last冻结和raw final。原主评价是CPU4/1，不必等GPU空闲；最终source-bound权重/真实退出/资源是前置。今后优先本目录evaluate_final_lossless_v3.py→OBSERVED_EVALUATION_EXIT_V3.json实际来源→verify_final_lossless_v3.py，不重复旧np.savez生产入口或已有synthetic资格。
+
+先poll99542。fe6f95仍live/空输出/无exit，之前a5372d raw7920/new27720/wall64132.80965880002；以POST_ARCHIVE_OBSERVATIONS为最新。CPU两臂各19998/总39996/已绑定30h补充合同不变；GPU用户许可有、c69eea仅free1394MiB，新增GPU8GB未满足。根SHA保持，不控制用户终端/其它PID、不委派代理、不开8确认/lockedIXI、不读中间checkpoint按效果选择。
+
+实际disk8GB储备外115671040bytes，旧56NPZ115567328bytes仅多103712；估计剩history9.73MB+新rawfinal5.62MB，旧入口约差15.25MB且metadata/临时副本未算。运行文件只stat/metadata快照、不冻结hash，不把估算当保证。之后新压缩真实bytes/时间逐例记录并沿原guard；不删历史、不降储备。所有新文件只innovation，已执行/绑定文件不改，修复另存版本。
+
+没有MRI神经/forward、权重/医学数组、head/action label新证据，科学可发表claim仍未達。后续56完整FOV六能力gates+独立strict→三observed臂真实19series费用→冻充分适配→合法action余量→全费/强控制→全冻结后8人确认。原MRI假设和MIRTO强calibration-only/fixedτ/真实FP/完整患者漏检控制保持；lossless是必要工程修复，不替代action科学效应。
+
+归档接前5392和MIRTO上一stage后附五文件。成功后下一stage纳入本目录ARCHIVE_MANIFEST/ARCHIVE_PROOF/record_post_archive.py/POST_ARCHIVE_INPUT/POST_ARCHIVE_OBSERVATIONS共五文件，rolling训练排除，最新数量见proof/post。上一轮为实质progress；本轮实际软件/空间证据也属progress，不是只重复状态。goal active。

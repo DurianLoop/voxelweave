@@ -1,0 +1,53 @@
+4 Qiaoying Huang, Xiao Chen, Dimitris Metaxas, and Mariappan S. Nadar
+bridges the gap between reconstruction and segmentation to facilitate learning
+segmentation-aware features in the image domain. We consider a brain segmen￾tation map as anatomical prior and use it to guide the image reconstruction such
+that the segmentation information is explicitly utilized to extract segmentation￾aware image features from the raw k-space data. We use an attention network
+to facilitate the segmentation-aware learning. Different from the traditional at￾tention mechanism that only considers two classes in one forward pass [6], we
+propose to generate multi-class attention maps simultaneously to distinguish fea￾tures among four classes in the human brain: cerebrospinal fluid (CSF), gray mat￾ter (GM), white matter (WM) and background. After one forward pass through
+the image reconstruction module and the segmentation module, an initial seg￾mentation result is obtained (see Figure 1 part (b)). The segmentation maps
+s ∈ R
+4×w×h have four tissue maps in separate channels, which are concatena￾tion along the first dimension: s = s
+1 ⊕ s
+2 ⊕ s
+3 ⊕ s
+4
+, where s
+i
+indicates the
+i
+th class prediction, ⊕ represents concatenating along the first dimension. The
+segmentation map itself is already a probability map. After a softmax layer σ(·)
+that ensures the sum of the four different classes to be 1, the maps can be
+utilized directly for attention. Each of the four segmentation probability maps
+are element-wise multiplied with the input image features xt−1 ∈ R
+2×w×h
+to
+generate new features xt ∈ R
+8×w×h
+:
+xt = (s
+1
+t−1  xt−1) ⊕ (s
+2
+t−1  xt−1) ⊕ (s
+3
+t−1  xt−1) ⊕ (s
+4
+t−1  xt−1), (1)
+where subscript t represents the t
+th intermediate result (explained in the next
+section). As shown in Figure 1 (c), the new image features xt go through one
+Reg block for attention features (referred as AttReg) and one DC layer, in order
+to extract image features. The difference between AttReg and Reg in the recon￾struction module is the input channel size: AttReg has 8 instead of 2 channels.
+The output of the attention-assisted image feature extraction is then fed to the
+same segmentation module with shared weights to generate a new segmentation
+estimation st. Formally, st can be expressed as follows.
+st = (fSeg ◦ fDC ◦ fAttReg)(xt), (2)
+where ◦ denotes function composition and st is the new segmentation estima￾tion. By explicitly utilizing intermediate segmentation results for reconstruction,
+or more precisely image feature extraction, segmentation-driven features will be
+generated, which in turn improves segmentation performance during training
+with back-propagation algorithm. It can be seen from Figure 3 that clear bound￾aries are generated using the proposed SERANet from under-sampled k-space
+data, while the ground truth reconstruction from fully-sampled k-space data
+contains noise.
+2.3 Recurrent framework
+We treat segmentation feature learning as a recurrent procedures that final re￾sult is achieved by iterating the attention module several times. Formally, given

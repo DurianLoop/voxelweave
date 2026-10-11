@@ -1,0 +1,103 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+Transition function. To reduce the computation cost, we
+deﬁne the transition function p to involvem iterations of
+the optimization. At each time step, the agent thus needs to
+decide the internal parameters form iterates. We setm = 5
+and the max time stepN = 6 in our algorithm, leading to
+30 iterations of the optimization at most.
+Reward function. To take both image recovery perfor-
+mance and runtime efﬁciency into account, we deﬁne the
+reward function as
+r(st,at) = ζ(p(st,at))−ζ(st)−η. (10)
+The ﬁrst term,ζ(p(st,at))−ζ(st), denotes the PSNR incre-
+ment made by the policy, whereζ(st) denotes the PSNR of
+the recovered image at stept. A higher reward is acquired
+if the policy leads to higher performance gain in terms of
+PSNR. The second term, η, implies penalizing the policy
+as it does not select to terminate at stept, whereη sets the
+degree of penalty. A negative reward is given if the PSNR
+gain does not exceed the degree of penalty, thereby encour-
+aging the policy to early stop the iteration with diminished
+return. We setη = 0.05 in our algorithm2.
+3.3. RL-based policy learning
+In this section, we present a mixed model-free and model-
+based RL algorithm to learn the policy. Speciﬁcally, model-
+free RL (agnostic to the environment dynamics) is used
+to train π1, while model-based RL is utilized to optimize
+π2 to make full use of the environment model 3. We ap-
+ply the actor-critic framework (Sutton et al., 2000), that
+uses a policy networkπθ(at|st) (actor) and a value network
+Vπ
+φ (st) (critic) to formulate the policy and the state-value
+function respectively. For convenience, we follow (Huang
+et al., 2019) that uses residual structures similar to ResNet-
+18 (He et al., 2016) as the feature extractor in the policy
+and value networks, followed by fully-connected layers and
+activation functions to produce desired outputs4. The policy
+and the value networks are learned in an interleaved man-
+ner. For each gradient step, we optimize the value network
+parametersφ by minimizing
+Lφ = Es∼B,a∼πθ(s)
+[ 1
+2 (r(s,a ) +γV π
+ˆφ (p(s,a ))−Vπ
+φ (s))2
+]
+,
+(11)
+where B is the distribution of previously sampled states,
+practically implemented by a state buffer. This partly serves
+as a role of the experience replay mechanism (Lin, 1992),
+which is observed to ”smooth” the training data distribution
+2The choice of the hyperparametersm,N andη is discussed
+in the suppl. material.
+3π2 can also be optimized in a model-free manner. The com-
+parison can be found in the Section 4.2.
+4Details of networks are given in the suppl. material.
+Table 1. Comparisons of different CNN-based denoisers: we show
+the results of (1) Gaussian denoising performance (PSNR) un-
+der noise level σ = 50 ; (2) the CS-MRI performance (PSNR)
+when plugged into the PnP-ADMM; (3) the GPU runtime (ms) of
+denoisers when processing an image with size 256 × 256.
+Performance DnCNN MemNet UNet
+DENOISING PERF. 27.18 27.32 27.40
+PNP P ERF. 25.43 25.67 25.76
+TIMES 8.09 64.65 5.65
+(Mnih et al., 2013). The update makes use of a target value
+networkVπ
+ˆφ , where ˆφ is the exponentially moving average
+of the value network weights and has been shown to stabilize
+training (Mnih et al., 2015).
+The policy network has two sub-policies, which employs
+shared convolutional layers to extract image features, fol-
+lowed by two separated groups of fully-connected layers
+to produce termination probabilityπ1(·|s) (after softmax)
+or denoising strength/penalty parameters π2(s) (after sig-
+moid). We denote the parameters of the sub-polices as θ1
+andθ2 respectively, and we seek to optimize θ = (θ1,θ 2)
+so that the objectiveJ(πθ) is maximized. The policy net-
+work is trained using policy gradient methods (Peters &
+Schaal, 2006). The gradient of θ1 is estimated by a likeli-
+hood estimator in a model-free manner, while the gradient
+ofθ2 is estimated relying on backpropagation via environ-
+ment dynamics in a model-based manner. Speciﬁcally, for
+discrete terminal time decision π1, we apply the policy
+gradient theorem (Sutton et al., 2000) to obtain unbiased
+Monte Carlo estimate of ▽θ1J(πθ) using advantage func-
+tionAπ(s,a ) = Qπ(s,a )−Vπ(s) as target, i.e.,
+▽θ1J(πθ) =Es∼B,a∼πθ(s) [▽θ1 logπ1(a1|s)Aπ(s,a )].
+(12)
+For continuous denoising strength and penalty parameter
+selection π2, we utilize the deterministic policy gradient
+theorem (Silver et al., 2014) to formulate its gradient, i.e.,
+▽θ2J(πθ) =Es∼B,a∼πθ(s) [▽a2Qπ(s,a )▽θ2π2(s)],
+(13)
+where we approximate the action-value function Qπ(s,a )
+byr(s,a ) +γV π
+φ (p(s,a )) given its unfolded deﬁnition.
+Using the chain rule, we can directly obtain the gradient of
+θ2 by backpropagation via the reward function, the value
+network and the transition function, in contrast to relying on
+the gradient backpropagated from only the learned action-
+value function in the model-free DDPG algorithm (Lillicrap
+et al., 2016).

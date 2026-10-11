@@ -1,0 +1,79 @@
+in (3) is known. Following section 5.2, the reconstruction step can be seen as a decision rule
+in a statistical estimation problem deﬁned by the statistical model
+(
+(Y, SY ),{M(x)}x∈X
+)
+,
+decision space (X, SX), and loss 𝓁X : X×X→ R. Given a prior π0∈ PX allows us to deﬁne
+a reconstruction method as a non-randomized decision rule that minimizes theπ0-average risk
+(Bayes risk), i.e., as a mapping that solves
+(16) ˆA
+†
+∈ arg min
+A†∈M (Y,X)
+{
+Eπ0⊗M(x)
+[
+𝓁X
+(
+x,A†(y)
+)]}
+where (x, y)∼π0⊗M (x).
+Likewise, following section 6.1 a task becomes a decision rule in a statistical estimation problem
+deﬁned by the statistical model
+(
+(X, SX),{Pz}z∈∆
+)
+, decision space (D, SD), and loss given by
+(9) with known τ :∆→ D (feature extraction map) and 𝓁D : D×D→ R (decision distance).
+Given a task prior η0∈ P∆, the non-randomized decision rule representing the task (task
+operator) can be seen as a minimizer to the η0-average risk (Bayes risk):
+(17) ˆT ∈ arg min
+T∈M (X,D)
+{
+Eη0⊗Pz
+[
+𝓁D
+(
+τ(z),T(x)
+)]}
+where
+(
+z, x
+)
+∼η0⊗ Pz.
+We now have the following three approaches to task adapted reconstruction.
+Sequential approach: A sequential approach starts with determining the reconstruction
+operator, and then uses it to deﬁne the the task operator. It is based on assuming
+that statistical assumptions for ( z, x)∼η0⊗ Pz and (x, y)∼π0⊗M (x) are consistent,
+e.g., by assuming that Pz is the push forward of M(x) through the reconstruction
+operator2. The task adapted reconstruction is then given as
+(18) ˆT ◦ˆA
+†
+: Y →D
+where ˆA
+†
+∈ M (Y,X ) solves (16) and ˆT ∈M (X,D ) solves (17).
+End-to-end approach: The fully end-to-end approach ignores the distinction between re-
+construction and the task. Assuming ( z, y)∼ν for some measure ν∈ P∆×Y , the task
+adapted reconstruction is here given as ˆB : Y →D that solves
+(19) ˆB∈ arg min
+B∈M (Y,D)
+{
+Eη0⊗Pz
+[
+𝓁D
+(
+τ(z),B(y)
+)]}
+where (z, x)∼ν.
+Joint approach: The joint approach is a middle-way between the sequential and end-to-end
+approaches. It is based on assuming that there is a joint law ( z, x, y)∼ σ, which by
+the chain rule in probability can be written in terms of conditional probabilities:
+dσ(z,x,y ) = dπ(y|z,x ) dπ(x|z) dπ(z).
+Assume that x is a suﬃcient statistic for y, i.e., d π(y|z,x ) = dπ(y|x). Combined
+with (z, x)∼η0⊗ Pz and (x, y)∼π0⊗M (x), we obtain
+dσ(z,x,y ) = dM(x)(y) dPz(x) dη0(z).
+2One may here consider alternate assumptions, like assuming that π0∈ PX can be obtained by marginal-
+izing the measure η0⊗ Pz over∆ using η0∈ P∆.
+16

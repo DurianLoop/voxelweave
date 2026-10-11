@@ -1,0 +1,49 @@
+4.6. FORMALIZING LEARNING-BASED, DATA-DRIVEN MASK
+DESIGN
+tackle Problem 4.5 as asequential problem, starting from some initial maskω0, and
+gradually growing the mask until the sampling budgetN is exhausted. On the contrary,
+continuous approaches choose to directly optimize the mask at the maximal sampling
+budget N, a setting which we refer asfixed sampling.
+4.6.2 Adaptive sampling masks
+In contrast to Equation 4.5, adaptive sampling generally relies on a two-step procedure,
+where one must first train apolicy model πϕ, and subsequently evaluate it on testing
+data. The problem of training the policy reads
+max
+ϕ
+1
+m
+m∑
+i=1
+η(xi,fθ(yωT,i)), where
+
+
+
+ωt =ωt−1∪vt
+vt∼πϕ(fθ(yωt−1))
+|ωt|≤ N
+t = 1,...,T. (4.6)
+Here, T describes the number of acquisition rounds that the policy does. While the
+problem may look similar to Problem 4.5, there aretwo fundamental differences to be
+noted. First, the optimization here is on theparametersϕ of the policy model, rather
+than on the mask itself. Secondly, the problem is inherently sequential, as the mask
+is gradually built from atomsvt, t = 1,...,T that are all given from the policyπϕ at
+different stages in the acquisition.
+Solving the problem remains challenging, as gradient-based optimization ofϕ remains
+challenging, due to the sampling operationvt ∼ πϕ((fθ(yωt−1)) preventing a direct
+computation of the gradients. As a result, two main approaches can be found to tackle
+this problem, relying either again on relaxing the mask to a continuous variable (Van Gorp
+et al., 2021; Yin et al., 2021), or leveraging reinforcement learning (Bakker et al., 2020;
+Pineda et al., 2020; Jin et al., 2019), which is naturally suited to consider the problem of
+searching the policy that yields the best performance given a changing environment. In
+our case, the environment is described by the unknown underlying ground truth.
+The second stage of adaptive sampling is theinference step, where the trained policyπϕ
+is then used to guide the acquisition of an unseen imagextest:
+vt+1∈ arg max
+v∈[P ]
+[πϕ(fθ(yωt,test))]v (4.7)
+where [·]v denotes thev-th entry of the vector,ωt = ωt−1∪vt, for t = 1,...,T . At
+inference time, we see that the test image is gradually sampled at the locationsvt provided
+by the policy and based on the reconstruction at the previous step.
+Remark (Using heuristics). The inference of Equation 4.7 is not restricted to
+policies trained following Equation 4.6, but can be paired with different heuristics.
+41

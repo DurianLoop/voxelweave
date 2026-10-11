@@ -1,0 +1,36 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+(2020) standardized their data and then clamped them to have standardized data in the
+range [−6, 6].
+We found that standardization used by Bakker et al. (2020) was necessary only when
+paired with non-residual models, which tracks with observations in the literature that
+residual networks can work without normalization, although usually this is studied for
+network internal normalization which we also leverage (see e.g. Zhang et al. (2019a)
+which removes normalization entirely by using a proper initialization).
+The results of Appendix A.2.1 illustrate the impact of postprocessing.
+Caveat #2.Normalization should occur consistently between ground truth and obser-
+vation data, as failing to do this can lead to inconsistent values in the reconstruction,
+especially in parts where data consistency occurs. In Bakker et al. (2020), the
+authors normalize observations and ground truth using their respective statistics
+and denormalize the reconstructed image using theground truthstatistics, which is
+not compatible with the use of data consistency in the reconstructor. If one wishes
+to get a realistic estimate of the performance at deployment, it is also advisable to
+use only statistics available at test time (i.e. observation statistics, not ground truth
+statistics).
+Evaluation metrics∗. Finally, to judge the results, the most common metrics are peak
+signal-to-noise ratio (PSNR), mean squared error (MSE) and structural similarity index
+metric (SSIM).
+All metrics tend to promote smooth images when used as a training loss (Muckley et al.,
+2021), but it is widely known that MSE and PSNR focus on low-frequencies/high-energy
+components, which was also noted by Bakker et al. (2020). However, while MSE and
+PSNR only operate on image differences and treats every pixel independently, SSIM is
+computed from local averages (Wang et al., 2004; Zbontar et al., 2019).
+The metric is then reported as a curve plotted against sampling rate (Zhang et al., 2019b),
+its reciprocal, the acceleration rate (Pineda et al., 2020) or aggregated by computing
+the average performance, the performance at end of sampling, or the area under curve
+(AUC).
+As discussed throughout the experiments, the choice of metric and its aggregation can
+greatly impact the conclusions drawn from results.
+Remark (Area under curve (AUC) computation). We detail here the computation
+used to summarize performance curves with the AUC, used in Tables 6.3 and 6.4.
+92

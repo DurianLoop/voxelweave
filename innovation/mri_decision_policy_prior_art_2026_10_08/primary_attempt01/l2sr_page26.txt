@@ -1,0 +1,70 @@
+Learning to Sample and Reconstruct for Accelerated MRI 26
+(The inequality is because J(a,Rdense)≤J(a,Rsparse) where we set MT = 1· aT )
+vdense
+πϵ (D, MT−1)
+= Ex∼D
+n∑
+aT−1=1
+πϵ(at| xT−1)·vdense
+πϵ (x, 1 (MT−1 + MaT−1))
+= Ex∼D
+n∑
+aT−1=1
+π∗
+ϵ (at| yT−1)·vdense
+πϵ (x, 1 (MT−1 + MaT−1))
+≤ Ex∼D
+n∑
+at=1
+π∗
+ϵ (at| yT−1)· [vsparse
+π∗ϵ
+(x, 1 (MT−1 + MaT−1))]
+= vsparse
+π∗ϵ
+(D, MT−1),
+···
+Finally, we have
+vdense
+πϵ (D, M0)≤vsparse
+π∗ϵ
+(D, M0),
+which means that for ∀ϵ, there exists a pair of π∗
+ϵ ∈ C(CN×N, ∆N) and Rϵ ∈
+C(CN×N, RN×N) satisfying
+sup
+π∈C(RN×N,∆N)
+vdense
+π,R (D, M0)<v π∗ϵ (D, M0) +ϵ.
+Because of the arbitrariness of ϵ, the statement holds!
+□
+Remark. We briefly show a counter-example of theorem 2 without the first
+assumption that ’ πh
+T+∥M0∥∞
+(a) > 0 for all binary column vectors a satisfying
+∥a∥1 = T +∥M0∥∞’ . Similarly, we let M0 = 0. Suppose that there exists a⋆ that
+∥a⋆∥1 =T which satisfies πT (a⋆) = 0. Let dataset D ={x}, where Ma⋆
+⊙F (x)̸= 0
+and M1−a⋆
+⊙F (x)> 0. Then, letRsparse be the solution of the optimization problem
+(4.9). Moreover, let Rdense(Ma⋆
+⊙F (x)) = x andRsparse(Ma⋆
+⊙F (x)) = 0. The
+construction in the above proof guarantees the continuity of the two reconstructors.
+Therefore, thatπdense = a⋆ leads to the fact thatRdense can do reconstructs perfectly,
+whileRsparse can not.
+Appendix B.3. Proof of proposition 1
+Our proof mainly utilizes the fact that taking the derivative and taking the expectation
+can be interchanged.
+Proof Here we consider the sparse-reward POMDP.
+∇θRJ sparse
+T (x) =∇θR E{at}T−1
+t=0∼π [S(R(yT ;θR), x]
+= E{at}T−1
+t=0∼π [∇θRS(R(yT ;θR), x].
+The second equality arises from interchanging the differentiation and expectation order.
+This process is justified as: firstly, the differentiation concerning θR isπ-independent;
+secondly, π represents a discrete distribution, making the expectation equivalent to a
+finite sum. These conditions enable the application of the Dominated Convergence
+Theorem, sanctioning our operation switch, hence confirming the second equality.
+□

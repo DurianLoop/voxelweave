@@ -1,0 +1,59 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+Remark. In this work, we mainly focused on small scale datasets with a large set of
+candidate sampling locations. Our experiments therefore are carried out using SG-v1
+and SG-v2. We did not observe any significant performance difference between these
+variants of sLBCS.
+However, we note that G-v2 might be of interest in deep-learning based settings,
+where one deals with large datasets, such as fastMRI (Zbontar et al., 2019). This
+will be further discussed in Section 5.4.5.
+5.4.2 Comparison of greedy algorithms
+We first evaluate SG-v1 and SG-v2 against G-v1 to establish how sensitive our proposed
+method is to its parametersk and l. We carry out this experiment on the cardiac data,
+and report only the results on KTF, although similar trends can be observed with other
+reconstruction algorithms.
+0.05 0.15 0.25
+28
+31
+34
+37
+40
+Sampling rate
+PSNR
+k = 5
+k = 10
+k = 20
+k = 38
+k = 76
+k = 152
+G-v1
+Figure 5.3: PSNR as a function of the rate
+for KTF, comparing the effect of the batch
+size on the quality of the reconstruction for
+SG-v1. The result is averaged on4 testing
+images of size152× 152× 17.
+Influence of the batch sizek on the mask
+design. Wefirstdiscussthetuningofthebatch
+size used in SG-v1, to specifically study the ef-
+fect of different batch sizes. Figure 5.3 provides
+quantitative results of the performance, while
+Figure 5.4 shows the shapes of the masks ob-
+tained with various batch sizes. Unsurprisingly,
+small batch sizes yield poor results, as this al-
+gorithm has to choose from a very small set
+of randomly sampled candidates, being likely
+to miss out on important frequencies, such as
+the center ones. It is interesting to see how-
+ever that the PSNR reaches the result from
+G-v1 with as few as 38 samples (out of the152
+candidates of a frame, and152× 17 = 2584
+candidates overall).
+In some cases, such ask = 38, SG-v1 can even
+yield animproved performance over G-v1, with60 times less computation that G-v1. We
+hypothesize that it is due to the noise introduced by sLBCS allowing to avoid suboptimal
+configurations encountered by G-v1. Note that this might not be expected if the problem
+was to be exactly submodular, but this isnot the case in practice.
+Focusing on Figure 5.4, one can make several observations. First of all, as expected,
+taking a batch size of1 yields a totally random mask, and taking a batch size of5 yields
+a mask that is more centered towards low frequency than the one withk = 1 but it still
+58

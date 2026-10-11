@@ -1,0 +1,61 @@
+APPENDIX A. APPENDIX FOR CHAPTER 6
+A.4 LBCS complexity and parameters
+Table A.8 summarizes the hyperparameters for sLBCS used and Table A.7 gives an
+overview of the computational complexity.
+As we previously discussed, sLBCS is almost completely parallelizable, which leads to
+the stark runtime differences noted in Appendix A.1. As can be seen when comparing
+Figure 6.3 and Figure A.4, once a certain data batch sizel and sampling candidate set
+cardinalityk is reached, LBCS performance saturates, although it continues to benefit
+especially in the low sampling regime. This means that one could very feasibly reducel
+for the comparison with Bakker et al. (2020), we attempted to use a larger batchsize to
+explore what would be the result of scaling sLBCS up.
+Method Forward Backward Total
+(Bakker et al., 2020) q(8)E(50)B(16)H(nr +np) = 6′400H(nr +np) 6400 Hnp 6′400H(nr + 2np)
+LBCS for Bakker et al. (2020) n(H)k(128)l(256)nr = 32′768Hnr 0 32′768Hnr
+(Pineda et al., 2020) 5e6(nr +np) 5 e6(np) 5 e6(nr + 2np)
+LBCS for Pineda et al. (2020) n(100)k(64)l(20)nr = 128e3nr 0 128e3nr
+Table A.7: Approximate computational cost of the compared methods. Note that at test time,
+LBCS is basically free while the RL policies will still need to be deployed.nr,n p are the parameter
+counts of the reconstruction and sampling policies respectively
+Setting Num. lines Max. cardinality Candidate Data batch
+|S| N set sizek size l
+Short horizon(Bakker et al., 2020) 128 16 128 256
+Long horizon (Bakker et al., 2020) 128 28 128 256
+(Pineda et al., 2020) 332 100 64 20
+(Pineda et al., 2020) "big" 332 48 200 256
+Table A.8: The hyperparameters used for the stochastic LBCS masks throughout comparisons
+0.02 0.04 0.06 0.08 0.10
+Sampling rate
+22
+23
+24
+25
+26
+27
+28
+29PSNR
+LBCS (MSE)
+LBCS big (MSE)
+DS DDQN
+SS DDQN
+Oracle
+(a) PSNR vs sampling rate
+0.02 0.04 0.06 0.08 0.10
+Sampling rate
+0.425
+0.450
+0.475
+0.500
+0.525
+0.550
+0.575
+0.600SSIM
+LBCS (MSE)
+LBCS big (MSE)
+DS DDQN
+SS DDQN
+Oracle (b) SSIM vs sampling rate
+Figure A.4: PSNR and SSIM of LBCS with larger batch size (LBCS - big) trained on MSE,
+zoomed to the region where the smaller batch size LBCS underperformed. Note that it fully
+matches or outperforms both versions of DDQN on PSNR.
+142

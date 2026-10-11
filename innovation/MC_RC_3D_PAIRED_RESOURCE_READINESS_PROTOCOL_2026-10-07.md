@@ -1,0 +1,14 @@
+# 后续真实资源试验的只读资格入口
+
+本轮不启动真实MRI训练，新增readiness入口会在缺条件时返回exit3，仅保存元数据检查结果。它不读取MRI observed/native/GT、不加载live MRI checkpoint、不初始化CUDA。此入口不代替未来真实fullPATCH资源资格或独立正式两臂训练。
+
+依据既有最后评价合同及本轮新的采样/FOV合同，准备以下必需条件：
+
+1. 原两臂共同训练两last19998文件存在，invocation02 successful terminal status、formal_final_budget_completed和all_last_weights_frozen均真；原final-exit receipt记录实际tool exit0、39996、结果SHA。
+2. 原56FOV主评价complete/errors=[]/statuscompleted/prediction_files56、actual evaluation exit0及SHA，native/PCHIP两臂19development/9validation、完整validation6项判据全通过。
+3. 原56FOV独立结果complete/errors=[]/numerical_failures=[]、56全预测/指标核验、all_strict_numeric_gates_passed。当前原协议没有定义独立verifier退出receipt名称；本新增接续协议把它定为 `SESSION_OBSERVED_EXITS_19SERIES_COMMON_INIT_FINAL_VERIFIER_2026-10-07.json`，字段verifier_observed_tool_exit=0、verifier_result_file、verifier_result_sha256。只有未来工具真实返回exit0后才写，不能现在预造。
+4. 本轮paired sampling/FOV主资格实际exit0及来源SHA不变，24draw/2arm/6合成更新完整；dense/direct真实用相同draw/target/mask，FOV8tile均全覆盖0阈值差。坐标诊断实际exit0并通过float32解释器/float64坐标核验；并列保留ideal-coordinates absolute gate（direct仍false），它不覆盖或修改第3项的一通道原strict判据。
+
+工具入口 `experiments/check_mc_rc_3d_paired_resource_readiness_2026_10_07.py --output experiments/mc_rc_3d_paired_resource_readiness_2026_10_07/attempt01.json`；output只能在innovation，新文件不覆盖旧版本。结果会区分missing文件、明确failed gate、SHA不符及真实exit证据，不根据live JSON的complete去猜终端退出。
+
+真实资源试验将在全部条件满足后另立执行配方。GPU仍需新试验的8GB available startup及4GB运行余量/≤2.5GB reserved资格；仅查询GPU总量，不控制用户PID。既有CPU observed loader在**本进程**import时设CUDA_VISIBLE_DEVICES=-1，原GPU pilot在资源合格后仅对自身process设为0；未来GPU新入口需沿这一已知顺序，不能只看torch.cuda.is_available假阴性就断言GPU硬件不存在，也不能对正在进行的CPU训练进程改环境/设备。

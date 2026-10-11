@@ -1,0 +1,305 @@
+[TITLE] Uncertainty Quantification in Deep MRI Reconstruction
+
+[ABSTRACT] Reliable MRI is crucial for accurate interpretation in therapeutic and diagnostic tasks. However, undersampling during MRI acquisition as well as the overparameterized and nontransparent nature of deep learning (DL) leaves substantial uncertainty about the accuracy of DL reconstruction. With this in mind, this study aims to quantify the uncertainty in image recovery with DL models. To this end, we first leverage variational autoencoders (VAEs) to develop a probabilistic reconstruction scheme that maps out (low-quality) short scans with aliasing artifacts to the diagnostic-quality ones. The VAE encodes the acquisition uncertainty in a latent code and naturally offers a posterior of the image from which one can generate pixel variance maps using Monte-Carlo sampling. Accurately predicting risk requires knowledge of the bias as well, for which we leverage Stein’s Unbiased Risk Estimator (SURE) as a proxy for mean-squared-error (MSE). A range of empirical experiments is performed for Knee MRI reconstruction under different training losses (adversarial and pixel-wise) and unrolled recurrent network architectures. Our key observations indicate that: 1) adversarial losses introduce more uncertainty; and 2) recurrent unrolled nets reduce the prediction uncertainty and risk.
+
+[INTRO] Introduction
+
+[INTRO] ARTIFICIAL intelligence (AI) has introduced a paradigm shift in medical image reconstruction in the last few years, offering significant improvements in speed and image quality,,,,,. However, the prevailing methods for image reconstruction leverage historical patient data to train deep neural networks, and then use these models on new unseen patient data. This practice raises concerns about generalization, given that predictions can be biased towards the previously-seen training data, and consequently may struggle to detect novel pathological details in the test subjects. This is deeply problematic for both patients and physicians and can potentially alter diagnoses. It is thus crucial to ensure that reconstructions are accurate for new and unseen subjects. This well motivates developing effective and automated risk assessment tools for monitoring image reconstruction algorithms as a part of the imaging pipeline (see the clinical workflow in Fig. 1).
+
+[INTRO] Despite the importance of assessing risk in medical image reconstruction, little work has explored the robustness of deep learning (DL) architectures in inverse problems. Not only is the introduction of image artifacts fairly common using such models, but there do not currently exist suitable and generalized empirical methods that enable the quantification of model uncertainty. While other forms of uncertainty, such as those pertaining to the training data and acquisition model, are also important to consider, model uncertainty is especially critical to understand because it explains the unique challenges that DL models can face relative to more traditional techniques for MRI reconstruction.
+
+[INTRO] Given the pernicious effects that the presence of image artifacts can have, reliable uncertainty quantification methods could have utility both as an evaluation metric and as a way of gaining interpretability regarding risk factors for a given model and dataset. In principle, a radiologist could consider a combination of uncertainty heat maps and and the scan being analyzed to make better informed interpretations overall. Additionally, uncertainty information could be leveraged in real time to inform the optimal measurements to acquire during scanning, or alternatively, separate models could be applied in a targeted fashion to enhance quality in specific regions of the image.
+
+[INTRO] To help realize these possibilities, this work introduces procedures that can provide insights into the model robustness of DL MR reconstruction schemes. In doing so, we develop a variational autoencoder (VAE) model for MR image recovery, which is notable for its low error and probabilistic nature which is well-suited to an exploration of model uncertainty. We first generate admissible reconstructions under an array of different model conditions. We then utilize Monte-Carlo sampling methods to better understand the variations and errors in the output image distribution under various model settings. Finally, because accurately assessing bias and error with the Monte Carlo approach requires access to the true (fully-sampled) image, we leverage the Stein’s Unbiased Risk Estimator (SURE) analysis of the DL model, which serves as a surrogate for mean squared error (MSE) even when the ground truth is unknown.
+
+[INTRO] Empirical evaluations are performed on real-world medical MR image data, considering the single coil acquisition model. Our key observations include: 1) using an adversarial loss function introduces more pixel uncertainty than a standard pixel-wise loss, while better recovering the high-frequencies; 2) a cascaded network architecture better leverages the physical constraint of the problem and results in higher confidence reconstructions 3) SURE effectively approximates MSE and serves as a valuable tool for assessing risk when the ground truth reconstruction (i.e. fully sampled image) is unavailable.
+
+[INTRO] A novel VAE scheme for learning inverse maps that produces pixel uncertainty maps
+
+[INTRO] Quantifying risk using SURE by taking into account the end-to-end network Jacobian
+
+[INTRO] Evaluations and statistical analysis of uncertainty for various network architectures and training losses.
+
+[INTRO] The major contributions of this paper are:
+
+[INTRO] The rest of this paper is organized as follows: Section II reviews relevant literature. Section III introduces the preliminaries on neural recovery algorithms and states the problem. Section IV details the VAE architecture. Section V explains the Monte Carlo and SURE approaches to quantifying uncertainty, including a density compensation step that makes the use of SURE more practical. Empirical evaluations are then reported in Section VI, and Section VII discusses the conclusions and future directions.
+
+[INTRO] Related work
+
+[INTRO] Medical image reconstruction methods rooted in deep learning have been widely explored. Of the various model architectures that have been used, adversarial approaches based on generative adversarial networks (GANs) are notable for high reconstruction image quality and the ability to realistically model image details. The generator function for these types of architectures is usually a U-net or ResNet,.
+
+[INTRO] Variational autoencoders (VAEs) have achieved high performance in generating natural images, while also providing probabilistic interpretability of the generation process,. However, this approach has not yet been demonstrated in the realm of medical images.
+
+[INTRO] Meanwhile, a small but growing body of work has examined uncertainty in general computer vision problems. Specifically, measurements of uncertainty have been computed by finding the mean and point-wise standard deviation of test images using Monte Carlo sampling with probabilistic models. With such a method, comparing the mean intensities of regions containing an artifact and the surrounding area over several cases can provide statistical insights into the types of errors made by the model. Approximate Bayesian inference based approaches have also been introduced as a way of quantifying model uncertainty. The downside of these methods is that they are only applicable to probabilistic models and not deterministic ones.
+
+[INTRO] Other studies have explored using invertible neural networks to learn the complete posterior of system parameters,. Through bootstrapping, point estimate uncertainty can be obtained statistically and analyzed in a manner similar to posterior sampling. Models such as convolutional neural networks (CNNs) have also been applied on MRI reconstructions to obtain global uncertainty scores, though these models can introduce their own uncertainty and may themselves suffer from challenges with robustness.
+
+[INTRO] Uncertainty has also been analyzed from the standpoint of data rather than variance introduced by generative models in the context of medical imaging. Techniques such as the bootstrap and jackknife can be used on the sampled input data to produce accurate error maps that provide insight into the most risky ROIs in terms of reconstructions without having access to the ground truth.
+
+[INTRO] Stein’s Unbiased Risk Estimator (SURE), which this paper explores as a measure of uncertainty, has also seen some use in imaging applications. Specifically, SURE has been utilized in regularization and for image denoising, where it is explicitly minimized during the optimization step,. However, it has not been widely used in uncertainty estimation or in the context of medical imaging.
+
+[INTRO] Given that most existing approaches of quantifying uncertainty do not apply broadly or are constrained by the chosen models, developing straightforward and effective techniques is very important. Such methods have the potential to enable holistic comparison and evaluation of model architectures across a range of problems, leading to increased robustness in sensitive domains.
+
+[INTRO] Preliminaries and Problem Statement
+
+[INTRO] One key application of inverse problems is to Magnetic Resonance Imaging (MRI), where significant undersampling is typically employed to accelerate acquisition, leading to challenging image recovery problems. As a result, the development of accurate and rapid MRI reconstruction methods could enable powerful applications like diagnostic-guided surgery or cost-effective pediatric scanning without anesthesia,.
+
+[INTRO] In MR imaging, the goal is to recover the true image  from undersampled k-space measurements  with m ≤ n that admit  Here, Φ in general includes the acquisition model with the sampling mask Ω, the Fourier operator F, as well as coil sensitivities (in the multi-coil setting). The noise term v also accounts for measurement noise and unmodeled dynamics.
+
+[INTRO] Given the ill-posed nature of this problem, it is necessary to incorporate prior information to obtain high-quality reconstructions. This prior spans across a manifold of realistic images . However, since not all points on this manifold are consistent with the measurements, we must consider the intersection of the prior manifold  with a data consistent subspace  (as shown in Fig. 2). Note that there might be multiple admissible solutions x0, x1, … , xn at the intersection with different likelihoods.
+
+[INTRO] While DL models can be effectively used for learning the projection onto the intersection , performance can be limited when seeing new data unlike the training examples. In particular, one risk is the introduction of realistic artifacts, or so-termed “hallucinations,” which can prove costly in a domain as sensitive as medical imaging by misleading radiologists and resulting in incorrect diagnoses,. Hence, analyzing the uncertainty and robustness of DL techniques in MR imaging is essential.
+
+[INTRO] Thus, the objective of this work is to learn a projection onto the intersection between the real image manifold  and the data consistent subspace  using a DL model, and then evaluate the uncertainty of the model in producing these reconstructions.
+
+[INTRO] Vaes For Medical Image Recovery
+
+[INTRO] For image recovery, we consider a VAE architecture (h), consisting of an encoder f and a decoder g with latent space z. While VAEs have been used successfully in low-level computer vision tasks like super-resolution, they have not been applied to medical image recovery. Importantly, the VAE is capable of learning a probability distribution of realistic images that facilitates the exploration process of the manifold . By randomly sampling latent code vectors corresponding to specific images and enforcing data consistency, we can traverse the space comprising  and evaluate the results visually and statistically.
+
+[INTRO] As shown in Fig. 3, the encoder f is comprised of convolutional layers that successively compress the representation to produce the latent code z, which is a dense layer. The decoder g takes in z as input and in turn uses transpose convolutions for upsampling to produce the reconstructed output. The final reconstruction is obtained by passing this output to the data consistency layer, which replaces any known frequencies corresponding to the input (i.e. the measurements collected during acquisition).
+
+[INTRO] More specifically, the VAE functions in the following manner. First, the encoder takes in input xzf, which is a poor linear estimate of the true image. Here, xzf = ΦHy, which is the zero-filled Fourier inverse for the single coil scenario, which we focus on here. For the multi-coil scenario, which we save for future work, xzf becomes the SENSE reconstruction taking into account coil sensitivities. The encoder output is q(z|x) (an estimate of the posterior image distribution), where z is an internal latent variable with low dimension. This latent variable formulation is valuable because it enables an expressive family of distributions and is also tractable from the perspective of computing maximum likelihood. Reconstruction occurs through sampling z from q(z|x) and passing the result to the decoder. To facilitate sampling, the posterior is represented by a Gaussian distribution and constrained by a prior distribution p(z), which for simplicity of computation is chosen to be the unit normal distribution.
+
+[INTRO] In generating reconstructions, the VAE balances error with the ability to effectively draw latent code samples from the posterior. As such, the VAE loss function used in training is comprised of a mixture of pixel-wise ℓ2 loss and a KL-divergence term, which measures the similarity of two distributions using the expression below
+
+[INTRO] In the VAE loss function, the KL term (which has weight η) is designed to force the posterior (based on μz, σz for a given batch) to follow the unit normal distribution of our prior p(z),. As η increases, the integrity of the latent code (and thereby ease of sampling after training) is preserved at the expense of reconstruction quality.
+
+[INTRO] With reconstruction output , the training cost used in updating the weights of the model h is formed as
+
+[INTRO] At test time, latent code vectors are sampled from a normal distribution  to generate new reconstructions. To ensure that these reconstructions do not deviate from physical measurement, data consistency (obtained by applying an affine projection based on the undersampling mask) is applied to all network outputs, which we find essential to obtaining high SNR. Fig. 3 depicts all of the model’s components.
+
+[INTRO] To deepen our analysis of robustness, we also examine the effects of a revised model architecture that is cascaded (i.e. the VAE and data consistency portions of the model repeat) for a certain number of “recurrent blocks,” since prior work has shown that this can positively impact reconstruction quality. In the case of a model with two recurrent blocks, for example, the zero-filled image is passed into the first VAE, the output of the first VAE is passed as the input of a second VAE, and the output of the second VAE serves as the overall model reconstruction. Data consistency is applied to each VAE in question, and the VAEs have shared weights which ensures that new model parameters are not introduced. Note that we define a model with one recurrent block as the baseline model that has no repetition.
+
+[METHODS] Uncertainty Analysis
+
+[METHODS] The advantage of using a VAE model for image reconstruction is that it naturally offers the posterior of the image which can be used to draw samples and generate variance maps. While these variance maps are useful in letting radiologists understand which pixels differ the most between the model’s reconstructions, they are not sufficient since the bias (difference between reconstructions and the fully-sampled ground truth image) is unknown. Thus, methods like SURE which can assess risk without explicitly using the ground-truth are a better alternative. The following subsections introduce these ideas in more detail.
+
+[METHODS] Monte Carlo sampling
+
+[METHODS] An effective way of analyzing the uncertainty of probabilistic models in computer vision problems is to statistically analyze output images for a given input. Nonetheless, this approach has not been widely employed in inverse problems or medical image recovery.
+
+[METHODS] Utilizing the probabilistic nature of the VAE model, for a given zero-filled image xzf = ΦHy (i.e. the aliased input to the model), we can use our encoder function f to find the mean μ and variance σ2 of the latent code z, which we use to draw samples. We can then use our decoder function g to produce reconstructions of latent code samples zi and then aggregate the results over k samples to produce pixel-wise mean and variance maps for the reconstructions. Algorithm 1 shows the full sequence of steps in more detail.
+
+[METHODS] This Monte Carlo sampling approach allows one to evaluate variance as well as higher order statistics, which can be very useful in understanding the extent and impact of model uncertainty. However, despite the information the Monte Carlo approach can provide, some important statistics such as bias are dependent on knowledge of the ground truth, which motivates the use of metrics like SURE.
+
+[METHODS] Denoising SURE
+
+[METHODS] A useful statistical technique for risk assessment when the ground truth is unknown is Stein’s Unbiased Risk Estimator (SURE). Despite being well-established, SURE has not yet been used for uncertainty analysis in imaging or DL problems.
+
+[TABLE] Monte Carlo uncertainty map
+
+[TABLE] Inputy, Ω, k, f, g	 	Step 1. Form the input xzf = ΦHy	 	Step 2. Generate latent code statistics (μ, σ) = f (xzf)	 	Step 3. Initialize i = 0, , and map = [0]n×n	 	Step 4. While i < k {	 	 i = i + 1	 	 Draw latent code sample: 	 	 Decode: 	 	 Collect reconstructions: 	 	 }	 	Step 5. Compute pixel-wise mean and variance: , 	 	return (, map)
+
+[METHODS] Given the ground truth image x0, the zero-filled image can be written as  where r is what we refer to as the residual term.
+
+[METHODS] With reconstruction  that has dimension n, test MSE can be expanded as   Since x0 is not present in this equation, we see that SURE serves as a surrogate for MSE even when the ground truth is unknown. A key assumption behind SURE is that the residual process r that relates the zero-filled image to the ground truth is normal, namely . With this assumption, we can apply Stein’s formula which approximates the covariance to obtain an estimate for the risk as  Note that SURE is unbiased, namely  With the risk expressed in the above form, we can separate the estimate into three terms, with the second term corresponding to residual sum of squares (RSS) and the third one corresponding to degrees of freedom (DOF). This form importantly does not depend on x0, and approximates the DOF with the trace of the end-to-end network Jacobian . The Jacobian represents the network sensitivity to small input perturbations and is a measure of interest when analyzing robustness in computer vision tasks.
+
+[METHODS] In order to estimate the residual variance, it is reasonable to assume that error in the output reconstruction is not large, and as a result σ2 can be estimated (by setting the sum of the first two terms in the SURE expression to zero) as
+
+[METHODS] Our evaluations validate this assumption when the undersampling rate is not very large. With this assumption, we can rewrite our expression for SURE as follows
+
+[METHODS] DOF approximation.
+
+[METHODS] Due to the high dimension of MR images, computing the end-to-end network Jacobian for SURE can be computationally intensive. From a practical standpoint, making this computation efficient allows one to evaluate uncertainty in real time, in parallel with the reconstruction. To this end, we use an approximation for the Jacobian trace formally derived in prior work. In particular, given n-dimensional noise vector b drawn from , our trained model h and a small value ϵ, the Jacobian trace can be written equivalently as follows
+
+[METHODS] Because MR images are high dimensional, taking even a single sample from the above results in a reasonable estimate of the expectation, which yields the following approximation (as a rule of thumb we choose ϵ as the maximum pixel value in the zero-filled image divided by 103).  In effect, this expression measures sensitivity of the model output to small perturbations in the input. To make the approximation more accurate, we average it over several (~ 100) random realizations of b.
+
+[METHODS] Pixel-wise SURE.
+
+[METHODS] It is also worth noting that SURE offers not only a global assessment of the reconstruction risk, but can also be used to obtain localized risk maps. To do so, we can easily extend the previous discussion for pixel (i, j) admitting yi,j = xi,j + ri,j. The SURE risk per pixel then follows (10) where the Jacobian is a scalar . This version of pixel-wise SURE measures the risk of a pixel in the reconstruction, considering only the pixel at the same spatial position in the input. The primary challenge is accurately estimating , which we do by taking the RSS map and averaging each element with the values immediately surrounding it.
+
+[METHODS] Remark 1 [SURE for deterministic networks].
+
+[METHODS] Note that the scope of SURE risk assessment is not limited to the variational networks mentioned in Section IV. Indeed, SURE can also be applied to deterministic networks as long as the residuals obey the Gaussian assumption and one can find a reasonable estimate of the residual variance.
+
+[METHODS] Gaussian residuals with density compensation
+
+[METHODS] As mentioned before, the key assumption behind SURE is that the residual model is Gaussian with zero mean. However, it is not safe to assume that the undersampling noise in MRI reconstruction inherits this property. For this reason, we introduce density compensation on the input image as a way of enforcing zero-mean residuals for the single coil setting. This approach has the added benefit of making artifacts independent of the underlying image and we find that it significantly increases residual normality (see Fig. 7 in Section 6).
+
+[METHODS] More specifically, given a 2D sampling mask Ω, we can treat each element of the mask as a Bernouli random variable with a certain probability Di,j, where  (this is dependent on the sampling approach).
+
+[METHODS] With this formulation, we can define a density compensated zero-filled image as follows:  We can rewrite this expression using x0 as
+
+[METHODS] First, we observe that r has zero mean since . In addition, the residual variance obeys  Of course, in practice we do not have access to the ground truth image x0, and instead rely on the approximation in (9) for the residual variance. Given these main properties, the density compensation method that this work introduces represents an important step that can allow denoising SURE to be used effectively in medical imaging and other inverse problems. Algorithm 2 summarizes the steps for using density-compensated SURE in practice. Note that for the multi-coil case, density compensation can be extended to adjust for the coil effects using an initial input reconstruction such as SENSE.
+
+[METHODS] Remark 2 [SURE beyond Gaussian residuals].
+
+[METHODS] The primary assumption behind the SURE derivations is that the residuals obey an i.i.d. Gaussian distribution. Even though the density compensation in (13) enforces this property, one can also leverage the generalized SURE formulation that extends SURE derivations to colored noise distributions from the exponential family, though this is harder to compute in practice,. Generalized SURE can be especially useful in the case of uniform sampling, with structured residuals, though we leave a more thorough exploration of this phenomenon for future work.
+
+[TABLE] SURE risk estimate (with density compensation)
+
+[TABLE] Inputy, Ω, D, n, h, b, ϵ	 	Step 1. Form density-compensated input 	 	Step 2. Reconstruct 	 	Step 3. Compute the residual variance	 		 	Step 4. Approximate the DOF	 		 	Step 5. Obtain SURE risk for 	 		 	returnSURE
+
+[METHODS] Empirical Evaluations
+
+[METHODS] In this section, we assess our model and methods on a dataset of Knee MR images. We first show reconstructions produced with the VAE model, before demonstrating representative results with the Monte Carlo and SURE methods for quantifying uncertainty. In this work, we focus on the single coil acquisition model for simplicity, but extending to the multi coil model will be addressed in future experiments. The TensorFlow source code for implementation is publicly available via Github1.
+
+[METHODS] Dataset.
+
+[METHODS] The Knee dataset utilized in training and testing was obtained from 19 patients with a 3T GE MR750 scanner. A 3D FSE CUBE sequence with proton density weighting including fat saturation was used for acquiring fully sampled images. The following parameters were used in acquisition: FOV=160mm, TR=1550 for sagittal and 2,000 for axial, TE=25 for sagittal and 35 for axial, slice thickness=0.6mm for sagittal and 2.5mm for axial. Each volume consisted of 320 2D axial slices of dimension 320 × 256, with all slices for a given patient being placed into either the training, validation, or test sets. A 5-fold variable density undersampling mask with radial view ordering (designed to preserve low-frequency structural elements) was used to produce aliased input images xin for the model to reconstruct. Both inputs and outputs of the model are complex valued, with the real and imaginary components considered as two separate channels, which enables simple processing by the network.
+
+[METHODS] Adversarial Loss
+
+[METHODS] The effective modeling of high-frequency components is essential for capturing details in medical images. Thus, we train our model with adversarial loss in a GAN setup, which can better capture high-frequency details and has been shown to improve the perceptual quality of recovered images (even though reconstruction error rises),. In particular, we use a multi-layer CNN as the discriminator  along with the VAE generator . The discriminator learns to distinguish between reconstructions and fully-sampled images, and sends feedback to the generator, which in turn adjusts the VAE’s model weights to produce more realistic reconstructions.
+
+[METHODS] The training process for the VAE is identical to the case with no adversarial loss, except an extra loss term is needed to capture the discriminator feedback (with weight λ referred to as GAN loss)
+
+[METHODS] The discriminator weights are updated during training as
+
+[METHODS] The training process acts as a game, with the generator continuously improving its reconstructions and the discriminator distinguishing them from ground truth. As the GAN loss λ increases, the modeling of realistic image components is enhanced but uncertainty rises.
+
+[METHODS] Network architecture
+
+[METHODS] As shown in Fig. 3, the VAE encoder is composed of 4 convolutional layers (128, 256, 512, and 1024 feature maps, respectively) with kernel size 5 × 5 and stride 2, with each followed by ReLU activations and batch normalization. Latent space mean, μ, and standard deviation, σ, correspond to the whole input rather than each channel and are each represented by fully connected layers with 1024 neurons. The VAE decoder has 5 layers and utilizes transpose convolution operations (1024, 512, 256, 128, and 2 feature maps, respectively) with kernel size 5 × 5 and stride 2 for upsampling. Skip connections are utilized to improve gradient flow through the network.
+
+[METHODS] The discriminator function of the GAN (when adversarial loss is used) is an 8-layer CNN. The first seven layers are convolutional (8, 16, 32, 64, 64, 64, and 1 feature maps, respectively) with batch normalization and ReLU activations in all but the last layer. The first five layers use kernel size 3 × 3, while the following two use kernel size 1 × 1. The first four layers use a stride of 2, while the next three use a stride of 1. The eighth and final layer averages the output of the seventh layer to form the discriminator output.
+
+[METHODS] The use of multiple recurrent blocks (RB) whereby the model repeats (the output feeds into the input of another VAE with the same model parameters) is also explored. Using multiple RBs does not affect the discriminator network architecture, and the number of RBs can be optimized to maximize model performance as described in.
+
+[METHODS] Training was completed over the course of 30K iterations, with loss converging over roughly 20K iterations. We utilize the Adam optimizer with a mini-batch size of 4, an initial learning rate of 5 × 10−5 that was halved every 5K iterations, and a momentum parameter of 0.9. Models and experiments were developed using TensorFlow on an NVIDIA Titan X Pascal GPU with 12 GB RAM.
+
+[METHODS] Individual reconstructions
+
+[METHODS] Fig. 4 shows sample model reconstructions (using the mean of the output distribution) for representative test slices with different hyperparameters. As the number of RBs increases from one to two (columns 2 and 3 versus 4 and 5), the resulting outputs improve in quality (corresponding to a roughly 1 dB gain in SNR). Additionally, progressively increasing values of GAN loss (columns 2 and 4 versus 3 and 5) introduce high-frequency artifacts to the image, while leading to sharper outputs. The SSIM results shown in Fig. 4 confirm that using GAN loss can lead to better perceptual quality of the reconstructions, but these benefits are only realized when using additional RBs. Indeed, the highlighted ROI with 1 RB and adversarial loss shows degradation in visual quality from poor recovery, which is detrimental to radiologist diagnoses. As expected, the presence of substantial adversarial loss decreases average reconstruction SNR (and increases MSE) as Table I shows. With limited GAN loss and additional RBs, though, the SNR is close to 20 dB, indicating that the probabilistic model results in effective image recovery, in addition to facilitating uncertainty analysis.
+
+[METHODS] Variance, bias, and error maps
+
+[METHODS] Using the Monte Carlo method described earlier in Algorithm 1, 1K outputs corresponding to different reference slices were generated after feeding a test image into the trained model and sampling from the resulting posterior distribution. Note that for this process, only the VAE (generator portion) of the model is relevant to producing outputs, even with adversarial loss used for training.
+
+[METHODS] We show the mean of the 1K reconstructed outputs for a representative slice, the pixel-wise variance, squared bias (difference between mean reconstruction and ground truth), and squared error in Figs. 5 and 6, utilizing the common relation error2 = bias2 + variance. The mean image shows pixel intensities, while the remaining columns are in squared pixel intensities. The concept of bias and variance is important in the analysis of uncertainty because both the difference from the ground truth and the inherent variability across realizations provide information on the portions of a given image most susceptible to the introduction of realistic artifacts. Note that to compute the bias and error, we need the ground-truth which is provided here solely for validation purposes.
+
+[METHODS] The results indicate that variance, bias, and error increase as the GAN loss weight λ increases (Fig. 5) and as the number of RBs decreases (Fig. 6). Furthermore in all cases with GAN loss, the variance extends to structural components of the image, which poses the most danger in terms of diagnosis. Nevertheless, with a reasonably conservative choice of GAN weight, the risk is substantially lower. More RBs can lower variance as well as error, and can be a useful tweak to improve robustness. Note also that in these cases the bias term is more influential than the variance term in contributing to overall error, though the bias cannot be computed in practice since the ground truth is unknown. Although only a few representative examples are shown here, similar trends were observed with all examined reference slices.
+
+[METHODS] Residual distribution with density compensation
+
+[METHODS] As described earlier, denoising SURE builds on the Gaussian assumption for the residuals r = xzf − x0. To validate this assumption, we produce histograms and Q-Q plots of the residuals at various undersampling rates, by considering the differences for individual pixels across test images. From the top two rows of Fig. 7 one can observe the quantiles closer to the center of the distribution are aligned with those of the normal distribution for all undersampling rates. The residual distribution is not perfectly normal in any of the cases, however, which can limit the effectiveness and accuracy of SURE.
+
+[METHODS] To overcome the lack of normality in the residuals, we apply our density compensation method (section V.C). For a given undersampling rate, 100 variable-density random sampling masks are generated and then averaged to obtain the sampling density D. The element-wise inverse of this density can then be multiplied with any given mask to produce a density-adjusted mask D−1Ω. This adjusted mask can be used to generate new zero-filled images as input to the network.
+
+[METHODS] As Fig. 7 (bottom two rows) shows, the distribution of residuals (for various undersampling rates) better matches the normal distribution, and the mean of the distribution lies very close to zero. This observation indicates density compensation is a valuable preprocessing step that enables the use of denoising SURE for quantifying uncertainty in MRI reconstruction. Additional experiments have indicated that density compensation can also help produce Gaussian residuals for other sampling trajectories such as uniform, but further work remains to validate and extend this method to all approaches.
+
+[METHODS] SURE results
+
+[METHODS] To evaluate the effectiveness of the density-compensated SURE approach, we produce correlations of SURE versus MSE (which depends on the ground truth and is a standard metric for assessing model error) using the results from our test images. Fig. 8 shows the strong linearity of the correlations under all conditions. The linear relationship is strongest for higher undersampling rates (R2 = 0.97 for 2-fold while R2 = 0.84 for 16-fold). Nonetheless, the results show that even with relatively high undersampling, SURE can be used to effectively estimate risk in medical image reconstructions.
+
+[METHODS] In addition, the average reconstruction SURE, RSS, and DOF values for different hyperparameters are shown in Table I and Table II. Increased GAN loss results in decreased SURE values (note the units of dB) and increased RSS and DOF. Meanwhile, more RBs result in higher SURE values and lower RSS and DOF, demonstrating a simple way of improving reconstruction quality while reducing uncertainty. Note that these results align closely with the Monte Carlo analysis from before, thereby reinforcing the effectiveness of the SURE approach in quantifying risk.
+
+[METHODS] Furthermore, the uncertainty analysis of the sample reconstructions in Fig. 9 indicates that there is a relationship between SURE values and variance magnitude. As overall variance decreases from left to right, the SURE values (again, in dB) increase correspondingly.
+
+[METHODS] Fig. 10 shows pixel-wise SURE and MSE maps for a given reference slice. The SURE approximation is reasonably effective, with substantial overlap in the areas with highest reconstruction error. It is likely that further work on assessing pixel-wise risk by taking into account the whole input image or developing better residual variance estimators could yield superior results in general. In practice, all of the presented methods can be used in conjunction, with the variance maps and pixel-wise SURE illustrating the localization of uncertainty and global SURE providing a statistically sound overall metric.
+
+[CONCL] Conclusions
+
+[CONCL] This paper introduces methods to analyze uncertainty in deep-learning based compressive MR image recovery, which can ultimately serve to improve the medical imaging workflow in both better diagnosis and acquisition. To thoroughly explore realistic and data-consistent images, we develop a probabilistic VAE model with low error. A Monte Carlo approach is used to quantify the pixel variance and obtain uncertainty maps in parallel with reconstruction. Moreover, to fully assess the reconstruction risk (which requires the bias and thus fully sampled data), we leverage Stein’s Unbiased Risk Estimator on density-compensated zero-filled images where the residuals obey a zero-mean Gaussian distribution. We validate the utility of these tools with evaluations on a dataset of Knee MR images.
+
+[CONCL] In particular, our observations demonstrate that increased adversarial loss leads to larger uncertainty, indicating a trade-off when using adversarial loss to better retrieve high-frequencies. On the other hand, using multiple recurrent blocks (cascaded VAE and data consistency layers), decreases uncertainty, which suggests an effective way of promoting robustness.
+
+[CONCL] There are still important future directions to explore. While we focus on model uncertainty in this work, there are other sources of uncertainty (pertaining to data and knowledge) that should be taken into account. As such, next steps involve extensive evaluations with different MRI datasets and acquisition strategies to assess the effects of data uncertainty on model reconstructions. Additionally, it would be useful to perform uncertainty analysis for pathological cases. Quantifying the likelihood of a diagnosis being altered by hallucinated artifacts, and finding regularization schemes to limit this, will improve the effectiveness of DL methods for MRI reconstruction.
+
+[CONCL] Finally, extending pixel-wise SURE to include more accurate estimators for variance can further improve performance. The corresponding spatial risk maps could then be used alongside the Monte Carlo results and the global SURE score to improve the medical imaging workflow in key areas such as diagnosis or automated image quality assessment.
+
+[CONCL] https://github.com/MortezaMardani/GAN-Hallucination/tree/VAE-GAN
+
+[REF] References
+
+[REF] Unsupervised representation learning with deep convolutional generative adversarial networks
+
+[REF] Compressed sensing mri reconstruction using a generative adversarial network with a cyclic loss
+
+[REF] Image reconstruction by domain-transform manifold learning
+
+[REF] Compressed sensing using generative models
+
+[REF] A deep learning approach to structured signal recovery
+
+[REF] Deep generative adversarial neural networks for compressive sensing (GANCS) MRI
+
+[REF] What uncertainties do we need in bayesian deep learning for computer vision?
+
+[REF] Multivariable prognostic models: issues in developing models, evaluating assumptions and adequacy, and measuring and reducing errors
+
+[REF] Generating synthetic CTs from magnetic resonance images using generative adversarial networks
+
+[REF] Autoencoding beyond pixels using a learned similarity metric
+
+[REF] Multi-stage variational auto-encoders for coarse-to-fine image generation
+
+[REF] Monte carlo sampling of solutions to inverse problems
+
+[REF] Learning to solve inverse problems using wasserstein loss
+
+[REF] Uncertainty quantification in deep learning for safer neuroimage enhancement
+
+[REF] Analyzing inverse problems with invertible neural networks
+
+[REF] Towards understanding the invertibility of convolutional neural networks
+
+[REF] Automated reference-free detection of motion artifacts in magnetic resonance images
+
+[REF] Compressed sensing with a jackknife and a bootstrap
+
+[REF] A new sure approach to image denoising: Interscale orthonormal wavelet thresholding
+
+[REF] Unbiased risk estimation for sparse analysis regularization
+
+[REF] MRI-guided noninvasive ultrasound surgery
+
+[REF] Advances in pediatric body MRI
+
+[REF] Deep convolutional neural networks for image deconvolution
+
+[REF] DAGAN: Deep de-aliasing generative adversarial networks for fast compressed sensing MRI reconstruction
+
+[REF] SENSE: sensitivity encoding for fast MRI
+
+[REF] Generating images with perceptual similarity metrics based on deep networks
+
+[REF] Auto-encoding variational Bayes
+
+[REF] Neural proximal gradient descent for compressive imaging
+
+[REF] Excess optimism: How biased is the apparent error of an estimator tuned by SURE?
+
+[REF] Improving dnn robustness to adversarial attacks using jacobian regularization
+
+[REF] Monte-carlo SURE: A black-box optimization of regularization parameters for general denoising algorithms
+
+[REF] Unsupervised learning with Stein’s unbiased risk estimator
+
+[REF] Generalized SURE for exponential families: Applications to regularization
+
+[REF] Variable-density radial view-ordering and sampling for time-optimized 3D cartesian imaging
+
+[REF] Neural discrete representation learning
+
+[REF] The one hundred layers tiramisu: Fully convolutional densenets for semantic segmentation
+
+[REF] Avoiding latent variable collapse with generative skip models
+
+[FIG] Processing pipeline for clinical operation. The scanner acquires k-space data, followed by image reconstruction that is subject to artifacts. Traditionally, physicians are in the loop to assess the image quality which is labor intensive and error prone.
+
+[FIG] Admissible solutions (x0 is the true image).
+
+[FIG] The model architecture, with aliased input images feeding into the VAE encoder, the latent code feeding into the VAE decoder, and data consistency applied to obtain the output reconstruction. This output can serve as an input to the GAN discriminator (not pictured), which in turn sends feedback to the generator (VAE) when adversarial loss is used. The VAE and data consistency layers are repeated in the case of multiple recurrent blocks.
+
+[FIG] The aliased input, reconstructions with one recurrent block (RB) and pure MSE loss, one RB and 10 percent GAN loss, two RBs and pure MSE loss, and two RBs and 10 percent GAN loss, and the ground truth for a representative slice (5 fold undersampling with radial view ordering). SSIM between the given image and the ground truth is shown for all cases. The top row shows absolute error for the highlighted ROI. All error images are on the same scale from 0 (black) to 1 (white).
+
+[FIG] Mean reconstruction, pixel-wise variance, bias2, and error2 for a given reference slice across all realizations (5 fold undersampling and one recurrent block). Row 1: 0% GAN loss (λ = 0). Row 2: 5% GAN loss (λ = 0.05). Row 3: 10% GAN loss (λ = 0.10).
+
+[FIG] Mean reconstruction, pixel-wise variance, bias2, and error2 for a given reference slice across all realizations (5 fold undersampling and no adversarial loss). Row 1: one RB. Row 2: two RBs. Row 3: four RBs.
+
+[FIG] Histograms and quantile-quantile plots of the residuals between zero-filled and ground truth images without (top two rows) and with density compensation with 2, 4, 8, and 16 fold undersampling, respectively.
+
+[FIG] SURE vs. MSE for one recurrent block using no adversarial loss, with 2-fold, 4-fold, 8-fold, and 16-fold undersampling.
+
+[FIG] Sagittal reconstructions (top row) along with corresponding variance maps (5 fold undersampling and one recurrent block with no adversarial loss) and average pixel risk (SURE) values.
+
+[FIG] Pixel-wise SURE and MSE images for a given reference slice with 2-fold undersampling (reconstruction and ground truth are on a scale from 0 to 1). We threshold values below 15% of the max for the SURE and MSE visualizations to make the key regions stand out.
+
+[TABLE] Averaged Results For Different Quantities Of Recurrent Blocks And Adversarial Loss With 5-Fold Undersampling
+
+[TABLE] Metrics	1 RB, 0% GAN	1 RB, 10% GAN	2 RB, 0% GAN	2 RB, 10% GAN	 	SURE-MSE R2	0.95	0.88	0.95	0.91	 	MSE	0.033	0.082	0.027	0.057	 	RSS	0.092	0.12	0.076	0.11	 	DOF	0.17	0.20	0.16	0.17	 	SNR (dB)	18.8	17.1	19.9	17.9	 	SURE (dB)	18.0	16.2	19.2	17.3
+
+[TABLE] Averaged Results For Different Undersampling Rates With One Recurrent Block And No Adversarial Loss
+
+[TABLE] Metrics	2-fold	4-fold	8-fold	16-fold	 	SURE-MSE R2	0.97	0.90	0.92	0.84	 	MSE	0.017	0.021	0.18	0.39	 	RSS	0.061	0.065	0.11	0.13	 	DOF	0.12	0.16	0.23	0.29	 	SNR (dB)	20.7	19.1	16.8	15.5	 	SURE (dB)	21.3	19.8	15.9	14.2

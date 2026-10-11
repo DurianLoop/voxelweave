@@ -1,0 +1,44 @@
+many mentioned in sections 6.2 and 6.3, are diﬃcult to encode in this way and available
+examples mostly consider task operators that extract “simple” features that must be further
+processed before they can be used for decision making. This is also the reason for why the term
+“feature reconstruction” [62] is used as a proxy for task adapted reconstruction. The second
+issue relates to computational feasibility. Evaluating the task operator, like in segmentation
+and image registration, is computationally demanding and requires setting values for extra
+(nuisance) parameters. Furthermore, most state-of-the-art approaches for solving (1) are
+based on variational methods, which quickly become computationally unfeasible for large
+scale imaging problems.
+Many complex tasks have been successfully addressed using techniques from machine
+learning, so it makes sense to investigate whether such techniques can be integrated with
+reconstruction for task adapted reconstruction. One example is given in [96] for abnormality
+(tumor) detection in low-dose computed tomography (CT) imaging. The idea here is to jointly
+train a learned iterative scheme for reconstruction [2] with a 3D convolutional neural network
+for detecting the abnormality in the reconstructed images. Another examples introduces a
+uniﬁed deep neural network architecture (SegNetMRI) for combined Fourier inversion (MRI
+image reconstruction) and segmentation [89]. Here, one has two neural networks with the
+same encoder-decoder structure, one for MRI reconstruction consisting of multiple cascaded
+blocks, each containing an encoder-decoder unit and a data ﬁdelity unit, and the other for seg-
+mentation. These are pre-trained and coupled by ensuring they share reconstruction encoders.
+These two examples are special cases of the generic approach develop in section 7.
+5. Statistical inverse problems. Let X and Y denote separable Banach spaces where
+(X, SX) and (Y, SY ) are measurable spaces. Next, let PX and PY denote spaces of prob-
+ability measures on X and Y , respectively. Following [25], a (statistical) inverse problem
+amounts to reconstructing (estimating) x∗∈X from measured data y∈Y that is generated
+by a Y -valued random variable y where
+(3) y∼M (x∗) with known M: X→ PY (data model).
+Elements in X (model parameter space) represent possible model parameters and elements
+in Y (data space) represent possible data. In tomographic imaging, elements in X are often
+functions deﬁned on a ﬁxed domain in Rn representing images and elements in Y are real-
+valued functions deﬁned on a ﬁxed manifold M, which is given by the acquisition geometry
+associated with the measurements. Furthermore, just as in the classical setting, most statis-
+tical inverse problems do not have a unique solution in the sense that the model parameter is
+not identiﬁable [25, section 2.3].
+A common data model is when data is contaminated with additive noise:
+(4) y =A(x∗) + e with e∼ Pnoise for some known Pnoise∈ PY .
+Here,A: X→ Y (forward operator) models how data is generated in absence of noise and
+e∼ Pnoise models noise. If e is independent from x∗, then (4) amounts to the data model
+M(x) =δA(x) ⊛ Pnoise = Pnoise
+(
+· −A(x)
+)
+for any x∈X.
+5

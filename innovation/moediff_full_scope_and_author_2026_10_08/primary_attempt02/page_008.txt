@@ -1,0 +1,73 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 8
+TABLE II: Qualitative visualization comparison with SOTA methods
+Input (3T) Ground Truth (7T) ESRGAN [18] SR3 [33] Ours
+decoupled structure of the MoE architecture, which allows
+asynchronous activation of expert networks during inference,
+our model can further reduce the computational load to 42.21
+G FLOPs, engaging 62.69 M parameters, which facilitates effi￾cient adaptation to resource-constrained environments, without
+compromising model performance.
+TABLE III: Quantitative comparison of image quality metrics
+and computational cost across methods
+PSNR SSIM LPIPS RSME Params FLOPs
+3T (ref) 24.13 0.78 8.96 6.22 - -
+ESRGAN [18] 24.45 0.82 10.53 6.59 16.73 1450.87
+SR3 [33] 34.49 0.89 3.79 2.49 97.81 46.32
+WavTrans [34] 31.07 0.85 5.39 5.17 2.1 162.89
+MASA [35] 33.70 0.88 3.11 5.48 4.0 180.13
+McMRSR [36] 30.91 0.83 6.07 5.73 3.5 269.86
+MC-VarNet [37] 35.59 0.89 2.12 3.47 5.7 139.86
+DisC-Diff [38] 36.92 0.91 1.67 2.13 86.1 461.00
+Ours 38.16 0.93 1.18 1.83 133.02 56.12
+Ours (asyn)∗ - - - - 62.69 42.21
+∗ The reported results are from the most computationally intensive expert
+network during asynchronous inference.
+Overall, our proposed approach achieves SOTA image
+quality across multiple quantitative metrics while maintaining
+high computational efficiency. These results underscore its
+effectiveness in balancing reconstruction fidelity with resource￾efficient deployment.
+C. Visualization of the expert specialization
+To further elucidate the functional specialization of each
+expert within the proposed MoE framework, we visualize the
+difference maps between each expert’s output and the ground
+truth 7T MRI. These maps are computed by taking the pixel￾wise absolute difference between the expert output and the
+ground truth 7T MRI, highlighting the residual discrepancies
+and reconstruction focus of each expert. In the visualizations,
+lighter areas reflect lower reconstruction errors, suggesting
+better alignment with the ground truth. As shown in Fig.
+IV, each column represents the output of a particular expert,
+visualized through its corresponding absolute difference map
+with respect to the 7T reference. The final output is computed
+via a weighted combination of expert outputs. The visualized
+difference maps underscore the distinct specialization of each
+expert. Specifically, Expert 1 exhibits minimal residuals in
+homogeneous white matter regions, preserving large-scale
+anatomical continuity. Its low-frequency focus is evident in the
+smooth residual patterns and coherent structural boundaries.
+Expert 2 demonstrates heightened sensitivity to cortical regions
+and sulcal boundaries, with pronounced residual suppression
+around edges and high-frequency details. Expert 3 shows
+enhanced reconstruction accuracy at tissue interfaces and
+transitional zones. The residuals are particularly reduced in
+regions of sharp contrast changes. These observations confirm
+that each expert effectively targets specific anatomical and
+textural characteristics, guided by their unique architectural and
+loss function design. The gating mechanism further facilitates
+optimal integration by adaptively weighting expert contributions
+according to the local image context, thus ensuring a globally
+coherent and anatomically faithful 7T-like reconstruction.
+TABLE IV: Visualization of the expert specialization
+E1 E2 E3 Final
+G1 = 0.21 G2 = 0.48 G3 = 0.31 Weighted
+∗ The expert-specific weights (G1, G2, G3) for this particular slice are
+dynamically computed by the gating network G.
+D. Clinical evaluation
+To ensure the clinical validity of our proposed SR framework,
+ethical approval was obtained from the Institutional Review
+Board (IRB) at Massachusetts General Hospital (MGH) under
+protocol number 2024P003489. All datasets used in this study
+were fully de-identified to adhere to strict ethical guidelines
+and privacy regulations.
+TABLE V: Clinical evaluation for real cases at MGH
+Real 3T MRI Real 7T MRI 7T-like SR MRI
+In a representative clinical case of Multiple Sclerosis (MS),
+a demyelinating disease characterized by periventricular and

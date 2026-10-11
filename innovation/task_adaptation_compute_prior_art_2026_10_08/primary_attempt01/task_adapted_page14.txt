@@ -1,0 +1,77 @@
+Here PW(·|W n) is the set of probability measures on W conditioned onWn.
+Bayes risk in (10) associated with a decision ruleT : X→D (potential caption generation
+operator) for given task prior η0∈ P∆ can now be expressed through conditional densities
+onW:
+Rη0(T) :=
+∫
+∆
+∫
+X
+𝓁D
+(
+τ(z),T(x)
+)
+dPz(x) dη0(z)
+=
+∫
+∆
+∫
+X
+− logT(x)(z) dPz(x) dη0(z)
+=
+∫
+∆
+∫
+X
+− log
+∏
+i
+πT(x)(z|z1,...,z i−1) dPz(x) dη0(z)
+=
+∫
+∆
+∫
+X
+−
+∑
+i
+logπT(x)(z|z1,...,z i−1) dPz(x) dη0(z).
+To derive the corresponding empirical risk minimization problem, we consider a ﬁxed class of
+decision rules that are given via a parametrization of their representation in term of marginal
+densities. More precisely, given a parameter set ϑ∈ Rm, the decision rule Tϑ is given by
+Tϑ(x)(z) =
+∏
+i
+Ψϑ(x; z|z1...,z i−1) where x∈X and z∈∆ ,
+and Ψϑ is parametrized by a recurrent neural network, for example using the long short-term
+memory (LSTM) architecture [42]. The corresponding empirical risk minimization in (11) is
+now given by
+(15) ϑ∗∈ arg min
+ϑ∈RN
+{∫
+∆
+∫
+X
+−
+∑
+i
+log Ψϑ(x; z|z1...,z i−1) dPz(x) dη0(z)
+}
+.
+Solving (15) corresponds to training a image caption generator [92], see also [51].
+6.3. Further imaging tasks. A common trait with the examples worked out in section 6.2
+is that each of them can be recast as ﬁnding an optimal decision rule in a statistical estimation
+problem . Furthermore, deep neural networks oﬀer a computationally feasible implementation
+of estimating this decision rule from supervised training data.
+There is a wide range of other tasks beyond those mentioned in section 6.2 that can be
+represented as a non-randomised decision rule, which in turn is eﬃciently parametrized by a
+suitable deep neural network architecture. The (incomplete) list below is based on [4, 77] and
+aims to show the diversity of tasks from computer vision that can be approached successfully
+using a suitable deep neural network architecture.
+Inpainting: This is essentially interpolation/extrapolation to recover lost or deteriorated
+parts of images and videos and approaches based on trainable neural networks [97].
+Depixelization/super-resolution: The task is here to upsample, i.e., to synthesize realistic
+details into images while enhancing their resolution [17] or to ﬁll out information
+“between” pixels by increasing the resolution of the ﬁnal picture, also known as the
+single image super-resolution problem [79].
+14

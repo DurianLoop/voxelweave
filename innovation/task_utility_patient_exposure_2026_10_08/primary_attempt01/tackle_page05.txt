@@ -1,0 +1,116 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 5
+3) Pathology classification: The third task we consider
+is to determine whether a potential pathology exists in an
+MRI image, such as a suspected tumor. Using algorithms
+to automatically analyze MRI scans could lead to improved
+diagnosis accuracy in clinical practice [24]. We formulate
+this task as a binary image classification problem, where the
+negative class means the underlying image x does not contain
+any pathology lesion and the positive class means it does
+contain a lesion. Through this proof-of-concept classification
+task, we go beyond pixel-level problems and show the benefit
+of task-specific co-design for solving an image-level problem.
+Similar to the segmentation task, we include an additional
+predictor in the pipeline, which we also denote as Pϕ to
+simplify notations. Specifically, we choose the ResNet [70],
+which is an established architecture for computer vision tasks,
+especially image classification. We use the standard ResNet18
+architecture except for using 1 input channel and 2 output
+dimensions.
+We use the binary cross entropy (BCE) as the loss function
+for this classification task, Lclass.(bz,z) := BCE(bz,z). For
+evaluation metrics, we consider both the classification accuracy
+(ClsAcc := TP+TN
+TP+TN+FP+FN) and the F1 score ( F1 score :=
+2TP
+2TP+FP+FN) where TP, TN, FP, and FN are the number of True
+Positive, True Negative, False Positive, and False Negative,
+respectively. The classification accuracy is more interpretable,
+while the F1 score is more robust to class imbalance. So we
+include both metrics for a more comprehensive evaluation.
+D. Training procedure
+We summarize the training objective for each task as follows:
+• ROI-oriented reconstruction:
+min
+q,θ
+LROI (Rθ (Sq⊙k),x)
+• Segmentation or classification:
+min
+q,θ,ϕ
+Lseg. / class. (Pϕ (Rθ (Sq⊙k)),z)
+wherek∈ Cn contains all k-space measurements of x and⊙
+denotes element-wise multiplication.
+When performing end-to-end training over multiple stages,
+we empirically observed that a model trained from scratch tends
+to run into either optimization (hard to train) or generalization
+(unable to generalize) issues. Some prior works address these
+problems using a hybrid of reconstruction and task-dependent
+loss [51], [52], [54]–[56]. This approach requires tuning a
+weight parameter that balances the two losses. We adopt an
+alternative approach that avoids tuning this additional parameter.
+Specifically, we first train the sampler and retriever jointly with
+a full-FOV PSNR loss until convergence:
+min
+q,θ
+LFOV (Rθ (Sq⊙k),x)
+whereLFOV(bx,x) :=−PSNR(bx,x). We refer to this as the
+pre-training step in later sections. With the weights learned for
+the sampler and retriever, we then add the predictor (initialized
+with random weights) into the framework and fine-tune all
+three components. We find that the pre-training step allows the
+model to better learn task-specific strategies, as demonstrated
+by an ablation study in Section VI-B. This training procedure
+mimics the training of foundation models in state-of-the-art
+language and vision models, which are first pre-trained on a
+general task and then fine-tuned for more specific tasks. Similar
+procedures can be found in other task-specific co-design papers,
+such as [53], [54].
+IV. E XPERIMENTS ON LARGE -SCALE DATASETS
+We first demonstrate the effectiveness of our framework
+on the three considered tasks using large-scale datasets. We
+categorize all the investigated datasets and settings in the bottom
+left panel of Figure 2. For each task, we demonstrate that the
+proposed task-specific co-design framework achieves better
+performance than baselines that separately design reconstruc-
+tion and prediction. We abbreviate different variants of the
+proposed method and baselines in the following way based on
+their task and training procedure:
+Task Training procedure and loss Notation example
+(ROI) recon. S&R: PSNR loss LP+UN FOV
+S&R: local PSNR loss (w/ pre-training) TACKLE ROI
+Tissue seg. S&R: PSNR loss → P: Dice loss PD+UN recon.
+S&R&P: Dice loss (w/ pre-training) T ACKLE seg.
+Patho. class. S&R: PSNR loss → P: BCE loss LOUPE recon.
+S&R&P: BCE loss (w/ pre-training) T ACKLE class.
+S: sampler, R: retriever, P: predictor
+→: separate training stages for reconstruction and prediction
+To clarify, the subscript “recon.” for the segmentation and
+classification methods means that the sampler and retriever
+are trained for full-FOV reconstruction, and a predictor is
+subsequently trained for the downstream task with the sampler
+and retriever fixed. This is equivalent to training a predictor
+with the reconstructed images by these methods as input for
+the downstream task.
+A. ROI-oriented reconstruction
+Dataset and setup For the ROI-oriented reconstruction task,
+we use the images and raw single- and multi-coil k-space data
+from the fastMRI+ knee dataset [49], [71], which contains
+bounding box annotations for knee pathologies. Specifically,
+we investigate the most common knee pathology in the dataset
+called “Meniscus Tear” (MT). Each image x in the dataset
+contains at least one rectangular bounding box annotation Rx,
+which is drawn to include all the pathology but exclude the
+normal surrounding anatomy [71]. Therefore the local image
+quality within each bounding box (i.e. ROI) is more indicative
+of the quality for pathology assessment than a metric over the
+entire FOV . We emphasize that the location of the bounding
+boxRx varies sample by sample and is never an input to
+any method during inference. Rx is only used for calculating
+the training loss and evaluating the local PSNR during test
+time according to (3). Hence, the local PSNR performance
+reflects the quality of reconstructions by different methods for
+assessing the considered pathological lesions in the ROIs.
+Baselines We compare TACKLE ROI with three full-FOV
+reconstruction-oriented baselines.
+• LOUPEFOV: Proposed in [9], LOUPEFOV jointly optimizes
+a sampler and a residual U-Net reconstructor.

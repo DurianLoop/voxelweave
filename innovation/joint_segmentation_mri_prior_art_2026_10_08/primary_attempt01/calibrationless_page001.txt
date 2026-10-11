@@ -1,0 +1,86 @@
+IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2020 1
+Joint Calibrationless Reconstruction and
+Segmentation of Parallel MRI
+Aniket Pramanik, Student Member, IEEE, Xiaodong Wu, and Mathews Jacob, Senior Member, IEEE
+Abstract— The volume estimation of brain regions from
+MRI data is a key problem in many clinical applications,
+where the acquisition of data at high spatial resolution
+is desirable. While parallel MRI and constrained image
+reconstruction algorithms can accelerate the scans, image
+reconstruction artifacts are inevitable, especially at high
+acceleration factors. We introduce a novel image domain
+deep-learning framework for calibrationless parallel MRI
+reconstruction, coupled with a segmentation network to
+improve image quality and to reduce the vulnerability of
+current segmentation algorithms to image artifacts result￾ing from acceleration. The combination of the proposed
+image domain deep calibrationless approach with the seg￾mentation algorithm offers improved image quality, while
+increasing the accuracy of the segmentations. The novel
+architecture with an encoder shared between the recon￾struction and segmentation tasks is seen to reduce the
+need for segmented training datasets. In particular, the
+proposed few-shot training strategy requires only 10% of
+segmented datasets to offer good performance.
+Index Terms— Calibrationless, parallel MRI, locally low￾rank, multi-task network, few-shot learning
+I. INTRODUCTION
+The degeneration/atrophy of brain structures is a key
+biomarker that is predictive of progression in several neurode￾generative disorders, including Alzheimer’s disease [1]–[3].
+The volume measures of these brain structures are usually
+estimated in the clinical setting from the segmentation of
+MR images. High-resolution images can improve the precision
+of volume measures and thus enable the early detection and
+improve the prediction of progression [4]–[6]. Unfortunately,
+MRI is a slow imaging modality; the acquisition of high￾resolution images often comes with a proportional increase
+in scan time, which is challenging for several patient sub￾groups, including older adults. In addition, longer scans are
+vulnerable to motion artifacts [7]. Calibrated [8], [9] parallel
+MRI (PMRI) schemes, which use pre-estimated coil sensi￾tivities, and calibration-free PMRI schemes [10]–[12] have
+been used to accelerate the acquisition. While calibrationless
+approaches can eliminate motion artifacts and offer higher
+acceleration factors, the high computational complexity of
+these methods is a limitation. While current PMRI schemes
+use constrained models including compressed sensing [13],
+Aniket Pramanik, Xiaodong Wu and Mathews Jacob are from the
+Department of Electrical and Computer Engineering at the University of
+Iowa, Iowa City, IA, 52242, USA (e-mail: aniket-pramanik@uiowa.edu;
+xiaodong-wu@uiowa.edu; mathews-jacob@uiowa.edu). This work is
+supported by NIH grants R01EB019961 and R01AG067078.
+[14] and deep-learning priors [15], [16], the reconstructed
+images often exhibit residual aliasing and blurring at high
+acceleration rates. The direct use of current segmentation
+algorithms on these images may result in segmentation errors,
+which may offset the benefit of the higher spatial resolution.
+In particular, we note that the reconstruction and segmentation
+algorithms are often designed and developed independently,
+even though there is extensive synergy between segmentation
+and reconstruction tasks. A challenge that restricts the develop￾ment of joint recovery-segmentation algorithms is the lack of
+datasets with segmentation labels. In particular, segmentation
+often requires extensive time and expert supervision; a semi￾supervised segmentation approach that can reduce the number
+of labelled datasets can significantly improve the widespread
+adoption of such methods.
+The main focus of this paper is to introduce a deep￾learning framework for joint calibrationless reconstruction and
+semi-supervised segmentation of PMRI data. Motivated by
+our previous k-space deep-learning (DL) strategy [17] for
+calibrationless PMRI, we introduce a novel image domain
+DL framework. The proposed framework is motivated by the
+CLEAR approach [18], which exploits the low-rank structure
+of the patches obtained from coil sensitivity weighted images.
+To reduce the computational complexity, we unroll an iterative
+re-weighted least squares (IRLS) algorithm to minimize the
+CLEAR cost function and train it end-to-end, similar to
+the approach in [15], [16], [19] with shared weights across
+iterations as in model-based deep-learning (MoDL) [16]. We
+note that in an IRLS-CLEAR formulation, the iterations al￾ternate between a data consistency (DC) and a projection
+step, which projects each set of multi-channel patches to
+a linear signal subspace, thus denoising them. The IRLS
+algorithm estimates the linear subspaces or, equivalently, the
+linear annihilation relations from the data itself, which requires
+several iterations that contribute to the high computational
+complexity. We instead replace the linear projection step with
+a residual UNET [20] convolutional neural network (CNN).
+We hypothesize that the pre-learned non-linear CNN acts as a
+spatially varying annihilation filterbank for the multi-channel
+patches. The use of the CNN, whose parameters are pre￾learned from exemplar data, translates to good performance
+with much fewer iterations and, hence, significantly reduced
+computational complexity. We note that significantly more
+inter- and intra-patch annihilation relations are available in
+the spatial domain compared to the k-space approach in [17],
+which translates to improved performance.
+arXiv:2105.09220v1 [eess.IV] 19 May 2021

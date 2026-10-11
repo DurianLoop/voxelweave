@@ -1,0 +1,7 @@
+# 归档前接续状态与恢复
+
+上一6580旧来源全数核过。首次新归档实际000566 exit1，在解析新来源的READING_PROVENANCE绑定时发现两个报告已被接续状态更新改动：PRIMARY_AND_AUTHOR_EVIDENCE.md、NEXT_TRIAL_PREPARATION.md。本次更新前应先检查既有绑定；现精确恢复原段落，原报告保持注册时点的内容与SHA，医学终态与新开发诊断状态以MEDICAL_RESULTS_AND_NEXT_ACTION.md、当前README和本增量为准。失败原工具返回保存，不覆盖旧index/proof；第一次未写新index/proof。
+
+原医学78123已经6ede46整体exit0，原capture0fbd7c、summary a165da和计数分解1f38d5完成。全部36production+36functional完整FOV数值通过，四个last2992模型全部未过六医学门槛；不再poll78123或29823。新开发评价12652运行中，须完整76FOV真正terminal再capture，不改runner/protocol，不冻结滚动输出。完整强度90446仍运行，最新实际7440/35904，不冒充全35904。
+
+当前可见GPU授权成立，显存实际1394MiB，低于新训练8192MiB准入。未安装缺失psutil，不查其他PID、不改既有训练、不委派。8确认患者/12series与lockedIXI继续关闭，发表claim尚未独立确认，goal active。

@@ -1,0 +1,30 @@
+A Segmentation-aware Deep Fusion Network for Compressed Sensing MRI 5
+2.3 Multilayer Feature Aggregation
+The works [22] on visualization of deep CNN has revealed the feature maps at
+different layers describe the image in different scales and views. In the conven￾tional deep neural network models, the output is produced based on the deep
+layers or even the last layer of the model, leaving the features in lower layers con￾taining information from different scales underemphasized. In the field of salient
+object detection, the multilayer feature aggregation is a popular approach to
+integrate information from different layers in the network [23,24,25].
+2.4 High-level Information Guidance for Low-level Tasks
+Recently, some works are devoted to combining the low-level task with tasks
+in higher levels. In the work of [26], a well pre-trained segmentation network
+is cascaded behind a denoising network, then the loss functions for both seg￾mentation and denoising are optimized to train the denoising network without
+adjusting the parameters in segmentation network. With this model, the denois￾ing network produces the denoised images with higher segmentation accuracy
+using automatic segmentation network at the expense of limited improvement in
+restoration accuracy or even degradation. In the AOD-Net [27], the well-trained
+dehaze model is jointly optimized with a faster R-CNN, resulting better detec￾tion and recognition results.
+3 The Proposed Architecture
+To incorporate the information from segmentation label into the MRI recon￾struction, we proposed the segmentation-aware deep fusion network (SADFN).
+The network architecture is shown in Figure 2. The reconstruction network and
+segmentation network are first pre-trained. Then a segmentation-aware feature
+extraction module is designed to provide features with rich segmentation infor￾mation to reconstruction network using a feature fusion strategy.
+3.1 The Pre-trained MRI Reconstruction Network
+As we introduced above, the DC-CNN architecture achieves the state-of-the￾art performance in reconstruction accuracy and computational efficiency. We
+train a DC-CNN network with N cascaded blocks. Each block contains several
+nonlinear convolutional layer and a data fidelity layer. The details of each block
+in the DC-CNN architecture is shown in Table 1. In the data fidelity layer, the
+input reconstructed MR image produced by the previous convolutional layer is
+first transformed into frequency domain. Then the accurate samples in under￾sampled k-space measurements directly replace the corresponding positions in
+the Fourier coefficients. The corrected Fourier coefficients are transformed back
+to MR image as the output by the data fidelity layer. The details can also be
+found in [4]. Note the identity function is used in last convolutional layer to

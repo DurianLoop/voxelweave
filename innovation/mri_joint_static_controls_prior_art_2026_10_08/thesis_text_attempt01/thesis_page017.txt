@@ -1,0 +1,41 @@
+Introduction
+mask1, which can be attributed to the difficulty of the problem. Optimizing a sampling
+mask is acombinatorial problem, for which commonly used gradient-based optimization
+techniques are not readily available. As a result, two main trends emerged: approximate
+solutions to the combinatorial problem (Ravishankar and Bresler, 2011a; Liu et al., 2012),
+or the optimization of an underlying probability distribution from which a random mask
+is then sampled (Knoll et al., 2011b; Chauffert et al., 2013).
+In more recent years, there has been a renewed interest in this problem, and a flurry of
+approaches have been proposed (Gözcü et al., 2018; Jin et al., 2019; Sherry et al., 2019;
+Bahadir et al., 2019; Huijben et al., 2020; Pineda et al., 2020; Bakker et al., 2020; Yin et al.,
+2021). This is mainly due to the wide availability of training data, the fast reconstruction
+times of deep learning-based methods and the wider use of auto-differentiation frameworks
+such as PyTorch and TensorFlow, which facilitate the routine computation of derivatives
+through complex models. While these methods are very diverse, they fit under two
+distinctive categories. Whereas previous approaches leveraged an underlyingmodel from
+which candidate sampling masks were drawn, modern approaches arelearning-basedin the
+sense that they learn this model directly from data. Furthermore, earlier methods were
+model-driven, designing masks to minimize a mathematical criterion such as coherence
+(Lustig et al., 2008). In contrast, recent works aredata-driven, as they learn policies that
+minimize the reconstruction error against a ground truth.
+In this thesis, we aim at contributing to the problem of optimizing sampling masks along
+two complementary directions.
+First, we will provide novelmethodological contributions to the problem of sampling
+optimization. More specifically, we aim at developing mask optimization algorithms that
+do not depend on a specific reconstruction algorithm, as this will allow the method to
+remain usable in a field where the state-of-the-art evolves very quickly. In addition, we
+are concerned with designingscalable methods. Most clinically relevant settings involve
+high resolution, multi-coil images, and it is imperative for sampling optimization methods
+to scale up to such challenging settings in order to provide practical value.
+Secondly, we aim at deepening theunderstanding of the kind of structures or assumptions
+that enable mask design algorithms to perform well in practice. It is not clear from the
+current literature what components are fundamental in a mask design algorithm. Should
+the mask design algorithm plan several steps of ahead? Should it adapt to each different
+patient? What kind of feedback should be available to the mask design algorithm in
+order to achieve the best performance? Amidst the race to develop ever more complex
+models, we aim at identifying the key components that drive the performance of modern
+mask design algorithms, in order toefficiently reach state-of-the-art performance.
+1We will refer to this problem interchangeably as the problem of mask design, sampling optimization,
+mask optimization, sampling mask optimization, sampling pattern optimization, or optimizing the
+acquisition trajectory.
+4

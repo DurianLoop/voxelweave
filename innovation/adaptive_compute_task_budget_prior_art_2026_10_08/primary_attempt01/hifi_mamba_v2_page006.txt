@@ -1,0 +1,76 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 6 AF=4 AF=8
+GT ISTA-Net LMO HiFi-MambaV1 HiFi-MambaV2 (Ours)
+AF=4 AF=8
+GT Unet LMO HiFi-MambaV1 HiFi-MambaV2 (Ours)
+0.2
+0.0
+0.1
+（a） （b）
+Fig. 3: Qualitative comparison on the fastMRI and CC359 datasets under single-coil settings. (a) Reconstruction results on the
+fastMRI knee dataset with acceleration factors AF=4 and AF=8. (b) Reconstruction results on the CC359 brain dataset under
+the same acceleration factors. The second row of each subplot shows the corresponding error maps. The blue boxes, yellow
+ellipses and red arrow highlight the details in the reconstruction results.
+AR Methods PSNR SSIM NMSE
+×4
+Unet 25.19 0.796 0.033
+LMO 28.74 0.833 0.018
+HiFi-MambaV1(P1) 33.48 0.928 0.005
+HiFi-MambaV2(P2) 32.89 0.923 0.005
+HiFi-MambaV2(P1) 33.72 0.931 0.005
+×8
+Unet 22.21 0.640 0.065
+LMO 24.18 0.677 0.043
+HiFi-MambaV1(P1) 27.64 0.805 0.018
+HiFi-MambaV2(P2) 27.44 0.804 0.019
+HiFi-MambaV2(P1) 28.05 0.820 0.017
+TABLE III: Single-coil MRI reconstruction comparison at
+acceleration rate ×4 and ×8. under radial undersampling mask
+at ACDC.
+×4
+Unet 30.02 0.770 0.026
+LMO 29.86 0.769 0.026
+HiFi-MambaV1(P1) 31.81 0.794 0.016
+HiFi-MambaV2(P2) 31.27 0.781 0.018
+HiFi-MambaV2(P1) 31.82 0.794 0.016
+×8
+Unet 28.14 0.724 0.037
+LMO 28.35 0.728 0.036
+HiFi-MambaV1(P1) 29.89 0.746 0.025
+HiFi-MambaV2(P2) 29.91 0.747 0.024
+HiFi-MambaV2(P1) 29.83 0.744 0.026
+TABLE IV: Multi-coil MRI reconstruction comparison at
+acceleration rate ×4 and ×8. at M4Raw.
+MambaV2 achieves the highest fidelity under both moderate
+and heavy undersampling.
+Random mask (Prostate158, single-coil). Under random
+undersampling (Table II), HiFi-MambaV2 again leads across
+all metrics. At 4×, V2(P1) achieves 29.04 dB PSNR and 0.837
+SSIM, improving upon LMO by +0.89 dB/+0.029 with a lower
+NMSE (0.012 vs. 0.015). At 8×, the gap further widens to
++1.23 dB/+0.062 and a 25% NMSE reduction, demonstrating
+the robustness of the proposed model to non-uniform sampling
+patterns.
+Radial mask (ACDC, single-coil). Table III shows that
+HiFi-MambaV2(P1) maintains top performance under radial
+sampling. At 4×, V2(P1) records 33.72 dB/0.931 SSIM,
+slightly exceeding V1(P1) by +0.24 dB/+0.003. At 8×,
+V2(P1) reaches 28.05 dB/0.820 SSIM, outperforming LMO
+by +3.87 dB/+0.143 while matching or exceeding prior HiFi￾MambaV1 performance. These results validate the model’s sta￾bility under non-Cartesian trajectories and high acceleration.
+Multi-coil reconstruction (M4Raw). On the M4Raw multi￾coil dataset (Table IV), HiFi-MambaV2 achieves compara￾ble or superior performance to all baselines. At 4×, both
+V1(P1) and V2(P1) achieve the highest PSNR (31.82 dB)
+and SSIM (0.794), while V2(P2) attains the best effi￾ciency–accuracy trade-off. At 8×, V2(P2) achieves the highest
+PSNR (29.91 dB) and lowest NMSE (0.024), outperforming
+LMO by +1.56 dB and a 33% NMSE reduction. Across all
+acceleration factors, HiFi-MambaV2 demonstrates strong gen￾eralization to multi-channel inputs and consistent numerical
+superiority.
+Overall, quantitative comparisons across Tables I–IV con￾firm that HiFi-MambaV2 achieves state-of-the-art reconstruc￾tion accuracy with consistently lower NMSE across diverse
+sampling schemes and datasets, validating its scalability and
+robustness.
+2) Qualitative Results: Figure 3 compares reconstruction
+results at 4× and 8× acceleration on the fastMRI (knee) and
+CC359 (brain) datasets. Each case shows the reconstructed
+image (top) and the corresponding error map (bottom), color￾coded from 0 (blue) to 0.2 (red). Yellow circles and red
+arrows highlight structural discrepancies, and blue boxes mark
+zoomed-in regions.
+CNN-based baselines (ISTA-Net, UNet) exhibit edge blur￾ring and loss of fine detail, while LMO, despite using the
+Mamba backbone, still shows boundary degradation and miss-

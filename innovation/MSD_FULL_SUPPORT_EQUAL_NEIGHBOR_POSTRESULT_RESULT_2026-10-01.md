@@ -1,0 +1,16 @@
+# MSD full-foreground baseline: regional error versus global metric
+
+The [rule](MSD_FULL_SUPPORT_EQUAL_NEIGHBOR_POSTRESULT_PLAN_2026-10-01.md) was fixed after the MSD lesion result and two-source full-support check. This is a further result-informed analysis, not a new held-out test. The [CPU script](experiments/msd_full_support_equal_neighbor_postresult.py) replayed exact local MSD sources and the original acquired-foreground support on all 483 complete cases and 1,932 targets; all source SHA-256s, target/residue positions, tumor/local raw-linear pixel values and archived full-support pixel counts passed. The sole original failed case `BRATS_044` remains in the 484-attempt denominator. [Summary](experiments/msd_full_support_equal_neighbor_postresult/summary.json), [patient CSV](experiments/msd_full_support_equal_neighbor_postresult/per_patient.csv) and [target CSV](experiments/msd_full_support_equal_neighbor_postresult/per_target.csv) are archived.
+
+| Same 483 patients, patient-equal MSE | Full acquired foreground | Annotated tumor ROI |
+|---|---:|---:|
+| Raw two-neighbor linear0 | 3,855.80 | 805.23 |
+| Model-pipeline linear0 | 4,036.02 | 1,068.26 |
+| HAT0 | 3,835.68 | 1,597.15 |
+| SwinIR0 | 3,634.41 | 1,403.28 |
+
+On the **full foreground**, HAT-minus-raw-linear is -20.12 MSE (5,000-draw patient-bootstrap 95% interval -140.48 to +96.99), with 259/483 patients worse than linear; its mean is effectively unresolved. SwinIR-minus-raw-linear is -221.40 (-350.15 to -102.88), but 239/483 patients are worse and 244/483 are better, so this mean advantage is not a uniform per-patient gain. Against pipeline linear, HAT and SwinIR full-support differences are -200.34 (-283.16 to -124.97) and -401.61 (-496.32 to -318.74). The same cohort's **tumor ROI** has HAT/SwinIR minus raw linear +791.92/+598.05 MSE, and minus pipeline linear +528.89/+335.02; those results and intervals are in the [lesion](MSD_EQUAL_NEIGHBOR_LINEAR_AUDIT_RESULT_2026-10-01.md) and [pipeline](MSD_PIPELINE_LINEAR_CONTROL_RESULT_2026-10-01.md) reports.
+
+Linking the archived patient tables by exact scan ID gives 195/483 HAT cases and 197/483 SwinIR cases with the descriptive **sign reversal** “model worse than raw linear inside tumor, better than raw linear on full foreground.” This is not a lesion-detection endpoint. Foreground and tumor ROIs have different size, intensity, texture and denominator; a global mean can mask localized error without a model-specific pathology mechanism. The labels are multimodal BRaTS annotations on a registered 1 mm release grid, not an independent T2-only diagnosis or native acquired-slice truth.
+
+In [MSValid and ReMIND](TWO_SOURCE_EQUAL_NEIGHBOR_PERFORMANCE_CHECK_RESULT_2026-10-01.md), both models beat raw linear on their own full foreground in every completed patient. The MSD full-support check **does not show a matching global collapse**: HAT is near zero in the mean; SwinIR has a mean benefit with nearly balanced patient signs. Therefore the cross-source evidence should not be sold as a proved whole-image domain-shift reversal. A publishable question would be whether an acquired-only, source-independent method can predict and reduce the within-case localized failure while retaining the full-image benefit; no such method, second aligned tumor source or clinical endpoint has been demonstrated.

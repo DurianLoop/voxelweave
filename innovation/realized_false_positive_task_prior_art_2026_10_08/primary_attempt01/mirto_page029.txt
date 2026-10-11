@@ -1,0 +1,48 @@
+MIRTO 29
+Table 19. Estimates whose sign differs between the full cohort and the FOV-complete subset (270 subjects); no interval￾excludes-zero status changes.
+Method / contrast Quantity Full 312 FOV-complete subset Interval-excludes-0 status changed
+cDDPM FP (cm3
+) / correct (τ 0.5) − incorrect (τ 0.875),
+mean
++0.195 [−1.141, 1.613] −0.010 [−1.453, 1.565] False
+cDDPM FP (cm3
+) / correct (τ 0.375) − incorrect (τ 0.7),
+mean
++0.385 [−3.418, 4.281] −0.124 [−4.048, 4.090] False
+pairwise REFLECT - UCCD, auprc_vox, mean +0.003 [−0.015, 0.022] −0.009 [−0.029, 0.011] False
+pairwise REFLECT - cDDPM, auprc_vox, median +0.006 [−0.019, 0.032] −0.007 [−0.023, 0.022] False
+Table 20. Through-plane offset check: offset dz∗
+chosen on 20 subjects, replicated on the next 20, and its effect on voxel
+AUROC in the remaining 292. “Native” refers to the method’s own grid.
+Method Grid dz* (selection 20) dz* (replication 20) ∆ voxel AUROC at dz* vs 0 (292 subjects) AUROC at dz = 0 Offset real by declared rule
+AnomalyDINO native 3 3 +0.0082 [0.0063, 0.0101] 0.826 True
+REFLECT native 1 1 −0.0005 [−0.0009, −0.0001] 0.933 False
+UCCD native 0 0 +0.0000 [0.0000, 0.0000] 0.896 False
+cDDPM native 2 2 −0.0005 [−0.0011, 0.0002] 0.899 False
+AnomalyDINO canonical 3 3 +0.0053 [0.0034, 0.0071] 0.833 True
+REFLECT canonical 1 1 −0.0004 [−0.0008, 0.0000] 0.933 False
+UCCD canonical 2 3 +0.0025 [0.0006, 0.0044] 0.864 False
+cDDPM canonical 2 3 +0.0023 [0.0005, 0.0043] 0.873 False
+Table 21. Round trip of the canonical reference through each method’s native grid (nearest neighbour). The UCCD/cDDPM
+grid fragments the reference and loses 1.8% of tumour volume, which is why no MIRTO metric uses a method’s own reference.
+Method grid Subjects 6-conn. components, canonical → round trip Above-floor lesions Tumour volume ratio (round trip / canonical) Round trip equals method’s own reference
+AnomalyDINO 312 5,473 → 5,050 472 → 474 0.9999 100.0 %
+REFLECT 312 5,473 → 5,065 472 → 472 0.9998 100.0 %
+UCCD 312 5,473 → 2,355 472 → 543 0.9823 100.0 %
+cDDPM 312 5,473 → 2,355 472 → 543 0.9823 100.0 %
+Ties matter for threshold-free metrics. Many brain voxels carry tied scores, a median of 65% per subject for UCCD
+and 26% for cDDPM (Table 22). Ordinal ranks, which break ties by array order, changed a subject’s voxel AUROC
+by up to 0.046 relative to mid-ranks; MIRTO uses mid-ranks and tie-collapsed average precision throughout.
+Table 22. Tie audit over 312 subjects per method: ordinal minus mid-rank voxel AUROC (∆AUROC) and ordinal minus
+tie-collapsed AUPRC.
+Method brain voxels tied (median share) outside FOV (median share) mean ∆AUROC max |∆AUROC| max |∆AUPRC|
+REFLECT 0.038 0.001 -0.0000 0.0000 0.0000
+UCCD 0.649 0.091 -0.0020 0.0464 0.0020
+cDDPM 0.256 0.091 -0.0016 0.0391 0.0020
+AnomalyDINO 0.165 0.000 -0.0000 0.0076 0.0037
+Spatial randomisation controls (Table 23) apply known displacements to the stored maps: through-plane shifts by
+±2, ±5 and ±10 slices, a permutation of slices within the subject, and the exchange of maps across subjects matched
+on brain area. Shifting a map by two slices costs at most 0.009 Dice, by ten slices 0.08 to 0.12 for the residual
+models; permuting slices within a subject or exchanging maps across subjects removes most of the Dice, leaving
+0.06 to 0.07 when maps come from another subject. This confirms that Dice at the validation threshold depends on
+subject-specific localisation, as it should.

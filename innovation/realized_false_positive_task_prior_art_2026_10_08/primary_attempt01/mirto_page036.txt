@@ -1,0 +1,47 @@
+36 N. K. Hernashki and S. Chatterjee
+residual models in that most of its misses are selected but poorly delineated (189 of 373). The label-informed upper
+bounds at every budget are in Table 45. A per-subject threshold with no burden cap (Table 46) bounds what any
+choice of a single threshold per subject could achieve: 0.580 to 0.605 Dice for the residual models and 0.373 for
+AnomalyDINO, the latter at a mean false-positive volume of 156 cm3
+. Table 47 gives every detection model.
+Table 41. Lesion definition and lesion sensitivity at 20 cm3
+, validation threshold, IoU ≥ 0.10.
+Method Connectivity Floor (mm3
+) Reference components Hits Pooled sensitivity Subject-mean sensitivity
+AnomalyDINO 6 0 5473 99 0.018 0.052
+AnomalyDINO 6 50 472 99 0.210 0.264
+AnomalyDINO 26 0 1685 100 0.059 0.127
+AnomalyDINO 26 50 440 100 0.227 0.275
+REFLECT 6 0 5473 287 0.052 0.173
+REFLECT 6 50 472 287 0.608 0.765
+REFLECT 26 0 1685 286 0.170 0.389
+REFLECT 26 50 440 286 0.650 0.785
+UCCD 6 0 5473 318 0.058 0.189
+UCCD 6 50 472 318 0.674 0.841
+UCCD 26 0 1685 318 0.189 0.430
+UCCD 26 50 440 318 0.723 0.868
+cDDPM 6 0 5473 314 0.057 0.187
+cDDPM 6 50 472 314 0.665 0.831
+cDDPM 26 0 1685 314 0.186 0.424
+cDDPM 26 50 440 314 0.714 0.859
+Table 42. Above-floor lesion sensitivity (IoU ≥ 0.10, plain thresholding, validation threshold) by budget, with large- and
+small-lesion sensitivity.
+Method 5 cm3 10 cm3 20 cm3 40 cm3
+REFLECT 0.394 (large 0.603, small 0.006) 0.523 (large 0.801, small 0.006) 0.608 (large 0.915, small 0.036) 0.644 (large 0.967, small 0.042)
+UCCD 0.653 (large 0.977, small 0.048) 0.663 (large 0.987, small 0.061) 0.674 (large 0.997, small 0.073) 0.669 (large 0.997, small 0.061)
+cDDPM 0.614 (large 0.909, small 0.067) 0.648 (large 0.964, small 0.061) 0.665 (large 0.984, small 0.073) 0.672 (large 0.993, small 0.073)
+AnomalyDINO 0.040 (large 0.062, small 0.000) 0.106 (large 0.163, small 0.000) 0.210 (large 0.316, small 0.012) 0.339 (large 0.518, small 0.006)
+Table 43. Jaccard index between the sets of above-floor lesions missed at 20 cm3
+, validation threshold.
+Missed-lesion Jaccard REFLECT UCCD cDDPM AnomalyDINO
+REFLECT 1.000 0.813 0.805 0.476
+UCCD 0.813 1.000 0.938 0.402
+cDDPM 0.805 0.938 1.000 0.416
+AnomalyDINO 0.476 0.402 0.416 1.000
+Table 44. Error modes of the 472 above-floor lesions at 20 cm3
+, validation threshold.
+Method Detected (IoU ≥ 0.10) Missed: evidence not selected Missed: no evidence Missed: selected, poorly delineated Total
+REFLECT 287 135 15 35 472
+UCCD 318 123 17 14 472
+cDDPM 314 137 9 12 472
+AnomalyDINO 99 170 14 189 472

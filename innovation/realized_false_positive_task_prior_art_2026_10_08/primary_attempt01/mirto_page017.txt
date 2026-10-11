@@ -1,0 +1,86 @@
+MIRTO 17
+Table 8. Slice-level AUROC: marginal, covariate-adjusted
+(stratified; matched with two calipers; spline regression, 5 df),
+and observed minus borrowed-map AROC.
+Scorer marg. strat. m. 0.2 m. 0.05 reg. 5 obs.−borrowed
+REFLECT 0.887 0.754 0.734 0.726 0.600 +0.229 [0.201, 0.257]
+UCCD 0.907 0.759 0.769 0.743 0.649 +0.266 [0.244, 0.288]
+cDDPM 0.905 0.762 0.768 0.744 0.646 +0.271 [0.249, 0.293]
+AnomalyDINO 0.598 0.619 0.620 0.624 0.504 +0.124 [0.100, 0.148]
+brain area 0.884 0.691 0.668 0.560 0.626 –
+mid-brain closeness 0.857 0.576 0.550 0.486 0.530 –
+0.4 0.5 0.6 0.7 0.8 0.9
+slice-level AUROC (95% CI)
+marginal
+stratified
+matched, 0.2 SD
+matched, 0.05 SD
+regression, 5 df
+regression, 8 df
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+control: brain area
+control: mid-brain closeness
+Fig. 10. Slice-level AUROC under six estimators.
+Covariate-only controls (crosses) should sit at 0.5 if an es￾timator removes anatomy; none does.
+every estimator and the dependence on the caliper are
+given in Appendix D.6.
+3.7 Lesion-level detection
+Hypotheses. If no sub-floor fragment is ever hit, the lesion
+floor changes pooled sensitivity only through its denom￾inator, by the ratio |Lf |/|L0| (Appendix A). H4 (con￾trast dependence): detection rises with T2 contrast and
+with oedema fraction in every residual model. Secondary
+hypotheses predict that UCCD finds fewer than 10% of
+small lesions and that the three residual models miss
+largely the same lesions (Jaccard index of the missed
+sets of UCCD with REFLECT and with cDDPM at least
+0.70).
+The lesion definition rescaled pooled sensitivity about
+elevenfold through the denominator alone. REFLECT hit
+287 lesions under both definitions; 287/472 = 0.608 with
+the 50 mm3 floor and 287/5,473 = 0.052 without, a ratio
+of 5,473/472 = 11.6 that is identical for every method
+because the 5,001 sub-floor fragments were never hit.
+Subject-mean sensitivity moved less (0.765 against 0.173).
+A sensitivity computed over all components is not a sen￾sitivity in any clinical sense, and a lesion-level metric is
+uninterpretable without its connectivity and floor.
+At the validation threshold the residual models found
+nearly every large lesion and almost no small one: large￾lesion sensitivity was 0.915 to 0.997 and small-lesion sen￾sitivity 0.036 to 0.073, at most 12 of 165 small lesions,
+as the secondary hypothesis predicted. The three resid￾ual models missed largely the same lesions (Jaccard in￾dex of the missed sets 0.805 to 0.938), which supports
+the second secondary hypothesis. Most misses carried ev￾idence that the threshold did not select: of the 472 above￾floor lesions, 123 to 137 were missed with in-lesion scores
+above the subject’s healthy-brain median, 9 to 17 had no
+such evidence, and 12 to 35 were selected but delineated
+with IoU < 0.10 (Fig. 11a). Lesion volume dominated de￾tection in every model (Firth-penalised log-odds 4.8 to
+6.0 per standard deviation of log volume for the resid￾ual models; Fig. 11b), whereas in the Firth fit T2 con￾trast added an effect whose interval excluded zero only
+for REFLECT (+1.98 [1.22, 2.82]) and AnomalyDINO
+(+0.29 [0.03, 0.55]); for cDDPM only the GEE interval
+excluded zero (Appendix Table 47). H4 was therefore not
+supported; it could be tested only in part, because oedema
+fractions are not available in the binary labels. Label￾informed upper bounds that respect the per-subject bud￾get (Appendix D.7, Table 45) place the remaining head￾room mainly in delineation: perfect boundaries for de￾tected lesions would add 0.40 to 0.46 Dice at 20 cm3
+, an
+optimal threshold per lesion 0.12 to 0.16, and an optimal
+threshold per subject 0.03 to 0.07.
+3.8 Intensity baselines
+Hypothesis. Thresholding raw intensity has been reported
+to rival learnt detectors [48]. H3 (intensity baseline): z￾scored T2 comes within 0.05 Dice of at least one model
+at equal realised burden at 20 cm3
+. Identity 3 adds an ex￾ploratory prediction: a score normalised per subject, such
+as z-scored FLAIR, can rank voxels well within subjects
+yet pool poorly.
+Every model, AnomalyDINO included, beat z-scored
+T2 intensity in Dice at matched burden at every budget:
+the residual models by 0.28 to 0.46 across budgets (0.44 to
+0.46 at 20 cm3
+) and AnomalyDINO by 0.098 [0.076, 0.119]
+at 20 cm3
+so H3 was not supported. FLAIR, which the
+models never see, exceeded each of the three residual
+models in subject-mean voxel AUROC and AUPRC, but
+not when voxels were pooled, and never in Dice; it ex￾ceeded AnomalyDINO in every metric and aggregation
+(Fig. 12). For REFLECT the voxel-AUROC difference
+reversed sign with the aggregation, +0.018 [0.009, 0.027]
+in the subject mean and −0.071 [−0.085, −0.057] pooled,
+both pH < 0.005. Identity 3 suggests a reading: per￾subject z-scoring makes FLAIR rank voxels well within
+each subject, but the between-subject term of Eq. (19)
+penalises its uncalibrated scale across subjects. Anoma￾lyDINO was indistinguishable from raw T2 in voxel AU-

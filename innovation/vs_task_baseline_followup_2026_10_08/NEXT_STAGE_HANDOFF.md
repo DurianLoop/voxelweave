@@ -1,0 +1,15 @@
+# 下一轮首要poll原训练，继续资格后的任务能力
+
+首要实际poll29823，不重启/迁移/改源。当前最后58df89仍live：首分支2860/2992，median2.0737549000186846秒、累计6017.212067999993秒。其余三分支未记录完成。CPU4/interop1/below-normal，总11968更新、wall27000秒、训练stage45MB、磁盘/RAM8GB储备、无optimizer恢复。最新本轮GPUfree1394MiB，授权有效但低于8192MiB启动门槛。
+
+本轮两篇不同主文、三个synthetic/表格CPU脚本和真实19series/38batch入口已经真正完成；登记f3aa14 exit0。原fetch12809 1de6d5 exit1因Unicodehyphen严格title差，不重试网络、不改脚本；本地991f9d exit0核相同DOI/PMCID与标点后身份，原HTTP内层结果不补造。外链Supplement/图片/作者代码未读。
+
+新label_preserving_roundtrip只图像两次interp、原GT不动，完整齐次matrix inverse而非逐Euler角取负；synthetic oracle只32固定点，不是全概率体素独立核验。b2c07b资格11开发患者/19series两输入38batch原source/GT/hash/geometry配对全部通过；MRI38/GT19、model/forward/updates0。prototype不是医学改善或首创，zero padding丢失信息须保留。
+
+原四branch真正exit0后保存原工具返回，标observed_unified_exec_session29823，再原capture_training_terminal→evaluate_matched全36生产/functionalFOV→capture_evaluation_terminal→summarize_matched。四last2992、全部11968日志、严格3e-6/3e-12/零二值和原六医学门槛不降。step99旧control不能归因step2992spatial。
+
+能力不足时再固定ordinary matched roundtrip/lowpass对照，见MATCHED_ROUNDTRIP_NEXT_TRIAL_PREPARATION；不改正在训练的四臂。能力足且动作余量存在才开发patient-fold外QC/error-cost/defer/增量真实动作损害变化、全成本、联合动作与强raw/直接任务/随机静态/always-action控制。冻结后8未见确认12series一次、独立任务网仍必要。
+
+JAMIA临床报告时间两列不能混算：mean阶段合计多12秒/例，total合计多222秒，mean×50差600秒；不同并行角色person-time、模型/report/预读费用未完整取得，不新宣称净临床省时。原文DSC模态摘要/正文冲突和single-slice volume语义疑问保留。完整50患者36/8/6不删失败。
+
+本轮归档接前6060，actual proof/POST文件以真实terminal为准；下一delta纳入后附public/observations。live training除frozen_config全部排除，旧绑定文件不改。科研goalactive，无独立确认可发表claim；异质T2不统称CISS、8确认及lockedIXI关闭、不安装、不委派、不枚举/操作其他PID、新文件只innovation。

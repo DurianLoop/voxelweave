@@ -1,0 +1,33 @@
+10 Qiaoying Huang, Xiao Chen, Dimitris Metaxas, and Mariappan S. Nadar
+space data via inverse fast Fourier transform. Note that the fully-sampled image
+is used as ground truth by some existing algorithms, however, it may contain
+noise and comprise the segmentation performance. Similarly, zero-filling image
+(bottom-right) is generated from under-sampled k-space data via inverse Fourier
+transform, and is taken as the input in all models.
+5.2 Network architectures
+In our SERANet, we implement two types of regularization blocks: cascaded
+CNN (Type A) [9] and auto-encoder (Type B) [11], which are two popular choices
+for image reconstruction using deep learning. Their architectures are respectively
+shown in Figure 7 (a) and 7 (b). We also show the architecture of the UNet
+adopted in the paper for the segmentation module in Figure 7 (c).
+64 64 64 64 64
+128 128
+64
+256
+(a) Regularization block: Type A (b) Regularization block: Type B
+64
+128
+256
+512
+256
+128
+64
+reconstructed image segmentation mask
+(c) Segmentation network (UNet)
+Fig. 7. Achitectures of two regularization blocks and one segmentation network utilized
+in the paper.
+6 Additional Quantitative Result
+In this section, we provide additional quantitative results. We demonstrate the
+comparison results of our SERANet and other approaches on data with 10%
+(Figure 6) white Gaussian noise and data with 20% noise (Figure 6). For LI-net
+and Syn-net, we only show their segmentation results since they bypassed the

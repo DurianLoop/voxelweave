@@ -1,0 +1,54 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+7
+A = exp(−exp(logdt + logA))
+where logdt and logA are learnable scalar and vector parameters respectively. Since exp(⋅) is always 
+positive, −exp(⋅) is always negative, and exp of a negative number is always in (0, 1). This guarantees that 
+every element of A lies strictly in (0, 1), ensuring spectral radius 𝜌(A) &lt; 1 by construction. This is a 
+sufficient condition for the recurrence to be a contraction mapping, meaning the hidden state converges 
+regardless of how many loop iterations are used.
+In our experiments, the spectral radius remains stable at 𝜌(A) ≈ 0.36 throughout training, well below the 
+instability threshold of 1.0. This stability guarantee is what enables depth extrapolation: the model can 
+safely use more iterations at inference time than it was trained with, because the contraction property 
+prevents divergence.
+Consider ℎt+1 = A ⋅ ht + B ⋅ e + f(ht
+) where f is L-Lipschitz. The mapping is a contraction if 𝜌(A) + L &lt; 
+1. With 𝜌(A) ≈ 0.36 and bounded ViTBlock, the Banach fixed-point theorem guarantees convergence to a 
+unique ℎ
+∗
+.
+The ZOH discretization interpretation: A = exp(-exp(logdt + logA)) is the exact discretization of the stable 
+ODE dh/dt = -exp(logA) ⋅ h + B ⋅ e. This dynamical systems connection provides principled foundation for 
+the recurrence.
+𝜌(A) ≈ 0.36 means 36% state retention per iteration and 64% from new computation. This balanced mixing 
+rate supports both context accumulation and new spatial information incorporation.
+3.5 Adaptive Computation Time
+ACT [18] provides a principled mechanism for variable-depth computation. For each patch token, a linear 
+halting head computes the halting probability pt = 𝜎(Whalt ⋅ ht
+) ∈ [0, 1] at each loop iteration t. The model 
+maintains a cumulative halting probability Ct = 𝛴 ∑
+t
+i=1 pi
+for each patch. Once Ct exceeds a threshold 𝜏
+(we use 𝜏 = 0.95), that patch’s state is frozen and contributes no further to computation.
+The ACT-weighted output is computed as hout = 𝛴t wt
+⋅ ht
+, where the weight wt equals the halting 
+probability pt
+for non-terminal iterations and equals the remainder 1 − 𝐶t−1 for the terminal iteration. This 
+ensures that the total weight sums to 1.0 for each patch.
+For segmentation, ACT produces a spatial halting map of shape (B, N, T) that reveals where the model 
+allocates more computation. We observe that boundary regions between cardiac structures consistently 
+receive more iterations (3–4 effective iterations) than homogeneous regions (1–2 iterations), validating the 
+adaptive computation hypothesis.
+The ponder cost regularizer Lponder = 𝜆 ⋅ mean(𝛴t pt
+) with 𝜆 = 0.01 encourages the model to halt early 
+when possible, promoting computational efficiency. The mean ponder time decreases from approximately 
+2.6 to 1.4 effective iterations during training, showing that the model learns to be computationally efficient 
+as it improves.
+Effective cost Ceff = 𝛴 ∑N
+n=1 Tn ⋅ cblock. Mean ponder 1.4 out of T = 8 gives Ceff ≈ N ⋅ 1.4 ⋅ cblock, a 
+5.7× reduction versus uniform computation.
+Halting entropy Hhalt = -𝛴n (Tn/𝛴T) ⋅ log(Tn/𝛴T) measures compute distribution uniformity. Moderate 
+entropy indicates boundary-concentrated difficulty.
+Halted patches still participate in attention for non-halted neighbors. Savings are primarily in FFN and 
+LoRA, not attention. Masking halted patches entirely risks information loss at boundaries.

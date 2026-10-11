@@ -1,0 +1,70 @@
+XLSTM-HVED: CROSS-MODAL BRAIN TUMOR SEGMENTATION AND MRI
+RECONSTRUCTION METHOD USING VISION XLSTM AND HETEROMODAL
+VARIATIONAL ENCODER-DECODER
+Shenghao Zhu1
+, Yifei Chen1
+, Shuo Jiang1
+, Weihong Chen1
+, Chang Liu1
+,
+Yuanhan Wang1
+, Xu Chen1
+, Yifan Ke1
+, Feiwei Qin1,⋆, Changmiao Wang2
+, Zhu Zhu3,4,⋆
+1Hangzhou Dianzi University, Hangzhou, China
+2Shenzhen Research Institute of Big Data, Shenzhen, China
+3Children’s Hospital, Zhejiang University School of Medicine, Hangzhou, China
+4Sino-Finland Joint AI Laboratory for Child Health of Zhejiang Province, Hangzhou, China
+⋆ Corresponding Author: zhuzhu cs@zju.edu.cn, qinfeiwei@hdu.edu.cn
+ABSTRACT
+Neurogliomas are among the most aggressive forms of can￾cer, presenting considerable challenges in both treatment and
+monitoring due to their unpredictable biological behavior.
+Magnetic resonance imaging (MRI) is currently the preferred
+method for diagnosing and monitoring gliomas. However, the
+lack of specific imaging techniques often compromises the ac￾curacy of tumor segmentation during the imaging process. To
+address this issue, we introduce the XLSTM-HVED model.
+This model integrates a hetero-modal encoder-decoder frame￾work with the Vision XLSTM module to reconstruct missing
+MRI modalities. By deeply fusing spatial and temporal fea￾tures, it enhances tumor segmentation performance. The key
+innovation of our approach is the Self-Attention Variational
+Encoder (SAVE) module, which improves the integration
+of modal features. Additionally, it optimizes the interac￾tion of features between segmentation and reconstruction
+tasks through the Squeeze-Fusion-Excitation Cross Aware￾ness (SFECA) module. Our experiments using the BraTS
+2024 dataset demonstrate that our model significantly outper￾forms existing advanced methods in handling cases where
+modalities are missing. Our source code is available at
+https://github.com/Quanato607/XLSTM-HVED.
+Index Terms— Neuroglioma, Multimodal MRI, Brain
+Tumor Segmentation, Missing Modality, Multi-task Learning
+1. INTRODUCTION
+Neurogliomas rank among the deadliest cancers and are the
+most common malignant primary brain tumors in adults, ac￾counting for approximately 25% of all primary brain tumors
+and 80% of malignant primary brain and central nervous sys￾tem tumors. Within this category, diffuse gliomas are the most
+frequently occurring malignant subtype. However, their di￾verse biological behavior and unpredictable response to treat￾ment present substantial challenges for treatment [1].
+Magnetic resonance imaging (MRI) is the preferred
+method for diagnosing diffuse gliomas, offering crucial in￾sights into tumor size, location, and morphology over time
+[2]. Various MRI modalities, such as T1, T1-Gd, T2, and
+FLAIR, provide complementary information about brain
+tumors. For instance, T1 and T2 modalities help identify
+vasogenic edema in subacute strokes; T1-Gd, enhanced with
+contrast, reveals details about vasculature and the blood-brain
+barrier; and FLAIR provides general information about stroke
+lesions. Consequently, using multimodal MRI for segmenta￾tion reduces uncertainty and enhances performance compared
+to relying on single modalities. However, in practice, missing
+modalities are common. This issue arises due to patients’
+limited tolerance for scans, time constraints, or image corrup￾tion. As a result, accurate MRI segmentation in the presence
+of missing modalities has garnered significant research inter￾est in recent years. For instance, Doren et al. [3] developed
+a Heteromodal Variational Encoder-Decoder (HVED) for
+tumor segmentation and modal complementation under con￾ditions of missing modalities. Similarly, Chen et al. [13]
+proposed a multimodal brain segmentation method based on
+a feature decoupling and gated fusion framework to enhance
+robustness when modalities are absent. Furthermore, Liu et
+al. [5] introduced a multimodal mask autoencoder (M3AE)
+for brain tumor segmentation in scenarios where multiple
+modalities are missing.
+2. METHODS
+2.1. Model Overview
+As illustrated in Figure 1, we introduce the XLSTM-HVED
+model, designed to improve the interaction of features be￾tween different MRI modalities. This model employs the Het￾eromodal Variational Encoder-Decoder (HVED) to capitalize
+on the capabilities of XLSTM. It merges channel and spatial
+information through the SFECA module, effectively utilizing
+complementary information from various modalities. Conse￾arXiv:2412.07804v3 [eess.IV] 5 Mar 2025

@@ -1,0 +1,9 @@
+# VS-SEG-001 exact-two-series nonpixel pilot
+
+This protocol was written after the official TCIA v2 collection page, 242-person mapping CSV and 241-person NBIA MR list, before downloading any VS-SEG image objects. It follows the source qualification plan. The selection is the lexicographically first mapped patient, `VS-SEG-001`, and is independent of pixels or model outcomes.
+
+- T2 image: `SeriesInstanceUID=1.3.6.1.4.1.14519.5.2.1.97824612055862366318560427964793890998`, official NBIA description `t2_ci3d_tra_1.5mm_v1`, 80 objects, listed `FileSize=23892212`.
+- T2 RTSTRUCT: `SeriesInstanceUID=1.3.6.1.4.1.14519.5.2.1.100364245183930759730290495595573094436`, exact same-patient series from the official mapping CSV. Do not substitute the T1 RTSTRUCT or another patient after observing results.
+- Use TCIA's public NBIA `getImage?SeriesInstanceUID=` endpoint. Cap received ZIP objects at 35 MB for T2 and 5 MB for RTSTRUCT; preserve whole-object SHA-256 and ZIP member names/hashes. Reject unsafe ZIP paths, unexpected patient/series UID, duplicate SOP UID, non-DICOM members or a truncated transfer. Store under `innovation/data/vs_seg_001_header_pilot`.
+- Read DICOM metadata with `stop_before_pixels=True` for every T2 object and RTSTRUCT. Check actual acquisition type/sequence, rows/columns, pixel spacing, slice thickness, image positions/orientations, frame-of-reference UID, unique spatial planes, consecutive physical spacing and RT contour references. Preserve failures and source metadata. Do not decode image pixels, rasterize tumor masks, compute model predictions or select target slices in this pilot.
+- Only if the source/contour gate passes, write a separate frozen one-case pixel/label protocol. The original paper warns that T1-origin tumor contours interpolated to T2 may differ at first/last slices; avoid claiming exact native tumor truth before conversion-method comparison.

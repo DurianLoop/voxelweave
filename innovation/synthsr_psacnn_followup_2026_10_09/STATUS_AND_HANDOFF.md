@@ -1,0 +1,26 @@
+# 真实结果与下一接续
+
+本轮已有实质进展：271修复资格真正整体exit0+独立身份/门槛审计；重新启动35904完整新版本；两篇不同原文及5张表实际完整读流，原表Fraction核验。没有新患者医学效果或发表claim，goal仍active。
+
+## 下一轮首先轮询两个实际句柄
+
+- 原训练29823：b584c7仍返回session_id；前三臂2992，第四raw_pchip_spatial2090/2992，median2.1706180499168113秒，累计23719.140058799996秒。终态exit0并无session_id后，按原capture_training_terminal→evaluate_matched→capture_evaluation_terminal→summarize_matched。目录spatial_adaptation_matched_2026_10_08。先四last2992/11968journal/每患者272，再原4已见患者9series、36production+36functional完整FOV；医学六门槛和数值门槛不改。
+- 新完整pipeline90446：真实启动3d3b7d，ACTUAL_FULL_REAL_PIPELINE_SESSION.json已记录actual_unified_exec_session=90446。306bd9仍live，已观察2568/35904，max full-chain1.9073486328125e-6、isolated0、coordinate5.684341886080802e-14。成功真正终态后保存ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json加observed_unified_exec_session=90446，再原audit_full_real_terminal.py。目录full_real_intensity_v2_2026_10_09。不能把该进度或原6216成功前缀当全范围通过。
+
+旧74234终态093916 exit1已确认，不能继续当live。原6217字段3.814697265625e-6>3e-6；原成功prefix的max_errors不含失败。b4f36e完整顺序/prefix审计和0e1ca0重现通过。原reference SHA11f3946b80d7c687acb03fedc607881b6813a2982290e9588431ad96cc63c81e保持。
+
+修复47298真正2ce605 exit0，无session_id；271=40synthetic+228真实stress+3旧失败回归，MRI38/GT0。b422fd审计完整identity/所有11开发患者19series/各门槛通过，旧失败三mode的isolated/full-chain均0。仅新production gamma mean/std为float64；其他float32流程保持，new-versus-legacy max3.814697265625e-6照实记，原augmentation.py与训练绑定不改。任何新intensity/resolution/roundtrip控制都必须同v2，不能混版本归因。
+
+启动wrapper ac715d exit1（无session_id），重复调用torch.set_num_interop_threads导致import前失败，尚无输出attempt目录/MRI读取。保留ACTUAL_LAUNCH_WRAPPER_FAILED_TOOL.json，同源脚本直接运行3d3b7d成功取得90446；无依赖安装、无source调整。
+
+## 本批论文与核验
+
+SynthSR2023 DOI10.1126/sciadv.add3607，PMC9891693，XML已身份核验，blocks0–112 exclusive全部实际读，3表。VSRAD2025 DOI10.3389/fneur.2025.1645891，PMC12571571，blocks0–71 exclusive全部读，2表。原图像素/外链supp/源码/权重未读或运行，参考文献不代读。PSACNN仅索引；Katayama2026已读不重复。
+
+44f97f table audit实际exit0：7个Bonferroni显示值符合9倍而非标注7倍（考虑精度后仍如此），两种倍数均显著；7组robust LoA和64例百分比的显示差可由隐藏精度解释。不能由median of paired differences与difference of medians符号差判原数据错误。临床75生成、11排除、64定量，AD29+normal8报告ROC；AUC非显著差不证明等效。105+77与232仅部分流程差50秒，不是全费用节约。
+
+SynthSR主动填补肿瘤/卒中，配准误差下降不能作为肿瘤恢复。继续研究具体动作paired病灶损害与全费用，先充分任务能力，再matched QC/error-cost/defer/static/random/去采集控制、严格患者cross-fit和独立任务复核。全11GT父权重不能作为LOPO初始化。8未见确认/12series与lockedIXI关闭。
+
+本轮GPU totals实际897919：free1394MiB<8192MiB，旧CPU任务不迁移，不枚举其他PID。磁盘/RAM8GB储备不降、医学评价3MB保留；储备外约29MB，但六final payload约33.73MB，尚不含日志/原子临时写。没有自动删历史或宣布training-ready。
+
+本轮实际读流/观察gzip、公开对话与上一轮摘要均保留。归档接6441，当前两个live输出排除，旧失败输出可纳入；只运行一次新的archive，不能覆盖旧index。所有数值/软件资格仅是准备，科研目标未完成。

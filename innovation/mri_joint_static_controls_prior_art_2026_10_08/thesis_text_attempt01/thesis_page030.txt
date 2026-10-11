@@ -1,0 +1,31 @@
+2.1. MRI PHYSICS
+Reconstruction with
+coil sensitivities
+R = 1
+Reconstruction with
+sum of squares
+Image from the
+second coil
+R = 3
+R = 4
+k-space sampling
+of the second coil
+Figure 2.5: Example of parallel imaging on a cardiac image, simulated with three coils, whose
+sensitivities are three superimposed rectangles, each covering one third of the image. First column:
+combination via the sum of squares (SoS) technique, where the images from each coil are simply
+summed weighted by their modulus. Second column: Reconstruction taking into account the
+sensitivity maps, allowing for precise reconstruction for an acceleration rateR up to 3. Third
+column: Image reconstructed for the second coil when taking into account its sensitivity. Fourth
+column: k-space of the second channel at different undersampling rates.
+have a decreased field of view (FoV), resulting in aliasing when extended to the full FoV,
+as illustrated on Figure 2.5.
+Various approaches have tackled this challenge, but they generally rely on some patient-
+dependent calibration. For instance, SENSE3 (Pruessmann et al., 1999) consideredcoil
+sensitivity maps, which describe how each coil responds to a signal at each location of
+the FoV. They are typically estimated from data from a prescan (Blaimer et al., 2004).
+GRAPPA4 (Griswold et al., 2002a) uses a small part of the signal near the center of
+k-space, called autocalibration signal, in order to compute how the data from different
+channels (coils) should be combined. Several reviews (Blaimer et al., 2004; Glockner et al.,
+3Sensitivity encoding
+4Generalized Autocalibrating Partially Parallel Acquisitions
+17

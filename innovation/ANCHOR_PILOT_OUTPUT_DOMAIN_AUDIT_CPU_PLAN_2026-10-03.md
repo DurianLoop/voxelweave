@@ -1,0 +1,7 @@
+# 已保存预测的观测层/缺层/tail分区审计
+
+三人pilot原主Dice是完整体积，包含anchors；因此full改变本身不能证明缺层输出改变。以下是看到全部pilot与边界结果后的事后审计，固定202/203/204、两标签、原六配对比较，不新增神经前向。
+
+读取18个已复核保存预测、原mask和affine。将原生索引分为observed anchors、两个anchors之间的全部supported missing、unsupported tail；与RAS方向映射对应。检查三分区互斥且覆盖体积、输出预测和mask SHA不变、full计数等于分区之和。保存每个配对各分区的XOR计数及两标签TP/FP/FN/Dice差，不能把变化只发生在anchors的full差说成missing上下文效应。
+
+对XOR再用逆方向映射后的逐原生层计数复核，不读MRI像素、不调用模型。fixed缺层网络输入逐位相同的依据仍是已完成12输入重放，不在这里重新生成输入。即便missing输出有变化，也只证明给定3D网络/推理链对邻层干预有响应，不是解剖伤害、带宽恢复或全患者机制。

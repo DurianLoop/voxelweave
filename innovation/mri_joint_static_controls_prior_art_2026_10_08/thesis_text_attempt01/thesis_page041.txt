@@ -1,0 +1,64 @@
+CHAPTER 3. RECONSTRUCTION METHODS
+3.2.4 A Bayesian interpretation of reconstruction
+So far, the discussion has been framed as moving from mathematically-defined to data-
+driven regularization in order to improve the recovery of Problem 3.1. However, this
+approach can also be framed from a Bayesian perspective, where the data consistency
+term 1
+2∥Aωx−yω∥2
+2 is viewed as a likelihood and the regularizationλR(x) as a prior.
+This was initially discussed by Ji et al. (2008) for compressed sensing. The idea revolves
+around Bayes rule, where the posteriorp(x|y) can be expressed as
+p(x|y) =
+likelihood/bracehtipdownleft/bracehtipupright/bracehtipupleft/bracehtipdownright
+p(y|x)
+prior/bracehtipdownleft/bracehtipupright/bracehtipupleft/bracehtipdownright
+p(x)
+p(y)/bracehtipupleft/bracehtipdownright/bracehtipdownleft/bracehtipupright
+marginal
+∝p(y|x)p(x). (3.8)
+Under Gaussian noise, we can derive an explicit likelihood model for Equation 2.12,
+where, assumingϵ∼N (0,σ 2I), i.e assuming additive Gaussian noise, we getp(y|x) =
+1
+(2πσ2)P/2 exp
+(
+− 1
+2σ2∥y−Aωx∥2
+2
+)
+∼N (y;PωFx,σ 2I). The regularization term can then
+be viewed as a prior from which the ground truthx is sampled, in the case of classical CS,
+the prior can we specified as the Laplace density functionp(x) =
+(
+λ
+2
+)P
+exp (−λ∥W x∥1)
+(Ji et al., 2008). Such an approach enables to view Problem 3.1 as a maximum a posteriori
+(MAP) estimation, where one aims to find the reconstructionˆx that maximizes posterior
+probability
+ˆx = arg max
+x
+p(x|y) = arg max
+x
+p(y|x)p(x)
+p(y) by definition
+= arg max
+x
+p(y|x)p(x) as the optimization is indep. fromy
+= arg min
+x
+− log (p(y|x)p(x)) by taking thelog and negative of the problem
+= arg min
+x
+1
+2σ2∥y−Aωx∥2
+2 +λ∥W x∥1 explicit the functions and discard the constants
+The Bayesian perspective gives a different interpretation of reconstruction and of the
+role of regularization as a prior, and lends itself naturally to an extension to data-driven
+models, which act as learned prior models. The Bayesian framing of Equation 3.1 has
+also the advantage of naturally defining a criterion to acquire observations that have large
+uncertainty according to the model (Ji et al., 2008). We will discuss these implications
+in greater depth in the next Chapter as well as in Chapter 7. For now, we turn to our
+last category of deep learning-based approaches which make use of this Bayesian insight
+and attempt to explicitly learn meaningful, data-driven priors.
+28

@@ -1,0 +1,50 @@
+7.3. Applications. In the following we demonstrate performance of the task adapted re-
+construction scheme for (24) that is based on solving (29). All cases involve tomographic
+reconstruction from 2D parallel beam data and as tasks, we consider MNIST classiﬁcation
+and segmentation.
+7.3.1. Joint tomographic reconstruction and classiﬁcation.
+T ask: Recover probabilities that a 2D grey scale MNIST image is a 0,1, . . . ,9 from noisy
+parallel beam tomographic data (see section 6.2.1).
+Data: Elements in Y are real-valued functions representing samples of a Poisson random
+variable with mean equal to the exponential of the parallel beam ray transform and an
+intensity corresponding to 60 photons/line. The ray transform is digitized by sampling
+the angular variable at 5 uniformly sampled points in [0 ,π ] with 25 lines/angle.
+Model parameter space: Elements inX are functions representing images supported on a
+ﬁxed rectangular region Ω⊂ R2, so X :=L2(Ω, R). These are discretized by sampling
+on a uniform 28× 28 grid. The loss 𝓁X : X×X→ R is the squared L2-distance on X.
+Decision space: ∆ :={0, 1,..., 9} is the set of labels andD is probability distributions over
+∆ with a loss function 𝓁D : D×D→ R given by the cross entropy:
+𝓁D(d,d′) :=−
+∑
+i∈∆
+d(i) log
+[
+d′(i)
+]
+for d,d′∈ P∆.
+In addition to cross entropy, we employ classiﬁcation accuracy to measure perfor-
+mance. Given a probability distribution d ∈ D over∆, the single label predic-
+tion is deﬁned to be the element in ∆ that is assigned the highest probability, i.e.
+arg maxz∈∆d(z). The percentage of images in the evaluation data set for which the
+predicted label coincides with the real one is reported as classiﬁcation accuracy.
+Reconstruction and task operators: ReconstructionA†
+θ : Y →X is given by the learned
+gradient descent in [1] and taskTϑ : X→D is a MNIST classiﬁer given by a standard
+convolutional neural net classiﬁer with three convolutional layers, each followed by
+2×2 max pooling for segmentation. The activation functions used were ReLUs, layers
+had 32, 64 and 128 channels, respectively. The ﬁnal layer is dense and transforms the
+output of the last convolutional layer to a logit layer of size 10, with the last activation
+function being a softmax.
+Joint training: Joint supervised data is given as 512 000 triplets ( xi,yi,zi) where zi∈∆
+is the label corresponding to the MNIST labels. We also performed pre-training for
+both the reconstruction and task operator (classiﬁer). The reconstruction operator
+was pre-trained using 256 000 pairs (xi,yi) with 8 000 steps with a batch size of 64 and
+the task operator (classiﬁer) was pre-trained until 97.7% accuracy. Note here that we
+use about 60 000 entries from the MNIST database, so the above supervised data is
+not statistically independent.
+Example outcomes, which are summarized in Table 1 and Figure 2, show that a joint ap-
+proach outperforms a sequential one when considering the classiﬁcation accuracy. Besides an
+improved classiﬁcation accuracy we also see a signiﬁcant improvement regarding interpretabil-
+ity. The reconstructed image part can in the joint setting actually be used as a benchmark
+to assess the reconstructed classiﬁcation probabilities. On the other hand, the sequential ap-
+19

@@ -1,0 +1,76 @@
+20 N. K. Hernashki and S. Chatterjee
+−0.075 −0.050 −0.025 0.000 0.025 0.050
+Dice difference from published map (95% CI)
+latent MAD
+latent 0.99 quantile
+latent Euclidean norm
+latent whitened mean
+latent mean
+image stream only
+1 mm smoothing
+no clipping
+latent stream only
+REFLECT trained on IXI-HH+Guys
+−0.075 −0.050 −0.025 0.000 0.025
+Dice difference from published map (95% CI)
+REFLECT trained on MOOD+IXI
+burden matched per cohort burden matched per subject
+Fig. 14. Latent aggregation for REFLECT. Dice of each score rule minus the published map at 20 cm3
+, matched to the
+published map’s realised burden over the cohort (black) or per subject (blue), for REFLECT trained on two different training
+sets.
+variant to precisely the in-plane permutations that wreck
+localisation. The registration gate and the label-free diag￾nostics catch such errors with measured power and leave
+correct pipelines alone; the obvious alternative, a Dice
+threshold on the method’s own reference, would have re￾jected up to 242 correctly registered subjects per method.
+The threshold-transfer component turns a familiar
+complaint, that thresholds are tuned on the test set, into
+something measurable. Identity 1 shows that the gap be￾tween test-tuned and validation-tuned Dice is not a fixed
+optimism to be subtracted but a product of a burden
+mismatch and a local slope, which differs from method to
+method. A comparison at validation thresholds reflects
+what a user would obtain but confounds map quality
+with threshold transfer; a comparison at equal burden
+isolates map quality but cannot be reproduced in prac￾tice. MIRTO reports both, and the identity says exactly
+how they relate. Conformal risk control adds a per-scan
+guarantee, which is closer to what matters for an indi￾vidual patient than a cohort mean. The known training￾conditional law of Lemma 1 adds the caveat that a 24-
+subject calibration set honours the guarantee only on av￾erage, with a spread that follows from the calibration size
+alone, and the empirical splits followed that law closely
+(shares within 2.8 percentage points, 97.5th percentiles
+within 0.015). A user who needs the guarantee for the
+calibration set in hand should use RCPS or Learn-then￾Test [8,2] and accept a stricter threshold.
+The multiverse quantifies what the previous compo￾nents illustrate, and it is most informative metric by met￾ric. Pooled over metrics, the evaluation axes carry most
+of the variance, but mainly because metrics have differ￾ent scales, and we do not lean on that share. Within a
+metric the picture is sharper. Rankings by voxel AUROC
+are a property of the method. Dice is dominated by the
+method in variance, chiefly because one method is far be￾hind, yet the order of the three residual models is decided
+by the evaluation, with leads of several Dice points in each
+direction and significant contrasts on both sides. Lesion
+sensitivity is mostly a property of the evaluation. Read￾ing flip shares together with the size of each difference is
+what separates these cases from mere closeness: UCCD
+and cDDPM swap places often because they are close,
+and their significant difference at validation thresholds is
+a matter of threshold transfer. Lesion-level claims deserve
+the least confidence unless the lesion definition, the hit
+criterion and the floor are stated, and our denominator
+identity shows that the floor alone can change sensitivity
+elevenfold without a single hit changing.
+Recommendations. For authors of UAD methods we sug￾gest a short list, which the checklist released with the code
+expands. Score every method against one reference on one
+grid, and report a registration check. Choose thresholds
+on data that are not the test set, and report the realised
+false-positive burden as a distribution (median and 95th
+percentile, not only the mean). Report subject mean, me￾dian and pooled Dice side by side, and when two meth￾ods swap places across evaluation choices, report by how
+much each leads. State the lesion definition in full. Do not
+report marginal slice AUROC without an anatomy con￾trol. Report paired intervals with a declared multiplicity
+correction. And train competing methods on the same
+healthy data, or say plainly that they were not.
+Relation to other benchmarks. Recent benchmarks have
+improved UAD evaluation by enlarging and diversifying
+the test data [28], by examining the normative recon￾struction [16], or by unifying many methods and datasets
+within one framework [40,6,18]. MIRTO is complemen￾tary. It does not propose a new dataset; it asks how much
+of any benchmark’s conclusion survives a change of de￾fensible evaluation choices, and it provides the identities
+needed to say why a conclusion changes when it does. The
+same machinery could be wrapped around any of those
+benchmarks. It also answers, for UAD, the concerns raised
+for medical imaging AI in general: that performance vari￾ability and confidence intervals are rarely reported [23],

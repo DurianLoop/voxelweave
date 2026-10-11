@@ -1,0 +1,66 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+cov(A,X) =E
+h
+cov(A,X|Y)
+i
+(4)
++ cov
+
+E[A|Y],E[X|Y]
+
+(4)
+Expanding the first expectation term with (3):
+E[cov(A,X|Y)] =E
+h
+E[AX|Y]−E[A|Y]E[X|Y]
+i
+=E[AX]−E[E[A|Y]E[X|Y]] (5)
+Expanding the second covariance term:
+cov(E[X|Z],E[Y|Z]) =E[E[X|Z]E[Y|Z]] (6)
+−E[X]E[Y] (6)
+Substituting (5) and (6) into (4):
+cov(X,Y) =E[XY]−E[E[X|Z]E[Y|Z]]
++E[E[X|Z]E[Y|Z]]−E[X]E[Y]
+=E[XY]−E[X]E[Y]
+= cov(X,Y)
+We want to show that ∆OOD∝ dCov(A,fθ(X)|Y= 1) + dCov(A,fθ(X)|Y= 0)
+LetP
+iaiyi =S AY, P
+iai =S A, P
+iyi =S Y.
+Expanding EODD:
+Expanding (1):
+PN
+i=1fθ(xi)aiyi
+PN
+i=1aiyi
+−
+PN
+i=1fθ(xi)(1−a i)yi
+PN
+i=1yi(1−a i)yi
+= 1
+SAY
+NX
+i=1
+fθ(xi)aiyi− 1
+SY−SA
+NX
+i=1
+fθ(xi)
++ 1
+SY−SAY
+NX
+i=1
+fθ(xi)aiyi
+= SY
+SAY (SY−SAY )
+NX
+i=1
+fθ(xi)yiai
+− 1
+SY−SAY
+NX
+i=1
+fθ(xi)yi
+25

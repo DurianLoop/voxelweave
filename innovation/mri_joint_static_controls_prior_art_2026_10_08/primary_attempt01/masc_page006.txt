@@ -1,0 +1,50 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+Phantom generation
+autoPETdataset
+TotalSeg
+Task 1
+Task 2
+Task 3
+phantom map
++
+hip region
+hip implant
+ dfmap
+ susp mapmask
+PD map T1 map T2 map
+MRI simulator
+k-spaceclean image
+k-spacemetal image
+TSE sequence
+Simulation params
+MRI simulation
+Paired
+Figure 3:Dataset construction pipeline.Phantom generation:CT volumes from the
+autoPET dataset are processed through TotalSegmentator with three complemen-
+tary tasks to produce multi-tissue phantom maps. The hip region is manually
+selected and combined with a cobalt-chromium hip implant model to generate
+tissue property maps including implant mask, off-resonance frequency (df), sus-
+ceptibility (susp), proton density (PD), T1, and T2.MRI simulation:A physics-
+based simulator with TSE sequence parameters generates paired k-space data and
+reconstructions: clean images without metal and artifact-corrupted images with
+the virtual implant, providing exactly matched pairs for supervised training.
+converges, the MAR network specializes in those specific undersampling patterns. We
+alternate updates after each rollout with a lower learning rate for MAR fine-tuning. A
+detailed pseudo algorithm is provided in Appendix A.
+3. Data and Experiments
+3.1. Data
+As shown in Figure 3, we construct a paired MRI dataset from 200 subjects in the AutoPET
+CT/PET dataset (Gatidis et al., 2022) using physics-based metal artifact simulation. This
+enables supervised training for artifact reduction and reward computation for policy learn-
+ing. Both phantom segmentations and simulation results were validated by professional
+radiologists. Detailed subject information is provided in Appendix B.
+Phantom Generation.For each CT volume, we run TotalSegmentator (Wasserthal
+et al., 2023) with three complementary tasks: (1) general segmentation for detailed organ
+delineation, (2) tissue composition for fat and muscle differentiation, and (3) body region
+for anatomical localization. These segmentations are combined to create multi-tissue 3D
+phantoms with tissue-specific MRI property maps including proton density, T1, and T2 re-
+laxation times, following established conventions in the field (Segars et al., 2010; Bottomley
+et al., 1987; Pohmann et al., 2016; Rooney et al., 2007; Bojorquez et al., 2017; Gold et al.,
+2004; Stanisz et al., 2005). We then manually select the hip region for each subject as the
+anatomically correct location for hip implant placement.
+6

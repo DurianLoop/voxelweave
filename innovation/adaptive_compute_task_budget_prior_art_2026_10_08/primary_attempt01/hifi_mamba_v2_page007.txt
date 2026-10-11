@@ -1,0 +1,98 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7
+Method FLOPs PSNR SSIM NMSE
+ReconFormer 270.60G 30.42 0.728 0.026
+FpsFormer 200.45G 30.63 0.732 0.026
+LMO 484.98G 31.10 0.744 0.023
+HiFi-Mamba (P1) 270.37G 31.81 0.762 0.021
+HiFi-Mamba (P2) 67.87G 31.38 0.758 0.020
+HiFi-MambaV2 (P1) 687.15G 31.89 0.764 0.019
+HiFi-MambaV2 (P2) 172.21G 31.73 0.763 0.019
+TABLE V: Efficiency test on image size 320×320 on NVIDIA
+A100.
+ing textures. Both HiFi-Mamba variants recover clearer struc￾tures, and HiFi-MambaV2 further enhances tissue sharpness
+and smooth intensity transitions, particularly at 8× acceler￾ation. Error maps show that HiFi-MambaV2 produces lower
+and more uniform residuals, effectively reducing aliasing and
+streaking artifacts. Overall, HiFi-MambaV2 achieves the most
+accurate and stable reconstructions across anatomies and ac￾celeration factors.
+3) Efficiency Analysis: We evaluate the efficiency of HiFi￾MambaV2 on fastMRI at 8× acceleration with 320 × 320
+resolution. Compared with Transformer-based baselines such
+as ReconFormer and FpsFormer, HiFi-MambaV2 remains
+substantially more efficient while delivering higher recon￾struction accuracy. Although the hierarchical routing and
+SF-Lap modules slightly increase theoretical FLOPs com￾pared to HiFi-MambaV1, they introduce a finer frequency
+decomposition and adaptive token dispatch that significantly
+enhance reconstruction stability and generalization across
+datasets. The heavier variant HiFi-MambaV2(P1) achieves
+the highest reconstruction quality (31.89 dB PSNR, 0.764
+SSIM), surpassing all competing models including LMO
+(484.98 G FLOPs) by +0.79 dB/+0.020 SSIM. Importantly, the
+lighter configuration HiFi-MambaV2(P2) attains nearly iden￾tical performance (31.73 dB/0.763 SSIM) with only 172.21 G
+FLOPs—approximately one-third of LMO and comparable
+to previous HiFi-Mamba(P1). This demonstrates that HiFi￾MambaV2 scales gracefully across computational budgets,
+offering both high-accuracy and resource-efficient configura￾tions. It is worth noting that the measured wall-clock latency
+increase is significantly smaller than the theoretical FLOPs
+growth, since the sparse top-1 routing and depthwise sepa￾rable operations in SF-Lap are highly parallelized on mod￾ern GPUs. Therefore, the additional computation primarily
+reflects enhanced frequency modeling rather than inefficient
+computation. Overall, HiFi-MambaV2 achieves superior ac￾curacy–efficiency balance by trading a modest increase in
+theoretical cost for markedly improved frequency fidelity,
+robustness, and scalability.
+C. Ablation Study and Analysis
+Component-wise Ablation. We conduct a component-wise
+ablation on the CC359 dataset at 8× acceleration to assess the
+contribution of each module in HiFi-MambaV2. As shown in
+Table VI, the baseline HiFi-Mamba (HFM) achieves 28.08 dB
+PSNR, 0.802 SSIM, and 0.027 NMSE. Adding SF-Lap im￾proves performance to 28.31 dB and 0.830 SSIM by providing
+more effective frequency decomposition, and introducing the
+HFM SF-Lap. LSGP MoE-B MoE PSNR SSIM NMSE
+✓ 28.08 0.802 0.027
+✓ ✓ 28.31 0.830 0.024
+✓ ✓ ✓ 28.43 0.835 0.023
+✓ ✓ ✓ ✓ 28.50 0.837 0.023
+✓ ✓ ✓ ✓ 28.68 0.841 0.022
+TABLE VI: Model component experiment is conducted on
+the CC359 dataset with AF = 8, and patch size = 2. HFM
+refers to our HiFi-Mamba architecture while MoE-B refers to
+training with balanced loss.
+Patch Size Depth PSNR ↑ SSIM ↑ NMSE ↓
+2 3×2 27.80 0.798 0.029
+2 4×2 27.93 0.800 0.028
+2 6×2 28.36 0.823 0.024
+2 8×2 28.68 0.841 0.022
+4 8×2 27.70 0.794 0.029
+1 8×2 29.05 0.849 0.020
+TABLE VII: Ablation study on model depth and patch size
+using the CC359 dataset (AF = 8).
+LSGP further boosts accuracy to 28.43 dB/0.835 SSIM. In￾corporating the hierarchical MoE routing mechanism enables
+adaptive token allocation across frequency experts, reaching
+28.68 dB PSNR, 0.841 SSIM, and 0.022 NMSE, while training
+this routing with the balanced loss (MoE-B) stabilizes expert
+utilization and yields 28.50 dB/0.837 SSIM. These trends show
+that SF-Lap, LSGP, and MoE-B provide complementary gains
+in frequency modeling and global context, whose combination
+leads to the highest overall fidelity and stability under high
+acceleration.
+Ablation on Model Depth and Patch Size. We analyze the
+impact of model depth and patch size under an 8× acceleration
+setting on the CC359 dataset. As shown in Table VII, when
+the patch size is fixed at 2, increasing the depth from 3 × 2
+to 8 × 2 yields steady improvements, with PSNR rising from
+27.80 dB to 28.28 dB and SSIM from 0.798 to 0.815, while
+NMSE decreases from 0.029 to 0.026. This indicates that
+deeper cascades enhance frequency modeling and anatomical
+detail, although the gain gradually saturates beyond moderate
+depth.
+With depth fixed at 8×2, reducing the patch size from 4 to
+1 consistently improves all metrics. The finest configuration
+(patch = 1) achieves 28.68 dB PSNR, 0.841 SSIM, and 0.022
+NMSE, outperforming coarser settings by a clear margin.
+These results confirm that increased model depth and finer
+patch granularity act synergistically to improve reconstruction
+fidelity without overfitting, demonstrating the scalability and
+robustness of HiFi-MambaV2.
+VI. CONCLUSION
+We presented HiFi-MambaV2, a hierarchical shared-routed
+Mamba architecture for high-fidelity MRI reconstruction. The
+proposed model unifies frequency decomposition and adap￾tive computation through two complementary components: a
+separable frequency Laplacian (SF-Lap) and a hierarchical
+Mixture-of-Experts with shared experts and local routers,
+which performs top-1 sparse token dispatch across frequency
+experts. A lightweight global-context path further enhances

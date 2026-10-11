@@ -1,0 +1,47 @@
+Proceedings of Machine Learning Research 1–19
+MASC: Metal-Aware Sampling and Correction via
+Reinforcement Learning for Accelerated MRI
+Zhengyi Lu1 zhengyi.lu@vanderbilt.edu
+Ming Lu2 ming.lu@vumc.org
+Chongyu Qu1 chongyu.qu@vanderbilt.edu
+Junchao Zhu1 junchao.zhu@vanderbilt.edu
+Junlin Guo1 junlin.guo@vanderbilt.edu
+Marilyn Lionts1 marilyn.m.lionts@vanderbilt.edu
+Yanfan Zhu1 yanfan.zhu@vanderbilt.edu
+Yuechen Yang1 yuechen.yang@vanderbilt.edu
+Tianyuan Yao1 Tianyuan.yao@vanderbilt.edu
+Jayasai Rajagopal3 rajagopaljr@ornl.gov
+Bennett Allan Landman 1 bennett.landman@vanderbilt.edu
+Xiao Wang3 wangx2@ornl.gov
+Xinqiang Yan2 xinqiang.yan@vumc.org
+Yuankai Huo1 yuankai.huo@vanderbilt.edu
+1 Vanderbilt University, Nashville, TN, USA 37215
+2 Vanderbilt University Medical Center, Nashville, TN, USA 37232
+3 Oak Ridge National Laboratory, Oak Ridge, TN, USA 37831
+Abstract
+Metal implants in MRI cause severe artifacts that degrade image quality and hinder clinical
+diagnosis. Traditional approaches address metal artifact reduction (MAR) and accelerated
+MRI acquisition as separate problems. We propose MASC, a unified reinforcement learning
+framework that jointly optimizes metal-aware k-space sampling and artifact correction for
+accelerated MRI. To enable supervised training, we construct a paired MRI dataset using
+physics-based simulation, generating k-space data and reconstructions for phantoms with
+and without metal implants. This paired dataset provides simulated 3D MRI scans with
+and without metal implants, where each metal-corrupted sample has an exactly matched
+clean reference, enabling direct supervision for both artifact reduction and acquisition pol-
+icy learning. We formulate active MRI acquisition as a sequential decision-making problem,
+where an artifact-aware Proximal Policy Optimization (PPO) agent learns to select k-space
+phase-encoding lines under a limited acquisition budget. The agent operates on undersam-
+pled reconstructions processed through a U-Net-based MAR network, learning patterns
+that maximize reconstruction quality. We further propose an end-to-end training scheme
+where the acquisition policy learns to select k-space lines that best support artifact removal
+while the MAR network simultaneously adapts to the resulting undersampling patterns.
+Experiments demonstrate that MASC’s learned policies outperform conventional sampling
+strategies, and end-to-end training improves performance compared to using a frozen pre-
+trained MAR network, validating the benefit of joint optimization. Cross-dataset exper-
+iments on FastMRI with physics-based artifact simulation further confirm generalization
+to realistic clinical MRI data. The code and models of MASC have been made publicly
+available:https://github.com/hrlblab/masc
+Keywords:MRI reconstruction, k-space sampling, metal artifact reduction, reinforcement
+learning.
+©CC-BY 4.0, Z. Luet al.
+arXiv:2602.00348v1  [cs.CV]  30 Jan 2026

@@ -1,0 +1,45 @@
+Multimodal Fusion for Image-Guided Interventions Using Self-similarities 189
+3 Methods
+SSC is estimated based on patch-based self-similarities in a similar way as e.g.
+LSS or MIND, but rather than extracting a representation of local shape or
+geometry, it aims to find the context around the voxel of interest. Therefore, the
+negative influence of noisy patches can be greatly reduced, making this approach
+very suitable for ultrasound registration. Spatial context has been successfully
+applied to object detection [7] and is the driving force of pictorial structures [3].
+3.1 Self-similarity Context
+Self-similarity can be described by a distance function between image patches
+within one image I (sum of squared differences SSD can be used within the
+same scan), a local or global noise estimate σ2, and a certain neighbourhood
+layout N for which self-similarities are calculated. For a patch centred at x, the
+self-similarity descriptor S(I, x, y) is given by:
+S(I, x, y) = exp 
+−SSD(x, y)
+σ2
+
+x, y ∈N (1)
+where y defines the centre location of a patch within N . In [4] and [15], the
+neighbourhood layout was defined to always include the patch centred around x
+for pairwise distance calculations. This has the disadvantage that image artefacts
+or noise within the central patch always have a direct adverse effect on the self￾similarity descriptor. We therefore propose to completely avoid using the patch
+at x for the calculation of the descriptor for this location. Instead, all pairwise
+distances of patches within the six neighbourhood (with a Euclidean distance of
+√
+2 between them) are used. The spatial layout of this approach is visualised in
+Fig. 1 and compared to MIND (showing the central patch in red, patches in N
+in grey, and edges connecting pairs for which distances are calculated in blue).
+The aim of SSC is not to find a good structural representation of the underlying
+shape, but rather the context within its neighbourhood. The noise estimate σ2 in
+Eq. 1 is defined to be the mean of all patch distances. Descriptors are normalised
+so that max(S) = 1.
+Pointwise Multimodal Similarity Using SSC: Structural image represen￾tations are appealing, because they enable multi-modal registration using simple
+similarity metric across modalities. Once the descriptors are extracted for both
+images, yielding a vector for each voxel, the similarity metric between locations
+xi and xj in two images I and J can be defined as the sum of absolute differ￾ences (SAD) between their corresponding descriptors. The distance D between
+two descriptors is therefore:
+D(xi, xj )= 1
+|N |
+
+y∈N
+|S(I, xi, y) −S(J, xj , y)| (2)
+Equation 2 requires |N | computations to evaluate the similarity at one voxel.
+Discrete optimisation frameworks, as the one employed here, use many cost func￾tion evaluations per voxel. In order to speed up the computations, we propose to

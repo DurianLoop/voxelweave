@@ -1,0 +1,30 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+in settings with submodularity (Krause and Golovin, 2014), we conjecture a similar
+structure might be present in problems like the MRI sampling problem. Determining
+whether this conjecture holds or whether the lack of added value originates from specific
+RL algorithm and their training remains to be determined and should be the focus for
+any researcher set on applying RL to such a problem.
+Recommendations. Our results also enable us to provide practical advice, summarized
+below. We provide a more extensive discussion of these statements in Appendix A.6.
+• Focus on improvements in the reconstructor architecture, mask distribution and
+algorithms used for training the reconstructor.
+• Compare against strong baselines, such as LBCS.
+• Show sampling curves and use AUC to aggregate your results instead of perfor-
+mance at the final sampling rate.
+• Be mindful about preprocessing settings when evaluating a policy model. We recom-
+mend using the cropped+vertical setting with the data normalization implemented
+by Zbontar et al. (2019).
+We also want to emphasize that conducting the experiments in this paper would have
+been impossible if the RL methods had not been exemplary in terms of openness and
+reproducibility. Without access to the checkpoints and code, and without the authors’
+responsiveness we would not have been able to reproduce both works and add the missing
+baseline. Despite the theoretical guarantees of LBCS, we were surprised that it matched
+and sometimes simply outperformed more sophisticated methods. We therefore do not
+view our work as criticism of these works but rather as an extension and a synthesis, and
+urge any future work to follow their lead in publishing codes, checkpoints and data.
+Bibliographic note
+The idea of investigating thelimitations of current deep RL methods originated from
+discussions with Igor Krawczuk. He also contributed the experiments on the setting of
+Pineda et al. (2020).
+102

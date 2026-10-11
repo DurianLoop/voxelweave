@@ -1,0 +1,43 @@
+Accelerated MRI with Metal Implants
+Table 2:Ablation study on training strategy components at10×acceleration.
+Configurations progressively add metal-aware training, MAR integration, and end-
+to-end optimization. Results are mean±std on the test set. Best results inbold.
+MASC significantly outperforms all ablation variants (p<0.001, paired t-test).
+Configuration SSIM↑PSNR↑MSE↓NMSE↓MAE↓
+Clean-trained PPO 0.5120±0.0559 14.47±3.19 0.0463±0.0348 0.2137±0.1309 0.1465±0.0606
+Metal-trained PPO 0.4758±0.0465 14.99±2.47 0.0373±0.0220 0.1766±0.0926 0.1341±0.0425
+Clean PPO + Pretrained MAR 0.6640±0.0600 17.08±1.68 0.0212±0.0095 0.1020±0.0400 0.0945±0.0262
+Metal PPO + Pretrained MAR 0.6874±0.0621 17.72±1.59 0.0182±0.0077 0.0888±0.0384 0.0820±0.0213
+MASC (Ours)0.7224±0.0408 19.73±1.28 0.0111±0.0036 0.0546±0.0190 0.0640±0.0121
+Comparing Clean-trained PPO and Metal-trained PPO reveals how metal artifacts affect
+policy learning without MAR post-processing. Clean-trained PPO achieves higher SSIM
+while Metal-trained PPO yields lower MSE, suggesting a trade-off: artifact-free training
+preserves structural learning, but metal-aware training enables partial adaptation to the
+artifact distribution. Metal artifacts corrupt the reconstruction used for reward computa-
+tion, effectively adding noise to the policy gradient.
+Adding pretrained MAR substantially improves all configurations, with Metal PPO +
+Pretrained MAR slightly outperforming its clean-trained counterpart. This suggests that
+when MAR corrects artifacts at inference, the metal-trained policy’s implicit knowledge
+of artifact locations becomes beneficial, learning to sample k-space regions that provide
+complementary information for correction.
+Our proposed MASC framework achieves the best performance across all metrics, im-
+proving SSIM by 5.1% and reducing MSE by 39.0% compared to Metal PPO + Pretrained
+MAR. This improvement stems from resolving the train-test distribution mismatch: in
+post-hoc approaches, the MAR network is trained on fully-sampled data but applied to un-
+dersampled reconstructions with unfamiliar aliasing artifacts. End-to-end training exposes
+the MAR network to actual undersampling patterns while allowing the policy to discover
+acquisition strategies that maximize correction capability. The consistently lower standard
+deviation further indicates that co-adaptation produces more robust reconstructions.
+4.3. Cross-Dataset Generalization
+We evaluate generalization by testing our model (trained on TSE phantom data) on the
+FastMRI-based dataset, which uses a different hip implant geometry than the training set.
+Table 3 presents the quantitative results, where all baselines are post-processed with the
+same MAR network for fair comparison.
+MASC maintains superior performance on the unseen dataset, achieving 3.0% improve-
+ment in SSIM and 23.1% reduction in MSE compared to the best baseline, despite gen-
+eralizing across both data distribution shifts and unseen implant geometry. The learned
+value-based policies (DQN and SS-DDQN) exhibit degraded generalization compared to
+simple random sampling, suggesting overfitting to training-specific artifact patterns. In
+contrast, MASC demonstrates robust transfer, indicating that joint optimization learns
+more generalizable representations than acquisition-only learning.
+11

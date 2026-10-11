@@ -1,0 +1,11 @@
+# 用户提供移交摘要的事实索引
+
+原目标active：继续研究探索验证直到可发表且独立确认claim，不能动原终端训练；用户已允许GPU，新增只写innovation。不安装、不委派、不删历史、不枚举/修改其他PID。CPU1/interop1/below-normal，RAM/disk8GB；GPUfree8192MiB、allocator10%/peak2.5GB/runtimefree4GB，FP32/TF32off/deterministic。概率/强度3e-6、坐标3e-12、二值0差，原六医学gate不降低；11开发19series/4已见验证9series/8未见确认12series及lockedIXI隔离，全11GT19998 parent不可严格LOPOwarm-start。
+
+继承两个live：78758全19series两步AdamW资格，109/114分支218/228更新、peak2342518784bytes，结束必须真实exit0及audit；44317完整35904，4800/35904、強度误差0/coordinate1.1368683772161603e-13，结束后用audit_full_real_terminal_v2.py。未执行的38FOV runner OTHER原20.8MB需改22.8MB后AST；只在78758终态审核后运行。
+
+继承已结束checkpoint-storage：37冻结.pt压缩保持SHA/bytes，API只回收359472bytes；全family104156359bytes与snapshotavailable60981248缺43175111bytes。旧训练入口仍旧预算80156359，需新版本，不编辑已执行/冻结源，不重复压缩或扩大原根目录。
+
+科学边界：两旧合法whole-series raw流程4已见验证9series的GT选Dice上界.5545512725845162、512策略六gate通过0，只约束该动作空间。继承两主文330块22表/作者21文件631行；宽泛PAST conditioning/gate已有、fastMRI test24反复开发。候选为充分task/真实动作余量之后合法采集信息对同信息risk差/QC/defer/强static与预算random的净收益增量，当前无发表claim。
+
+冻结链7291、indexSHA6a78df3186809768867f5454466efb6f011ed20089cbc94aee7af943fd0698d4；turn45_tool_keys列可用工具buffers尚未导出，live输出排除归档。本轮按真实新tool续接、保存可用原返回及静态结果。这里只是用户摘要事实索引，不含缺失聊天逐字稿。

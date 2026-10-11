@@ -1,0 +1,46 @@
+CHAPTER 3. RECONSTRUCTION METHODS
+3.2.2 Unrolled neural networks
+Unrolled neural networks are a data-driven, deep learning-based approach inspired by the
+iterative algorithms used to solve Equation 3.1. This problem is known as a composite
+optimization problem, and can be solved by various approaches. A famous approach is
+known as the Iterative Soft-Thresholding Algorithm (ISTA) (Daubechies et al., 2004),
+or Proximal Gradient method (Combettes and Pesquet, 2011), solves the problem by
+iteratively computing
+xt+1 = proxλR
+(
+xt−αA†(Axt−yω)
+)
+. (3.3)
+The proximal operator is defined asproxg(x)≜ arg minvg(v) + 1
+2∥v−x∥2
+2, and for some
+functions, canhaveaclosed-formsolution. Thisistypicallythecasewhen R(x) =∥Wx∥1,
+where the proximal takes the form of a soft-thresholding operator, i.e.proxλ∥W·∥1(x) =
+sign(Wx )⊙ max(Wx−λ, 0).
+Motivated by the formulation of Equation 3.3, unrolled neural networks parameterize the
+proximal operator with a neural networkf(yω,ω ;θ), and then train a model of the form
+xt+1 =f
+(
+xt−αA†(Aωxt−yω);θ(t)
+)
+(3.4)
+for a fixed, small number of iterationst = 1,...,T . The output of the model is thus
+f(yω,ω ;θ) =xT where θ ={θ1,...,θ T}. As the proximal term capture the statistical
+properties of the signal that wish to recover, parametrizing it with a neural network
+enables to learn a model directly from data. The model being more flexible, it allows for
+improved reconstruction performance over methods using statistical models.
+A flurry of approaches has been motivated by unrolling iterative algorithms, and we
+highlight a few examples hereafter. A more complete discussion of unrolled neural
+networks can be found in Liang et al. (2020). In Mardani et al. (2018), the parameters
+of the proximal mapping can be shared across iterations, or different at each iteration
+(Schlemper et al., 2017). The unrolling can leverage the structure of a different optimiza-
+tion algorithm, like the Alternating Direction Method of Multipliers (ADMM) in Sun
+et al. (2016), or the Primal-Dual Hybrid Gradient in Adler and Öktem (2018b). In the
+noiseless case, it is also common to replace the inner stepxt−αA†(Aωxt−yω) with a
+step calledData Consistency(DC) (Schlemper et al., 2017; Zhang et al., 2019b), that
+replaces the reconstruction with the exact values at observed locations. Essentially, the
+inner step becomes
+DC(xt,yω) =F†(PωCFxt +yω) =F†(PωCFxt +PωFx ). (3.5)
+We see that at the observed locationsω, we simply keep the observation, while at the
+non-observed locationsωC. Note that here,Pωc =I−Pω.
+26

@@ -1,0 +1,60 @@
+Multi-task MR Imaging with Iterative Teacher Forcing and
+Re-weighted Deep Learning
+Kehan Qi Yu Gong Xinfeng Liu Xin Liu Hairong Zheng
+Shanshan Wang,Senior Member, IEEE ∗†‡
+Abstract
+Noises, artifacts, and loss of information caused by
+the magnetic resonance (MR) reconstruction may
+compromise the final performance of the downstream
+applications. In this paper, we develop a re-weighted
+multi-task deep learning method to learn prior knowl￾edge from the existing big dataset and then utilize
+them to assist simultaneous MR reconstruction and
+segmentation from the under-sampled k-space data.
+The multi-task deep learning framework is equipped
+with two network sub-modules, which are integrated
+and trained by our designed iterative teacher forcing
+scheme (ITFS) under the dynamic re-weighted loss
+constraint (DRLC). The ITFS is designed to avoid er-
+∗This research was partly supported by Scientific and Tech￾nical Innovation 2030-"New Generation Artificial Intelligence"
+Project (2020AAA0104100, 2020AAA0104105) the National
+Natural Science Foundation of China (61871371, 81830056),
+Key-Area Research and Development Program of Guangdong
+Province (2018B010109009), the Basic Research Program of
+Shenzhen (JCYJ20180507182400762), Youth Innovation Pro￾motion Association Program of Chinese Academy of Sciences
+(2019351). (Kehan Qi and Yu Gong are co-first authors. Cor￾responding author: Shanshan Wang.)
+†K. Qi, X. Liu, H. Zheng and S. Wang are with Paul
+C. Lauterbur Research Center for Biomedical Imaging, Shen￾zhen Institutes of Advanced Technology, Chinese Academy
+of Sciences, Shenzhen 518055, China; S. Wang is also
+with Pengcheng Laboratory, Shenzhen, Guangdong (e-mail:
+kh.qi@siat.ac.cn; ss.wang@siat.ac.cn).
+‡Y. Gong is with the College of Medicine and Biological
+Information Engineering, Northeastern University, Shenyang
+110169, China and also with Paul C. Lauterbur Research Cen￾ter for Biomedical Imaging, Shenzhen Institutes of Advanced
+Technology, Chinese Academy of Sciences, Shenzhen 518055,
+China (e-mail:yu.90n9@gmail.com). X. Liu is with Guizhou
+Provincial People’s hospital, China
+ror accumulation by injecting the fully-sampled data
+into the training process. The DRLC is proposed
+to dynamically balance the contributions from the
+reconstruction and segmentation sub-modules so as
+to co-prompt the multi-task accuracy. The proposed
+method has been evaluated on two open datasets and
+one in vivo in-house dataset and compared to six
+state-of-the-art methods. Results show that the pro￾posed method possesses encouraging capabilities for
+simultaneous and accurate MR reconstruction and
+segmentation.
+Keywords: Deep learning, MR image recon￾struction and segmentation, multi-task network, re￾weighted loss, task-driven imaging, iterative teacher
+forcing
+1 Introduction
+Magnetic resonance (MR) imaging is of great value
+in clinical applications such as medical diagnosis [1],
+disease staging [2] and clinical research [3] since it can
+produce highly detailed images with excellent soft tis￾sue contrast. The raw measurements of MR images
+are Fourier transform coefficients in "k-space" and
+MR images can be visualized after an inverse Fourier
+transform of the fully-sampled k-space data. How￾ever, the acquisition time of fully-sampled k-space
+data is long. It is one of the main limitations for
+the MR extensive applications. Therefore, numer￾ous techniques have been developed for accelerating
+MR imaging over the last decades, including physics￾based fast imaging sequences [4], hardware-based
+parallel imaging [5], signal processing-based image re￾1
+arXiv:2011.13614v1 [cs.CV] 27 Nov 2020

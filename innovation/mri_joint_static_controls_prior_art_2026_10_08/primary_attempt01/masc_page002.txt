@@ -1,0 +1,57 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+Full k-space & Image Pairs
+Metal Implant-free
+Conventional
+strategies
+MAR U-Net
+Clean Target
+UndersamplingTask
+Artifact-aware Sampling
+Artifacts Reduced
+Artifact-unaware Results
+State of the art
+Implant Mask
+With Metal Implant
+ Clean Target
+Our method
+Learning-based
+strategies
+or
+Test with implant
+Test on clean
+Clean results
+End-to-end
+joint training
+Metal artifacts 
+reduction
+k-space
+Sampling
+Active Sampling
+Policy 
+Undersampled Undersampled
+Figure 1:Overview of MASC.Top:Existing approaches using conventional or learning-
+based sampling strategies are trained on metal-free data and produce clean results
+when tested on implant-free cases, but fail when applied to metal-corrupted data,
+yielding artifact-unaware reconstructions.Bottom:MASC jointly optimizes a
+MAR U-Net and active sampling policy through end-to-end training on metal-
+corrupted data, enabling artifact-aware k-space sampling and effective artifact
+reduction.
+1. Introduction
+Magnetic resonance imaging (MRI) is a powerful diagnostic tool that provides excellent soft
+tissue contrast without ionizing radiation. However, two major challenges limit its clinical
+utility in certain patient populations: the presence of metal implants, which cause severe
+image artifacts due to susceptibility differences and signal voids (Hargreaves et al., 2011),
+and the inherently long scan times required to acquire fully-sampled k-space data (Liang
+and Lauterbur, 2000; Moratal et al., 2008; Knoll et al., 2020). While both challenges have
+been extensively studied, existing approaches typically address them in isolation—metal
+artifact reduction (MAR) methods assume fully-sampled acquisitions, while accelerated
+MRI techniques focus on artifact-free subjects.
+Metal implants are increasingly prevalent in patient populations, with hip replacements,
+spinal fusion hardware, and dental implants affecting millions of individuals annually (Mara-
+dit Kremers et al., 2015; Hegde et al., 2023). These metallic structures induce local magnetic
+field inhomogeneities that distort the MRI signal, manifesting as signal voids, geometric
+distortions, and bright streaking artifacts in reconstructed images (Koch et al., 2010; Har-
+greaves et al., 2011). Such artifacts can obscure adjacent anatomical structures critical for
+diagnosis, particularly in post-operative imaging where assessment of tissue surrounding the
+implant is essential. Accelerated MRI acquisition has emerged as a complementary research
+2

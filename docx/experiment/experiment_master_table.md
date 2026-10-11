@@ -277,3 +277,46 @@ Res-SRDiff x2 的 90-epoch 收敛诊断已完成 8-fold。它相对 60-epoch 的
 | x2 | Res-SRDiff (2025), 60 epoch | 24.0661 | 0.7540 | 40.8709 | 7086.3766 | 0.9320 |
 
 其中 SwinIR x2 与 Res-SRDiff x2 相比各自标准 30-epoch 结果均有提升；ACVTT x6 的 60-epoch 结果低于其标准预算结果，说明该设置并未从更长训练中获益。三项均不替换上方统一标准预算主表数值。
+
+## 2026-10-03：小波主干 IXI-T2 x4 独立协议比较
+
+此处单独记录用户指定的 IXI 探索实验；使用 256×256、observed-only min/max、缺失层、输出裁剪、患者等权评分。与上方 native-volume 主表的分数及 MAE/MSE 单位不同，不替换原表，不跨协议排名。PAST 来自固定 fastMRI 小波权重，在 IXI train 上微调 80 轮，仅由 validation 选 best（epoch80，未裁剪 PSNR32.1814）。
+
+| 方法 | Test患者 | PSNR | SSIM | MAE（归一化） | MSE（归一化） | NCC |
+|---|---:|---:|---:|---:|---:|---:|
+| PAST wavelet3，IXI seed3407 | 115 | 31.7358 | 0.9198 | 0.0125329 | 0.0009489 | 0.9692 |
+| I3Net，已有 IXI 完整权重复评 | 115 | 33.8452 | 0.9419 | 0.0101137 | 0.0006097 | 0.9788 |
+
+**结论：小波版未超过 I3Net。** PAST−I3Net PSNR = −2.1094 dB，10,000 次患者配对 bootstrap 95% CI [−2.2689, −1.9487]，胜出 3/115（2.6%）。八项质量指标均落后。单 seed、预训练/训练预算/有效上下文不同，不构成匹配训练条件的架构排名，也不支持 SOTA。
+
+缺失层推理耗时（含 CPU 拷贝及输入打包、不含 IO/质量评分）：PAST 54.93 ms/层，I3Net 11.73 ms/层；PAST AMP、I3Net FP32，两模型同时驻留。记录的峰值 allocated 为 0.954 / 0.375 GiB。
+
+[完整中文报告](../../design/pastnet_ixi_wavelet/RESULTS_ZH.md)；[原始配对结果](../../design/pastnet_ixi_wavelet/results/test115_seed3407/report.json)；[独立核验](../../design/pastnet_ixi_wavelet/results/test115_seed3407/independent_verification.json)。
+
+本节与上方分数不同的主要原因已定量核实：旧 PSNR 使用每张 GT 的强度范围，新 PSNR 使用整个病例观测层范围（归一化后固定 data_range=1）。115 例原始尺寸均为 256×256，分辨率不是这次差异的原因。仅按旧范围折算，同一 I3Net 为31.3057 dB，与主表原始值31.305751仅差约0.000008 dB；本次小波 PAST 为 **29.1963 dB**，仍未超过 I3Net。此为固定预测的代数 PSNR 换算；不能从汇总值直接换算 SSIM。详见完整报告末尾的定量审计。
+
+## 2026-10-09：IXI-STC 四/六锚点 validation 筛选（未晋级）
+
+此节仅为 validation 开发证据，**不参与上方 test 主排名**。两臂从相同固定 IXI wavelet3 权重初始化，新增相同 STC 潜轨迹模块；唯一主要变量为是否解除两个远端真实锚点的 mask。均为 seed3407、完整80轮、EMA best epoch80，404位train患者与58位validation患者划分不变。
+
+| 方法 | Split / 患者 | PSNR | SSIM | MAE（归一化） | MSE（归一化） | NCC |
+|---|---|---:|---:|---:|---:|---:|
+| IXI-STC local，四锚点 mask | validation / 58 | 29.6034 | 0.9121271 | 0.011693859 | 0.000834365 | 0.9721681 |
+| IXI-STC extended，六锚点 | validation / 58 | 29.6068 | 0.9121608 | 0.011691378 | 0.000834032 | 0.9721856 |
+
+PSNR/SSIM 使用每张GT的强度范围、输出clamp[0,1]、只评5,595张缺失层、患者等权；MAE/MSE归一化单位和Dice/HD95代理定义不同于旧主表，不直接混排。
+
+extended−local PSNR为 **+0.0034036 dB**，10,000次患者配对bootstrap 95%CI [+0.0008129,+0.0058226]，胜出40/58（68.97%）；困难四分位+0.0001025 dB，七项质量均值方向不退。尽管方向一致，未达到预登记≥+0.10 dB效应门槛，**整体未晋级，停止此STC六锚点路线**。不追加seeds、续训或该候选test；不支持超过I3Net或SOTA。
+
+训练峰值allocated均20.819 GiB；已提交时间local62.900h、extended64.713h（约+2.9%，不计故障丢弃步骤/停机/隔离smoke）。完整性与原始统计均已独立核验。[中文报告](../../design/pastnet_ixi_context/RESULTS_ZH.md)，[门槛结果](../../design/pastnet_ixi_context/results/gate_seed3407.json)，[独立审计](../../design/pastnet_ixi_context/results/completion_audit_20261009.json)。
+
+
+## 2026-10-10：I3Net–PAST latent bridge 预登记（full 待运行）
+
+新增独立包 `design/ixi_latent_bridge`，保留旧代码和checkpoint。固定历史 I3Net 作为预测基点与64通道跨平面latent来源，PAST小波MA3查询残差限制在±0.05；这是使用I3Net预训练权重的混合模型，总部署参数24,207,169。blind屏蔽新读出中的I3latent，latent开放它，两臂相同初始化、数据顺序、优化和预算。
+
+助手已完成两臂真实2轮smoke、连续与中断恢复的模型/EMA/AdamW/RNG逐项相等检查、目标层隔离及旧I3窗口评分一致性检查。micro4×累积4、7/10块重计算，实测训练allocated19.228 GiB（约20.65GB）、reserved20.908 GiB。**正式full尚未启动，没有候选全量validation或test结果，不参与主排名，也没有超过I3Net的证据。**
+
+正式seed3407配对full各最多80轮，仅validation选EMA best。预登记门槛为latent−blind≥+0.05dB、latent−冻结I3Net≥+0.10dB，两项患者配对97.5%CI下界>0，另须通过胜率、困难患者、七项质量和效率守卫；通过才运行另外两个适配seeds和锁定后的外部评价。
+
+[完整协议](../../design/ixi_latent_bridge/PROTOCOL_ZH.md)，[启动指令](../../design/ixi_latent_bridge/README_ZH.md)，[smoke核验](../../design/ixi_latent_bridge/SMOKE_REPORT_ZH.md)。

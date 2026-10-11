@@ -1,0 +1,39 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+train method that does not rely on deep RL, does not attempt long term planning and
+is by definition not adaptive can perform as well as the state-of-the-art approaches of
+Pineda et al. (2020); Bakker et al. (2020).
+This trend can be consistently observed on the fastMRI single-coil knee dataset (Zbontar
+et al., 2019), where we carry out evaluations across a variety of settings, whether full scale
+images, cropping the field of view, various mask designs used for training and various
+architectures. We observe that such small changes in the experimental pipeline can easily
+lead to different ordering of the RL methods and sLBCS in terms of performance or an
+invalidation of the conclusions drawn by the results. We refer to such occurrences as
+reversals. It is possible then to choose an experimental setting and performance metrics
+to support one’s desired conclusion: that RL outperforms LBCS, that LBCS outperforms
+RL or that their difference is not significant.
+Together with the observation that current SotA RL methods only add marginal value
+over the simple baselines at best, the work in this chapter highlights the need for further
+discussions in the community about standardized metrics, strong baselines, and careful
+design of experimental pipelines to evaluate MRI sampling policies fairly1.
+6.1 Reinforcement Learning to optimize sampling trajecto-
+ries
+Before introducing how RL can be used to optimize sampling for MRI, let us briefly
+contextualize the works of Jin et al. (2019), Pineda et al. (2020) and Bakker et al. (2020).
+Jin et al. (2019) were the first to attempt at using an RL-based approach to mask design,
+trying to train jointly a reconstruction model and a policy model through self-supervised
+learning. The approach is based on the AlphaGo model (Silver et al., 2017), a model
+that successfully learned to play go through self-play and that eventually ended-up the
+beating the world champion of Go. In this approach, the policy model is trained to learn
+the predictions done by a Monte-Carlo Tree Search (MCTS) (Coulom, 2006).
+Pineda et al. (2020) leverage Double Deep Q-Networks (DDQN) (Van Hasselt et al., 2016),
+a state-of-the-art deep RL approach that is particularly suited to the problem at hand and
+that has recently shown to be a reliable and stable method. They train two variants of
+the model, one to perform non-adaptive sampling (Dataset-specific, DS-DDQN), and the
+other that is adaptive (Subject-specific, SS-DDQN). Their results show that DS-DDQN
+outperforms SS-DDQN in nearly all cases.
+Finally, Bakker et al. (2020) took a different approach, leveraging the policy gradient
+1The work in this chapter is based on the preprint: Sanchez, T.∗, Krawczuk, I.∗ and Cevher, V. (2021).
+On the benefits of deep RL in accelerated MRI sampling.Available at https:// openreview.net/ pdf?id=
+fRb9LBWUo56. ∗ denotes equal contribution.
+82

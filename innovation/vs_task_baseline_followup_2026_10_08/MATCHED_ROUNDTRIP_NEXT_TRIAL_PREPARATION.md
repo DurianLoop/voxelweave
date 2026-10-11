@@ -1,0 +1,17 @@
+# 能力不足时的普通增强强基线准备
+
+状态：准备。新模块apply_roundtrip已完成synthetic fixed-point资格，真实19series入口另立协议；没有新的神经训练/患者任务效果。当前四分支2992训练不能中途改源、换设备/配方、挑loss/state或评分验证。
+
+先等session29823真正exit0，四state+11968日志与原36FOV评价全部完成；原六医学门槛、全部patient denominator与strict数值门槛不降。新roundtrip不是创新，也不能用已见4验证调angle/scale、权重或选best。
+
+若能力不足，可另冻结普通matched增强试验：native_reference/raw_pchip均从各自原last19998起始state（同输入起始一致，跨输入不同），2992相同schedule prefix/272曝光每开发患者、AdamW重置、同lr/wd/基础crop-flip强度primitive、最后state。新image-only roundtrip应先空间两次采样、再同强度，spatial primitive/pivot/真实spacing与旧固定配方对齐；label母GT不变。不得把不同额外训练预算或起始state的优势称roundtrip贡献。
+
+如果重用现已冻结同预算intensity/spatial结果作控制，必须核source/schedule/optimizer/primitive身份，记录执行设备及成本不同；控制预算不足或来源不合格则重写三分支same-session公平方案，不自动称其严格训练随机性完全等同。原对照是既定augmentation，新增roundtrip改变采样轨迹/标签目标本属干预；“同母GT”不是最终每步GT相同。再加普通低通/分辨率退化控制，区分双插值的平滑训练作用，不能把它当独有医学信息保护机制。
+
+原型用full齐次inverse矩阵，不能逐Euler角取负；float64坐标/中间，最终float32。图像边缘会因zero padding丢失信息；训练前需冻结充分输入halo/crop策略或明确边缘风险，对所有患者保留失败，不依据GT/验证效果筛样。identity/disabled严格skip；源input/GT不就地修改。资料当前仅给prototype和stress输入资格，不称已认证完整训练augmentation分布/halo最优。
+
+费用包含增强的两个resampling、原始数据加载、CPU/GPU实际updates、参数/forward/完整滑窗与存储；未来GPU必须fresh totals达到固定启动门槛和runtime余量。不要在当前1.4GB空闲时占卡等待。stage/磁盘储备预测不足则先完成只读规划，不删旧证据或放宽reserve。
+
+若普通强基线仍无native/raw能力，继续representation与来源合格预训练对照；不进入收益头claim。若能力足够，才合法开发patient-fold外生成实际paired动作损害差/净费用，加入强QC/error-cost/defer、随机/静态/always-action/联合动作控制；独立任务网和冻结后8未见确认12series仍必要。
+
+临床可用性不由internal Dice或accepted subset决定。费用分列algorithm wall time、不同并行角色的person-time、患者等待/拒绝处理及训练/标签生成摊销；当前没有真实人类修订时间，不能使用JAMIA50患者时间替代本项目费用。论文mean与total矛盾保持，不造合并效果或联合显著性。

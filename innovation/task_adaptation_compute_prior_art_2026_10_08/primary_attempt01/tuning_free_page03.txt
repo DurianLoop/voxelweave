@@ -1,0 +1,141 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+FOURIER 
+DOMAIN 
+SAMPLIG
+ZERO
+FILLING
+X STEP 1
+Z STEP 1
+U STEP 1
+X STEP 2
+Z STEP 2
+U STEP 2
+RECOVERED 
+IMAGE
+1-
+0
+ 1
+
+0
+ 1
+ 1-
+
+X STEP
+
+POLICY
+AT STEP 1 
+𝜋
+0x
+0u
+0z
+𝑎ଵ ൌ0
+2a 2a 2a
+U STEP
+
+Z STEP
+
+𝑠଴STATE
+𝑥ଵ 𝑥ଶ 𝑥ఛ
+𝑠ଵSTATE 𝑠ଶSTATE 𝑠ఛSTATE
+If 𝑎ଵ 𝑎ଵ
+𝑎ଵ ൌ1If
+POLICY  
+AT STEP
+𝜋
+𝜏
+POLICY 
+AT STEP 2 
+𝜋
+Figure 2. Overview of our tuning-free plug-and-play framework
+(taking CS-MRI problem as example).
+2011; Venkatakrishnan et al., 2013), which has attracted
+great attention owing to its effectiveness and ﬂexibility to
+handle a wide range of inverse imaging problems. Follow-
+ing this philosophy, several works have been developed,
+and can be roughly categorized in terms of four aspects,
+i.e., proximal algorithms, imaging applications, denoiser
+priors, and the convergence. (i) proximal algorithms in-
+clude half-quadratic splitting (Zhang et al., 2017b), primal-
+dual method (Ono, 2017), generalized approximate message
+passing (Metzler et al., 2016b) and (stochastic) accelerated
+proximal gradient method (Sun et al., 2019a). (ii) imaging
+applications have such as bright ﬁeld electronic tomography
+(Sreehari et al., 2016); diffraction tomography (Sun et al.,
+2019a); low-dose CT imaging (He et al., 2018); Compressed
+Sensing MRI (Eksioglu, 2016); electron microscopy (Sree-
+hari et al., 2017); single-photon imaging (Chan et al., 2017);
+phase retrieval (Metzler et al., 2018); Fourier ptychogra-
+phy microscopy (Sun et al., 2019b); light-ﬁeld photography
+(Chun et al., 2019); hyperspectral sharpening (Teodoro et al.,
+2018); denoising (Rond et al., 2016); and image processing –
+e.g. demosaicking, deblurring, super-resolution and inpaint-
+ing (Heide et al., 2014; Meinhardt et al., 2017; Zhang et al.,
+2019a; Tirer & Giryes, 2018).
+Moreover, (iii) denoiser priors include BM3D (Heide et al.,
+2014; Dar et al., 2016; Rond et al., 2016; Sreehari et al.,
+2016; Chan et al., 2017), nonlocal means (Venkatakrishnan
+et al., 2013; Heide et al., 2014; Sreehari et al., 2016), Gaus-
+sian mixture models (Teodoro et al., 2016; 2018), weighted
+nuclear norm minimization (Kamilov et al., 2017), and deep
+learning-based denoisers (Meinhardt et al., 2017; Zhang
+et al., 2017b; Rick Chang et al., 2017). Finally, (iv) theo-
+retical analysis on the convergenceinclude the symmetric
+gradient (Sreehari et al., 2016), the bounded denoiser (Chan
+et al., 2017) and the nonexpansiveness assumptions (Sree-
+hari et al., 2016; Teodoro et al., 2018; Sun et al., 2019a; Ryu
+et al., 2019; Chan, 2019).
+Differing from these aspects, in this work we focus on the
+challenge of parameter selection in PnP, where a bad choice
+of parameters often leads to severe degradation of the results
+(Romano et al., 2017; Chan et al., 2017). Unlike existing
+semi-automated parameter tuning criteria (Wang & Chan,
+2017; Chan et al., 2017; Zhang et al., 2017b; Eksioglu, 2016;
+Tirer & Giryes, 2018), our method is fully automatic and is
+purely learned from the data, which signiﬁcantly eases the
+burden of manual parameter tuning.
+Automated Parameter Selection. There are some works
+that considering automatic parameter selection in inverse
+problems. However, the prior term in these works is re-
+stricted to certain types of regularizers, e.g. Tikhonov reg-
+ularization (Hansen & O’Leary, 1993; Golub et al., 1979),
+smoothed versions of the𝓁p norm (Eldar, 2008; Giryes et al.,
+2011), or general convex functions (Ramani et al., 2012). To
+the best of our knowledge, none of them can be applicable
+to the PnP framework with sophisticated non-convex and
+learned priors.
+Deep Unrolling. Perhaps the most confusable concept to
+PnP in the deep learning era is the so-called deep unrolling
+methods (Gregor & LeCun, 2010; Hershey et al., 2014;
+Wang et al., 2016; Yang et al., 2016; Zhang & Ghanem,
+2018; Diamond et al., 2017; Metzler et al., 2017a; Adler &
+Oktem, 2018; Dong et al., 2018; Xie et al., 2019), which
+explicitly unroll/truncate iterative optimization algorithms
+into learnable deep architectures. In this way, the penalty
+parameters (and the denoiser prior) are treated as trainable
+parameters, meanwhile the number of iterations has to be
+ﬁxed to enable end-to-end training. By contrast, our PnP
+approach can adaptively select a stop time and penalty
+parameters given varying input states, though using the
+off-the-shelf denoiser as prior.
+Reinforcement Learning for Image Recovery. Although
+Reinforcement Learning (RL) has been applied in a range
+of domains, from game playing (Mnih et al., 2013; Silver
+et al., 2016) to robotic control (Schulman et al., 2015), only
+few works have successfully employed RL to the image
+recovery tasks. Authors of that (Yu et al., 2018) learned
+a RL policy to select appropriate tools from a toolbox to
+progressively restore corrupted images. The work of (Zhang
+et al., 2019b) proposed a recurrent image restorer whose
+endpoint was dynamically controlled by a learned policy.
+In (Furuta et al., 2019), authors used RL to select a sequence
+of classic ﬁlters to process images gradually. The work
+of (Yu et al., 2019) learned network path selection for image
+restoration in a multi-path CNN. In contrast to these works,
+we apply a mixed model-free and model-based deep RL
+approach to automatically select the parameters for the
+PnP image recovery algorithm.
+3. Tuning-free PnP Proximal Algorithm
+In this work,we elaborate on our tuning-free PnP proximal
+algorithm, as described in (3)-(5). This section describes in
+detail our approach, which contains three main parts. Firstly,
+we describe how the automated parameter selection is driven.

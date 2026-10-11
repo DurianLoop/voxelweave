@@ -1,0 +1,39 @@
+6 Qiaoying Huang, Xiao Chen, Dimitris Metaxas, and Mariappan S. Nadar
+Table 1. Dice’s score of SERANet trained with different losses
+Loss
+10% noise 20% noise
+CSF GM WM Aver. CSF GM WM Aver.
+lce(sT ) + l2(xT ) 0.8048 0.8841 0.8518 0.8469 0.7995 0.8751 0.8092 0.8279
+PT
+t=0 lce(st) 0.8513 0.9082 0.8796 0.8797 0.8041 0.8733 0.8283 0.8352
+lce(sT ) 0.8482 0.9102 0.8814 0.8799 0.8083 0.8762 0.8415 0.8423
+3 Experiments
+Implementation Details Total 20 healthy digital 3D brain volumes are uti￾lized. The networks are trained on 2D axial slices. 969 slices of 17 brains are used
+for training and the rest 171 slices from 3 brains are reserved for testing only.
+Each digital brain is scanned by a spin echo sequence with Cartesian readout.
+Average TE = 80 ms and TR = 3 s are used and 5% variation of both TE
+and TR values are introduced for varying MR contrasts. Each slice has the cor￾responding tissue segmentation mask from BrainWeb. All slices have a unified
+size of 180 × 216 with 1 mm isotropic resolution. We use a zero-mean Gaussian
+distribution with a densely sampled k-space center to realize a pseudo-random
+under-sampling pattern, where 30% phase encoding lines are maintained with
+16 center k-space lines. All k-space data are added with additional 10% and 20%
+white Gaussian noise. All models are implemented in Pytorch and trained on
+NVIDIA TITAN Xp. Hyperparameters are set as: a learning rate of 10−4 with
+decreasing rate of 0.5 for every 20 epochs, 50 maximum epochs, batch size of 12.
+Adam optimizer is used in training all the networks. We adopt Dice’s score as
+evaluation metrice in all experiments. For the recurrent steps T, the segmenta￾tion performance of our model in terms of Dice’s score has converged after two
+recurrences. So we empirically set T = 2.
+Effect of different losses We provide a comparison of training SERANet
+with different losses in Tabel 1. We observe that SERANet constrained by the
+reconstruction loss (l2) performs the worst, as shown in the first row of Table
+1. This may seem surprising at first but it actually verifies that reconstruction
+from the images with noise and artifacts may compromise segmentation results.
+The model that is optimized solely using segmentation loss (lce) on the final
+segmentation estimation sT achieves the best result. These results demonstrate
+two key advantages of our proposed method. First, due to the efficiency of the
+attention module, SERANet automatically learns image feature that benefits the
+segmentation performance, without constraints on the reconstructed image. Sec￾ond, our method does not require cumbersome tweaking of loss weights between
+reconstruction and segmentation tasks.
+Effect of attention module We design two different baselines without the at￾tention module: one is a Two-step model that contains separate reconstruction
+and segmentation modules, which are trained separately with reconstruction and
+segmentation losses. The other is a Joint model, which also contains these two

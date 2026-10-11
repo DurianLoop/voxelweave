@@ -1,0 +1,145 @@
+MIRTO 9
+with level ℓ, cell means y¯kℓ and y¯kℓ,m,
+SSmethod = |U|X
+m
+(¯y·m − y¯)
+2
+,
+SSk = M
+|U|
+Lk
+X
+ℓ
+(¯ykℓ − y¯)
+2
+,
+SSk×m =
+|U|
+Lk
+X
+ℓ,m
+
+y¯kℓ,m − y¯kℓ − y¯·m + ¯y
+2
+, (24)
+for M methods and Lk levels. The axis share is P
+k
+(SSk+
+SSk×m)/SStot and the method share SSmethod/SStot; the
+remainder holds higher-order interactions. Pooled over
+metrics, the metric axis mixes quantities on different
+scales, and its main effect measures those scales rather
+than any evaluation choice. The informative decomposi￾tion is therefore the one within each metric, which we
+report first. Two cautions apply to it. An axis main effect
+shifts every method equally and cannot by itself reorder
+them, so the axis share bounds, but does not measure,
+the influence of evaluation on rankings; reordering is mea￾sured directly by within-metric flip shares. And an axis
+that does not affect a metric replicates its values, which
+inflates that metric’s method share. H2 (evaluation domi￾nance) compares the pooled shares and is supported if the
+axis share exceeds the method share with non-overlapping
+intervals.
+Order agreement. Kendall’s τb [38] compares each uni￾verse’s four-method order with that of the reference uni￾verse (Dice, 20 cm3
+, validation τ , subject mean, canonical
+reference, full support, plain thresholding, 6-connectivity
+with floor, IoU ≥ 0.10).
+Training data as an axis. Holding the evaluation fixed,
+we score every method after training on each of five
+healthy training sets (Table 2) and add the training set
+as an eleventh axis, with a method × training-set term
+in Eq. (24). We also measure how stably a training set
+can be chosen per method on the 24 validation subjects:
+each of six selection rules is recomputed in 104 bootstrap
+resamples of V, and the test regret of a choice is the test
+Dice of the best configuration minus that of the chosen
+one.
+2.8 Statistical inference and hypotheses
+The subject is the unit of inference; voxels, slices and
+lesions are clustered within subjects and are never re￾sampled on their own. For a statistic ˆθ = θ(D) com￾puted on subjects D, the paired bootstrap draws D∗b
+with replacement, recomputes ˆθ
+∗b
+for every method on
+the same resample, and reports the percentile interval
+[
+ˆθ
+∗
+(0.025),
+ˆθ
+∗
+(0.975)] [26], with B = 104
+replicates (B = 103
+,
+with the same resamples for every universe, in the mul￾tiverse). Thresholds that use test data are re-selected in
+every replicate; validation and conformal thresholds use
+no test data and stay fixed, so their intervals omit the
+uncertainty of the 24-subject fit. Two-sided bootstrap p￾values use an add-one correction, p = 2 min{(1 + #{
+ˆθ
+∗ ≤
+0}),(1 + #{
+ˆθ
+∗ ≥ 0})}/(B + 1), whose smallest value is
+2/(B + 1) ≈ 2 × 10−4
+. Holm’s step-down adjustment [34]
+is applied inside declared families,
+p
+(r)
+H = max
+q≤r
+min 
+1,(K − q + 1) p
+(q)
+	
+, (25)
+for the r-th smallest of K raw p-values. The floors are
+therefore 0.0048 (K = 24), 0.0032 (K = 16) and 0.0064
+(K = 32); we print pH < 0.005 at the floor. Families are
+the 24 model-pair Dice contrasts (6 pairs × 4 budgets)
+per threshold rule and aggregation, the 32 model-versus￾baseline Dice contrasts, and the corresponding voxel￾metric families. Every per-subject quantity is reported
+as a mean and a median, never interchangeably.
+Every experiment in Section 3 tests a hypothesis. Nine
+primary hypotheses, H1 to H9, each carry an explicit deci￾sion criterion (Table 9); eight secondary hypotheses pre￾dict specific effects that follow from the identities and
+from the primary analyses (Appendix F); and where an
+experiment has no decision criterion, its hypothesis is
+marked exploratory and judged from intervals alone. A
+hypothesis is called supported only if its criterion is met,
+and a failed criterion is reported as such. The same 312
+test subjects served both to develop the protocol and to
+test these hypotheses, so the tests are exploratory, not
+confirmatory: an explicit criterion prevents a hypothesis
+from being bent to fit its outcome, but it cannot remove
+the influence of other analyses of the same cohort. Confir￾mation requires an independent cohort, evaluated under
+a pre-registered protocol in which the training set and
+every threshold rule are fixed. All analyses run on stored
+maps without a GPU; the cost of training and inference
+is reported in Appendix D.10.
+2.9 Latent aggregation for REFLECT
+As a methodological contribution in its own right, we pro￾pose a training-free change to how REFLECT turns its
+two residuals into an anomaly map. REFLECT exposes
+two residual streams, but its published map averages the
+four latent channels before fusing them with the image
+residual, although the channels need not agree on where
+an anomaly lies. Let Sσ be in-plane Gaussian smoothing.
+The image stream is
+I =
+S3 px
+2.5 min(|x − xˆ|, 0.4)
+max 
+S3 px(2.5 min(|x − xˆ|, 0.4)) , (26)
+and the latent stream has four channels ℓc = S1
+
+|z1,c −
+z0,c|
+
+, c = 1, . . . , 4, at one-eighth resolution. An aggre￾gation a : R
+4 → R collapses the channels and the score
+is
+S =
+1
+2
+I +
+1
+2
+up8
+
+max(a(ℓ), 0)
+max(·)
+, (27)

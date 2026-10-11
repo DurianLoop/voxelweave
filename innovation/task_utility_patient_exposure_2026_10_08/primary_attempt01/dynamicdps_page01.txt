@@ -1,0 +1,39 @@
+Tackling Hallucination from Conditional Models
+for Medical Image Reconstruction with
+DynamicDPS
+Seunghoi Kim∗1,2, Henry F. J. Tregidgo∗1,2, Matteo Figini1,3, Chen Jin5,
+Sarang Joshi4, Daniel C. Alexander1,3
+1 Hawkes Institute, University College London, UK
+2 Department of Medical Physics and Biomedical Engineering, University College
+London, UK
+3 Department of Computer Science, University College London, UK
+4 The University of Utah, USA,
+5 Centre for AI, DS&AI, AstraZeneca, UK
+Abstract. Hallucinations are spurious structures not present in the
+ground truth, posing a critical challenge in medical image reconstruction,
+especially for data-driven conditional models. We hypothesize that com-
+bining an unconditional diffusion model with data consistency, trained on
+a diverse dataset, can reduce these hallucinations. Based on this, we pro-
+pose DynamicDPS, a diffusion-based framework that integrates condi-
+tional and unconditional diffusion models to enhance low-quality medical
+images while systematically reducing hallucinations. Our approach first
+generates an initial reconstruction using a conditional model, then refines
+it with an adaptive diffusion-based inverse problem solver. DynamicDPS
+skips early stage in the reverse process by selecting an optimal starting
+time point per sample and applies Wolfe’s line search for adaptive step
+sizes, improving both efficiency and image fidelity. Using diffusion pri-
+ors and data consistency, our method effectively reduces hallucinations
+from any conditional model output. We validate its effectiveness in Image
+Quality Transfer for low-field MRI enhancement. Extensive evaluations
+on synthetic and real MR scans, including a downstream task for tissue
+volume estimation, show that DynamicDPS reduces hallucinations, im-
+proving relative volume estimation by over 15% for critical tissues while
+usingonly5%ofthesamplingstepsrequiredbybaselinediffusionmodels.
+As a model-agnostic and fine-tuning-free approach, DynamicDPS offers
+a robust solution for hallucination reduction in medical imaging. Code
+is available athttps://github.com/edshkim98/DynamicDPS.
+Keywords: Diffusion models·Image enhancement·Out-of-distribution
+generalization
+* These authors contributed equally to this work
+Corresponding author E-mail: seunghoi.kim.17@ucl.ac.uk
+arXiv:2503.01075v2  [eess.IV]  24 Jul 2025

@@ -1,0 +1,11 @@
+# 最后实际状态与归档后附
+
+首先真实poll29823，不重启/迁移。最新2a027d仍含session29823，native_reference_intensity已2992完成，native_reference_spatial1980/2992、median2.1255043499404564秒、累计10519.556862999918秒。两raw-PCHIP支尚未观察完成；原CPU冻结配方不变。GPU授权有效，最新total24455/free1394MiB，不满足已冻结的新GPU阶段8192MiB储备；零其他PID干预。
+
+本批V1归档d9b932 exit1因旧BioC伪.json含HTML错误响应；全部保留、诊断cd0ee6，无index/proof写入。新V2只对固定该路径及固定SHA跳过内部JSON解析、仍全字节归档。V2 session30238真实1698d0 exit0，16.386秒：旧6164hash保持、新60、累计6224。index SHA ce00927df00d7d18a443fa569ad0f2273d7a2d966668a66bce6748b18f05cada；proof SHA见POST归档实际hash返回，不猜测。滚动训练除了immutable frozen_config继续排除，不重跑或修改旧archive。
+
+POST工具返回、FINAL_PUBLIC_RESPONSE和本文件为当前index后附，下一delta纳入。当前科研目标active；两新原文完成仅text/公式/图注/内置表，作者稿，不含像素/外部supp/finalPDF/源码。38开发patch仅支持+19label诊断，2normalization synthetic，新患者医学效益0；8未见确认12series及lockedIXI关闭。
+
+四真正exit0后原capture_training_terminal→evaluate_matched→capture_evaluation_terminal→summarize_matched；先四last2992/11968journal，再36production+36functional完整FOV，六医学和严格数值门槛/全部患者分母不降。详见NEXT_TRIAL_PREPARATION：先合法上下文普通增强强基线，再充分能力/动作余量/严格患者fold外的可见性→具体action净收益。InstanceNorm使输入mask不能认证任务输出隔离；不得用全11开发GT训练过的19998parent做宣称独立的外折task。
+
+根.gitignore与environment hash保持，不安装/委派，所有新增仅innovation。公开对话第7条：两篇新增论文的正文和内置表格已核读完，验证结果与后续方案也已写入本轮目录。原训练最新实际输出到第二分支1870/2992，仍未结束；GPU当前空闲约1.36GiB，未达到既定的新训练起跑储备。现在核对来源哈希和归档链接，保存本轮对话及全部可用工具返回。

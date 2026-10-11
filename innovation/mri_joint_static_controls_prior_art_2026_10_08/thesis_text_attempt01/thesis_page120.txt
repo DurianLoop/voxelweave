@@ -1,0 +1,39 @@
+7.1. GENERATIVE ADVERSARIAL NETWORKS (GANS) FOR
+POSTERIOR MODELING
+original motivations of WGANs is to reduce the mode collapse behavior observed in
+GANs (Arjovsky et al., 2017). Mode collapse is an issue where a GAN does not learn all
+modes of the distribution, but remains stuck on a single mode.
+7.1.3 Conditional GANs for posterior modeling
+Most significant to this present work is however the extension of Equation 7.4 to an
+image conditional setting and the connection with a Bayesian modeling approach. In
+their work, Adler and Öktem (2018a) show that we can learn the posterior distribution
+p(x|y) using WGANs, and using Kantorovich-Rubinstein duality, they show that the
+problem of learning the posterior by minimizing
+min
+θ
+Ey∼p(y) [W(p(x|y),gθ(·, y))]
+can be framed as
+min
+θ
+max
+ϕ:∥dϕ∥L≤1
+E(x,y)∼p(x,y)
+z∼p(z)
+[dϕ(x, y)−dϕ(gθ(z, y), y)] (7.5)
+where p(x, y) is the joint distribution of reference images and observations. We see that
+the main difference with Equation 7.4 lies in the fact that the generator and discriminator
+both take two inputs instead of one, and that we use a pair of samples from the joint
+distribution in order to learn the posterior. Note that it is easy to obtain samples from
+the joint distribution, as given a ground truth imagex, the corresponding observation
+can be obtained by applying the forward model of Equation 2.12 to it, with any maskω.
+Using such a model applied to Computed Tomography (CT), Adler and Öktem (2018a)
+show that the learned model can perform both reconstruction and UQ, by taking the
+empirical mean and variance using samples{gθ(zi,y)}ns
+i=1.
+Deep Bayesian Inversion
+In their work, Adler and Öktem (2018a) take an additional step from Equation 7.4, in
+order to further prevent the issue ofmode collapse. To tackle the issue Adler and Öktem
+(2018a), propose to use a conditional mini-batch discriminator approach, inspired from
+Karras et al. (2017); Salimans et al. (2016). Their idea is to have the discriminator
+distinguish between pairs of conditional samples that can contain the original image or
+107

@@ -1,0 +1,27 @@
+A Appendix for Chapter 6
+A.1 Implementation details
+Pretraining regimes. The deep reconstructors used in Pineda et al. (2020); Bakker
+et al. (2020) are pre-trained by randomly sampling a mask from a set of distributions
+with different parameters. Bakker et al. (2020) uses a discrete set of sampling rates at
+(25%,25%,25%, 16.7%,16.7%, and12.5%) with (25%,16.7%,12.5%, 16.7%,12.5%,12.5%) of
+the total selected frequencies being allocated to center frequencies and the rest sampled
+uniformly,while Zhang et al. (2019b) uses a distribution where10 center frequencies are
+always acquired, and between0 and 38 additional frequency lines are acquired following
+a uniform distribution (as a reminder, the total number of possible sampling locations is
+128 lines or columns).
+All UNet models of the ablations of the Bakker et al. (2020) setting were trained following
+the hyperparameters described in the paper, i.e. using Adam (Kingma and Ba, 2014) and
+training to 50 epochs, otherwise using the hyperparameters from Zbontar et al. (2019)
+(except for the10× learning rate drop 40 epochs, we instead kept the initial10−3 rate
+throughout). We used a batch size of32.
+For the cResNet models used in the ablations we used Adam as an optimizer with
+learning rate 10−3,betas of (0.9, 999), trained for 50 epochs and a batch size of 32.
+The architecture is the same as in Zhang et al. (2019b) except only outputting the
+mean of the image (no uncertainty channel), and using72 channels for the 3 residual
+blocks, with 18, 36, 72 channels in the encoder and72, 36, 18 channels in the decoder.
+In the comparison with Pineda et al. (2020), we used the checkpoint provided at https:
+//facebookresearch.github.io/active-mri-acquisition/misc.html by the authors.
+Computational hardware.We performed all of your experiments on a DGX-2 server
+using A100 GPUs. On this machine the reconstruction model of Pineda et al. (2020)
+fits into GPU memory with an effective batchsize of50 (we use subbatching to enable
+133

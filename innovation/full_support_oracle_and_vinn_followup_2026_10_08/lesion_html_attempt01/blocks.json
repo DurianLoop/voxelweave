@@ -1,0 +1,1014 @@
+[
+  {
+    "index": 0,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Adaptable Segmentation Pipeline for Diverse Brain Tumors with Radiomic-guided Subtyping and Lesion-Wise Model Ensemble"
+  },
+  {
+    "index": 1,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Daniel Capellán-Martín"
+  },
+  {
+    "index": 2,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Abhijeet Parida"
+  },
+  {
+    "index": 3,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Zhifan Jiang"
+  },
+  {
+    "index": 4,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Nishad Kulkarni"
+  },
+  {
+    "index": 5,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Krithika Iyer"
+  },
+  {
+    "index": 6,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Austin Tapp"
+  },
+  {
+    "index": 7,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Syed Muhammad Anwar"
+  },
+  {
+    "index": 8,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "María J Ledesma-Carbayo"
+  },
+  {
+    "index": 9,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Marius George Linguraru"
+  },
+  {
+    "index": 10,
+    "kind": "p",
+    "id": "P1",
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "These authors contributed equally."
+  },
+  {
+    "index": 11,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Email: mlingura@childrensnational.org"
+  },
+  {
+    "index": 12,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "historyarticle-meta1"
+    ],
+    "text": "Issue date 2026."
+  },
+  {
+    "index": 13,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1"
+    ],
+    "text": "Abstract"
+  },
+  {
+    "index": 14,
+    "kind": "p",
+    "id": "P2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1"
+    ],
+    "text": "Robust and generalizable segmentation of brain tumors on multi-parametric magnetic resonance imaging (MRI) remains difficult because tumor types differ widely. The BraTS 2025 Lighthouse Challenge benchmarks segmentation methods on diverse high-quality datasets of adult and pediatric tumors: multi-consortium international pediatric brain tumor segmentation (PED), preoperative meningioma tumor segmentation (MEN), meningioma radiotherapy segmentation (MEN-RT), and segmentation of pre- and post-treatment brain metastases (MET). We present a flexible, modular, and adaptable pipeline that improves segmentation performance by selecting and combining state-of-the-art models and applying tumor- and lesion-specific processing before and after training. Radiomic features extracted from MRI help detect tumor subtype, ensuring a more balanced training. Custom lesion-level performance metrics determine the influence of each model in the ensemble and optimize post-processing that further refines the predictions, enabling the workflow to tailor every step to each case. On the BraTS testing sets, our pipeline achieved performance comparable to top-ranked algorithms across multiple challenges. These findings confirm that custom lesion-aware processing and model selection yield robust segmentations yet without locking the method to a specific network architecture. Our method has the potential for quantitative tumor measurement in clinical practice, supporting diagnosis and prognosis."
+  },
+  {
+    "index": 15,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1",
+      "kwd-group1"
+    ],
+    "text": "Keywords: Brain tumor segmentation, MedNeXt, Meningiomas, Metastases, MRI, nnU-Net, Pediatric brain tumors, Tumor subtyping"
+  },
+  {
+    "index": 16,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "1. Introduction"
+  },
+  {
+    "index": 17,
+    "kind": "p",
+    "id": "P3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "In the United States, cancer is the second leading cause of death overall and the primary cause among individuals younger than 85 years old. Brain and other central nervous system tumors are the top cause of cancer death in children and adolescents under 20, and brain tumors also lead cancer mortality in men aged 20–39. In 2025, about two million new cancer cases and 618,000 cancer-related deaths are projected in the U.S. [ 24 ]. Early, accurate diagnosis is essential to improve outcomes, but wide variation in tumor appearance across imaging devices and population makes consistent assessment difficult, highlighting the need for reliable quantitative diagnositc and prognostic tools."
+  },
+  {
+    "index": 18,
+    "kind": "p",
+    "id": "P4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "In neuro-oncology, accurate segmentation of brain tumors in multi-parametric magnetic resonance imaging (mpMRI) is a fundamental step for diagnosis, treatment planning, and longitudinal monitoring. Yet manual contouring remains labor-intensive and prone to inter-observer variability, motivating robust automated solutions in the clinical workflow."
+  },
+  {
+    "index": 19,
+    "kind": "p",
+    "id": "P5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "The international Brain Tumor Segmentation (BraTS) Challenge [ 1 , 2 , 3 , 4 , 13 , 20 ], organized in conjunction with the Medical Image Computing and Computer Assisted Intervention (MICCAI) conference, has driven and benchmarked segmentation algorithmic innovation since MICCAI 2012. In its 2025 edition, BraTS expanded into a suite of challegnes that cover a broader range of tumors and tasks, earning recognition as one of MICCAI’s three Lighthouse Challenges."
+  },
+  {
+    "index": 20,
+    "kind": "p",
+    "id": "P6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "Recent deep learning models such as nnU-Net [ 8 ], MedNeXt [ 23 ], Swin UNETR [ 7 , 25 ], and emerging Mamba-based hybrids [ 18 , 28 ] have defined the current state of the art (SOTA) in medical image segmentation. As the SOTA models have become more stable and robust across diverse tasks, their reported Dice scores have converged within narrow margins [ 9 ], signaling a performance plateau. While ever more complex architectures are possible, they would offer diminishing added values."
+  },
+  {
+    "index": 21,
+    "kind": "p",
+    "id": "P7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "BraTS-winning solutions have demonstrated that model-independent and GPU-free heuristics, including ensemble voting [ 19 ], size-aware connected component filtering and ET-to-NCR relabelling [ 5 ], and adaptive refinement schemes [ 11 , 22 ], can substantially boost segmentation performance. Instead of pursuing ever-deeper or more intricate networks, we believe that the next gains will arise from target-specific pipeline design. Robust pre-processing such as radiomic-guided fold splitting mitigates sampling bias; lesion-aware ensemble weighting exploits complementary backbone strengths; and subtype-specific post-processing removes residual artifacts."
+  },
+  {
+    "index": 22,
+    "kind": "p",
+    "id": "P8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "We therefore introduce and apply a flexible, modular, backbone-independent pipeline to multiple BraTS 2025 Lighthouse Challenges to show its versatility. This end-to-end strategy consistently outperforms any single backbone, demonstrating that thoughtful pipeline engineering remains promising once model performance plateaus."
+  },
+  {
+    "index": 23,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2"
+    ],
+    "text": "2. Methods"
+  },
+  {
+    "index": 24,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "2.1. Dataset"
+  },
+  {
+    "index": 25,
+    "kind": "p",
+    "id": "P9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "Our segmentation pipeline was applied to four BraTS 2025 Lighthouse tasks: multi-consortium international pediatric brain tumor segmentation (PED; train = 261, val = 91) [ 6 , 14 ], preoperative meningioma tumor segmentation (MEN; train = 1000, val = 141) [ 15 ], meningioma radiotherapy segmentation (MEN-RT; train = 500, val = 70) [ 17 ], and segmentation of pre- and post-treatment brain metastases (MET; train = 1296, val = 179) [ 21 ]. Each case contains co-registered isotropic pre-contrast T1-weighted (T1), contrast-enhanced T1-weighted (T1CE), T2-weighted (T2), and T2-weighted fluid-attenuated inversion recovery (T2-FLAIR) MRI sequences. In MEN-RT cohort, only T1CE is available and in its original image space."
+  },
+  {
+    "index": 26,
+    "kind": "p",
+    "id": "P10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "Reference standard annotations of the tumor sub-regions were created and approved by expert neuroradiologists. Concretely the following tumor annotations and subregions were defined for each of the Lighthouse challenges considered in this work."
+  },
+  {
+    "index": 27,
+    "kind": "p",
+    "id": "P11",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "PED: enhancing tumor (ET), non-enhancing tumor (NET), cystic component (CC), peritumoral edema (ED), tumor core (TC=ET+NET+CC), and whole tumor (WT=TC+ED)."
+  },
+  {
+    "index": 28,
+    "kind": "p",
+    "id": "P12",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "MEN: ET, non-enhancing tumor core (NETC), surrounding non-enhancing FLAIR hyperintensity (SNFH), TC (ET+NETC), and WT (TC+SNFH)."
+  },
+  {
+    "index": 29,
+    "kind": "p",
+    "id": "P13",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "MEN-RT: gross tumor volume (GTV)."
+  },
+  {
+    "index": 30,
+    "kind": "p",
+    "id": "P14",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "MET: ET, NETC, SNFH, resection cavity (RC; delineates the resection of region within the brain in post-treatment cases), TC (ET+NETC), and WT (TC+SNFH)."
+  },
+  {
+    "index": 31,
+    "kind": "p",
+    "id": "P15",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S3"
+    ],
+    "text": "For more details, please refer to the challenge website: https://www.synapse.org/Synapse:syn64153130/wiki/ ."
+  },
+  {
+    "index": 32,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S4"
+    ],
+    "text": "2.2. Segmentation Pipeline"
+  },
+  {
+    "index": 33,
+    "kind": "p",
+    "id": "P16",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S4"
+    ],
+    "text": "Our pipeline uses MRI radiomic features and lesion-wise metrics to adapt the workflow to each tumor subtype. As summarized in Fig 1 , it comprises four stages: (i) training data preparation: stratified fold splitting based on radiomic feature clustering; (ii) model training; (iii) model selection and ensembling; and (iv) adaptive post-processing, including optimal removal of small connected components and label redefinition."
+  },
+  {
+    "index": 34,
+    "kind": "figure",
+    "id": "F1",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S4"
+    ],
+    "text": "Fig. 1: Fig. 1: Open in a new tab Overview of the segmentation pipeline. PP, CC, and LBL REDEF refer to post-processing, connected components, and label redefinition, respectively."
+  },
+  {
+    "index": 35,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S5"
+    ],
+    "text": "2.3. Stratified Training Data Preparation"
+  },
+  {
+    "index": 36,
+    "kind": "p",
+    "id": "P17",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S5"
+    ],
+    "text": "In five-fold cross-validation (5-fold CV) training, stratified and balanced folds outperform purely random fold splits. While stratification by tumor volume has been explored, we argue that radiomic features-capturing the full heterogeneity of tumor appearance-provide a more robust basis for fold assignment. For each case in the training set, we computed 14 shape- and 93 appearance-based radiomic features per MRI sequence based on WT mask provided by reference annotation, using PyRadiomics [ 26 ], following the protocol of Jiang et al . [ 12 ]."
+  },
+  {
+    "index": 37,
+    "kind": "p",
+    "id": "P18",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S5"
+    ],
+    "text": "To reduce the large number of radiomic features, we keep only the principal components that explain 90% of the variance and then partition the cases with k- means clustering using reduced features [ 10 , 11 ]. The optimal number of clusters is determined by maximizing the silhouette coefficient in the training folds. Each cluster is randomly split into five folds, yielding the final CV sets for training. Fig. 2 illustrates the clustering based on the two radiomic features most relevant for cluster separation."
+  },
+  {
+    "index": 38,
+    "kind": "figure",
+    "id": "F2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S5"
+    ],
+    "text": "Fig. 2: Fig. 2: Open in a new tab Clustering visualization across challenges using top two radiomic features."
+  },
+  {
+    "index": 39,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S6"
+    ],
+    "text": "2.4. Model Training"
+  },
+  {
+    "index": 40,
+    "kind": "p",
+    "id": "P19",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S6"
+    ],
+    "text": "Based on the reported performance in [ 9 ] and our previous experience, we selected three state-of-the-art models: nnU-Net V2, nnU-Net with residual encoder (nnU-Net ResEnc M), and MedNeXt M (k=3, 17.6M parameters, 248 GFlops). Each model was trained using a 5-fold CV strategy with input image patches of 128 × 128 × 128 voxels. The nnU-Net variants and MedNeXt-M were trained using same settings, employing label-wise softmax activation, a class-weighted loss function combining Dice and cross-entropy losses, optimized by the stochastic gradient descent (SGD) with Nesterov momentum (initial learning rate=0.01, momentum=0.99, weight decay=3e-5), for 200 epochs on NVIDIA A100 (40 GB) GPUs. The implementation is available through the official frameworks repositories: https://github.com/MIC-DKFZ/nnUNet and https://github.com/MIC-DKFZ/MedNeXt ."
+  },
+  {
+    "index": 41,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S7"
+    ],
+    "text": "2.5. Label-wise Metrics as Objective Function F"
+  },
+  {
+    "index": 42,
+    "kind": "p",
+    "id": "P20",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S7"
+    ],
+    "text": "As model training relies on a loss function, each downstream stage (model selection, ensembling, and post-processing) also needs a quantitative objective so the pipeline can be customized automatically to each tumor type and region. This objective function can simply be the Dice similarity coefficient (DSC). However, in reality or in the context of challenges, DSC alone is insufficient because segmentation performance is evaluated with several metrics, including DSC, normalized surface distance (NSD) and Hausdorff distance (HD), which sit on different scales and can not be added directly. Also, integrating scores across tumour sub-regions (ET, TC, WT etc.) compounds another challenge."
+  },
+  {
+    "index": 43,
+    "kind": "p",
+    "id": "P21",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S7"
+    ],
+    "text": "We therefore adopt the ranking strategy proposed by BraTS [ 16 ]. For every candidate prediction obtained on the training set using 5-fold CV, we compute lesion-wise metrics for all sub-regions, rank the predictions case-wise, and average these ranks across metrics and regions. The resulting internal CV score F is a single value (smaller is better) that combines all lesion-wise metrics, aligns with the official BraTS leaderboard and remains robust to outliers. Our implementation is open-source and available at github.com/Pediatric-Accelerated-Intelligence-Lab/BraTS-Unofficial-Ranker ."
+  },
+  {
+    "index": 44,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S8"
+    ],
+    "text": "2.6. Model Selection and Ensemble"
+  },
+  {
+    "index": 45,
+    "kind": "p",
+    "id": "P22",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S8"
+    ],
+    "text": "Each trained model M i is ranked by the approach in Section 2.5 with a score F i . Then we used a weighted model ensemble strategy when adding the averaged 5-fold probability output from each model. The weight of each model is defined as W i = ∑ j ≠ i F j /∑ i F i . The weights for each model are summarized in Table 1 ."
+  },
+  {
+    "index": 46,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S8",
+      "T1"
+    ],
+    "text": "Table 1:"
+  },
+  {
+    "index": 47,
+    "kind": "p",
+    "id": "P43",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S8",
+      "T1"
+    ],
+    "text": "Weights for each model across tasks."
+  },
+  {
+    "index": 48,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S8",
+      "T1"
+    ],
+    "text": "PED MEN MEN-RT MET W 0 (nnU-Net V2) 0.332 0.323 0.336 0.295 W 1 (nnU-Net ResEnc M) 0.331 0.326 0.338 0.296 W 2 (MedNeXt M) 0.337 0.351 0.326 0.409"
+  },
+  {
+    "index": 49,
+    "kind": "p",
+    "id": "P23",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S8"
+    ],
+    "text": "We also evaluated the STAPLE [ 27 ] ensemble strategy. It lagged behind the weighted ensemble when we used the three 5-fold-averaged predictions on the training data. However, STAPLE performed better on the validation set for MEN-RT task because treating each fold’s model as an independent candidate yielded 15 predictions, which markedly enhanced DSC, NSD, and rank for the MEN-RT validation cohort."
+  },
+  {
+    "index": 50,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9"
+    ],
+    "text": "2.7. Adaptive Post-processing"
+  },
+  {
+    "index": 51,
+    "kind": "p",
+    "id": "P24",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9"
+    ],
+    "text": "After ensembling, we recompute stratification clusters on the predicted masks, enabling cluster- and label-specific thresholds for adaptive post-processing."
+  },
+  {
+    "index": 52,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S10"
+    ],
+    "text": "Post-processing for the removal of isolated connected components (PP1-CC):"
+  },
+  {
+    "index": 53,
+    "kind": "p",
+    "id": "P25",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S10"
+    ],
+    "text": "To remove small isolated CCs that are likely false or noisy predictions, we perform a grid search across clusters and labels over volumes from 0 to 500 voxels in 25-voxel increments. For each threshold, we filter the predicted mask and compute the internal ranking score, and finally select the threshold that achieves the best averaged rank. This cluster- and label-specific filter eliminates fragments that would otherwise be counted as false-positive lesions."
+  },
+  {
+    "index": 54,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S11"
+    ],
+    "text": "Post-processing for label redefinition (PP2-LBLREDEF):"
+  },
+  {
+    "index": 55,
+    "kind": "p",
+    "id": "P26",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S11"
+    ],
+    "text": "A second adaptive PP fine-tunes the consistency of tumor sub-regions (labels). We correct systematic label confusions in a data-driven way. After PP1-CC, we build a confusion matrix ( Fig. 3 ) over all predicted masks again to identify pairs of frequently swapped labels. For every such pair (label x ,label y ), we search, within each cluster, for the threshold on the volume ratio label x /WT that maximizes internal CV metrics ( e.g . rank). If a case with predicted mask falls below this threshold, all label x voxels are converted to label y . This ratio-based PP2-LBLREDEF enforces anatomically plausible label volumes and improves the performance of the BraTS metrics at the lesion level."
+  },
+  {
+    "index": 56,
+    "kind": "figure",
+    "id": "F3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S11"
+    ],
+    "text": "Fig. 3: Fig. 3: Open in a new tab Post-PP1 confusion matrix indicating labels that need to be redefined in PP2. BG refers to background."
+  },
+  {
+    "index": 57,
+    "kind": "p",
+    "id": "P27",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S11"
+    ],
+    "text": "At inference, a new test case is assigned to its nearest radiomic cluster, after model ensemble and the cluster-specific post-processing threshold values are then applied. Fig. 4 shows the optimal thresholds identified by CV-based grid search."
+  },
+  {
+    "index": 58,
+    "kind": "figure",
+    "id": "F4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S2",
+      "S9",
+      "S11"
+    ],
+    "text": "Fig. 4: Fig. 4: Open in a new tab Adaptive Post-processing: optimal thresholds per cluster and label across challenges."
+  },
+  {
+    "index": 59,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12"
+    ],
+    "text": "3. Results"
+  },
+  {
+    "index": 60,
+    "kind": "p",
+    "id": "P28",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12"
+    ],
+    "text": "The evaluation of the model prediction on the validation set was performaed on the Synapse platform. The models were assessed for each of the tumor regions using the lesion-wise DSC and NSD with boundary threshold of 1.0 mm."
+  },
+  {
+    "index": 61,
+    "kind": "p",
+    "id": "P29",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12"
+    ],
+    "text": "Quantitative results of our models across the validation and testing data for each challenge are shown in Tables 2 and 3 , for PED, MET, MEN, and MEN-RT, respectively. These evaluations were performed automatically by the challenge’s digital platform, with no access to the reference standard annotations on the validation set and no access to any testing data including images and labels. Figure 5 illustrated qualitative results on validation cases for PED, MET, MEN, and MEN-RT, respectively."
+  },
+  {
+    "index": 62,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12",
+      "T2"
+    ],
+    "text": "Table 2: PED quantitative results."
+  },
+  {
+    "index": 63,
+    "kind": "p",
+    "id": "P44",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12",
+      "T2"
+    ],
+    "text": "Lesion-wise (LW) Dice coefficients and Normalized Surface Distance (NSD) at threshold 1mm were computed for enhancing tumor (ET), tumor core (TC), whole tumor (WT), non-enhancing tumor (NET), cystic components(CC), and edema (ED), respectively."
+  },
+  {
+    "index": 64,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12",
+      "T2"
+    ],
+    "text": "Task Model LW Dice LW NSD thresh. 1mm CC ED ET NET TC WT CC ED ET NET TC WT PED Validation N=91 MedNeXt(M) 0.735 0.857 0.694 0.899 0.926 0.927 0.749 0.857 0.748 0.878 0.903 0.905 nnU-Net 0.713 0.813 0.630 0.900 0.928 0.928 0.762 0.813 0.693 0.885 0.914 0.915 nnU-Net-ResEnc(M) 0.719 0.857 0.692 0.902 0.931 0.932 0.735 0.857 0.755 0.883 0.910 0.913 Ensemble 0.704 0.868 0.677 0.906 0.933 0.933 0.736 0.868 0.731 0.891 0.916 0.917 Post-processing 0.72 0.967 0.65 0.907 0.933 0.933 0.72 0.967 0.696 0.892 0.914 0.914 PED Testing Mean 0.669 0.892 0.672 0.851 0.908 0.915 0.67 0.892 0.714 0.815 0.82 0.83 Standard Deviation 0.468 0.304 0.361 0.201 0.145 0.14 0.466 0.304 0.371 0.206 0.228 0.213"
+  },
+  {
+    "index": 65,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12",
+      "T3"
+    ],
+    "text": "Table 3: MET, MEN, MEN-RT quantitative results."
+  },
+  {
+    "index": 66,
+    "kind": "p",
+    "id": "P45",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12",
+      "T3"
+    ],
+    "text": "Lesion-wise (LW) or global (G) Dice coefficients and Normalized Surface Distance (NSD) at 1mm-threshold were computed for enhancing tumor (ET), tumor core (TC), whole tumor (WT), resection cavity (RC), and gross tumor volume (GTV)."
+  },
+  {
+    "index": 67,
+    "kind": "table",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12",
+      "T3"
+    ],
+    "text": "Task Model Dice NSD thresh. 1mm ET TC WT RC GTV ET TC WT RC GTV MET Validation (G) N=179 MedNeXt(M) 0.747 0.768 0.776 0.628 0.588 0.595 0.496 0.591 nnU-Net 0.731 0.752 0.754 0.656 0.559 0.566 0.468 0.617 nnU-Net-ResEnc(M) 0.744 0.761 0.766 0.693 0.570 0.577 0.473 0.654 Ensemble 0.744 0.765 0.769 0.705 0.579 0.587 0.489 0.668 Post-processing 0.699 0.72 0.719 0.907 0.535 0.544 0.442 0.871 MET Testing (LW) Mean 0.544 0.555 0.561 0.86 0.606 0.607 0.589 0.858 Standard Deviation 0.317 0.322 0.322 0.322 0.336 0.338 0.32 0.321 MEN Validation (LW) N=141 MedNeXt(M) 0.841 0.863 0.839 0.853 0.87 0.842 nnU-Net 0.811 0.820 0.834 0.824 0.823 0.832 nnU-Net-ResEnc(M) 0.807 0.822 0.825 0.818 0.825 0.826 Ensemble 0.835 0.844 0.836 0.847 0.850 0.839 Post-processing 0.856 0.855 0.848 0.873 0.865 0.854 MEN Testing (LW) Mean 0.881 0.878 0.868 0.885 0.878 0.86 Standard Deviation 0.224 0.226 0.224 0.218 0.221 0.216 MEN-RT Validation (LW) N=70 MedNeXt(M) 0.804 0.671 nnU-Net 0.764 0.618 nnU-Net-ResEnc(M) 0.795 0.651 Ensemble 0.796 0.654 Post-processing 0.796 0.654 MEN-RT Testing (LW) Mean 0.807 0.683 Standard Deviation 0.201 0.236"
+  },
+  {
+    "index": 68,
+    "kind": "figure",
+    "id": "F5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S12"
+    ],
+    "text": "Fig. 5: Fig. 5: Open in a new tab Qualitative results showing median lesion-wise Dice (L) or global Dice (G) of the whole tumor. PED: 0.979L, orange=NET, blue=ET; MET: 0.868G, orange=SNFH, green=ET; MEN: 0.961L, orange=SNFH, green=ET; MEN-RT: 0.887L, blue=GTV."
+  },
+  {
+    "index": 69,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "4. Discussion"
+  },
+  {
+    "index": 70,
+    "kind": "p",
+    "id": "P30",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "Our experiments confirm that carefully engineered pre- and post-processing can still deliver tangible gains even when base architectures have plateaued. Notably, some gains in Dice or NSD were limited on validation set but became evident under 5-fold CV, underscoring the danger of optimizing solely on a limited and sometimes skewed validation set."
+  },
+  {
+    "index": 71,
+    "kind": "p",
+    "id": "P31",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "Because the training set is much larger than the validation set, the latter can present a skewed tumor-type distribution and thus provide an unreliable signal for hyper-parameter and threshold tuning. We therefore recommend selecting models and thresholds by CV on the training set, using validation scores only as a sanity check. In the same spirit, the internal rank metric—aggregating Dice and NSD across tumor regions, proved more robust than any single metric, especially when candidate models were numerous. However, its sensitivity to the number of candidates (rank scores can be very close if only three candidates) suggests that alternative weighting schemes merit exploration."
+  },
+  {
+    "index": 72,
+    "kind": "p",
+    "id": "P32",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "We previously tested that stratified fold splitting based on radiomic clusters yielded higher CV scores than random splits, indicating that heterogeneity-aware sampling reduces overfitting. Additional ablations on multiple BraTS tasks are planned to quantify this effect. We also found that STAPLE fusion benefited the MEN-RT task when each fold was treated as a separate candidate, indicating that larger model pools can regularize ensembles."
+  },
+  {
+    "index": 73,
+    "kind": "p",
+    "id": "P33",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "Limitations include our reliance on simple volume thresholds for PP1 and PP2. Future work will replace these heuristics with radiomic-driven criteria analogous to those used for stratification, further tailoring post-processing to both tumor morphology and appearance."
+  },
+  {
+    "index": 74,
+    "kind": "p",
+    "id": "P34",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "Open-sourcing our ranker and keeping all components model-independent, we aim to make the pipeline easy to deploy in clinical workflows. When its utility is evaluated in more clinical studies, the pipeline would have the potential for larger clinical impact beyond BraTS benchmarks."
+  },
+  {
+    "index": 75,
+    "kind": "p",
+    "id": "P35",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S13"
+    ],
+    "text": "Finally, to facilitate reproducibility and extend the utility of our approaches, we have made the complete pipeline publicly available as easy-to-use Docker containers and a webapp for all the tasks. The Docker images are hosted at: https://hub.docker.com/r/aparida12/brats2025 and the webapp is accessible at: https://segmenter.hope4kids.io/ ."
+  },
+  {
+    "index": 76,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S14"
+    ],
+    "text": "5. Conclusion"
+  },
+  {
+    "index": 77,
+    "kind": "p",
+    "id": "P36",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S14"
+    ],
+    "text": "This work introduces a tumor- and lesion-aware ensemble pipeline that consistently segments four distinct brain tumour cohorts in the BraTS 2025 Lighthouse Challenge. By selecting and weighting models according to lesion-level accuracy and adding subtype-specific processing, the framework achieves strong segmentation performance relying on state-of-the-art network backbones. Its modular design makes it easy to adopt and extend, while the resulting quantitative tumor measurements could support clinical diagnosis, treatment planning, and longitudinal monitoring."
+  },
+  {
+    "index": 78,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S15"
+    ],
+    "text": "Acknowledgments."
+  },
+  {
+    "index": 79,
+    "kind": "p",
+    "id": "P37",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S15"
+    ],
+    "text": "This work was supported by the National Cancer Institute (UG3 CA236536), the Spanish Ministerio de Ciencia e Innovación, the Agencia Estatal de Investigación, NextGenerationEU grants PDC2022-133865-I00 and PID2022-141493OB-I00, and the EUCAIM project co-funded by the European Union (Grant Agreement #101100633). The authors acknowledge the Universidad Politécnica de Madrid for providing computing resources on the Magerit Supercomputer."
+  },
+  {
+    "index": 80,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ref-list1"
+    ],
+    "text": "References"
+  }
+]

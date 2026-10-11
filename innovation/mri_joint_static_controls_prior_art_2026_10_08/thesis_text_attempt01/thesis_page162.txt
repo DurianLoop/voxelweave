@@ -1,0 +1,25 @@
+B Appendix for Chapter 7
+B.1 Implementation details
+B.1.1 Knee experiments
+The GAN experiment was carried out using a residual UNet (ResUNet) Belghazi et al.
+(2019), usingthearchitecturedescribedinTableB.2below. Thediscriminatorarchitecture
+is detailed in Table B.1. They consisted of respectively1.2 million and 19.5 million
+parameters.
+We also used the cascade of residual networks (cResNet) Zhang et al. (2019b) as our
+reconstruction baselines, along with their evaluator. One block of the architecture is given
+in Table B.3. The network was composed of3 such blocks. The evaluator architecture is
+detailed in B.4. They amount to29.5 million and 97.7 million parameters respectively.
+These numbers were obtained from the usage of Zhang et al. (2019b) by Pineda et al.
+(2020).
+Type Output size
+Input 6× 128× 128
+ResBlock1(3, 2, 1) 64 × 64× 64
+ResBlock2(3, 2, 1) 128 × 32× 32
+ResBlock3(3, 2, 1) 256 × 16× 16
+ResBlock3(3, 2, 1) 512 × 8× 8
+ResBlock3(3, 2, 1) 1024 × 4× 4
+Global average pooling 1024× 1× 1
+Conv(1, 1, 0) 1 × 1× 1
+Table B.1: Discriminator ResNet. This was inspired by the discriminator of Belghazi et al. (2019).
+The model used ReLU activations, and consisted of19.5 million parameters.
+149

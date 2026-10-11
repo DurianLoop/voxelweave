@@ -1,0 +1,19 @@
+# 7291链后的继续入口
+
+本轮archive actual bcf60f exit0，无session_id；旧7180逻辑SHA/bytes全部核验，新111文件，共7291。APPEND_INDEX SHA=6a78df3186809768867f5454466efb6f011ed20089cbc94aee7af943fd0698d4。APPEND_PROOF与实际archive terminal保留；本文件、最终公开回复及post-export工具记录是归档后静态文件，下一增量再绑定，不能倒写旧index。
+
+本批两篇routing/RUGS提取文本330块22表、作者21文件631行已经完成且冻结provenance；不再重复计新主文。作者toy未执行，图像公式/像素/外部补充材料未完整读。active作者公开URL404与原失败保留。具体论文结论与候选创新在PRIMARY_FINDINGS_AND_INNOVATION_BOUNDARY.md。
+
+oracle actual abe05f/独立206892均exit0；4已见验证患者9series，原两个合法raw流程GT逐series选Dice上界.5545512725845162，512逐series策略六gate通过0。仅约束这两个whole-series流程，不约束新SR/TTA/局部融合/新模型。原feasibility键语义更正保留。
+
+GPU actual session61338→242e6e exit0，独立c81d5e exit0。单开发病例VS-MC-RC-009、step2、2输入×3模式各一次reset首步AdamW；6forward/6backward/6更新，54参数tensor/臂；权重/m/v最大误差1.2093e-7/2.7940e-10/4.6584e-13，六BytesIO capture hash逐位同，peak2,340,421,632bytes。没有保存新训练权重文件；parent/source SHA保持。只固定一病例首步，未资格持续2992、磁盘atomic capture、optimizer resume或fullFOV。
+
+六臂准备目录six_resolution_training_preparation_2026_10_09：新runner与协议、AST、preflight actual194a80 exit0 ready=false；实际--train拒绝692af2 exit1是预期启动保护，在医学数组读取前拒绝。不要把该exit1解释为正式训练失败或启动过训练。共计划17952更新，原2992/每开发患者272/5984geometry/完整母GT/6分支保持。原parent仅开发能力诊断，严格LOPO cold-init。已执行/冻结runner不改；修复另版本。
+
+预检snapshot GPUfree24035MiB；全family保持原allowance且新增本批2MB，required80,156,359bytes高于8GBreserve，snapshot短17,864,391bytes。没有启动正式训练，不降低储备或删历史。仍缺完整35904终态+独立audit、38完整FOV独立概率/坐标/二值、atomic磁盘capture和覆盖19开发series的费用组件资格。NEXT_EXPERIMENTS.md给次序和未来FULL_GPU_DEPLOYMENT_QUALIFICATION.json schema。
+
+**唯一长时间live仍为44317**，完整35904从头资格。最新实际987e1e仍session_id，4080/35904、elapsed3034.86秒；强度误差全0、coordinate最大1.1368683772161603e-13。这是进度不是terminal，live full_real_pipeline_attempt01排除冻结链。继续先poll，不重启；真正结束才保存ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json，observed_unified_exec_session=44317。exit0无session_id后运行full_certified_schedule_2026_10_09/audit_full_real_terminal_v2.py（启动字段名用observed_unified_exec_session）；原v1不改。早已结束61338、31883、42442、28101等不再poll。
+
+已保存公开用户请求/本次助手消息/用户完整接续摘要、最终回复、60个实际可用原tool buffers gzip165523bytes、34chunk的export observations、导出stdin关闭失败及v2修复、archive和末次full进度。原工具截断/失败/live状态原样保留；没有补造更早不可访问聊天或隐藏推理。
+
+下一研究方向：优先任务泛化与真实候选动作余量，再检验合法采集信息能否超同信息risk差/QC/defer/强static/费用匹配random。原六医学与数值gate不降低；4已见验证不作新确认，8未见患者12series/lockedIXI保持关闭，不动原终端训练，不枚举/修改其他PID、不安装、不委派、不删历史。未获得可发表且独立确认claim，goal active。

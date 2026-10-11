@@ -1,0 +1,7 @@
+# Thin-3D glioma source refresh: bounded metadata plan
+
+Written before the following queries. The immediate question is whether a second public cohort can support a separately frozen test of the ds007045 HAT lesion/full-support sign reversal with original thin-3D T2 provenance, registered T2/tumor masks and patient independence. This is a targeted discovery screen, not a systematic dataset review.
+
+Query Europe PMC's public search API using exactly three formulations, at most 20 lite records each: `(glioma OR glioblastoma) AND ("3D T2" OR "T2 SPACE") AND (dataset OR database) AND (segmentation OR annotation)`; `(glioma OR glioblastoma) AND "isotropic T2" AND (dataset OR cohort)`; `(brain tumor OR glioma) AND "high resolution T2" AND (segmentation OR annotation)`. Save request URLs, raw responses, hashes, status, hit counts and parsed title/DOI/PMCID/year. Screen titles/abstracts, then read official full text and acquisition methods for any plausible new named cohort.
+
+A search hit is only a lead. Qualification requires an explicit original T2 acquisition thickness/type per case or a reliably documented uniform 3D protocol; exact T2/mask alignment; manual/reviewed label provenance; source license and access; and a patient-level crosswalk against prior MSD/BraTS/TCIA/IXI sources. Do not download images or run model inference before those nonpixel gates and a new frozen protocol. Record API failures, duplicate datasets and uncertain original-resolution claims rather than converting them to negative evidence.

@@ -1,0 +1,5 @@
+已使用 GPU 完成192个tile的逐层定位和两项修复试验；两项均未通过数值门槛，负结果已保留。GIN论文与7份作者代码已核读，24组合成验证通过，强对照和后续实验方案已准备。
+
+本轮对话、笔记、脚本和结果均保存在D:\MRI\innovation，主入口为six_resolution_training_preparation_2026_10_09/ROUND47_RESEARCH_AND_VALIDATION_RESULT.md。
+
+目前尚未确认可发表claim；原训练进程未动，完整35904字段验证继续运行。

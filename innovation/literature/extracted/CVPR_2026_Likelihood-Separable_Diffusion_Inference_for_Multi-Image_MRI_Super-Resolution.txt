@@ -1,0 +1,615 @@
+
+=== PDF PAGE 1 ===
+Likelihood-Separable Diffusion Inference for Multi-Image MRI Super-Resolution
+
+
+             Samuel W. Remedios                               Zhangxing Bian                                  Shuwen Wei
+          Johns Hopkins University                     Johns Hopkins University                      Johns Hopkins University
+             Baltimore, MD, USA                           Baltimore, MD, USA                            Baltimore, MD, USA
+          samuel.remedios@jhu.edu
+                   Aaron Carass                                Jerry L. Prince                              Blake E. Dewey
+          Johns Hopkins University                     Johns Hopkins University                      Johns Hopkins University
+             Baltimore, MD, USA                           Baltimore, MD, USA                            Baltimore, MD, USA
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 1.Overview of our proposed MISR generalization to diffusion super-resolution.Our method generalizes existing methods for
+multi-image super-resolution (MISR). The first column shows low-resolution (LR) anisotropic MRI measurements with 16× downsampling
+along orthogonal planes. For super-resolution results, the first row shows the existing methods for single-image super-resolution (SISR),
+which only use the LR measurement enclosed in the blue dotted box. The second row shows results for our proposed generalization of each
+method for MISR, which use both LR measurements enclosed in the pink solid box. All methods used the same 3D volumetric diffusion
+model, and all results are 3D volumetric images. A single sagittal slice is shown for viewing clarity. Volumetric PSNR and SSIM are overlaid
+in the yellow box, and zoomed inset regions are shown in red. MISR improves performance for all methods and better estimates the anatomy
+of the reference image, shown on the far right.
+
+                            Abstract                                         along a different axis. In this work, we generalize common
+                                                                             diffusion-based inverse single-image problem solvers for
+Diffusion models are the current state-of-the-art for solving                multi-image super-resolution (MISR) MRI. We show that the
+inverse problems in imaging.  Their impressive generative                    DPS likelihood correction allows an exactly-separable gra-
+capability allows them to approximate sampling from a prior                  dient decomposition across independently acquired measure-
+distribution, which alongside a known likelihood function                    ments, enabling MISR without constructing a joint operator,
+permits posterior sampling without retraining the model.                     modifying the diffusion model, or increasing network func-
+While recent methods have made strides in advancing the ac-                  tion evaluations. We derive MISR versions of DPS, DMAP,
+curacy of posterior sampling, the majority focuses on single-                DPPS, and diffusion-based PnP/ADMM, and demonstrate
+image inverse problems.  However, for modalities such as                     substantial gains over SISR across 4×/8×/16×                   anisotropic
+magnetic resonance imaging (MRI), it is common to acquire                    degradations.   Our results achieve state-of-the-art super-
+multiple complementary measurements, each low-resolution                     resolution of anisotropic MRI volumes and, critically, en-
+
+
+                                                                         1
+
+=== PDF PAGE 2 ===
+able reconstruction of near-isotropic anatomy from routine                       magnetic resonance imaging (MRI), multiple measurements
+2D multi-slice acquisitions, which are otherwise highly de-                      are common.  For example, an MRI session may include
+graded in orthogonal views.                                                      multiple scans along orthogonal axes.  These occur for a
+                                                                                 multitude of reasons, such as improving signal-to-noise ra-
+                                                                                 tio, mitigating motion artifacts, or due to special MRI pulse
+1. Introduction                                                                  sequences designed for slice-wise acquisition. Such sessions
+Super-resolution (SR) is a linear inverse problem that esti-                     often result in multiple image volumes that are HR along
+mates a candidate high-resolution (HR) image given an ob-                        two axes (calledin-plane) but LR along the third axis (the
+served low-resolution (LR) image [2, 5, 9, 11, 17, 18, 20, 23–                   through-plane). Theseanisotropicimage volumes are faster
+25, 27, 31, 35, 37, 41–43, 47, 48, 59, 61–67, 69–71]. Math-                      to acquire, but by trading signal-to-noise (SNR) and in-plane
+ematically, SR uses the observed LR imagey∈R  m (the                             resolution for a degraded through-plane resolution, the image
+measurement) to estimate the HR image    x∈R  n given the                       volumes are not clinically useful when viewed through-plane.
+forward model                                                                    Radiologists therefore do not read anisotropic volumes in
+                             y=Ax+ϵ,                              (1)            the through-planes, as important anatomical structures are
+                                                                                 blurred and/or decimated.
+where A∈R   m×n        is  the  linear  forward  operator  and                      To  leverage  the  complementary  information  available
+ϵ∼N(0,σI     m).  Sincem < n, Eq.1is underdetermined                             in this real-world setting, we propose to generalize diffu-
+and noisy, multiple solutions exist; the problem isill-posed.                    sion inverse problem solving approaches for the multi-image
+Some form of regularization is required to select a solution.                    super-resolution (MISR) problem.  In this paper, we show
+   While  classical  approaches  use  hand-crafted  regular-                     that diffusion models can accurately estimate the underlying
+ization  priors  such  as  total  variation  [61,  70]  or  spar-                isotropic anatomy without retraining for specific resolutions.
+sity under some transform   [6, 21, 49, 51], contemporary                       To our knowledge, no prior work in MRI or diffusion inverse
+data-driven  approaches  use  denoisers  as  a  plug-and-play                    problems has shown that multiple anisotropic volumes can
+prior [12, 32, 33, 55, 60]. This practice began with generic                     be restored to isotropy. This positions MISR diffusion as a
+denoising  algorithms  [8,  46,  58]  but  has  recently  found                  practical, high-impact alternative to long 3D MRI scans.
+deep  theoretic  connections  with  the  family  of  diffusion                      Our main contributions are as follows:
+models,  including  denoising  diffusion  probabilistic  mod-                    •  Likelihood  separability  for  diffusion  posterior  sam-
+els  (DDPMs)  [29],  score-based  models  [56],  flow  mod-                        pling.   We  show  that  the  likelihood  gradient  decom-
+els [26, 40], and Schr¨odinger bridges [19, 52].  These ap-                        poses exactly across independent measurements, permit-
+proaches learn a generative model that transforms samples                          ting  MISR  correction  using  only  per-measurement  op-
+from one distribution (often a high-dimensional standard                           erators.   This  enables  multi-image  posterior  correction
+Gaussian) to the data distribution.  In this way,  diffusion                       without a joint operator or modification of the diffusion
+models act as a Bayesian prior on the desired data distribu-                       model.
+tionp(x)      . Accordingly, inverse problem solving algorithms                  •  A  unified  MISR  generalization  of  diffusion  inverse
+leverage Bayes’ rule to sample from the posterior:                                 solvers.We derive MISR versions of DPS, DMAP, DPPS,
+                       p(x|y)∝p(y|x)p(x),                        (2)               and diffusion-based PnP/ADMM.
+                                                                                 •  Noise   weighting   for   heterogeneous   MRI   acquisi-
+where the likelihood term p(y|x)          is approximated by the                   tions.We introduce inverse-variance weighting of per-
+known measurement function Eq.1.                                                   measurement gradients, enabling principled fusion of mea-
+   This insight has spurred great developments in the use of                       surements with different slice thicknesses, SNRs, and spa-
+diffusion models for inverse problem solving. The recipe for                       tial resolutions.
+solving any inverse problem with Eq.2requires only three                         •  State-of-the-art  MISR  MRI  performance.Across
+ingredients: a known forward operatorA, a pretrained diffu-                        4×/8×/16×                   through-plane degradations, our MISR ex-
+sion model to approximatep(x)      , and a technique to sample                     tensions substantially outperform their single-image coun-
+from the posteriorp(y|x)p(x)                . Most works assume thatA              terparts, improving PSNR by 1 to 3 dB while producing
+is known, assume the distribution of ϵ is known, and use                           anatomically faithful reconstructions.  Evaluations were
+an existing well-trained diffusion model.  Thus, algorithm                         conducted with 64 network function evaluations (NFEs)
+development focuses on the sampling procedure. Diffusion                           for the reverse diffusion process, yielding a total super-
+Posterior Sampling (DPS) [15], which corrects samples on                           resolution time per volume of less than 60 seconds on an
+the diffusion trajectory towards the data-consistent manifold                      NVIDIA RTX 6000 ADA.
+via a gradient update, is possibly the most well-known.                         When taken together, our contributions establish diffusion
+   Most work on SR has focused on single-measurement in-                         models as a practical, flexible, and high-quality approach for
+verse problem solving. However, in problem settings such as                      multi-image MRI super-resolution without retraining.
+
+
+                                                                            2
+
+=== PDF PAGE 3 ===
+2. Background                                                                     There are now many leading perspectives on diffusion mod-
+2.1. Diffusion models                                                             els,  including  the  score,  variational,  flow-matching,  and
+                                                                                  Schr¨odinger bridge perspectives.
+Diffusion-based models are the current state of the art in                        2.2. 2D Magnetic Resonance Image Acquisition
+generative modeling [7].  They include the denoising dif-
+fusion  probabilistic  model  (DDPM)  [29],  the  denoising                       In MRI, image volumes are rarely obtained alone. Usually,
+diffusion implicit model (DDIM) [54],  score-based mod-                           imaging sessions acquire multiple images of different con-
+els [14, 15], Schr¨odinger bridges [10, 52, 57], and Brownian                     trasts, orientations, and resolutions.  We will consider the
+bridges [13, 34, 36].  There are also connections between                         common scenario of an MRI session where the same pulse
+diffusion-based models and flow matching [26,38,39].                              sequence is used to acquire multiple images along orthogo-
+   Diffusion models establish a Markov chain of transition                        nal axes, each potentially with different slice thicknesses. In
+states between the data distribution and a noise distribution,                    this case, image volumes are formed by2D acquisition(also
+typically a high-dimensional Gaussian. By convention, we                          called2D MRIor2D multi-slice MRI). In 2D MRI acquisi-
+will denote a state at the data distribution byx0 and a state                     tions, samples are acquired in 2D k-space after exciting a slab
+at the noise distribution by x1.  Thus, arbitrary transition                      within the field of view using slice selection [4]. Different
+states are denoted byxt fort∈[0,1]        . A statexs is closer to                regions are selected by varying the slice selection parameters,
+the data distribution thanxt whenevers<t. The forward                             resulting in a set of independently acquired slices. Each of
+diffusion process describes how data diffuses into noise and                      these slices is converted to the image domain with the inverse
+is of closed form.  The reverse diffusion process describes                       Fourier transform and then stacked along the through-plane
+how to denoise each transition state and is parameterized by                      axis to create a 3D volume.
+a neural network. The goal in training a diffusion model is                           Slice selection determines the through-plane resolution.
+to find parametersθ that allow the neural networkfθ(x t,t)                        The physics of slice selection allow us to write the relation-
+to move from transition statext at timet to a less-noisy state                    ship between HR and LR images along one dimension. In
+xs.  Once trained, at inference time, a samplex1 is drawn                         Eq.1,   A can be written as a strided convolution using the
+and successively transformed through a series of transition                       slice selection profile and the separation between slices in
+states until arriving at the data statex        0.                                millimeters. In practice, the slice selection profile is propri-
+   The forward diffusion process definesxt as a linear com-                       etary and its closed-form equation is unknown.  However,
+bination between data and noise:                                                  it is known that a Gaussian kernel serves as an reliable ap-
+                          xt =α tx0 +β tϵ,                          (3)           proximation. In this work, we assume that the slice selection
+                                                                                  uses Gaussian profiles with slice separations and full-with-
+whereαt andβt are parameters for the noise schedule and                           at-half-maxes equal to the scale factor.
+ϵ∼N(0,I)             by definition. The reverse diffusion process is              2.3. Diffusion posterior sampling for SISR
+the following:                                                                    Diffusion Posterior Sampling (DPS)[15] uses Jensen’s ap-
+                          xs =α sˆx  0 +β sˆϵ,                          (4)       proximation for the likelihood term in Eq.2:    p(y|x   t)≈
+where ˆϵ= (x  t−α tˆx  0)/β t and ˆx  0 is estimated by the dif-                  p(y| E[x            0|x t]).    This  is  convenient,  since  computing
+fusion networkfθ.  Equation4is the DDIM sampler [                 53],            E[x    0|x t] is a conventional step in the reverse diffusion pro-
+which generalizes the DDPM framework [29] and allows                              cess (see Eq.5).  With this, DPS adjusts samples   xs in the
+accelerated and deterministic sampling.   The full reverse                        diffusion process towards the data-consistent manifold:
+diffusion process arrives at t=  0   by iteratively applying
+Eq.4.                                                                                                 xs−∇xt∥AE[x          0|x t]−y∥.                    (7)
+   While the methods presented in this paper are agnostic
+to the specific way ˆx  0 is obtained (sample estimation, noise                   The  algorithm  for  implementing  DPS  is  shown  in  Algo-
+estimation,  velocity estimation,  etc. [26]),  our work will                     rithm1.  It should be noted that DPS does not require the
+specifically make use of the flow estimation framework [26,                       forward operator to be linear, only differentiable.
+38, 39]. That is, the networkfθ estimates the flow-matching                           Many methods have built on this initial formulation from
+field:ˆu= ˆϵ−ˆx                       0 =f θ(x t,t), so                           DPS. We defer the reader to [16] for further reading, but
+                                                                                  briefly summarize a few methods here. The denoising diffu-
+                          ˆx  0 = ˆϵ−f   θ(x t,t)                           (5)   sion null-space model (DDNM) does a state-wise correction
+and                                                                               with a hard projection for linear forward operators. Diffusion
+                         ˆϵ=f   θ(x t,t) + ˆx    0.                           (6) plug-and-play image restoration (DiffPIR) uses the proxi-
+                                                                                  mal algorithm half-quadratic splitting to update diffusion
+   Due to the empirical success of diffusion models, much                         states to be proximal to the observation. Diffusion posterior
+theoretical work has been done to connect schools of thought.                     proximal sampling (DPPS) samples multiple candidates at
+
+
+                                                                              3
+
+=== PDF PAGE 4 ===
+each statext and selects the one with the smallest distance                      Since  the  diffusion  network fθ  is  used  only  to  generate
+to the data-consistent manifold. Diffusion Maximum A Pos-                        µ0(x t) and the measurement operators Ai  are linear and
+teriori (DMAP) performs multiple sampling steps to better                        do not couple measurements,
+approximate a MAP sample.
+                                                                                                                     NX
+3. Method                                                                                     ∇xtL(µ     0(x t)) =       ∇xtLi(µ  0(x t)).         (13)
+                                                                                                                     i=1
+Our objective is to generalize diffusion priors to the multi-
+image super-resolution (MISR) problem. We first formalize                        With substitution,
+the MISR observation model and derive a separable likeli-
+hood expression that permits multi-image data consistency                                                    NX   1
+without constructing a joint operator. We then analyze the                           ∇xtL(µ     0(x t)) =        σ2i∇xt∥A iµ0(x t)−y  i∥22      (14)
+implications of this decomposition for DPS and describe                                                     i=1
+MISR extensions of several existing solvers, including DPS,
+DMAP, DPPS, and diffusion-based PnP methods.
+3.1. MISR Preliminaries                                                             Remark.Proposition1guarantees  that  MISR  diffu-
+We seek a single HR imagex∈R  n that is consistent with                          sion  posterior  sampling  requires  only  independent  per-
+multiple LR measurements{y i∈R mi}Ni=1 .  This yields a                          measurement gradients without requiring a joint operator,
+set of equations:                                                                modification of the diffusion model, nor an increase in NFEs.
+                           yi =A ix+ϵ   i,                              (8)      The nonlinearity of µ0  does not break linear separability
+whereAi∈R mi×n    andϵi∼N(0,σ   iImi). Since all opera-                          because dependence onµ    0 flows through the chain rule.
+tions are linear, it is possible to rewrite Eq.8as                                  The separability of likelihoods under DPS has several
+                                                                                 implications.   First,  as we will demonstrate in this work,
+                             y =A    x+ϵ    ,                                (9) we can extend several approaches in the DPS family for
+                                                                                 MISR. Second, likelihood separability can generalize to any
+wherey     =y1  ...  yN⊤,A             =A1  ...  AN⊤, and                    components  that  are  independent  in A,  not  just  multiple
+ϵ =ϵ1  ...  ϵN⊤.  Although A              is mathematically well-              observations.   For  example,  in  the  SISR  framework,  we
+defined,  in  MRI  each Ai  may  operate  on  different  grids                   could splitA into independent rows and consider different
+with  different  slice  geometries,  making  explicit  stacking                  regions of images as separate measurements. This extends to
+computationally impractical.                                                     further norm-preserving linear maps, and so block-stacked
+3.2. Likelihood separability in DPS                                              wavelet transform matrices could allow splitting by wavelet
+                                                                                 subband. We leave this exploration for future work. Finally,
+The joint negative log-likelihood of Eq.8is                                      likelihood separability allows for independent weights for
+                                                                                 each component. With even weights, all measurements are
+                             NX    1                                             considered equally. However, some measurements may be
+                  L(x) =          2σ  2i∥A ix−y   i∥22,                (10)      less reliable, for example, with more noise than others.
+                            i=1
+which is separable across observations.                                          Algorithm 1DPS
+Proposition 1.Let  µ0(x t)  =E[x        0|x t] be the diffusion                  Require:T,A,y,ζ      t
+model’s estimation of the data sample from timet. Then, the                        1:x   1 =N(0,I)
+likelihood gradient to correctxt towards the data consistent                       2:fort= 1to0withTstepsdo
+manifold is                                                                        3:  x s∼p θ(X s|x t)
+                            NX                                                     4:  µ   0 :=E[X         0|x t]
+    ∇xtL(µ     0(x t)) =         1                                                 5:  x s =x s−ζ t∇xt∥Aµ  0−y∥
+                           i=1  σ2i∇xt∥A iµ0(x t)−y  i∥22.    (11)                 6:end for
+                                                                                   7:returnx     0
+In particular, eachAi contributes an independent correction
+direction, and the combined gradient is their sum.                                  Measurement  noise  weightingEach  measurement
+Proof.By independence of measurements,                                           may have its own noise strength; i.e.,σi̸=σ j fori̸=j     . In
+                                    NX                                           such scenarios, it is disadvantageous to correct states towards
+                       L(µ     0) =     Li(µ  0).                       (12)     all observations equally. Thus, we propose to inversely scale
+                                    i=1                                          the gradients by the strength of the noise for that observation.
+
+
+                                                                            4
+
+=== PDF PAGE 5 ===
+Algorithm 2MISR DPS                                                              Algorithm 4MISR DMAP
+Require:T,{A    i}Ni=1 ,{y i}Ni=1 ,{σ i}Ni=1 ,ζt                                 Require:T,K,{A      i}Ni=1 ,{y i}Ni=1 ,{σ i}Ni=1 ,ζt,d
+ 1:x   1 =N(0,I)                                                                  1:x   1 =N(0,I)
+ 2:w i := (σ  2i  +σ   floor)−1                                                   2:w i := (σ  2i  +σ   floor)−1
+ 3:w i :=N·w    i/( PNj=1 wj)                                                     3:w i :=N·w    i/( PNj=1 wj)
+ 4:fort= 1to0withTstepsdo                                                         4:fort= 1to0withTstepsdo
+ 5:  x s∼p θ(X s|x t)                                                             5:  x s∼p θ(X s|x t)
+ 6:  µ   0 :=E[X         0|x t] PN      wi·∥A iµ0−y i∥22                        6:  µ s =E[X   s|x t]
+ 7:  x s =x s−ζ t∇xt               i=1                                            7:      forj= 1toKdo
+ 8:end for                                                                        8:    µ   0 :=E[X         0|x s]            wi·∥A iµ0−y i∥22
+ 9:returnx     0                                                                  9:    x s =x s−ζ t∇xsPNi=1
+                                                                                 10:    x  s =µ s−√dσt xs−µ    s∥x  s−µ    s∥22
+3.3. MISR inverse diffusion methods                                              11:    end for
+                                                                                 12:end for
+The previous sections provided a framework for MISR that                         13:returnx       0
+is applicable to existing approaches. Here, we outline how
+these methods can be modified for noise-weighted MISR.
+   MISR   DPSWe   describe   MISR   DPS   in   Algo-                             4. Experiments and Results
+rithm2.      The   gradient   update   term   is   weighted   byPNwi·∥A ix0|t −y i∥22,  where wi ∝(σ     2i  +Our experiments focus on super-resolution for anisotropic
+wi: ∇xt        i=1                                                               magnetic resonance head images. We consider images that
+σfloor)−1    andσfloor is a noise floor that the diffusion model                 are4×,8×, and16×worse resolution along through-plane
+fθ is robust to.                                                                 axes than in-plane axes. For HR image volumes of 1 mm3
+   MISR DMAPDMAP uses multiple samples and gradi-                                isotropic  resolution,  thesescale  factorscorrespond  to           4,
+ent steps to refine the approximation of states from statet.                     8,  and 16  mm  slice  thicknesses.   To  enable  quantitative
+Since it is algorithmically similar to DPS (compare DPS in                       reference-based distortion metrics, we perform simulations
+Algorithm1to DMAP in Algorithm3), we are also able to                            of  data  using  Gaussian  slice  selection  profiles  with  full-
+generalize DMAP for MISR, shown in Algorithm4.                                   width-at-half-max and slice separation equal to the scale
+   MISR DPPSTo implement MISR for DDPS, the se-                                  factor.  Following Eq.8, we also add Gaussian noise with
+lected candidate must have the smallest distance to all data-                    σi proportional to the voxel size due to the physics of how
+consistent manifolds.                                                            noise interacts with slice selection [44]. Thicker slices have
+   MISR PnPPlug-and-play (PnP) methods that rely on                              less noise. Specifically, we choseσi = 0.1/k  i, whereki is
+priors are also amenable to MISR. The alternating direction                      the scale factor for the LR image volumey     i.
+method of multipliers (ADMM) uses variable splitting to                             We used an open-source pre-trained non-latent 3D dif-
+optimize for data-consistency and prior-consistency [3]. The                     fusion model for brain MRI [45].   This model is a flow-
+data-consistency term is still written as the squaredℓ2 norm,                    estimation  model,  and  we  used  64  DDIM  steps  for  all
+so  Eq.11is  still  applicable.   The  same  logic  applies  to                  methods and all experiments.  This model was trained on
+DiffPIR, with half-quadratic splitting instead of ADMM.                          more than 70,000T            1-weighted brain volumes from 36 open
+
+Algorithm 3DMAP                                                                  datasets, and additionally withheld two sites from training:
+Require:T,K,A,y,ζ        t,d                                                     AIBL [22] and SLEEP [68].   Thus,  to avoid model bias,
+ 1:x   1 =N(0,I)                                                                 we selected 50 subjects with 1 mm3 resolution from each
+ 2:fort= 1to0withTstepsdo                                                        of those two sites are our data cohort.  For preprocessing,
+ 3:  x s∼p θ(X s|x t)                                                            these image volumes were padded and/or cropped to a voxel
+ 4:  µ s =E[X   s|x t]                                                           size of 192×224×192                   using the center-of-mass location
+ 5:      forj= 1toKdo                                                            from an HD-BET [30]-calculated brain mask, then linearly
+ 6:    µ   0 :=E[X         0|x s]                                                normalized to the intensity range [−1,1]        using the volume’s
+ 7:    x s =x s−ζ t∇xs∥Aµ  0−y∥                                                  minimum and maximum values.
+ 8:    x s =µ s−√dσt xs−µ    s                                                      We  conducted  two  experiments.   First,  we  compared
+                                    ∥x  s−µ    s∥22                              SISR to MISR with orthogonal planes.  Then, we perform
+ 9:      end for                                                                 an ablation study and compare noise-weighting to uniform
+10:end for                                                                       weighting  in  MISR  DPS  and  MISR  DMAP.  For  evalua-
+11:returnx       0                                                               tion,  we  used  PSNR,  SSIM,  and  when  comparing  SISR
+                                                                                 to MISR we additionally calculated the Frechet Inception
+
+
+                                                                            5
+
+=== PDF PAGE 6 ===
+Figure 2. Qualitative results for a representative subject from the AIBL dataset. Row-wise labels designate LR inputs as “Measurements”
+and SR estimations named by method. Supercolumns group scale factors together. Within supercolumns, each column corresponds to SISR
+using only the axial acquisition as input (blue), then MISR using axial and coronal (pink), and MISR using axial, coronal, and sagittal (green).
+The HR reference is shown at the bottom of the figure. For all methods, the same area highlighting the folia of the cerebellum is zoomed into
+the inset.
+
+
+Distance (FID) [28, 50]. To enable the computation of FID                         4.1. SISR vs MISR
+for 3D volumetric images, we extract 2D slices from each
+volume from all three cardinal planes, separated by 4 mm,                         In Fig.1and Fig.2, we show qualitative comparisons be-
+and spanning the center 128 mm of the volume. These slices                        tween slices of representative volumes for SISR and MISR
+were linearly normalized to the intensity range [0,255]     using                 across several methods. We emphasize that all methods op-
+the volume’s minimum and maximum values, quantized to                             erate directly in 3D, and 2D slices are shown for clarity. For
+8-bit integers, and saved to disk as .png files.  The refer-                      MISR scenarios, there are more LR images to use as input,
+ence dataset for the FID computations for the AIBL cohort                         leading to improved results for all methods and scale factors.
+was the SLEEP cohort, and vice-versa.  This was done to                               In Fig.3, we show four more representative subjects at        8×
+prevent an abnormally low FID score due to similar intensity                      scale factor. With a second observation, these regions have
+statistics between, for example, true-HR-AIBL and super-                          more correct anatomy.  However, the distortion metrics do
+resolved-AIBL images.                                                             not reflect geometric or anatomical errors; the approximately
+                                                                                  2 to 3 dB difference in PSNR is not sufficient to describe the
+                                                                                  improvements gained from another measurement.
+
+
+                                                                             6
+
+=== PDF PAGE 7 ===
+7
+
+=== PDF PAGE 8 ===
+Figure 3. Sagittal slices from four representative subjects are shown for 8×   scale factor LR inputs. Each displayed image is labeled for
+its contents. LR: low-resolution; AX: axial acquisition; COR: coronal acquisition; HR: ground-truth high-resolution; SISR: single-image
+super-resolution, using the axial acquisition as input; MISR: multi-image super-resolution, using the axial and coronal acquisitions as input.
+Zoomed inset regions are located by the red box, highlighting anatomical differences that are not correctly recovered by SISR.
+
+
+    We show quantitative results for our 100 subjects in Ta-                         Table 2. Quantitative results for our ablation without noise weight-
+ble1.  In correspondence with the qualitative results from                           ing (w/o NW) and with noise weighting (w/ NW) for the two-image
+Fig.2,  DMAP  outperforms  all other  methods  across  the                           4×and16×scale factors for both MISR DPS and MISR DMAP.
+board, both in distortion metrics and FID. An interesting                                                     w/o NW                             w/ NW
+result in Table1is the metrics’ trends when adding more LR                                 σbase     PSNR (↑)     SSIM (↑)             PSNR (↑)     SSIM (↑)
+images. As expected, PSNR and SSIM improve in all cases.
+However, for the 4×   scale factor, the FID score generally                                 0.15    32.5±2.4  0.90±0.01               32.5±2.4  0.90±0.01
+worsens for the DPS family of methods as more images are                                    0.3     29.8±1.6  0.78±0.01               29.9±1.6  0.79±0.01
+added.  This is potentially due to the perception-distortion                                0.45    27.0±1.1  0.63±0.02               27.5±1.2  0.66±0.02
+tradeoff [1]; since the SR image ˆx   is guided towards being                               0.15    32.9±2.6  0.91±0.02               32.9±2.6  0.91±0.02
+consistent with multiple images, its freedom in being a real-                               0.3     30.0±1.6  0.80±0.01               30.1±1.7  0.80±0.01
+istic image is restricted. However, this phenomenon is not                                  0.45    27.2±1.2  0.65±0.01               27.5±1.3  0.67±0.01
+present at8×and16×scale factors.
+4.2. Ablation: noise-weighting
+In the previous experiment, each of the LR images used for                           5. Conclusion
+MISR had the same scale factor. The noise present in the im-
+ages had the same power, so the noise weightswi were equal                           We presented an approach for MISR using diffusion models.
+for all i and essentially absorbed into the gradient scalar                          We showed that likelihood separation underneath the diffu-
+ζt.  To evaluate the efficacy of the proposed noise weight-                          sion trajectory allows for a flexible multi-image framework
+ing,  we  compared  with  and  without  noise-weighting  for                         and implemented it with noise-weighting for the diffusion
+mixed-resolution inputs: 4×   and 16×     scale factors for two                      posterior sampling family of inverse problem solvers.  We
+orthogonal inputs. We used MISR DPS and MISR DMAP                                    conducted experiments at various scale factors with orthogo-
+for this evaluation and varied the noise byσi  =σ   base/ki,                         nal acquisition planes and showed that MISR outperforms
+forσbase = 0.15,0.3,0.45                  . These values correspond to ap-           SISR both qualitatively and quantitatively, and additionally
+proximately 1×  , 2×  , and 3×   the average intensity standard                      better preserves anatomy.   Future work will address mis-
+deviation in HR images (after normalization to[−1,1]).                               alignment between measurements (though an estimated reg-
+    In Table2, we show the results of this experiment.  For                          istration can be folded in to the measurementA) as well as
+both  MISR  DPS  and  MISR  DMAP,  noise-weighting  im-                              multi-contrast acquisitions.  To the best of our knowledge,
+proves all metrics. As the noise level becomes more severe,                          the results of this work are state-of-the-art in the field of
+the effect of noise weighting becomes larger.                                        MRI super-resolution for anisotropic image volumes. Our
+
+
+                                                                                 8
+
+=== PDF PAGE 9 ===
+results indicate that MISR diffusion could make standard 2D
+MRI acquisitions usable in all viewing planes, potentially
+reducing the need for long, thin-slice 3D scans and restoring
+image analytic quality for retrospectively accessed imaging
+sessions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                            9
+
+=== PDF PAGE 10 ===
+References                                                                                  Computer-Assisted Intervention, pages 657–667. Springer,
+ [1]  Yochai Blau and Tomer Michaeli. The perception-distortion                             2024.3
+      tradeoff. InProceedings of the IEEE Conference on Computer                     [14]  Hyungjin Chung, Byeongsu Sim, Dohoon Ryu, and Jong Chul
+      Vision and Pattern Recognition, pages 6228–6237, 2018.8                               Ye. Improving diffusion models for inverse problems using
+ [2]  Ashish Bora, Ajil Jalal, Eric Price, and Alexandros G Di-                             manifold constraints.Advances in Neural Information Pro-
+      makis.   Compressed sensing using generative models.   In                             cessing Systems, 35:25683–25696, 2022.3
+      International Conference on Machine Learning, pages 537–                       [15]  Hyungjin Chung, Jeongsol Kim, Michael Thompson Mccann,
+      546. PMLR, 2017.2                                                                     Marc Louis Klasky, and Jong Chul Ye.  Diffusion posterior
+ [3]  Stephen Boyd, Neal Parikh, Eric Chu, Borja Peleato, Jonathan                          sampling for general noisy inverse problems. InThe Eleventh
+      Eckstein, et al. Distributed optimization and statistical learn-                      International Conference on Learning Representations, 2023.
+      ing via the alternating direction method of multipliers.Foun-                         2,3
+      dations and Trends®in Machine learning, 3(1):1–122, 2011.                      [16]  Hyungjin Chung,  Jeongsol Kim,  and Jong Chul Ye.   Dif-
+      5                                                                                     fusion   models   for   inverse   problems.arXiv   preprint
+ [4]  Robert W. Brown,  Y-C Norman Cheng,  E. Mark Haacke,                                  arXiv:2508.01975, 2025.3
+      Michael R. Thompson, and Ramesh Venkatesan.Magnetic                            [17]  Giannis Daras, Joseph Dean, Ajil Jalal, and Alex Dimakis.
+      Resonance Imaging: Physical Principles and Sequence De-                               Intermediate Layer Optimization for Inverse Problems using
+      sign (Second edition). Wiley, 2014.3                                                  Deep Generative Models. InProceedings of the 38th Interna-
+ [5]  Antoni Buades, Bartomeu Coll, and Jean-Michel Morel.  A                               tional Conference on Machine Learning, pages 2421–2432.
+      review of image denoising algorithms, with a new one.Multi-                           PMLR, 2021.2
+      scale modeling & simulation, 4(2):490–530, 2005.2                              [18]  Giannis Daras, Yuval Dagan, Alex Dimakis, and Constantinos
+ [6]  Emmanuel J. Cand`es, Justin Romberg, and Terence Tao. Ro-                             Daskalakis.  Score-guided intermediate level optimization:
+      bust uncertainty principles: Exact signal reconstruction from                         Fast Langevin mixing for inverse problems. InProceedings
+      highly incomplete frequency information.IEEE Transactions                             of the 39th International Conference on Machine Learning,
+      on Information Theory, 52(2):489–509, 2006.2                                          pages 4722–4753. PMLR, 2022.2
+ [7]  Hanqun Cao, Cheng Tan, Zhangyang Gao, Yilun Xu, Guangy-                        [19]  Valentin De Bortoli, James Thornton, Jeremy Heng, and Ar-
+      ong Chen, Pheng-Ann Heng, and Stan Z. Li.  A survey on                                naud Doucet.  Diffusion Schr¨odinger Bridge with Applica-
+      generative diffusion models.IEEE Transactions on Knowl-                               tions to Score-Based Generative Modeling.arXiv preprint
+      edge and Data Engineering, 36(7):2814–2830, 2024.3                                    arXiv:2106.01357, 2021.2
+ [8]  Stanley H Chan, Xiran Wang, and Omar A Elgendy. Plug-and-                      [20]  C.  Dong,  C.  C.  Loy,  K.  He,  and  X.  Tang.   Image  super-
+      play ADMM for image restoration: Fixed-point convergence                              resolution using deep convolutional networks.IEEE Trans-
+      and applications.IEEE Transactions on Computational Imag-                             actions on Pattern Analysis and Machine Intelligence, 38(2):
+      ing, 3(1):84–98, 2016.2                                                               295–307, 2016.2
+ [9]  Chih-Wei Chang, Junbo Peng, Mojtaba Safari, Elahheh Salari,                    [21]  David L Donoho. Compressed sensing.IEEE Transactions
+      Shaoyan Pan, Justin Roper, Richard LJ Qiu, Yuan Gao, Hui-                             on Information Theory, 52(4):1289–1306, 2006.2
+      Kuo Shu, Hui Mao, et al.   High-resolution MRI synthesis                       [22]  Kathryn  A.  Ellis,  Ashley  I.  Bush,  David  Darby,  Daniela
+      using a data-driven framework with denoising diffusion prob-                          De Fazio, Jonathan Foster, Peter Hudson, Nicola T. Lauten-
+      abilistic modeling.Physics in Medicine & Biology, 69(4):                              schlager, Nat Lenzo, Ralph N. Martins, Paul Maruff, et al. The
+      045001, 2024.2                                                                        Australian Imaging, Biomarkers and Lifestyle (AIBL) study
+[10]  Tianrong Chen, Guan-Horng Liu, and Evangelos Theodorou.                               of aging: methodology and baseline characteristics of 1112
+      Likelihood  training  of  schr¨odinger  bridge  using  forward-                       individuals recruited for a longitudinal study of Alzheimer’s
+      backward SDEs theory. InInternational Conference on Learn-                            disease.International psychogeriatrics, 21(4):672–687, 2009.
+      ing Representations, 2022.3                                                           5
+[11]  Ming Cheng, Haoyu Ma, Qiufang Ma, Xiaopeng Sun, Weiqi                          [23]  Jinsheng Fang, Hanjiang Lin, Xinyu Chen, and Kun Zeng.
+      Li,  Zhenyu  Zhang,  Xuhan  Sheng,  Shijie  Zhao,  Junlin  Li,                        A hybrid network of CNN and transformer for lightweight
+      and Li Zhang.  Hybrid transformer and CNN attention net-                              image super-resolution.   InProceedings of the IEEE/CVF
+      work for stereo image super-resolution.  InProceedings of                             conference on computer vision and pattern recognition, pages
+      the IEEE/CVF Conference on Computer Vision and Pattern                                1103–1112, 2022.2
+      Recognition, pages 1702–1711, 2023.2                                           [24]  Chun-Mei Feng, Yunlu Yan, Huazhu Fu, Li Chen, and Yong
+[12]  Jooyoung Choi, Sungwon Kim, Yonghyun Jeong, Youngjune                                 Xu.   Task  transformer  network  for  joint  MRI  reconstruc-
+      Gwon, and Sungroh Yoon. ILVR: Conditioning method for                                 tion  and  super-resolution.    InMedical  Image  Computing
+      denoising diffusion probabilistic models. In2021 IEEE/CVF                             and Computer Assisted Intervention–MICCAI 2021:  24th
+      International Conference on Computer Vision (ICCV), pages                             International Conference, Strasbourg, France, September 27–
+      14347–14356, 2021.2                                                                   October 1, 2021, Proceedings, Part VI 24, pages 307–317.
+[13]  Kyobin  Choo,  Youngjun  Jun,  Mijin  Yun,  and  Seong  Jae                           Springer, 2021.
+      Hwang.   Slice-consistent 3D volumetric brain CT-to-MRI                        [25]  Cristhian Forigua, Maria Escobar, and Pablo Arbelaez. Super-
+      translation with 2D brownian bridge diffusion model. InIn-                            former: Volumetric transformer architectures for mri super-
+      ternational Conference on Medical Image Computing and                                 resolution. InInternational Workshop on Simulation and Syn-
+
+
+                                                                                10
+
+=== PDF PAGE 11 ===
+      thesis in Medical Imaging, pages 132–141. Springer, 2022.                     [39]  Xingchao Liu, Chengyue Gong, and Qiang Liu. Flow straight
+      2                                                                                    and fast: Learning to generate and transfer data with rectified
+[26]  Ruiqi Gao, Emiel Hoogeboom, Jonathan Heek, Valentin De                               flow. InThe Eleventh International Conference on Learning
+      Bortoli, Kevin P. Murphy, and Tim Salimans. Diffusion Meets                          Representations, 2023.3
+      Flow Matching:  Two Sides of the Same Coin.  https://                         [40]  Xingchao Liu,  Chengyue Gong,  et al.   Flow Straight and
+      diffusionflow.github.io/, 2025. Accessed: 2025-                                      Fast: Learning to Generate and Transfer Data with Rectified
+      07-09.2,3                                                                            Flow. InThe Eleventh International Conference on Learning
+[27]  Zhitao  Han  and  Wenhui  Huang.    Arbitrary  scale  super-                         Representations, 2023.2
+      resolution diffusion model for brain MRI images.Computers                     [41]  Zhisheng Lu, Juncheng Li, Hong Liu, Chaoyan Huang, Linlin
+      in Biology and Medicine, 170:108003, 2024.2                                          Zhang,  and Tieyong Zeng.   Transformer for single image
+[28]  Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bern-                            super-resolution. InProceedings of the IEEE/CVF conference
+      hard Nessler, and Sepp Hochreiter.  GANs trained by a two                            on computer vision and pattern recognition, pages 457–466,
+      time-scale update rule converge to a local Nash equilibrium.                         2022.2
+      Advances in Neural Information Processing Systems, 30, 2017.                  [42]  Jos´e V. Manj´on, Pierrick Coup´e, Antonio Buades, D. Louis
+      6                                                                                    Collins, and Montserrat Robles. MRI superresolution using
+[29]  Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffu-                          self-similarity and image priors.International journal of
+      sion probabilistic models.Advances in Neural Information                             biomedical imaging, 2010(1):425891, 2010.
+      Processing Systems, 33:6840–6851, 2020.2,3                                    [43]  Sachit Menon, Alexandru Damian, Shijia Hu, Nikhil Ravi,
+[30]  Fabian Isensee, Marianne Schell, Irada Pflueger, Gianluca                            and Cynthia Rudin.  PULSE: Self-supervised photo upsam-
+      Brugnara,  David  Bonekamp,  Ulf  Neuberger,  Antje  Wick,                           pling via latent space exploration of generative models.  In
+      Heinz-Peter Schlemmer,  Sabine Heiland,  Wolfgang Wick,                              Proceedings of the IEEE/CVF Conference on Computer Vi-
+      Martin Bendszus, Klaus H. Maier-Hein, and Philipp Kickin-                            sion and Pattern Recognition, pages 2437–2445, 2020.2
+      gereder. Automated brain extraction of multisequence MRI                      [44]  Jerry L. Prince and Jonathan M. Links.Medical Imaging
+      using artificial neural networks.Human Brain Mapping, 40                             Signals and Systems. Pearson, 2015.5
+      (17):4952–4964, 2019.5
+[31]  Kourosh Jafari-Khouzani.  MRI upsampling using feature-                       [45]  Samuel W. Remedios, Aaron Carass, Jerry L. Prince, and
+      based nonlocal means approach.IEEE transactions on medi-                             Blake E. Dewey. Diffusion-Driven Generation of Minimally
+      cal imaging, 33(10):1969–1985, 2014.2                                                Preprocessed Brain MRI.arXiv preprint arXiv:2510.26834,
+[32]  Bahjat Kawar, Gregory Vaksman, and Michael Elad. SNIPS:                              2025.5
+      Solving noisy inverse problems stochastically.Advances in                     [46]  Yaniv Romano, Michael Elad, and Peyman Milanfar.  The
+      Neural Information Processing Systems,  34:21757–21769,                              little engine that could: Regularization by denoising (RED).
+      2021.2                                                                               SIAM Journal on Imaging Sciences, 10(4):1804–1844, 2017.
+[33]  Bahjat Kawar, Michael Elad, Stefano Ermon, and Jiaming                               2
+      Song.   Denoising diffusion restoration models.Advances                       [47]  Franc¸ois Rousseau. Brain hallucination. InEuropean Confer-
+      in Neural Information Processing Systems, 35:23593–23606,                            ence on Computer Vision (ECCV), pages 497–508. Springer,
+      2022.2                                                                               2008.2
+[34]  Eungbean Lee, Somi Jeong, and Kwanghoon Sohn. EBDM:                           [48]  Franc¸ois Rousseau.  A non-local approach for image super-
+      exemplar-guided image translation with brownian-bridge dif-                          resolution using intermodality priors.Medical Image Analysis,
+      fusion models. InEuropean Conference on Computer Vision,                             14(4):594 – 605, 2010.2
+      pages 306–323. Springer, 2024.3                                               [49]  Wael Saafin, Miguel Vega, Rafael Molina, and Aggelos K
+[35]  Dawa Chyophel Lepcha, Bhawna Goyal, Ayush Dogra, and                                 Katsaggelos. Image super-resolution from compressed sens-
+      Vishal Goyal. Image super-resolution: A comprehensive re-                            ing observations. In2015 IEEE International Conference on
+      view, recent trends, challenges and applications.Information                         Image Processing (ICIP), pages 4268–4272. IEEE, 2015.2
+      Fusion, 91:230–260, 2023.2                                                    [50]  Maximilian  Seitzer.   pytorch-fid:  FID  Score  for  PyTorch.
+[36]  Bo Li, Kaitao Xue, Bin Liu, and Yu-Kun Lai. Bbdm: Image-                             https://github.com/mseitzer/pytorch-fid,
+      to-image translation with brownian bridge diffusion models.                          2020. Version 0.3.0.6
+      InProceedings of the IEEE/CVF Conference on Computer                          [51]  Pradeep Sen and Soheil Darabi.  Compressive image super-
+      Vision and Pattern Recognition, pages 1952–1961, 2023.3                              resolution.  In2009 Conference Record of the Forty-Third
+[37]  Guangyuan  Li,  Jun  Lv,  Yapeng  Tian,  Qi  Dou,  Chengyan                          Asilomar Conference on Signals, Systems and Computers,
+      Wang, Chenliang Xu, and Jing Qin. Transformer-empowered                              pages 1235–1242. IEEE, 2009.2
+      multi-scale contextual matching and aggregation for multi-
+      contrast  MRI  super-resolution.     InProceedings  of  the                   [52]  Yuyang Shi,  Valentin De Bortoli,  Andrew Campbell,  and
+      IEEE/CVF conference on computer vision and pattern recog-                            Arnaud Doucet. Diffusion schr¨odinger bridge matching.Ad-
+      nition, pages 20636–20645, 2022.2                                                    vances in Neural Information Processing Systems, 36:62183–
+[38]  Yaron Lipman, Ricky T. Q. Chen, Heli Ben-Hamu, Maxim-                                62223, 2023.2,3
+      ilian Nickel, and Matthew Le.   Flow matching for genera-                     [53]  Jiaming Song, Chenlin Meng, and Stefano Ermon. Denoising
+      tive modeling. InThe Eleventh International Conference on                            Diffusion Implicit Models.  InInternational Conference on
+      Learning Representations, 2023.3                                                     Learning Representations, 2021.3
+
+
+                                                                               11
+
+=== PDF PAGE 12 ===
+[54]  Jiaming Song, Chenlin Meng, and Stefano Ermon. Denoising                              super-resolution.  InProceedings of the IEEE/CVF confer-
+      diffusion implicit models.  InInternational Conference on                             ence on computer vision and pattern recognition, pages 5791–
+      Learning Representations, 2021.3                                                      5800, 2020.2
+[55]  Jiaming  Song,  Arash  Vahdat,  Morteza  Mardani,  and  Jan                    [68]  Michal Rafal Zareba, Magdalena Fafrowicz, Tadeusz Marek,
+      Kautz.  Pseudoinverse-guided diffusion models for inverse                             Ewa Beldzik, Halszka Oginska, and Aleksandra Domagalik.
+      problems.  InInternational Conference on Learning Repre-                              Late chronotype is linked to greater cortical thickness in the
+      sentations, 2023.2                                                                    left fusiform and entorhinal gyri.Biological Rhythm Research,
+[56]  Yang Song, Jascha Sohl-Dickstein, Diederik P Kingma, Ab-                              53(10):1626–1638, 2022.5
+      hishek Kumar, Stefano Ermon, and Ben Poole. Score-Based                        [69]  Di Zhang, Jiazhong He, Yun Zhao, and Minghui Du.  MR
+      Generative Modeling through Stochastic Differential Equa-                             image super-resolution reconstruction using sparse represen-
+      tions. InInternational Conference on Learning Representa-                             tation, nonlocal similarity and sparse derivative prior.Com-
+      tions, 2021.2                                                                         puters in biology and medicine, 58:130–145, 2015.2
+[57]  Xuan Su, Jiaming Song, Chenlin Meng, and Stefano Ermon.                        [70]  Xin Zhang, Edmund Y. Lam, Ed X. Wu, and Kenneth K. Y.
+      Dual diffusion implicit bridges for image-to-image transla-                           Wong.    Application  of  Tikhonov  regularization  to  super-
+      tion. InThe Eleventh International Conference on Learning                             resolution  reconstruction  of  brain  MRI  images.   InInter-
+      Representations, 2023.3                                                               national Conference on Medical Imaging and Informatics,
+[58]  Singanallur  V.  Venkatakrishnan,  Charles  A  Bouman,  and                           pages 51–56. Springer, 2007.2
+      Brendt Wohlberg.  Plug-and-play priors for model based re-                     [71]  Zhenting Zhou, Guoping Li, and Guozhong Wang.   A hy-
+      construction. In2013 IEEE Global Conference on Signal and                             brid of transformer and cnn for efficient single image super-
+      Information Processing, pages 945–948. IEEE, 2013.2                                   resolution via multi-level distillation.Displays, 76:102352,
+[59]  Jueqi  Wang,  Jacob  Levman,  Walter  Hugo  Lopez  Pinaya,                            2023.2
+      Petru-Daniel Tudosiu, M. Jorge Cardoso, and Razvan Mari-
+      nescu.  InverseSR: 3D brain MRI super-resolution using a
+      latent diffusion model. InInternational Conference on Med-
+      ical Image Computing and Computer-Assisted Intervention,
+      pages 438–447. Springer, 2023.2
+[60]  Yinhuai Wang, Jiwen Yu, and Jian Zhang. Zero-Shot Image
+      Restoration Using Denoising Diffusion Null-Space Model. In
+      The Eleventh International Conference on Learning Repre-
+      sentations, 2023.2
+[61]  Ralph A. Willoughby. Solutions of ill-posed problems.Siam
+      Review, 21(2):266, 1979.2
+[62]  Jonghye Woo,  Ying Bai,  Snehashis Roy,  Emi Z. Murano,
+      Maureen Stone, and Jerry L. Prince. Super-resolution recon-
+      struction for tongue MR images. InProceedings of SPIE–the
+      International Society for Optical Engineering, page 83140C,
+      2012.
+[63]  Zhanxiong Wu, Xuanheng Chen, Sangma Xie, Jian Shen, and
+      Yu Zeng.  Super-resolution of brain MRI images based on
+      denoising diffusion probabilistic model.Biomedical Signal
+      Processing and Control, 85:104901, 2023.
+[64]  Zhanxiong  Wu,  Xuanheng  Chen,  and  Jiangnan  Yu.    3D-
+      SRDM: 3D super-resolution of MRI volumes based on diffu-
+      sion model.International Journal of Imaging Systems and
+      Technology, 34(3):e23093, 2024.
+[65]  Zejun Wu, Samuel W. Remedios, Blake E. Dewey, Aaron
+      Carass, and Jerry L. Prince. AniRes2D: anisotropic residual-
+      enhanced diffusion for 2D MR super-resolution. InMedical
+      Imaging 2024: Clinical and Biomedical Imaging, pages 567–
+      574. SPIE, 2024.
+[66]  Chao  Yan,   Gen  Shi,   and  Zhengliang  Wu.      SMIR:  A
+      Transformer-Based Model for MRI super-resolution recon-
+      struction. In2021 IEEE International Conference on Medi-
+      cal Imaging Physics and Engineering (ICMIPE), pages 1–6.
+      IEEE, 2021.
+[67]  Fuzhi Yang, Huan Yang, Jianlong Fu, Hongtao Lu, and Bain-
+      ing Guo.  Learning texture transformer network for image
+
+
+                                                                                12

@@ -1,0 +1,127 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 3
+Visual information 
+for segmentation
+Segmentation mapSegmenter
+Classifier
+Unhealthy 
+(82%)
+Classification prediction
+(ROI-oriented) recon.
+Visual information 
+for classification
+Sampler MRI scanner
+Sampling mask Measurements
+Retriever
+(E2E-VarNet)
+(U-Net)
+(ResNet)
+(Local) PSNR loss
+Dice loss
+BCE loss
+Task-specific architecture and training
+Annotations / labels on g.t.
+ROIReconstruction task
+Classification task
+Segmentation task
+Unhealthy 
+(100%)
+(Glioma tumor)
+Task-specific co-design of k-space subsampling and prediction (T ackle)
+End-to-end optimization over the full pipeline ( denotes the learnable modules)
+Investigated datasets and settings
+③ ④ ⑤ ⑥
+Different body partsDifferent tasks
+Different sequences Different hardwares
+Single-coil
+Multi-coil
+FSE
+DESS FLAIR
+ROI recon. Brain seg.
+Knee seg. Tumor class.
+Knee
+Brain
+① ② ⑥
+④
+ ③ 
+⑤
+① ② ④ ⑥
+③ ⑤
+① ③ ⑤ ⑥
+② ④
+① ② ③ ⑥
+④ ⑤
+①: fastMRI knee (single-coil)  ②: fastMRI knee (multi-coil) ③: OASIS ④: SKM-TEA ⑤: BraTS ⑥: Own
+(annotations / labels are given by either 
+human experts or established methods)
+(Meniscus)
+GRE
+① ②
+Fig. 2. Block diagram of the proposed framework TACKLE and a summary of the investigated datasets and settings. TACKLE uses a task-specific loss to jointly
+optimize a sampler, a retriever, and an optional predictor, ranging from scanner-level sampling to human-level diagnosis. A summary of the investigated settings
+is presented in the bottom left panel. FSE, GRE, DESS, and FLAIR stand for fast spin echo, gradient echo, double-echo steady-state, and fluid-attenuated
+inversion recovery, respectively. We comprehensively investigate multiple CS-MRI tasks on a variety of common MRI settings with six datasets.
+known as deep unrolling (DU), combines the characteristics of
+MBIR and end-to-end training [6], [8], [41]–[48]. The idea is
+to “unroll” an iterative optimization procedure into a cascade of
+mappings and train these mappings end-to-end so that they can
+gradually map a low-resolution input image to a high-quality
+output reconstruction. Inheriting the advantage of both MBIR
+and end-to-end learning, these methods exhibit state-of-the-art
+performance on CS-MRI reconstruction. In this paper, we use
+a specific kind of unrolled network called E2E-VarNet [43] as
+part of our framework due to its strong performance on the
+large-scale fastMRI dataset [49].
+B. Reconstruction-oriented co-design
+The success of DL methods in CS-MRI reconstruction
+motivates the idea of jointly optimizing acquisition together
+with reconstruction via end-to-end training. Recently, there has
+been a rapidly growing literature on optimizing a parameterized
+sampling strategy jointly with a CNN reconstructor [9]–[23],
+[50]. These methods have different architectural designs and
+applicable scenarios, but all rely on the differentiable nature of
+neural networks to optimize the reconstruction accuracy over
+the choice of k-space measurements. The learned subsampling
+pattern and reconstruction network are thus specific to the
+dataset. The end-to-end training enables synergistic cooperation
+between the learned subsampling pattern and reconstructor,
+achieving state-of-the-art reconstruction performance. From a
+task perspective, however, having a reconstruction is not the
+end of the workflow. These methods rely on either human
+evaluation, a traditional task prediction algorithm, or a CNN
+for task predictions, which are out of the scope of these papers.
+C. Task-oriented co-design
+Recent work has investigated the co-design idea in the
+context of limited tasks beyond full-FOV reconstruction, such
+as physical parameter estimation [50]–[52] and segmentation
+[53]–[57]. Using task-specific loss functions in their training
+procedures, these proposed methods demonstrate stronger task
+performance than methods trained by a reconstruction-only loss.
+Most of these proposed approaches leave either subsampling
+or prediction as a pre-determined fixed module, and focus on
+co-designing the other modules [50]–[54]. On the other hand,
+the authors of [55], [56] proposed to jointly optimize all three
+steps, and investigated a brain segmentation task using a U-
+Net reconstructor and predictor. Although these methods show
+the potential of extending co-design beyond reconstruction,
+they are each fine-tuned for one particular task, do not easily
+accommodate different types of data (e.g., multi-coil), and have
+not been demonstrated on real out-of-distribution datasets. The
+most relevant work to ours in the literature is a concurrent
+work by Wang et al. [57], in which the authors presented a
+thorough investigation of optimizing the entire CS-MRI pipeline
+for various segmentation problems. In this work, we cast a
+wider net for the task-specific CS-MRI co-design problem. In
+particular we demonstrate our unified framework for designing
+generalized CS-MRI pipelines, TACKLE , on three different tasks
+beyond full FOV reconstruction. TACKLE performs robustly on
+this broad range of tasks and experiments, and is implemented
+and tested on a Siemens scanner.
+III. M ETHOD
+Figure 2 illustrates the architecture of TACKLE . As a co-
+design CS-MRI method, TACKLE jointly optimizes the sampler,
+retriever, and predictor for a task-dependent loss. In the
+following subsections, we describe each module in order and
+more implementation details can be found in Supplement II.
+A. Sampler
+We consider 2D Cartesian subsampling patterns, i.e. m∈
+{0, 1}n. We follow [9], [15], [58] to model the subsampling

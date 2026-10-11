@@ -1,0 +1,53 @@
+2.1. MRI PHYSICS
+measurements in order to obtain a full image.
+There exists several ways to construct an image with MRI, and we will illustrate how
+it works by considering a2D gradient echosequence, and we will explain its different
+components. Sequences are frequently represented as diagrams, such as the one of Figure
+2.3, where each line represents how different component vary in intensity through time.
+If we simply excite a body with an RF pulse, neglecting the relaxation effects, we can
+write the signal observed in the receive coil as
+S(t) =
+∫
+ρ(x)ei(ω0t+ϕ(x,t))dx (2.4)
+whereρ(x) is theeffective spin density, and is the quantity that we wish to measure, and
+ϕ(x,t ) is theaccumulated phase
+ϕ(x,t ) =−
+∫t
+0
+ω(x,t′)dt′. (2.5)
+We see that in Equation 2.4, without additional considerations, the signal that we observe
+is integrated over the whole volume being imaged. In Equation 2.5, the main reason that
+ω is now a function of space and time is that we will add spatially varying gradient fields
+that in turn makeω dependent on space and time. One can also see that Equation 2.4
+shows that measurements will not be provided directly in image space, but rather in
+Fourier space, often referred to ask-space: MRI allows us to obtainfrequency information
+about our object of interest, and then an image can be obtained by mapping back these
+measurements into image space.
+Slice Selecting (SS) Gradient.As we see on Figure 2.3, during the RF pulse, a constant
+z-gradient is applied during a timeτRF with intensityGSS, and reversed afterwards.
+We will not detail here why this gradient is reversed, but this has the effect of making
+all components in the slice in phase, with a common accumulated phaseϕ = 0. This
+enables to select the slice of interest and make sure that the signal will be strong for the
+acquisition. As a result, for a slice at locationz0 with thickness∆z, the signal will be
+integrated out on the slice only, i.e. we will have the spin density
+S(t1) =
+∫ ∫[∫z0+ ∆z
+2
+z0− ∆z
+2
+ρ(x,y,z )dz
+]
+dydx≈
+∫ ∫
+ρ(x,y,z 0)dydx.
+Phase Encoding (PE) Gradient.Let us now add the phase encodingy-gradient to
+the picture. Assume that it is applied during a timeτPE at intensityGmin≤Gy≤Gmax.
+This will result in gradients acquiring ay-dependent phase, and as a result
+S(t2) =
+∫[∫
+ρ(x,y,z 0)e
+−i2π γ GyτPEy
+dy
+]
+dx
+13

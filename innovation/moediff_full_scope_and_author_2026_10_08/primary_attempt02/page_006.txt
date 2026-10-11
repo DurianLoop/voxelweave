@@ -1,0 +1,95 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 6
+Furthermore, to dynamically balance the relative contribu￾tions of the expert loss and gating loss, we apply an uncertainty￾based adaptive weighting strategy, automatically adjusting the
+influence of Lgating based on its variance. This weighting term
+is defined as:
+w =
+1
+σ
+2
+gating
+(17)
+where σ
+2
+gating represents the variance of the gating loss, esti￾mated through an EMA with a decay factor of 0.99.
+Finally, the total joint training objective is formulated by
+combining the expert loss and adaptively weighted gating loss:
+Ltotal = LE + wLgating (18)
+III. EXPERIMENTAL DATA AND SETTINGS
+A. Employed database
+The Human Connectome Project (HCP) [29] maps the
+healthy human connectome by collecting neuroimaging and be￾havioural data on 1,200 normal young adults, aged 22-35. The
+project was carried out in two phases by a consortium of over
+100 investigators and staff at 10 institutions. In Phase I, data
+acquisition and analysis methods were optimized, including
+refinements to pulse sequences and key preprocessing steps.
+In Phase II, neuroimaging and behavioural data were acquired
+from 1,200 healthy adults recruited from 300 families of
+twins and their non-twin siblings. To obtain brain connectivity
+maps of the highest quality, HCP employed cutting-edge MR
+hardware, including 3T and 7T MR scanners and customized
+head coils.
+B. Data preprocessing
+After normalization and standardization, each 3T and 7T
+MRI volume with a respective voxel size of 1.5mm × 1.5mm
+× 1.5mm and 0.7mm × 0.7mm × 0.7mm are resampled to a
+consistent size of 260 × 310 × 260 voxels, where each slice is
+reformatted to a spatial resolution of 256×256×3 pixels. The
+resulting dataset consists of 184 pairs of T1-weighted (T1w)
+MRI volumes at both 3T and 7T resolutions. These MRI slice
+pairs are then randomly divided into training, validation and
+test sets with a ratio of 8:1:1.
+C. Experimental details
+The VQ-VAE model was configured with a base channel
+size of 128, the embedding dimension was defined as 512, and
+the codebook size was 1024. During the MoEDiff-SR training,
+a base learning rate of 1e-06 was applied, with a lambda linear
+scheduler incorporating a warm-up period every 100 steps. The
+batch size was set to 32. The scale factor of the latent space
+was set as 0.2. The AdamW optimizer [30] was utilized for
+training over 5,000 epochs. To ensure stable optimization of
+each expert at the early stage, the gating probabilities were
+fixed to a uniform distribution across all experts during the first
+1,000 training epochs. For diffusion timesteps T, 500, 2000,
+and 1000 are configured for Expert 1, Expert 2, and Expert
+3, respectively. We implemented our global approach using
+PyTorch v1.12.1 [31] on Nvidia A100 80 GB graphics cards.
+IV. EXPERIMENTS AND RESULTS
+A. Ablation study for incorporating bias filed and gradient
+nonlinearity correction
+In our proposed MoE-based SR framework, each input
+7T MRI slice is complemented by its corresponding bias
+field correction b and gradient nonlinearity correction g. Such
+incorporation of these corrections enriches the contextual
+information available to the gating network, thereby enhanc￾ing its capacity for adaptive expert selection across diverse
+anatomical regions. To systematically evaluate the impact
+of these corrections, we conducted an ablation study, with
+the results presented in Fig. 3, illustrating the convergence
+behaviour of the gating loss across different configurations.
+As can be seen, the removal of either correction detrimentally
+affects training stability and convergence speed, leading to
+increased gating loss. In particular, the exclusion of both b and g
+results in the highest gating loss throughout training, indicating
+suboptimal expert specialization and heightened uncertainty
+in the gating mechanism. Among the individual corrections,
+gradient nonlinearity correction g exhibits a more pronounced
+effect in reducing gating loss, suggesting its stronger influence
+in facilitating expert specialization, which could be attributed
+to the fundamental role of gradient nonlinearity in defining
+structural integrity within MRI images. Since tissue contrast and
+edge definition are largely influenced by gradient distortions,
+the absence of g leads to greater ambiguity in anatomical
+boundaries, making it more difficult for the gating network
+to accurately assign expert contributions. In contrast, while
+the bias field correction b plays an important role in intensity
+normalization, its effect is more global and less directly tied to
+fine-grained structural information, leading to a comparatively
+smaller impact on gating stability. Our proposed approach,
+incorporating both b and g, consistently attains the lowest gating
+loss, signifying improved training stability and a more effective
+gating strategy. These findings underscore the critical role of
+bias field and gradient nonlinearity corrections in enhancing
+the robustness and precision of expert selection within the MoE
+framework, ultimately contributing to more accurate and stable
+SR performance.
+Fig. 3: Convergence analysis of gating loss under different
+configurations.

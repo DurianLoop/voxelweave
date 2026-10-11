@@ -1,0 +1,37 @@
+6.3. RE-EXAMINING DEEP RL FOR MRI SAMPLING
+To conclude, note that the large gap in performance between thecvb and the c+rhz
+settings is not due to a significant difference in performance of the reconstruction methods,
+but rather originates from the difference in field of view. This can be seen by comparing
+the SSIM value of the observations (before reconstruction) using the deterministic LtH
+policy in both cases: in thecvb setting, one gets an AUC of0.4989 for the observation
+SSIM, whereas in thec+rhz setting, the AUC is0.6534.
+Policy cropped, vert., Bakker cropped+resized, horiz., Zhang
+UNet cResNet UNet cResNet
+Random 0.5249± 0.0001 0 .5432± 0.0004 0 .6567± 0.0003 0 .6725± 0.0006
+LtH 0.5832 0 .6197 0 .7325 0 .7714
+LBCS 0.6294± 0.0009 0.6417± 0.0011 0 .7768± 0.0000 0 .7941± 0.0000
+RL 0.6298± 0.0002 0 .6415± 0.0002 0.7761± 0.0000 0 .7935± 0.0001
+NA Oracle 0.6301 0 .6428 0 .7771 0 .7942
+Table 6.2: SSIM at25% on the test set, on knee data comparing two models in the long horizon
+setting of Bakker et al. (2020), for thecvb (cropped, vertical, Bakker-type of masks) andc+rhz
+(cropped+resized, horizontal, Zhang-like masks) settings. A different aggregation of the results is
+shown on Table 6.3.
+Policy cropped, vert., Bakker cropped+resized, horiz., Zhang
+UNet cResNet UNet cResNet
+Random 0.4348± 0.0001 0 .4432± 0.0002 0 .5860± 0.0002 0 .5885± 0.0002
+LtH 0.4849 0 .5107 0 .6678 0 .6902
+LBCS 0.5134± 0.0004 0.5243± 0.0003 0 .7035± 0.0001 0.7096± 0.0001
+RL 0.5142± 0.0001 0 .5242± 0.0002 0 .7035± 0.0002 0 .7111± 0.0009
+NA Oracle 0.5140 0 .5247 0 .7038 0 .7099
+Table 6.3: AUC on the test set using SSIM, on knee data comparing two models in the long
+horizon setting of Bakker et al. (2020), for thecvb (cropped, vertical, Bakker-type of masks) and
+c+rhz (cropped+resized, horizontal, Zhang-like masks) settings. A different aggregation of the
+results is shown on Table 6.2.
+6.3.3 Main results on Pineda et al. (2020)
+Given these results, we can observe that if there is indeed a benefit to patient-adaptive
+greedy policies, it is highly sensitive to the parameters used, and the improvement over
+the non-adaptive greedy baseline is marginal. One might wonder whether there will be
+a significant gain from adaptive RL policies if they are trained to perform long term
+planning on a longer horizon? To investigate this, we replicated the second SotA RL
+method described in Pineda et al. (2020).
+97

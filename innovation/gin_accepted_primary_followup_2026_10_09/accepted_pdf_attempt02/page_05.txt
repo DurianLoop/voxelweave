@@ -1,0 +1,105 @@
+, VOL. XX, NO. XX, XXXX 2020 5
+build {T (·)} in a bottom-up manner, based on our analysis
+on ingredients of acquisition shift, as discussed in Sec. I. We
+simulate {T (·)} as a combination of GIN and IPA.
+B. Global intensity non-linear augmentation
+Fig. 3. Illustration of the proposed global intensity non-linear aug￾mentation (GIN) module. It transforms image appearances using shallow
+convolutional networks whose weights are randomly sampled at each iteration.
+It also contains Leaky ReLU’s interleaved between convolutional layers. To
+maintain spatial resolutions of the input images, these random networks do
+not contain any downsampling operations.
+Design choices: GIN is designed to efficiently transform
+image intensities and textures. We configure GIN as a family
+of piece-wise linear functions g(·) ∈ G, operating in pixel level
+or small local patch level in a spatially-equivariant manner.
+These functions take a training image x from the source
+domain as input, and outputs an image with the same shape
+information but different intensities/textures, namely, g(·) :
+R
+Ch×H×W → R
+Ch×H×W , where (H, W) to be the spatial
+size of a 2-D image x, and Ch to be the number of channels.
+As shown in Fig. 3, transformations sampled from GIN are
+instantiated as shallow multi-layer convolutional networks.
+These networks are composed with 1) random convolutional
+kernels θ sampled from Gaussian distributions N (0, I) with
+small receptive fields (to avoid over-blurring). 2) Leaky ReLU
+non-linearities between two neighboring convolutional layers
+(to make transformations non-linear). At each iteration, new
+kernels are sampled, yielding a variety of transformation
+functions4
+. Inspired by [40], we perform a linear interpolation
+between the original and the output of the random network. In
+the end, as depicted in Fig. 3, to constrain the energy of the
+augmented image, the output image is re-normalized to have
+the same Frobenius norm as the original input x. We note
+the overall transformation with parameters θ as gθ(·) and its
+pure network part as g
+Net
+θ
+(·) (see Fig. 3), and note a random
+interpolation coefficient sampled from uniform distribution
+U(0, 1) as α. We can write the transformed image gθ(x) as
+follows:
+gθ(x) = αgNet
+θ
+(x) + (1 − α)x
+∥αgNet
+θ
+(x) + (1 − α)x∥ F
+· ∥x∥F , (4)
+where ∥ · ∥F is the Frobenius norm.
+By this mean, at each iteration, different intensities and
+textures are given to training images. As stable decision rules
+can hardly be built on randomly changing intensities/textures,
+the network would resort to invariant information like shapes.
+4For more theoretical analysis on Gaussian randomly weighted networks,
+we refer readers to [57].
+Advantages: We highlight major advantages of the above
+designs: Firstly, GIN is based on generic assumptions on
+intensity/texture transformations. It therefore avoids being
+over-specific to a certain target domain(s). In addition, GIN is
+computationally efficient: it is in the form of shallow networks
+and therefore easily exploits GPUs for acceleration. Also, it is
+differentiable, and therefore can be integrated into adversarial
+augmentation frameworks [38], [46], [47], [50] to improved
+data efficiency.
+C. Interventional pseudo-correlation augmentation
+Fig. 4. A. Causal graph illustrating spurious correlations between the
+object of interest Xf and a potentially correlated background patch
+Xb, both are from the image X. Spurious correlations between Xf and Xb
+are due to the acquisition factor A. The network fϕ(·) may learn source￾domain-specific decision rules from these spurious correlations. However,
+these correlations may break on out-of-domain data. This causal graph is
+a close-up of the data generation process in Fig. 2-A. The content factor C
+in Fig. 2-A is assumed to be domain-independent and therefore omitted here.
+B. Removing the confounding caused by A: This is achieved by the causal
+intervention do(Xf = xf ), which removes A → Xf in the causal graph.
+Confounded objects in the background affect segmen￾tation: Recall in Sec. I, spurious correlations (due to con￾foundings) between objects in the background and the objects
+of interest in the source domain might be taken by the
+network as domain-specific clues for making predictions5
+.
+These decision rules may break in the target domain, leading to
+performance downgrades. This is because confounded objects
+in the background that benefit segmentation in source domain,
+might not exist in the target domain. Alternatively, they might
+not co-shift in the same way as those of the objects of interest.
+From the perspective of network architectures, objects in
+the background often affect predictions of the objects of
+interest by the following ways: 1) Background features can
+affect global feature statistics at normalization layers [59],
+since feature statistics are usually calculated across all spatial
+locations. 2) The large receptive fields often make the pixels of
+the objects of interest and those of the neighboring background
+to be inevitably perceived and processed together [60].
+The acquisition process naturally confounds objects: To
+mitigate the shifted-correlation effect, it is worthwhile to
+5
+In our preliminary experiment, we found that the model does learn
+background-based decision rules: We distorted the background of images by
+randomly swapping patches of the background (therefore the global statistics
+of image intensities would remain unchanged). We then tested a segmentation
+network on these background-distorted images, and have observed substantial
+performance downgrades compared with results on the original undistorted
+images. This phenomenon has also been found in general computer vision
+and these spurious correlations are sometimes termed as context bias [15],
+[58]

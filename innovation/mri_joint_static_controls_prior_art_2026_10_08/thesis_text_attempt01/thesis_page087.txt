@@ -1,0 +1,39 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+Mask Single-coil Multicoil
+TV BP SENSE ALOHA
+Coherence 29.04 29.60 33.10 32.61
+Low pass 30.59 30.78 30.21 29.91
+TV LB 32.82 34.23 34.56 35.17
+BP LB 32.90 34.27 35.02 35.07
+SENSE LB 31.51 31.82 36.88 36.61
+ALOHA LB 29.00 26.95 30.73 37.15
+Table 5.3: Cross performance of single and multi-coil masks on various reconstruction algorithms,
+at 20% subsampling rate, averaged over 100 test slices.
+In Figure 5.20, we have also included single coil masks (TV and BP) obtained from
+using LBCS on single coil data. They result in inferior performance when used with the
+multi-coil SENSE and ALOHA reconstruction algorithms. Compared to these single
+coil masks, the optimal multi-coils masks are found to be more spread in k-space. As
+expected, one obtains the best performances in terms of visual quality and performance
+metrics when the LB-mask is paired with the reconstruction algorithm for which it
+was trained. In Table 5.3, we provide an average cross-performance of single/multi-coil
+masks and reconstruction algorithms. We see that it is important to optimize single and
+multi-coil masks separately as they are quite different from each other, which was also
+observed by Haldar and Kim (2019).
+5.5.2 3D multicoil setting
+In this section we demonstrate the effectiveness of lLBCS in providing masks for 3D
+MRI by comparing it to common 3D MRI subsampling masks: Controlled Aliasing in
+Parallel Imaging Results in Higher Acceleration (CAIPIRINHA) (Breuer et al., 2006),
+Poisson disc (PD) sampling (Bridson, 2007) and its variable density variant (VD-PD)
+(Vasanawala et al., 2011), and adaptive random sampling method (Knoll et al., 2011b).
+For brevity, we used only the SENSE algorithm as the multi-coil reconstruction algorithm
+and for all masks we took the central 24× 24 region as calibration region to estimate
+the coil sensitivities. As seen in Figure 5.21, the mask given by lLBCS provides superior
+image quality compared to the benchmarks and comparable result to more recent VD-PD
+sampling whose polynomial decay parameter is optimized by a grid search (LB-VD).
+Although this trend holds for low sampling rates, Figure 5.22 shows that the baselines
+catch up around15% sampling and then outperform lLBCS. The trend is similar on
+both PSNR and SSIM evaluation, and several observations can be made. While our
+method does not uniformly outperform other baselines like in other cases, it remains
+competitive in the region of interest for such methods, namely low sampling rates. Indeed,
+74

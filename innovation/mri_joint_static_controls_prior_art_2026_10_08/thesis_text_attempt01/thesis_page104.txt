@@ -1,0 +1,32 @@
+6.2. THE MRI DATA PROCESSING PIPELINE
+Figure 6.2: Illustration of the data processing pipeline of MRI subsampling. Diamonds represent
+data in Fourier domain (k-space) and circles represent data in image domain. The postprocessed
+observation and ground truth are the data that are subsequently used for training the reconstruction
+and policy models. The pipeline features three main blocks, namely preprocessing, subsampling
+and postprocessing.
+only shifted the results but do not lead to reversals withitalics.
+Data sources and storage.In all cases, the ground truth signalx is initially acquired
+as a complex signal in k-space, generally using multiple coils. The fastMRI dataset
+(Zbontar et al., 2019) provides this raw multicoil data, as well as a simulated single-coil
+k-space which we use throughout this work.
+Preprocessing∗. Due to computational constraints, it is common to resize the images
+by cropping and/or resizing or use magnitude images over the raw data. Cropping and
+resizing changes the ground truth distribution, which as seen in Table 6.3 can also lead
+to reversals in the final results.
+Caveat #1.Converting the raw ground truth to or starting from a magnitude induces
+a conjugate symmetry in Fourier space that is not present in real data, a distortion
+that makes our modeling less faithful to the physical model.
+Sampling. While in the real world the data is actually acquired by sampling k-
+space (prospective sampling), in practice, the acquisition is generally simulated by
+retrospectively undersampling fully sampled Cartesian data following Equation 2.12.
+When training reconstructor and sampling method separately, training data are generally
+constructed with random masks that sample a certain fraction of center frequencies,
+and then the rest from a random distribution. There has been considerable variation in
+defining the parameters of these distributions, but to this day, no systematic study of
+their effect on the reconstruction quality have been carried out.
+Post processing and reconstruction. Aftersampling, theobservationwillbeprocessed
+according to the implementation details of the reconstruction algorithm (e.g., normalized
+or standardized) and the reconstruction is computed.
+Typical normalization, as used for instance in Pineda et al. (2020), consist of dividing
+every input by a fixed value equal to the average energy of the dataset. Bakker et al.
+91

@@ -1,0 +1,1125 @@
+
+=== PDF PAGE 1 ===
+   MRI super-resolution reconstruction using efficientdiffusion probabilistic model with residual shifting
+
+
+
+ Mojtaba Safari1, Shansong Wang1, Zach Eidex1, Qiang Li1, Richard L.J. Qiu1, Erik H.
+                   Middlebrooks2, David S. Yu1, and Xiaofeng Yang1,‡
+
+
+1Department of Radiation Oncology and Winship Cancer Institute, Emory Univer-
+sity, Atlanta, GA 30322, United States.
+2Department of Radiology, Mayo Clinic, Jacksonville, FL, United States.
+‡Corresponding Author
+
+
+Email:  xiaofeng.yang@emory.edu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                             1
+
+=== PDF PAGE 2 ===
+                                                  Abstract
+       Objective:   Magnetic  resonance  imaging  (MRI)  is  essential  in  clinical  and
+       research  contexts,  providing  exceptional  soft-tissue  contrast.   However,  pro-
+       longed  acquisition  times  often  lead  to  patient  discomfort  and  motion  arti-
+       facts.   Diffusion-based  deep  learning  super-resolution  (SR)  techniques  recon-
+       struct  high-resolution  (HR)  images  from  low-resolution  (LR)  pairs,  but  they
+       involve extensive sampling steps, limiting real-time application.  To overcome
+       these issues, this study introduces a residual error-shifting mechanism markedly
+       reducing sampling steps while maintaining vital anatomical details, thereby ac-
+       celerating MRI reconstruction. Approach:  We developed Res-SRDiff, a novel
+       diffusion-based SR framework incorporating residual error shifting into the for-
+       ward diffusion process.  This integration aligns the degraded HR and LR distri-
+       butions, enabling efficient HR image reconstruction.  We evaluated Res-SRDiff
+       using ultra-high-field brain T1 MP2RAGE maps and T2-weighted prostate im-
+       ages, benchmarking it against Bicubic, Pix2pix, CycleGAN, SPSR, I2SR, and
+       TM-DDPM methods.  Quantitative assessments employed peak signal-to-noise
+       ratio (PSNR), structural similarity index (SSIM), gradient magnitude similar-
+       ity deviation (GMSD), and learned perceptual image patch similarity (LPIPS).
+       Additionally, we qualitatively and quantitatively assessed the proposed frame-
+       work’s  individual  components  through  an  ablation  study  and  conducted  a
+       Likert-based image quality evaluation. Main results:  Res-SRDiff significantly
+       surpassed most comparison methods regarding PSNR, SSIM, and GMSD for
+       both  datasets,  with  statistically  significant  improvements  (p-values≪  0.05).
+       The  model  achieved  high-fidelity  image  reconstruction  using  only  four  sam-
+       pling  steps,  drastically  reducing  computation  time  to  under  one  second  per
+       slice.  In contrast, traditional methods like TM-DDPM and I2SR required ap-
+       proximately  20  and  38  seconds  per  slice,  respectively.   Qualitative  analysis
+       showed Res-SRDiff effectively preserved fine anatomical details and lesion mor-
+       phologies.   The  Likert  study  indicated  that  our  method  received  the  highest
+       scores, 4.14± 0.77(brain) and 4.80± 0.40(prostate). Significance:Res-SRDiff
+       demonstrates efficiency and accuracy, markedly improving computational speed
+       and  image  quality.   Incorporating  residual  error  shifting  into  diffusion-based
+       SR facilitates rapid, robust HR image reconstruction, enhancing clinical MRI
+       workflow and advancing medical imaging research.  Code available at  https:
+       //github.com/mosaf/Res-SRDiff
+
+    keywords:  Super-resolution, MRI, Deep learning, Reconstruction, Diffusion model,
+Brain T1 map, Ultra-high field MRI
+
+
+
+
+
+
+                                                       2
+
+=== PDF PAGE 3 ===
+1    Introduction
+
+Magnetic  resonance  imaging  (MRI)  is  an  indispensable  tool  in  both  clinical  prac-
+tice  and  research,  providing  detailed  anatomical  and  functional  images.   Quantita-
+tive techniques, such as 3D magnetization-prepared 2 rapid acquisition gradient echo
+(MP2RAGE) T1-maps, offer robust imaging free from reception bias and first-order
+transmit field inhomogeneities, thereby enabling precise diagnosis and treatment plan-
+ning [1–3].  For example, T1-maps are employed to identify hypoxic regions that can
+inform adaptive dose-painting radiation therapy [4–6].  Moreover, in addition to these
+quantitative  methods,  T2-weighted  (T2w)  MRI  provides  enhanced  tissue  contrast,
+rendering it a critical imaging modality for prostate cancer treatment by delineating
+tumor  boundaries  and  guiding  therapeutic  decisions  [7].   Nevertheless,  the  lengthy
+acquisition  times  associated  with  both  T1-mapping  and  T2w  imaging  may  induce
+patient  discomfort  and  elevate  the  risk  of  motion  artifacts  [8],  thereby  potentially
+compromising image quality and diagnostic accuracy.
+    To  accelerate  MRI  image  acquisition,  super-resolution  (SR)  studies  have  aimed
+to reconstruct high-resolution (HR) images from their low-resolution (LR) counter-
+parts  [9].   Conventional  SR  models,  which  constitute  a  subcategory  of  the  broader
+field  of  image  restoration,  employ  a  maximum  a  posteriori  framework–a  Bayesian
+paradigm consisting of a likelihood (loss) function and a prior (regularization) term–
+to resolve the ill-posed SR task.  The likelihood term presupposes an underlying noise
+distribution, yielding ℓ2 and ℓ1 losses for Gaussian and Laplacian noise assumptions,
+respectively.   Typical  regularizers  include  Tikhonov  [10],  non-local  similarity  [11],
+wavelet [12], and total variation [13] to address the ill-posed image restoration task.
+    Deep  learning  algorithms,  particularly  generative  deep  learning  models,  consis-
+tently outperform traditional methods in medical imaging tasks such as reconstruc-
+tion [14,15] and denoising [16].  Despite the impressive visual fidelity achieved by gen-
+erative adversarial networks (GANs), they often face challenges such as mode collapse
+and unstable training [17,18],  which might undermine their reliability in practical
+and clinical settings.  For example,  Cheng  et  al.  introduced a structure-preserving
+SR  (SPSR)  method  that  incorporates  gradient  guidance  into  the  SR  process  [19].
+This  approach  highlights  the  importance  of  high-fidelity  gradient  maps  in  preserv-
+ing geometric consistency and mitigating structural distortions, which are prevalent
+challenges in GAN-based super-resolution techniques.
+    Recently,  diffusion  models  have  emerged  as  a  compelling  alternative  to  address
+these  limitations.   These  models  have  demonstrated  considerable  success  in  MRI-
+related  applications,  such  as  reconstruction  [20],  denoising  [21],  synthesis  [22],  and
+super-resolution [23,24].  The operational framework of diffusion models involves a
+forward  process  that  gradually  diffuses  data  towards  a  prior  distribution,  typically
+modeled  as  a  multivariate  standard  Gaussian  (N (0, I)),  followed  by  a  reverse  pro-
+
+                                                      3
+
+=== PDF PAGE 4 ===
+cess in which a neural network (NN) is trained to approximate the inverse trajectory
+across numerous sampling steps.  However, two significant drawbacks associated with
+the standard paradigm for image SR persist:  first, the iterative nature of the denois-
+ing  process  renders  the  generation  of  HR  images  from  LR  inputs  computationally
+demanding;  second,  the reliance on pure Gaussian noise for initializing the reverse
+process  is  inherently  more  suited  for  image  generation  than  for  restoration  tasks.
+Yue et  al. [25] highlighted these inefficiencies,  and subsequent research has demon-
+strated that centering the initial reconstruction distribution around the LR image–by
+adjusting residual  errors over T  sampling steps–can  significantly  enhance sampling
+efficiency [26].
+    Recent advancements in diffusion models have significantly reduced the required
+sampling steps, enhancing their efficiency.  For example, a simulation-free Image-to-
+Image Schr¨odinger Bridge (I2SB) framework [27] employs a nonlinear diffusion bridge
+that  directly  utilizes  degraded  image  information  to  guide  restoration,  resulting  in
+more  interpretable  generative  pathways.   In  parallel,  partial  diffusion  models  [28]
+have  been  introduced  for  MRI  applications,  leveraging  latent  convergence  observa-
+tions between LR and HR images.  This latent alignment strategy effectively bypasses
+redundant denoising steps, markedly decreasing computational load.  Additionally, a
+method that distills the stochastic diffusion process into a single deterministic genera-
+tion step [29] has been proposed, achieving substantial acceleration without sacrificing
+perceptual quality.
+    In this study, we present an efficient diffusion model named Res-SRDiff, which
+leverages  the  residual  error  shift  between  HR  and  LR  image  pairs  to  reconstruct
+HR  axial  T2w  prostate  images  and  quantitative  brain  MRI  T1  MP2RAGE  maps
+obtained  from  ultra-high  B0  fields,  extending  the  work  presented  in  [25, 26].   To
+our knowledge, this is the first investigation aimed at recovering HR MRI using an
+efficient diffusion model that requires only four sampling steps, in contrast to the
+thousands required by conventional diffusion models.  This considerable reduction in
+sampling steps substantially enhances computational efficiency while maintaining the
+high quality of the restored HR images.
+    The contributions of this work are:
+
+    •  Formulating  an  efficient  diffusion  model  specifically  tailored  for  SR  task,  en-
+       abling inference in only four sampling steps.
+
+    •  Utilizing  a  U-net  architecture  integrated  with  a  Swin  Transformer  block,  re-
+       placing the traditional attention layer, to ensure improved generalization across
+       varying image resolutions.
+
+    •  Conducting  extensive  evaluations  using  publicly  available  axial  T2w  prostate
+       image datasets and institutionally acquired ultra-high-field (7T) T1 MP2RAGE
+
+                                                     4
+
+=== PDF PAGE 5 ===
+       brain MRI maps.
+
+    •  Demonstrating, for the first time, the application of an efficient diffusion model
+       to  reconstruct  HR  axial  T2w  pelvic  images  and  ultra-high  B0  field  brain  T1
+       maps from LR image pairs.
+
+2    Materials and Methods
+
+In this section, we first review the traditional Denoising Diffusion Probabilistic Model
+(DDPM). Next, we introduce our proposed method, Res-SRDiff, which is designed to
+recover HR images (xHR) from their LR counterparts (xLR).  We assume that both HR
+and LR images have similar spatial size, an assumption that can be readily satisfied
+by pre-upsampling the LR images using nearest neighbor interpolation.
+
+2.1    DDPM
+The DDPM was initially inspired by non-equilibrium thermodynamics [30],  aiming
+to  approximate  a  complex  data  distribution  with  a  tractable  distribution,  such  as
+a  standard  Gaussian  distribution.   It  was  later  enhanced  by  integrating  stochastic
+differential equations and denoising score matching [31,32].  The DDPM comprises
+two diffusion processes:  a forward process and a reverse process.  The forward pro-
+cess degrades the input image into noise following a standard Gaussian distribution
+N (0, I) over numerous stepsT .  The reverse process trains an NN to approximate the
+sampling trajectory required to recover the input image from Gaussian noise over a
+large number of steps T , which diminishes the sampling efficiency of the DDPM.
+
+2.2    Problem formulation
+Res-SRDiff is built upon a Markov chain, similar to the conventional DDPM model.
+However, it aims to degrade input HR images xHR  into an image xHRT    over T  steps
+such that the resulting distribution q(xHRT   )≈N (xLR,γI) rather than converging to
+N (0, I).  This is achieved by introducing the residual e0 = xLR− xHR, which is used
+to shift xHR over the T  steps.  This process is illustrated in Figure1.
+
+Forward process.    To simulate the forward diffusion process, a monotonically in-
+creasing shifting sequence{βt}Tt=1 over time stepst with bounding conditionsβ1→ 0
+andβT→ 1 is used.  The transition kernel for simulating the forward diffusion process
+is given in (1), which is constructed based on the Markov chain and the residual error
+e0 shift sequences (see Figure1):
+
+
+                                                   5
+
+=== PDF PAGE 6 ===
+Figure 1:  Illustration of the diffusion process.  The forward diffusion process in Res-
+SRDiff, where a HR image xHR is progressively shifted to match the LR distribution
+q(xLR).   The  model  introduces  a  residual  error e0  = xLR− xHR,  which  drives xHR
+through T  Markov  steps  until q(xHRT   )≈N (xLR,γI),  rather  than  converging  to  a
+standard Gaussian distribution.  The reverse process trains an NN gφ to estimate the
+posterior distribution pφ(xHR|xLR) given in (5).
+
+
+
+                q(xHRt |xHRt−1, xLR) =N (xHRt   ; xHRt−1 + e0αt,γ2αtI),  t∈ [1,T ]                (1)
+where α1  = β1 →  0  and αt  = βt−βt−1  for t >  1,  and γ  is  a  hyper-parameter
+introduced  to  improve  the  flexibility  of  the  forward  diffusion  process.   Considering
+the Markov chain, we can compute the image at step t from its step t− 1 using the
+reparameterization trick as follows:
+
+                                    xHRt    = xHRt−1 +αte0 +pγ2αtϵ                                       (2)
+where ϵ ∼ N (0, I).   Since  this  sampling  forward  process  using  (2)  increases  the
+computational burden, it is also possible to compute the image at stept directly from
+the input noise-free image as follows:
+
+
+
+
+
+
+
+
+
+
+
+
+                                                      6
+
+=== PDF PAGE 7 ===
+                            x1 = x0 +α1e0 +pγ2α1ϵ                                                    (3a)
+                            x2 = x1 +α2e0 +pγ2α2ϵ                                                   (3b)
+                                = x0 + (α1 +α2)e0 +γ (√α1 +√α2)ϵ                            (3c)
+                               ...
+
+                                               TX             TX  √
+                            xt = x0 + e0           αt′ +γ(           αt′)ϵ                                     (3d)
+                                              t′=1           t′=1
+
+    Here,  we omit the superscript HR for brevity and x0  is xHR.  The second term
+(mean) and the square of the third term (variance) in the summation given in (3d)
+are equal to βt.  Thus, the marginal distribution at any time step t can be computed
+analytically as follows:
+
+                q(xHRt |xHR, xLR,t) =N (xHRt   ; xHR + e0βt,γ2βtI),  t∈ [1,T ]               (4)
+
+Reverse  process.    The  reverse  process  trains  a  NN gφ  to  estimate  the  posterior
+distribution pφ(xHR|xLR), as follows [33]:
+                                       Z                   TY
+                  pφ(xHR|xLR) =            p(xHRT |xLR)        pφ(xHRt−1|xHRt , xLR)dx1:T                  (5)
+                                                          t=1
+wherep(xHRT |xLR)≈N (xLR,γ2I) andpφ(xHRt−1|xHRt , xLR) is a reverse transition kernel
+that aims to learn xHRt−1 from xHRt    by training a network gφ.  Similar to conventional
+diffusion models [31–33], it can be written as follows by adopting the Gaussian as-
+sumption:
+                     pφ(xHRt−1|xHRt , xLR) =N (xHRt−1;µφ(xHRt , xLR,t), Σφ(t))                     (6)
+where the optimum parameterφ is achieved by minimizing the Kullback-Leibler (KL)
+divergence between the forward and reverse kernels summed over all time steps as
+follows [33]:
+                 arg min   X    DKL q(xHRt−1|xHRt , xHR, xLR)|pφ(xHRt−1|xHRt , xLR)                (7)
+
+                     φ       t
+    The target distributionq(xHRt−1|xHRt , xHR, xLR) can be computed using (1) and (4),
+along with the Markov chain assumption, which states xHRt ⊥ xHR1:t−2|xHRt−1, as follows:
+
+
+
+
+                                                       7
+
+=== PDF PAGE 8 ===
+ q(xHRt−1|xHRt , xHR, xLR) =q(xHRt |xHRt−1, xLR)q(xHRt−1|xHR, xLR)
+                             =N (xHRt   ; xHRt−1 +αte0,γ2αtI)N (xHRt−1; xHR + e0βt−1,γ2βt−1I)
+                                                                                                        (8)
+    The multiplication of two Gaussian distributions yields another Gaussian distri-
+bution that can be computed tractably [34] as follows:
+
+             q(xHRt−1|xHRt , xHR, xLR) =N (xHRt−1;βt−1βt  xHRt    + αtβt xHR,γ2αtβt−1βt  I)             (9)
+                                                        |         {z         }  |    {z    }
+                                                                  µq                 Σq
+    By assuming that the forward and backward covariance matrices are similar (Σq =
+Σφ), the KL divergence given in (7) simplifies to:
+                        ˆφ = arg min1    (µφ−µq)TΣq(t)−1(µφ−µq)
+
+                                 φ     2
+                                       1
+                          = arg min2       (µφ−µq)T  βtIγ2αtβt−1 (µφ−µq)                              (10)
+                                 φ
+                          = arg min         βt      ∥µφ−µq∥22
+
+                                 φ     2γ2αtβt−1
+
+The mean parameterµφ(xHRt , xHR, xLR,t) is parameterized as follows:
+
+                    µφ(xHRt , xHR, xLR,t) = βt−1βt  xHRt    + αtβtgφ(xHRt , xLR,t)                   (11)
+
+    After substituting it into (10), the final loss function is achieved as follows:
+
+                             ˆφ = arg min
+                                       φ  ∥gφ(xHRt , xLR,t)− xHR∥22                              (12)
+    The constant parameters were dropped,  as experiments demonstrated that this
+improves the model’s performance [26,32].  In addition to the data fidelity     ℓ2  loss,
+a learned perceptual image patch similarity (LPIPS) ℓp loss [35] was employed.  The
+overall optimization function is given by:
+
+               Lφ =λ∥gφ(xHRt , xLR,t)− xHR∥22 +ℓp(gφ(xHRt , xLR,t), xHR)             (13)
+where λ is a hyper-parameter controlling the relative importance and we set it to 10
+in this study.  The training and sampling pseudo-codes are provided in Algorithm1
+and2.
+
+
+                                                     8
+
+=== PDF PAGE 9 ===
+Algorithm 1 Training process
+Require:  High-resolution datasetTHR, Low-resolution datasetTLR
+  repeat
+        xHR∼THR, xLR∼TLR
+        t∼ Uniform({1,...,T})
+        xHRt ∼q(xHRt |xHR, xLR,t)                          ▷ Given in (4)
+        Take a gradient descent step on∇Lφ(xHRt , xLR,t)         ▷ Given in (13)
+  until
+
+Algorithm 2 Sampling process
+Require:  Low-resolution image xLR
+        xLRT ∼N (xLRT  ; xLR,γ2βTI)
+  for t = T, ..., 1 do
+        ϵ∼N (ϵ; 0, I) if t> 1 elseϵ = 0
+        µφ = βt−1βt  xHRt    + αtβtgφ(xHRt , xLR,t)                   ▷ Given in (11)
+                         rβt−1αt
+        xHRt−1 =µφ +γ          βt ϵ
+  end for
+
+2.3    Noise scheduler
+This  study  utilizes  a  hyper-parameter γ  and  a  noise  scheduler{βt}Tt=1  in  the  for-
+ward diffusion process.  Given that√βt  and the scaling factor γ  in (4) control the
+forward process, and it has been shown that a NN can approximate the forward dif-
+fusion trajectory [30,32],    γ√β1  needs to be small such as 0.04, which ensures that
+q(xHR1 |xHR, xLR)≈q(xHR).  Thus, we setβ1 = (0.04/γ)2 and usedγ = 2 to satisfy the
+first bounding conditionβ1→ 0 (see Figure1) and      βT  = 0.9999 to satisfy the second
+bounding condition βT→ 1.  We employed a non-uniform geometric noise scheduler
+proposed by [26] for  √βt as follows:
+                   p                   "               s      #
+                      βt =pβ1 exp       (t− 1              βT   , t∈ [2,T− 1]                   (14)
+                                          T− 1)p log       β1
+where the hyper-parameterp controls the growth rate, as shown in Figure2.  We used
+p = 0.3 in our study, similar to a recent study [26].  Furthermore, we used 15 steps
+for training and four steps for sampling.
+    Figure2comprises several panels demonstrating the effects of the hyper-parameters
+p and γ  on the forward diffusion process.  Specifically,  panels (a)-(c) show the HR
+image, the LR image, and the residual error, respectively.  Panel (d) illustrates how
+
+                                                  9
+
+=== PDF PAGE 10 ===
+Figure 2:  Residual shift denoising diffusion process.  (a) shows the HR image, xHR;
+(b) displays the corresponding LR image, xLR; and (c) illustrates the residual error,
+e0  = xLR− xHR.  (d) presents the evaluation of the noise scaling factor,√βt,  as a
+function of the diffusion time step,t.  Panels (e)-(h) demonstrate the forward diffusion
+process driven by the residual error shift for different hyper-parameter sets.
+
+√βt  varies with the time step t for different values of p.  Finally, panels (e)-(h) de-
+
+pict representative outputs of the forward diffusion process at selected time steps t,
+enabling a visual comparison of noise levels under varying p and γ.
+    From panels (e) and (g) as well as (f) and (h), one observes that, for a fixed time
+step t  and  fixed γ,  reducing p  leads  to  an  increase  in  the  amount  of  noise  in  the
+reconstructed images.  This outcome aligns with panel (d), where lowerp corresponds
+to  higher√βt,  implying  more  additive  noise  given  in  (4).   Conversely,  keeping  t
+and p fixed but increasing γ  also produces noisier reconstructions,  as evidenced by
+comparing panels (e) and (f), and similarly (g) and (h).
+    The Res-SRDiff model was implemented using  PyTorch (version 2.5.1) and exe-
+cuted on NVIDIA A100 GPUs.  The model was trained for 182,000 and 131,000 steps
+on the brain and prostate datasets, respectively, using a batch size of 16.  The net-
+work was optimized with the Rectified Adam (RAdam) optimizer [36] and employed
+a cosine annealing learning rate scheduler [37].  The initial learning rate was set in
+the range of 2× 10−5  to 5× 10−5, and it was adjusted according to a cosine decay
+
+                                                   10
+
+=== PDF PAGE 11 ===
+schedule  throughout  training.   A  warm-up  phase  of  5,000  steps  was  applied  before
+transitioning to the cosine decay schedule to stabilize early training dynamics.
+
+2.4    Patient data acquisition and data preprocessing
+We  used  institutional  ultra-high  7T  brain  T1  MP2RAGE  maps  [38]  and  publicly
+available  axial  T2w  prostate  cancer  data  [39]  to  train  and  evaluate  the  proposed
+method.
+    Our  institutional  dataset  comprises  142  patients  with  a  confirmed  diagnosis  of
+multiple sclerosis, which were divided into two non-overlapping sets:  a training set
+(121 cases,  14,566 slices) and a test set (21 cases,  2,552 slices).  This retrospective
+study was approved by the Mayo Clinic IRB. The institutional data were acquired
+using a 7 T Siemens MAGNETOM Terra with 8-channel transmit/32-channel receive
+head  coil  with  the  following  key  imaging  parameters:  TR  =  4.5  s,  TE  =  2.2  ms,
+TI1/TI2  =  0.95/2.5  s,  FA1/FA2  =  6◦/4◦,  FOV  =  230× 230  cm2,  matrix  size  of
+288× 288, a resolution of 0.8× 0.8× 0.8 mm3, and a total acquisition time of 8:44
+min.   FSL  BET  [40]  was  used  to  extract  the  brain  mask  from  image  inversion  1,
+which was subsequently applied to the T1 maps to remove the noisy background and
+skull.  The T1 maps were down-sampled by a factor of 43, resulting in a voxel size of
+3.2× 3.2× 3.2 mm3 (a 4-fold reduction in each direction).
+    We randomly selected data from 334 patients in the public prostate dataset, which
+were split into two non-overlapping sets:  a training set (268 patients, 10,480 slices)
+and an evaluation set (66 patients, 2,668 slices).  The T2w MR images were acquired
+using a 1.5 T Siemens scanner with the following parameters:  TR = 2.2 s, TE = 202
+ms, FA = 110◦, matrix size of 256× 256, an in-plane resolution of 0.66× 0.66 mm2,
+and a slice thickness of 1.5 mm.  The T2w MR images were down-sampled by a factor
+of 18, yielding a voxel size of 2× 2× 3 mm3 (a 9-fold reduction in-plane and a 2-fold
+reduction along the slice axis).
+    Under-sampling of ultra-high B0 brain T1 maps and the axial T2w prostate im-
+ages were performed in image space using the  SimpleITK.Resample (version 2.1.1)
+package [41].
+
+2.5    Quantitative and statistical analysis
+We evaluated our method against four benchmark approaches:  Bicubic, Pix2pix [42],
+CycleGAN [43], SPSR [19], I            2SR [27], and TM-DDPM, which is a conventional DDPM
+with  a  vision  transformer  backbone  [21].   All  methods  were  trained  for  the  same
+number of steps and with similar training parameters,  except that the TM-DDPM
+and I2SB model had approximately three times as many training parameters.
+
+
+                                                   11
+
+=== PDF PAGE 12 ===
+    The reconstructed HR image quality was quantitatively evaluated using four met-
+rics:  peak signal-to-noise ratio (PSNR), structural similarity index (SSIM)[44], gra-
+dient magnitude similarity deviation (GMSD)[45], and LPIPS [46].  Higher SSIM and
+PSNR values, and lower GMSD and LPIPS values, indicate better image restoration
+performance.  PSNR quantifies the residual error between the restored and ground
+truth  images,  and  its  logarithmic  scale  aligns  better  with  human  perceptual  judg-
+ments [47].  Furthermore, SSIM, GMSD, and LPIPS provide measures of the struc-
+tural similarity between the restored images and the HR ground truth images.
+    Two statistical tests were employed to assess the significance of differences:  a one-
+way analysis of variance (ANOVA) and Tukey’s honestly significant difference (HSD)
+test.  Prior to these analyses,  the Shapiro-Wilk test was conducted to evaluate the
+normality of the residuals.  When the normality assumption was not satisfied, non-
+parametric methods were used, specifically the Kruskal-Wallis test followed by Dunn’s
+test with Bonferroni correction for multiple comparisons.  The ANOVA tested the null
+hypothesis that the mean values for each method are equal, while the Kruskal-Wallis
+test assessed whether the distributions of the groups differed significantly.  Tukey’s
+HSD  and  Dunn’s  test  with  Bonferroni  correction  were  then  used  to  identify  which
+specific pairs of groups differed significantly.  For all analyses, the significance level
+was set at p< 0.05.
+
+2.6    Subjective Image-Quality Evaluation (Likert Ratings)
+A  subjective  image-quality  evaluation  was  performed  by  two  experienced  medical
+physicists certified by the American Board of Radiology.  Each rater independently
+reviewed SR images and assigned scores on a 5-point Likert scale (1  = Poor, 2  = Fair,
+3  = Acceptable, 4  = Good, 5  = Excellent) with respect to three criteria:  contrast,
+edge sharpness, and preservation of anatomical detail.
+    For every reconstruction method, 25 images were randomly selected from the brain
+dataset  and  25  from  the  prostate  dataset,  yielding  50  images  per  method  and  300
+images in total.  Mean± standard-deviation scores are reported; larger values denote
+superior perceived quality.  The 95% confidence intervals (CIs) for the mean values
+were computed using the percentile bootstrap method with 10,000 iterations, along
+with the bias-adjusted accelerated bootstrap approach [48].  Statistical comparisons
+between methods were performed using the framework detailed in Section2.5, and
+the resulting p-values are provided alongside the descriptive statistics.
+
+
+
+
+
+
+
+                                                   12
+
+=== PDF PAGE 13 ===
+3    Results
+
+3.1    Brain T1 maps
+The proposed method demonstrated superior performance, exhibiting lower residual
+errors and higher structural similarity, as illustrated in Figure3(first row).  Detailed
+comparisons provided by the zoomed-in panels (second row of Figure3),  indicated
+by white and red arrows, reveal that our method effectively captured fine structural
+details more accurately than baseline methods.  However, despite successfully recon-
+structing these highlighted fine details, our method, like the comparative approaches,
+was unable to fully reconstruct very subtle structures diminished by partial volume
+effects,  as indicated by the pink arrow in Figure3.  The difference maps shown in
+the third row of Figure3further confirm the lower global discrepancies between our
+method’s outputs and the HR ground truth images.  These visual observations align
+well  with  quantitative  findings,  where  our  proposed  method  yielded  higher  PSNR
+values  and  lower  GMSD  and  LPIPS  scores  (refer  to  Table1).   The  reduced  global
+residual errors depicted in the third row of Figure3additionally suggest a greater
+consistency between the reconstructed outputs of our method and the ground truth
+images.
+    In terms of computational efficiency,  the proposed method achieved an average
+evaluation time of 0.46± 0.21 seconds per slice, which was substantially faster than
+I2SR  (31.15± 0.27  seconds  per  slice)  and  the  MT-DDPM  method  (66.84± 27.72
+seconds  per  slice).   Given  that  the  quantitative  metrics  did  not  meet  the  Shapiro-
+Wilk normality test criteria (p-values≪ 0.001), non-parametric analyses, specifically
+Kruskal-Wallis and Dunn’s post-hoc tests, were conducted.  The Kruskal-Wallis test
+indicated  significant  statistical  differences  among  the  evaluated  methods  (p-values
+≪ 0.0001) across all quantitative metrics.  On average, the proposed method consis-
+tently outperformed alternative approaches across PSNR, GMSD, and LPIPS with
+statistically significant improvements (p-values≪ 0.001), except in the case of LPIPS,
+where the difference compared to the Pix2pix method was not statistically significant
+(p = 0.08).
+    The  Shapiro-Wilk  test  indicated  that  the  Likert  scores  were  not  normally  dis-
+tributed  (p ≪  0.001)  for  all  evaluated  methods.   Our  proposed  method  achieved
+an average score of 4.14± 0.77 (95% CI 3.90, 4.31), outperforming the second-best
+method, TM-DDPM, which had an average score of 3.51± 0.75 (95% CI 3.29, 3.71);
+however, this difference was not statistically significant (p  = 0.11).  In contrast, the
+differences  between  these  two  top-performing  methods  and  the  third-best  method,
+Pix2pix with score 3.04± 0.68 (95% CI 2.84, 3.20), were statistically significant (p
+≪ 0.001).
+
+
+
+                                                   13
+
+=== PDF PAGE 14 ===
+Figure 3:  Qualitative results of the ultra-high field brain T1 MP2RAGE maps.  The
+first  row  shows  the  ground  truth  image  along  with  the  restored  outputs  from  our
+proposed Res-SRDiff and comparative models.  The second row displays the zoomed-
+in  regions  corresponding  to  the  dashed  red  and  brown  boxes.   The  white  and  red
+arrows  highlight  regions  where  our  method  outperforms  the  comparative  models.
+The last row presents the difference map between the restored images and the ground
+truth.
+
+3.2    Pelvic T2w images
+We compared our proposed Res-SRDiff model against Bicubic, CycleGAN, Pix2pix,
+SPSR, I2SR, and MT-DDPM. Our proposed method was able to restore axial T2w
+pelvic images with improved fidelity to the HR ground truth, as shown in Figure4.
+Although the Pix2pix and SPSR methods successfully restored HR images that were
+globally  similar  to  the  ground  truth,  our  method  better  restored  the  lesion,  as  in-
+dicated by the red arrow in the second row of Figure4.  These findings are further
+confirmed  by  the  difference  maps  shown  in  the  third  row  of  Figure4,  where  our
+method exhibits the smallest residual error compared with the other methods.
+    We conducted a comparative evaluation of our proposed Res-SRDiff model against
+Bicubic,  CycleGAN,  Pix2pix,  SPSR,  I2SR,  and  MT-DDPM.  Our  method  restored
+axial T2w pelvic images with enhanced fidelity to the HR ground truth, as illustrated
+in  Figure4.   Although  the  Pix2pix  and  SPSR  methods  generated  HR  images  that
+were globally similar to the ground truth, our approach more effectively restored the
+lesion, as indicated by the red arrow in the second row of Figure4.  This observation
+is further confirmed by the difference maps shown in the third row, where our method
+exhibits the smallest residual error relative to the alternative approaches.
+    In  a  further  analysis,  the  evaluation  time  of  our  proposed  method  (0.95± 0.74
+
+                                                   14
+
+=== PDF PAGE 15 ===
+Figure 4:  Qualitative results of the pelvic axial T2w images.  The first row presents
+the ground truth image along with the restored outputs from our proposed Res-SRDiff
+and comparative models.  The second row shows the zoomed-in regions outlined by
+the red dashed lines, where the red arrows indicate lesions that are visually restored
+closer to the ground truth by our method.  The last row depicts the difference map
+between the restored images and the ground truth.
+
+
+seconds per slice) remained considerably lower than of I2SR (38.32± 25.74 seconds
+per slice) and that of MT-DDPM (20.66± 14.00 seconds per slice).  The quantita-
+tive metrics failed the Shapiro-Wilk normality test (with p-values≪ 0.001); thus, we
+performed non-parametric Kruskal-Wallis and Dunn’s tests.  The Kruskal-Wallis test
+yielded p-values≪ 0.0001, indicating that the differences between the methods were
+statistically significant for all quantitative metrics.  Specifically, our method achieved
+the highest PSNR (27.72± 2.26) and the lowest GMSD (0.08± 0.02).  Although our
+method,  on average,  achieved the second-best LPIPS after Pix2pix and SPRS, the
+differences were not statistically significant with p = 0.17 and p = 0.31, respectively.
+Table1summarizes the quantitative metrics and indicates whether the differences are
+statistically significant.  Furthermore, Figure5illustrates the boxplot of the quantita-
+tive metrics where vertical orange lines and red rectangular markers show the median
+and average values.
+    The  Shapiro-Wilk  test  revealed  that  the  Likert  scores  were  not  normally  dis-
+tributed (p≪ 0.001) across all evaluated methods.  Our proposed method achieved an
+average score of 4.80± 0.40 (95% CI 4.65, 4.88), surpassing the second-best method,
+TM-DDPM,  which  obtained  an  average  score  of  4.33± 0.68  (95%  CI  4.12,  4.49).
+Nonetheless, the difference was not statistically significant (p≪ 0.16).  Furthermore,
+both  of  these  methods  significantly  outperformed  the  third-best  method,  Pix2pix,
+which scored 3.67± 0.55 (95% CI 3.49, 3.80) (p≪ 0.001).
+
+
+
+
+                                                   15
+
+=== PDF PAGE 16 ===
+                      Table 1:  Quantitative comparison of super-resolution models on two datasets:  Axial
+                      T2w pelvic MRI and 7T brain T1 MP2RAGE maps.  Results are presented as mean±
+                      standard deviation for our proposed Res-SRDiff and comparative models.  Bold values
+                      highlight the best-performing results, while underlined values indicate the second-best
+                      performance.  Arrows indicate the direction of better results.
+
+
+
+
+
+
+
+
+
+                      3.3    Ablation study
+                      The ablation study was conducted to evaluate the contribution of the Swin Trans-
+                      former block, which replaces the attention layer, and U-net without Swin Transformer
+                      block to the overall performance of the Res-SRDiff method.  The quantitative results
+                      are presented in Table2.  The Shapiro test indicated that PSNR and SSIM for brain
+                      dataset were not normally distribution with p-values of 0.046 and≪ 10−4, and all the
+                      metrics for pelvis dataset were not normally distributed with p-values≪ 10−4.  The
+                      paired t-test or Wilcoxon signed rank test results, according to the data distribution,
+                      are summarized in Table2.
+                      Table 2:  The Ablation study results are summarized.  The best results are written
+                      in bold.  The absolute percentage changes are written inside a paranthesis wherered
+                      color andbluecolor indicate percentage of improvement and reduction of performance,
+                      respectively, of the Res-SRDiff model compare with its variation without using Swin
+                      Transformer block.
+
+
+
+
+
+
+
+
+
+
+
+                           Res-SRDiff with Swin Transformer block achieved the superior performance in re-
+                      constructing high-resolution pelvis T2w MRI compared with the U-net for all quanti-
+
+                                                                                  16
+
+
+
+
+
+
+
+                      Training scenarioPelvic T2w MRI                                    7T brain T1 MP2RAGE map
+Models       PSNR [dB]↑  SSIM [-]↑  GMSD [-]↓  LPIPS [-]↓     PSNR [dB]↑  SSIM [-]↑  GMSD [-]↓  LPIPS [-]↓
+Imaging region     w/o1        w2        PSNR [dB]↑     SSIM [-]↑       GMSD [-]↓       LIPIPS [-]↓
+Bicubic       25.47±2.61     0.75±0.06∗   0.10±0.02   0.69±0.15        22.00±1.37      0.31±0.16    0.12±0.02      0.38±0.07
+Pelvis T2w MRI •   ◦         26.92±2.18          0.71±0.05          0.10±0.02           0.22±0.10
+cycleGAN    25.84±1.96  ◦   •       27.72±2.26(2.97)   0.75±0.05(5.63)   0.08±0.02(20.00)   0.21±0.11(4.55)0.73±0.050.10±0.010.45±0.10        21.89±1.09      0.86±0.02    0.12±0.02      0.21±0.05
+Pix2pix       24.83±2.09      0.66±0.05    0.11±0.01     0.20±0.05∗      24.63±1.32      0.90±0.03    0.10±0.020.09±0.04∗
+7T brain T1             •   ◦       26.41±1.42∗       0.90±0.02          0.10±0.02           0.10±0.02
+TM-DDPM  25.12±4.46      0.73±0.16      0.13±0.04      0.51±0.49        23.22±5.02      0.85±0.13    0.12±0.05      0.25±0.10
+MP2RAGE map             ◦   •         26.28±1.41(0   .49)    0.92±0.03(2.22)   0.09±0.02(10.00)   0.08±0.02(20.00)
+SPSR         24.74±1.96      0.68±0.07    0.11±0.01     0.20±0.09∗      24.76±1.12  0.93±0.02   0.10±0.01     0.08±0.02
+1Trained without using Swin Transformer block.
+I2SB          24.74±1.60      0.70±0.04    0.14±0.01      0.33±0.13        23.22±0.98      0.84±0.04    0.12±0.01      0.15±0.03
+2Trained using Swin Transformer block (Res-SRDiff).
+Res-SRDiff   27.72±2.26    0.75±0.05   0.08±0.02     0.21±0.11       26.28±1.41     0.92±0.03   0.07±0.02    0.08±0.02
+∗ denotes results that are not statistically significant based on the multi-comparison test (p-value > 0.05).
+*Denotes results that are not statistically significant(p-value> 0.05).
+
+=== PDF PAGE 17 ===
+Figure 5:  The boxplot of the quantitative metrics is illustrated for the T2w pelvic
+and T1 map brain MRI.
+
+
+tative metrics.  Specifically, Swin Transformer block increases PSNR and SSIM about
+2.97%  and  5.63%,  and  reduces  GMSD  and  LPIPS  20%  and  4.55%,  where  all  the
+differences were statistically significant different with p-values≪ 10−4.
+    Similarly,  Res-SRDiff  with  Swin  Transformer  block  achieved  the  superior  per-
+formance in reconstructing high-resolution brain T1 map compared with the U-net
+for  SSIM,  GMSD,  and  LPIPS  metrics.   Specifically,  using  Swin  Transformer  block
+increased SSIM 2.22% and reduced GMSD and LPIPS 10% and 20%.  However, Res-
+SRDiff that did not use Swin Transformer block achieved a lower PSNR value.  All the
+differences were statistically significant with p-values≪ 10−4, except PSNR metric
+with p = 0.09.
+    Res-SRDiff using the Swin Transformer block could successfully preserved the fine-
+details better than when it uses a U-net without Swin Transformer block indicated
+by red and white arrows in Figure 6.  Although the global difference between the two
+scenrios are small in reconstructing the pelvis T2w images, the Res-SRDiff with Swin
+Transformer block was able to reconstruct images with sharper details indicated by
+yellow arrow in Figure 6.
+    In addition, we compared the local attribution map (LAM) to visualize the influ-
+ence of the neighborhood pixels to reconstruct a shown with star region in Figure7.
+By leveraging broader range of information, the Res-SRDiff with Swin Transformer
+
+
+                                                  17
+
+=== PDF PAGE 18 ===
+Figure 6:  The ablation results to reconstruct the brain and pelvis MRI images are
+illustrated  for  scenarios  where  the  Res-SRDiff  was  trained  with  Swin  Transformer
+block (w Swin block) and without Swin Transformer block (w/o Swin block).
+
+
+block achieved improved results.  Compared with the Res-SRDiff without Swin Trans-
+former block, the proposed method with Swin Transformer block leverage wider infor-
+mation to reconstruct the given region for both brain and pelvis MRI (see Figure7).
+
+4    Discussion
+
+MRI remains one of the most versatile modalities in both clinical practice and research
+due to its excellent soft-tissue contrast and ability to generate multiple image contrasts
+without ionizing radiation.  However, the inherently long acquisition times can lead to
+patient discomfort and motion artifacts [49], often forcing a trade-off between spatial
+resolution and acquisition efficiency.  One of the easiest approaches to mitigate these
+challenges is to increase the voxel size,  but this can adversely affect the diagnostic
+quality [50] by introducing partial volume effects.
+    In this study, we introduced Res-SRDiff, an efficient probabilistic diffusion model
+designed to reconstruct HR MRI images from LR inputs.  By leveraging the residual
+error between the LR and HR images in the forward diffusion process, our approach
+
+
+                                                   18
+
+=== PDF PAGE 19 ===
+Figure  7:  The  influence  of  pixel  neighborhood  to  reconstruct  the  region  shown  by
+red stars is shown for the scenarios where the Res-SRDiff was trained with (w Swin
+block) and without (w/o Swin block) Swin Transformer blocks.  Wider distributions
+indicate the involvement of more pixels that might help to reconstruct the region with
+higher fidelity.
+
+
+shifts  the  HR  image  distribution  toward  that  of  the  LR  images.   This  enables  the
+reverse process using a NN to accurately recover fine image details in only four sam-
+pling  steps,  markedly  reducing  the  reconstruction  time  to  under one  second  per
+slice compared with conventional diffusion models, which may require up to 20 sec-
+onds per slice.
+    Our  experiments  on  both  brain  T1  maps  and  pelvic  T2w  images  demonstrate
+that Res-SRDiff not only improves computational efficiency but also preserves criti-
+cal anatomical details.  For the brain T1 maps, qualitative assessments (as indicated
+by the white and red arrows in Figure3) reveal that our method recovers fine struc-
+tures with smaller residual errors compared to competing models.  Quantitatively, our
+approach consistently achieved the highest PSNR and lowest GMSD, with statisti-
+cally significant improvements (p≪ 0.05).  Moreover, the small standard deviation
+
+
+                                                   19
+
+=== PDF PAGE 20 ===
+observed  across  test  samples  suggests  that  incorporating  the  residual  error e0  con-
+tributes to a more stable and robust reconstruction process.
+    Similarly, in the pelvic T2w images, Res-SRDiff successfully reconstructs HR im-
+ages with improved lesion depiction.  Unlike the TM-DDPM method–which tended to
+exaggerate lesion sizes, possibly due to its progressive sampling process–our method
+maintained  more  anatomically  accurate  representations  while  also  exhibiting  lower
+residual  errors.   These  findings  align  with  the  previous  study  that  reported  that
+DDPMs tend to generate blurry images [51].  The consistency of these results across
+both datasets underscores the advantage of integrating residual error information into
+the diffusion process.
+    The application of our SR approach offers substantial clinical benefits by enhanc-
+ing lesion diagnosis and contouring in both brain and prostate imaging.  For the brain
+T1 MP2RAGE maps, our method preserves fine anatomical details and reduces resid-
+ual errors, which is critical for differentiating subtle lesions such as those associated
+with  tumors,  demyelinating  diseases,  or  stroke.   Similarly,  the  improved  depiction
+of  lesion  morphology  in  pelvic  T2w  images,  particularly  in  areas  where  traditional
+methods tend to exaggerate lesion boundaries, underscores the potential for more ac-
+curate identification and delineation of prostate lesions.  In both cases, the enhanced
+image  quality  may  not  only  support  more  precise  treatment  planning  by  reducing
+diagnostic  and  contouring  uncertainty  but  also  contribute  to  decreased  acquisition
+times, thereby minimizing patient discomfort and motion artifacts.  This comprehen-
+sive improvement in image quality across multiple anatomical regions highlights the
+clinical relevance and robustness of the Res-SRDiff method,  paving the way for its
+integration into routine diagnostic and treatment workflows.
+    Looking forward, several promising research avenues arise from our work. Expand-
+ing the Res-SRDiff framework to include other imaging modalities and incorporating
+it into real-time clinical workflows could remarkably enhance its effectiveness.  Fur-
+thermore, refining the diffusion process by incorporating adaptive noise scheduling [52]
+or aligning measurement gradient with local manifold structure of the Res-SRDiff dif-
+fusion state [53] has the potential to further improve image quality.
+    This study presents limitations that merit attention.  Although the datasets com-
+prise 3D volumes with resolution reduced across all three dimensions, the Res-SRDiff
+framework is implemented as a 2D super-resolution method that processes individual
+slices independently.  This approach capitalizes on the efficiency of 2D convolutional
+architectures and simplifies both training and inference.  However, because each slice
+is enhanced separately, there is no explicit mechanism in the current model to guar-
+antee inter-slice continuity.  As such, although improved spatial resolution and lesion
+delineation are achieved on a per-slice basis, the volumetric consistency across slices
+remains  an  open  challenge.   Future  work  will  aim  to  address  this  limitation,  po-
+tentially by incorporating 3D super-resolution architectures or additional continuity
+
+                                                    20
+
+=== PDF PAGE 21 ===
+constraints to ensure robust inter-slice coherence in fully volumetric reconstructions.
+In addition, we acknowledge that the SR process may inadvertently alter or omit very
+fine anatomical structures (pink arrows shown in Figure3).  While such alterations
+are rare, they could have clinical implications, and future improvements should focus
+on incorporating structure-preserving mechanisms or uncertainty estimation to better
+safeguard clinically relevant features.
+
+5    Conclusions
+
+The proposed Res-SRDiff marks a substantial advancement in the creation of efficient
+diffusion-based super-resolution models for MRI. By minimizing the number of nec-
+essary sampling steps and utilizing residual error information, our approach achieves
+superior image restoration performance while ensuring both computational efficiency
+and consistency across a range of datasets.
+    Res-SRDiff  provides  a  highly  efficient  and  precise  framework  for  MRI  super-
+resolution, offering a notable reduction in computational time while maintaining or
+even  exceeding  the  image  quality  of  state-of-the-art  methods.   The  integration  of
+residual  error  shifting  within  the  diffusion  process  signifies  a  meaningful  step  for-
+ward  in  medical  image  reconstruction,  with  potential  implications  for  accelerating
+high-quality imaging in both clinical workflows and research applications.
+
+Conflicts of interest
+
+There are no conflicts of interest declared by the authors.
+
+Acknowledgment
+
+This research is supported in part by the National Institutes of Health under Award
+Numbers R56EB033332, R01DE033512, and R01CA272991.
+
+Data availability
+
+The ProstateX data is publicly available at the TCIA portal (https://www.cancerimagingarchive.
+net/analysis-result/prostatex-seg-hires/).  Our institutional data cannot be
+made publicly available upon publication because they contain sensitive personal in-
+formation.
+
+
+
+                                                  21
+
+=== PDF PAGE 22 ===
+References
+
+  [1]Jos´e  P.  Marques,  Tobias  Kober,  Gunnar  Krueger,  Wietske  van  der  Zwaag,
+       Pierre-Fran¸cois Van de Moortele, and Rolf Gruetter.  Mp2rage, a self bias-field
+       corrected  sequence  for  improved  segmentation  and  t1-mapping  at  high  field.
+       NeuroImage, 49(2):1271–1281, 2010.
+
+  [2]Erik B. Schelbert and Daniel R. Messroghli.  State of the art:  Clinical applica-
+       tions of cardiac t1 mapping. Radiology, 278(3):658–676, 2016. PMID: 26885733.
+
+  [3]Andrew J. Taylor, Michael Salerno, Rohan Dharmakumar, and Michael Jerosch-
+       Herold.  T1 mapping.  JACC: Cardiovascular Imaging, 9(1):67–81, 2016.
+
+  [4]Eric R. Muir, Yi Zhang, Oscar San Emeterio Nateras, Qi Peng, and Timothy Q.
+       Duong.  Human vitreous:  Mr imaging of oxygen partial pressure.   Radiology,
+       266(3):905–911, 2013.  PMID: 23220896.
+
+  [5]Boris Epel, Matthew C. Maggio, Eugene D. Barth, Richard C. Miller, Charles A.
+       Pelizzari,  Martyna  Krzykawska-Serda,  Subramanian  V.  Sundramoorthy,  Bu-
+       lent Aydogan, Ralph R. Weichselbaum, Victor M. Tormyshev, and Howard J.
+       Halpern. Oxygen-guided radiation therapy.  International Journal of Radiation
+       Oncology*Biology*Physics, 103(4):977–984, 2019.
+
+  [6]Claire  Keun  Sun  Park,  Noah  Stanley  Warner,  Evangelia  Kaza,  and  Atchar
+       Sudhyadhom.   Optimization  and  validation  of  low-field  mp2rage  t1  mapping
+       on  0.35t  mr-linac:   Toward  adaptive  dose  painting  with  hypoxia  biomarkers.
+       Medical Physics, 51(11):8124–8140, 2024.
+
+  [7]Yabo Fu, Yang Lei, Tonghe Wang, Sibo Tian, Pretesh Patel, Ashesh B. Jani,
+       Walter J. Curran,  Tian Liu,  and Xiaofeng Yang.  Pelvic multi-organ segmen-
+       tation  on  cone-beam  ct  for  prostate  adaptive  radiotherapy.   Medical  Physics,
+       47(8):3415–3422, 2020.
+
+  [8]Mojtaba Safari, Xiaofeng Yang, Chih-Wei Chang, Richard L J Qiu, Ali Fatemi,
+       and  Louis  Archambault.   Unsupervised  mri  motion  artifact  disentanglement:
+       introducing maudgan. Physics in Medicine & Biology, 69(11):115057, may 2024.
+
+  [9]Dawa Chyophel Lepcha, Bhawna Goyal, Ayush Dogra, and Vishal Goyal.  Im-
+       age  super-resolution:  A  comprehensive  review,  recent  trends,  challenges  and
+       applications.  Information Fusion, 91:230–260, 2023.
+
+ [10]Xin Zhang, Edmund Y. Lam, Ed X. Wu, and Kenneth K. Y. Wong.  Applica-
+       tion of tikhonov regularization to super-resolution reconstruction of brain mri
+
+                                                  22
+
+=== PDF PAGE 23 ===
+     images.  In Xiaohong Gao, Henning M¨uller, Martin J. Loomes, Richard Com-
+     ley, and Shuqian Luo, editors, Medical Imaging and Informatics, pages 51–56,
+     Berlin, Heidelberg, 2008. Springer Berlin Heidelberg.
+
+[11]Weisheng Dong, Lei Zhang, Guangming Shi, and Xin Li.  Nonlocally central-
+     ized sparse representation for image restoration.  IEEE Transactions on Image
+     Processing, 22(4):1620–1630, 2013.
+
+[12]C      ´Edric Vonesch and Michael Unser.  A fast multilevel algorithm for wavelet-
+     regularized  image  restoration.     IEEE  Transactions  on  Image  Processing,
+     18(3):509–523, 2009.
+
+[13]Shantanu H. Joshi, Antonio Marquina, Stanley J. Osher, Ivo Dinov, John D.
+     Van Horn, and Arthur W. Toga.  Mri resolution enhancement using total vari-
+     ation  regularization.   In  2009  IEEE  International  Symposium  on  Biomedical
+     Imaging:  From Nano to Macro, pages 161–164, 2009.
+
+[14]Mojtaba  Safari,  Zach  Eidex,  Shaoyan  Pan,  Richard  L.  J.  Qiu,  and  Xiaofeng
+     Yang.  Self-supervised adversarial diffusion models for fast mri reconstruction.
+     Medical Physics, n/a(n/a).
+
+[15]Yutong  Chen,  Carola-Bibiane  Sch¨onlieb,  Pietro  Li`o,  Tim  Leiner,  Pier  Luigi
+     Dragotti, Ge Wang, Daniel Rueckert, David Firmin, and Guang Yang. Ai-based
+     reconstruction for fast mri—a systematic review and meta-analysis. Proceedings
+     of the IEEE, 110(2):224–245, 2022.
+
+[16]Pranaba K. Mishro, Sanjay Agrawal, Rutuparna Panda, and Ajith Abraham.
+     A survey on state-of-the-art denoising techniques for brain magnetic resonance
+     images.  IEEE Reviews in Biomedical Engineering, 15:184–199, 2022.
+
+[17]Xin Yi, Ekta Walia, and Paul Babyn. Generative adversarial network in medical
+     imaging:  A review.  Medical Image Analysis, 58:101552, 2019.
+
+[18]Longguang Wang, Yulan Guo, Yingqian Wang, Xiaoyu Dong, Qingyu Xu, Jun-
+     gang Yang, and Wei An.  Unsupervised degradation representation learning for
+     unpaired restoration of images and point clouds. IEEE Transactions on Pattern
+     Analysis and Machine Intelligence, 47(1):1–18, 2025.
+
+[19]Cheng  Ma,  Yongming  Rao,  Yean  Cheng,  Ce  Chen,  Jiwen  Lu,  and  Jie  Zhou.
+     Structure-preserving  super  resolution  with  gradient  guidance.   In  Proceedings
+     of  the  IEEE/CVF  Conference  on  Computer  Vision  and  Pattern  Recognition
+     (CVPR), June 2020.
+
+
+                                                 23
+
+=== PDF PAGE 24 ===
+[20]Mojtaba Safari, Xiaofeng Yang, and Ali Fatemi.  MRI data consistency guided
+     conditional diffusion probabilistic model for MR imaging acceleration.  In Bar-
+     jor  S.  Gimi  and  Andrzej  Krol,  editors,  Medical  Imaging  2024:   Clinical  and
+     Biomedical  Imaging,  volume  12930,  page  129300R.  International  Society  for
+     Optics and Photonics, SPIE, 2024.
+
+[21]Shaoyan Pan, Tonghe Wang, Richard L J Qiu, Marian Axente, Chih-Wei Chang,
+     Junbo Peng, Ashish B Patel, Joseph Shelton, Sagar A Patel, Justin Roper, and
+     Xiaofeng Yang.  2d medical image synthesis using transformer-based denoising
+     diffusion  probabilistic  model.   Physics  in  Medicine  &  Biology,  68(10):105004,
+     may 2023.
+
+[22]Shaoyan Pan,  Zach Eidex,  Mojtaba Safari,  Richard Qiu,  and Xiaofeng Yang.
+     Cycle-guided denoising diffusion probability model for 3D cross-modality MRI
+     synthesis.  In Barjor S. Gimi and Andrzej Krol, editors, Medical Imaging 2025:
+     Clinical and Biomedical Imaging, volume 13410, page 134101W. International
+     Society for Optics and Photonics, SPIE, 2025.
+
+[23]Chih-Wei Chang, Junbo Peng, Mojtaba Safari, Elahheh Salari, Shaoyan Pan,
+     Justin  Roper,  Richard  L  J  Qiu,  Yuan  Gao,  Hui-Kuo  Shu,  Hui  Mao,  and  Xi-
+     aofeng  Yang.    High-resolution  mri  synthesis  using  a  data-driven  framework
+     with denoising diffusion probabilistic modeling. Physics in Medicine & Biology,
+     69(4):045001, feb 2024.
+
+[24]Brian B. Moser, Arundhati S. Shanbhag, Federico Raue, Stanislav Frolov, Se-
+     bastian Palacio, and Andreas Dengel. Diffusion models, image super-resolution,
+     and everything: A survey. IEEE Transactions on Neural Networks and Learning
+     Systems, pages 1–21, 2024.
+
+[25]Jianyi Wang Zongsheng Yue and Chen Change Loy. Resshift: Efficient diffusion
+     model for image super-resolution by residual shifting.  In  Advances  in  Neural
+     Information Processing Systems (NeurIPS), 2023.
+
+[26]Zongsheng Yue, Jianyi Wang, and Chen Change Loy.  Efficient diffusion model
+     for image restoration by residual shifting. IEEE Transactions on Pattern Anal-
+     ysis and Machine Intelligence, 47(1):116–130, 2025.
+
+[27]Guan-Horng  Liu,  Arash  Vahdat,  De-An  Huang,  Evangelos  Theodorou,  Weili
+     Nie,  and  Anima  Anandkumar.   Iˆ2sb:  Image-to-image  schr¨odinger  bridge.   In
+     International Conference on Machine Learning (ICML), July 2023.
+
+
+
+
+                                                 24
+
+=== PDF PAGE 25 ===
+[28]Kai  Zhao,  Kaifeng  Pang,  Alex  Ling  Yu  Hung,  Haoxin  Zheng,  Ran  Yan,  and
+     Kyunghyun  Sung.   Mri  super-resolution  with  partial  diffusion  models.   IEEE
+     Transactions on Medical Imaging, pages 1–1, 2024.
+
+[29]Yufei  Wang,  Wenhan  Yang,  Xinyuan  Chen,  Yaohui  Wang,  Lanqing  Guo,
+     Lap-Pui  Chau,  Ziwei  Liu,  Yu  Qiao,  Alex  C.  Kot,  and  Bihan  Wen.    Sinsr:
+     Diffusion-based image super-resolution in a single step.  In  Proceedings  of  the
+     IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR),
+     pages 25796–25805, June 2024.
+
+[30]Jascha Sohl-Dickstein, Eric Weiss, Niru Maheswaranathan, and Surya Ganguli.
+     Deep unsupervised learning using nonequilibrium thermodynamics.  In Francis
+     Bach and David Blei, editors, Proceedings of the 32nd International Conference
+     on Machine Learning, volume 37 of Proceedings of Machine Learning Research,
+     pages 2256–2265, Lille, France, 07–09 Jul 2015. PMLR.
+
+[31]Yang Song, Jascha Sohl-Dickstein, Diederik P Kingma, Abhishek Kumar, Ste-
+     fano Ermon, and Ben Poole. Score-based generative modeling through stochas-
+     tic differential equations. In International Conference on Learning Representa-
+     tions, 2021.
+
+[32]Jonathan Ho, Ajay Jain, and Pieter Abbeel.  Denoising diffusion probabilistic
+     models.   In  Proceedings  of  the  34th  International  Conference  on  Neural  In-
+     formation  Processing  Systems, NIPS ’20,  Red Hook, NY, USA, 2020. Curran
+     Associates Inc.
+
+[33]Calvin Luo.  Understanding diffusion models:  A unified perspective, 2022.
+
+[34]Kevin P. Murphy.       Probabilistic Machine Learning:  An Introduction. MIT Press,
+     2022.
+
+[35]Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, and Oliver Wang.
+     The unreasonable effectiveness of deep features as a perceptual metric. In Pro-
+     ceedings of the IEEE Conference on Computer Vision and Pattern Recognition
+     (CVPR), June 2018.
+
+[36]Liyuan Liu, Haoming Jiang, Pengcheng He, Weizhu Chen, Xiaodong Liu, Jian-
+     feng Gao, and Jiawei Han.  On the variance of the adaptive learning rate and
+     beyond, 2021.
+
+[37]Ilya Loshchilov and Frank Hutter. Sgdr: Stochastic gradient descent with warm
+     restarts, 2017.
+
+
+                                                 25
+
+=== PDF PAGE 26 ===
+[38]Erik  H.  Middlebrooks,  Vishal  Patel,  Xiangzhi  Zhou,  Sina  Straub,  John  V.
+     Murray Jr., Amit K. Agarwal, Lela Okromelidze, Rahul B. Singh, Alfonso S.
+     Lopez Chiriboga, Erin M. Westerhold, Vivek Gupta, Sukhwinder Johnny Singh
+     Sandhu,  Iris  V.  Marin  Collazo,  and  Shengzhen  Tao.    7  t  lesion-attenuated
+     magnetization-prepared gradient echo acquisition for detection of posterior fossa
+     demyelinating lesions in multiple sclerosis. Investigative Radiology, 59(7), 2024.
+
+[39]Samuel  G.  Armato,  Henkjan  Huisman,  Karen  Drukker,  Lubomir  Hadjiiski,
+     Justin S. Kirby, Nicholas Petrick, George Redmond, Maryellen L. Giger, Kenny
+     Cha,  Artem  Mamonov,  Jayashree  Kalpathy-Cramer,  and  Keyvan  Farahani.
+     PROSTATEx  Challenges  for  computerized  classification  of  prostate  lesions
+     from  multiparametric  magnetic  resonance  images.   Journal  of  Medical  Imag-
+     ing, 5(4):044501, 2018.
+
+[40]Stephen  M.  Smith.   Fast  robust  automated  brain  extraction.         Human  Brain
+     Mapping, 17(3):143–155, 2002.
+
+[41]Ziv Yaniv, Bradley C. Lowekamp, Hans J. Johnson, and Richard Beare.  Sim-
+     pleitk image-analysis notebooks: a collaborative environment for education and
+     reproducible research.  Journal of Digital Imaging, 31(3):290–303, Jun 2018.
+
+[42]Phillip Isola, Jun-Yan Zhu, Tinghui Zhou, and Alexei A Efros. Image-to-image
+     translation  with  conditional  adversarial  networks.   In  Computer  Vision  and
+     Pattern Recognition (CVPR), 2017 IEEE Conference on, 2017.
+
+[43]Jun-Yan Zhu, Taesung Park, Phillip Isola, and Alexei A Efros. Unpaired image-
+     to-image translation using cycle-consistent adversarial networks.  In Computer
+     Vision (ICCV), 2017 IEEE International Conference on, 2017.
+
+[44]Zhou  Wang,  A.C.  Bovik,  H.R.  Sheikh,  and  E.P.  Simoncelli.   Image  quality
+     assessment:  from error visibility to structural similarity. IEEE Transactions on
+     Image Processing, 13(4):600–612, 2004.
+
+[45]Wufeng Xue, Lei Zhang, Xuanqin Mou, and Alan C. Bovik. Gradient magnitude
+     similarity deviation:  A highly efficient perceptual image quality index.  IEEE
+     Transactions on Image Processing, 23(2):684–695, 2014.
+
+[46]H.R.  Sheikh  and  A.C.  Bovik.   Image  information  and  visual  quality.         IEEE
+     Transactions on Image Processing, 15(2):430–444, 2006.
+
+[47]Mojtaba  Safari,  Ali  Fatemi,  and  Louis  Archambault.   Medfusiongan:  multi-
+     modal medical image fusion using an unsupervised deep generative adversarial
+     network.  BMC Medical Imaging, 23(1):203, Dec 2023.
+
+                                                  26
+
+=== PDF PAGE 27 ===
+[48]Pauli   Virtanen,   Ralf   Gommers,   Travis   E.   Oliphant,   Matt   Haberland,
+     Tyler  Reddy,  David  Cournapeau,  Evgeni  Burovski,  Pearu  Peterson,  Warren
+     Weckesser,  Jonathan Bright,  St´efan J. van der Walt,  Matthew Brett,  Joshua
+     Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones,
+     Robert Kern, Eric Larson, C J Carey,  ˙Ilhan Polat, Yu Feng, Eric W. Moore,
+     Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henrik-
+     sen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antˆonio H. Ribeiro,
+     Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors.  SciPy 1.0:
+     Fundamental Algorithms for Scientific Computing in Python.  Nature Methods,
+     17:261–272, 2020.
+
+[49]Mojtaba Safari, Xiaofeng Yang, Ali Fatemi, and Louis Archambault.  Mri mo-
+     tion artifact reduction using a conditional diffusion probabilistic model (mar-
+     cdpm).  Medical Physics, 51(4):2598–2610, 2024.
+
+[50]Lijuan Mao, Xiaoling Zhang, Tingting Chen, Zhoulei Li, and Jianyong Yang.
+     High-resolution  reduced  field-of-view  diffusion-weighted  magnetic  resonance
+     imaging in the diagnosis of cervical cancer.  Quantitative Imaging in Medicine
+     and Surgery, 13(6), 2023.
+
+[51]Yuan Gao, Huiqiao Xie, Chih-Wei Chang, Junbo Peng, Shaoyan Pan, Richard
+     L. J. Qiu, Tonghe Wang, Beth Ghavidel, Justin Roper, Jun Zhou, and Xiaofeng
+     Yang.   Ct-based  synthetic  iodine  map  generation  using  conditional  denoising
+     diffusion probabilistic model.  Medical Physics, 51(9):6246–6258, 2024.
+
+[52]Seunghan Lee, Kibok Lee, and Taeyoung Park.  ANT: Adaptive noise schedule
+     for  time  series  diffusion  models.  In  The  Thirty-eighth  Annual  Conference  on
+     Neural Information Processing Systems, 2024.
+
+[53]Rayhan Zirvi, Bahareh Tolooshams, and Anima Anandkumar.  Diffusion state-
+     guided projected gradient for inverse problems. In The Thirteenth International
+     Conference on Learning Representations, 2025.
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                 27

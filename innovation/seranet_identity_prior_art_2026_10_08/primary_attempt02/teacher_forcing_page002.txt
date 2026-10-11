@@ -1,0 +1,50 @@
+construction from under-sampled k-space data [6, 7]
+and deep learning-based techniques [8–11].
+In some clinical application scenarios, images are
+not an end in themselves, but rather a means of ac￾cess to clinically relevant parameters which are ob￾tained as post-processing steps (e.g., segmentation).
+However, most of the existing segmentation methods
+are seen as a post-processing task that is indepen￾dent of reconstruction. It may be an issue that a lot
+of information discarded during the reconstruction
+process may influence the final segmentation perfor￾mance. The reason is that most of the existing re￾construction methods are designed to take optimal
+visual quality as the first priority, rather than the
+specific-task quality. Therefore, some groups tend to
+develop task-driven imaging methods for segmenta￾tion [12–18]. For instance, Caballero et al. [19] pro￾posed an unsupervised brain segmentation method
+from k-space based on the patch-based sparse mod￾eling and Gaussian mixture modeling. It is a pio￾neering work for task-driven MRI. But its efficiency
+can still be improved. Recently, many deep learn￾ing methods based on convolutional neural networks
+have been introduced for MR segmentation from k￾space data [20–24]. Schlemper et al. [20] proposed
+using two neural networks, namely end-to-end syn￾thesis network (SynNet) and latent feature interpo￾lation network (LI-Net) to directly predict segmen￾tation results from under-sampled k-space data. The
+SynNet uses U-Net [21] as the backbone to map zero￾filling images (inverse Fourier transform of under￾sampled k-space) to segmentation maps directly. The
+LI-Net constructs a latent feature interpolation net￾work with improved results. Huang et al. [22] pro￾posed a Joint-FR-Net that consists of a reconstruc￾tion module derived from the fast iterative shrinkage￾thresholding algorithm (FISTA) and a segmentation
+module based on U-Net [21]. Huang et al. [23] pro￾posed a unique task-driven attention module that uti￾lizes intermediate segmentation estimation to facili￾tate image-domain feature extraction from the raw
+data to bridge the gap between reconstruction and
+segmentation. Sun et al. [24] proposed a unified deep
+neural network called SegNetMRI with two modules
+(the reconstruction module and segmentation mod￾ule). The two modules are pre-trained and fine-tuned
+with shared reconstruction encoders. The outputs
+from all segmentation modules are merged into the
+final segmentation result. All these works [20, 22–24]
+have made contributions to prompt the development
+of task-driven MR imaging. However, existing task￾driven methods tend to attribute too much impor￾tance to the task (segmentation), which may intro￾duce incorrect reconstruction, such as aliasing or loss
+of information. Consequently, the aliasing in recon￾struction could mislead the network from identify￾ing the correct boundaries. Therefore, it is in need
+to develop a method for a proper balance and co￾promotion of both reconstruction and segmentation
+accuracy.
+To this end, this paper develops a multi-task
+MR imaging approach with iterative teacher forc￾ing and re-weighted deep learning. The multi-task
+deep learning framework is equipped with reconstruc￾tion and segmentation sub-network modules, which
+are integrated and trained by our designed iterative
+teacher forcing scheme (ITFS) under the dynamic re￾weighted loss constraint (DRLC). Teacher forcing [25]
+scheme is a training technique widely used in the re￾current neural network (RNN) to reduce the training
+difficulty of the dual module network. We developed
+the ITFS to replace intermediate reconstruction out￾puts with the fully-sampled data. It is designed to
+avoid the bias explosion and over-correction problem
+caused by the original teacher forcing scheme. To the
+best of our knowledge, this is the first time teacher
+forcing concept has been used outside of RNN archi￾tecture. The DRLC is proposed to dynamically bal￾ance the contributions from the reconstruction and
+segmentation sub-modules so as to co-prompt the
+multi-task accuracy. The contributions of this paper
+are summarized in three aspects as follows:
+1) A multi-task MR imaging framework is proposed
+to derive high-quality image reconstructions and
+segmented masks simultaneously from under￾sampled k-space data with iterative teacher forc￾ing and re-weightd deep learning.
+2) A dynamic re-weighted loss constraint is de￾signed to help the proposed network to co￾prompt the reconstruction and segmentation ac￾curacy.
+2

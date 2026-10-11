@@ -1,0 +1,136 @@
+8 N. K. Hernashki and S. Chatterjee
+0.05 standard deviations, or spline regression of negative
+scores on the covariates (exploratory). A scorer that sees
+only the covariates must obtain AROC = 0.5 if the ad￾justment works; we test this with two such scorers (brain
+area; closeness to mid-brain). A borrowed-map null re￾places a subject’s slice-score profile by those of the 50 sub￾jects with the closest mean brain area, aligned from the
+first brain slice, keeping the target’s labels; the observed
+minus borrowed AROC isolates subject-specific informa￾tion.
+2.6 Exact accounting of post-processing
+Two post-processing schemes are compared with
+plain thresholding: hysteresis with seed threshold
+min(0.999, τ + 0.15) and grow threshold τ [19], keeping
+each component of {s ≥ τ} that contains a seed voxel
+(hysteresis); and the same restricted to the most per￾sistent branch of the map’s superlevel-set filtration [25]
+(hysteresis with pruning). The seed margin is a fixed
+constant and was not tuned.
+Identity 4 (Purity rule). Let a prediction have p vox￾els and T true positives against a reference of G voxels,
+so D = 2T /(p + G). Deleting a predicted component of p
+′
+voxels containing t
+′
+true positives changes Dice by
+∆D = 2(T − t
+′
+)
+p − p
+′ + G
+−
+2T
+p + G
+,
+sign(∆D) = sign D
+2
+−
+t
+′
+p
+′
+
+.
+(21)
+Symmetrically, adding a region of purity q raises Dice if
+and only if q > D/2.
+Deleting a component helps exactly when its purity is be￾low half the current Dice. Small true lesions inside larger
+false-positive clusters therefore fall to the same rule that
+improves Dice, which explains why pruning lowers lesion
+sensitivity (Section 3.5). We verified Eq. (21) on 299,358
+deleted components (largest absolute error 5 × 10−7
+).
+Identity 5 (Matched-burden decomposition). Let
+τ be the validation threshold of the post-processed map
+and τm the plain threshold whose test mean realised bur￾den equals that of the post-processed map at τ . Then
+D¯
+pp(τ ) − D¯
+g(τm)
+| {z }
+gain at matched burden
+= D¯
+pp(τ ) − D¯
+g(τ )
+| {z }
+post-processing at fixed τ
++ D¯
+g(τ ) − D¯
+g(τm)
+| {z }
+threshold relaxation
+.
+(22)
+The identity is trivial, adding and subtracting one term;
+its value lies in the reading. Post-processing frees part of
+the burden budget, and a comparison at matched burden
+spends it on a lower plain threshold. The relaxation term
+measures what that spending buys, and it is not an ef￾fect of the post-processing step itself (Fig. 3b). Each term
+receives its own paired bootstrap interval.
+Table 1. Axes of the evaluation multiverse. Levels in bold
+enter the defensible subset; all levels of the remaining axes do.
+Axis Levels
+reference canonical C; method’s own reference, mapped;
+round trip via method grid
+support full brain; field of view ∩ brain
+voxel volume true 1 mm3
+; declared legacy value
+threshold validation (Eq. 10); CRC α = 0.10;
+test-matched; fixed 0.5; per-subject optimum
+burden b 5, 10, 20, 40 cm3
+post-processing plain thresholding; hysteresis; hysteresis with
+pruning
+lesion definition 6-conn. + 50 mm3 floor; 26-conn. + floor; 6-conn.
+no floor
+hit criterion IoU ≥ 0.10; ≥ 0.25; ≥ 0.50; any overlap
+aggregation subject mean; subject median; pooled
+metric Dice; voxel AUROC; voxel AUPRC; lesion
+sensitivity; slice AUROC marginal; slice AROC
+stratified
+2.7 The evaluation multiverse
+Axes. The multiverse spans ten axes of evaluation choices
+(Table 1): reference (canonical; the method’s own ref￾erence mapped to canonical space; the canonical ref￾erence after a round trip through the method’s grid),
+support, voxel volume, threshold protocol, burden, post￾processing, lesion definition, hit criterion, aggregation and
+metric. Their full factorial gives 3· 2·2· 5· 4· 3· 3·4·3·6 =
+155,520 universes per method. The defensible subset fixes
+the canonical reference and the true voxel volume and
+admits only the validation, conformal and test-matched
+threshold protocols: 15,552 universes, 2,592 per metric.
+Axes that do not affect a metric replicate its value, which
+keeps the design balanced and weights metrics equally.
+Flip shares. For methods a, c and a universe set U,
+ϕac =
+min 
+Na>c, Nc>a
++
+1
+2Na=c
+|U| , (23)
+where Na>c = #{u ∈ U : yu,a > yu,c}, Na=c counts ties
+(|yu,a − yu,c| < 10−9
+), and yu,m is the score of method
+m in universe u. Thus ϕac ∈ [0,
+1
+2
+] is the share of uni￾verses in which the pair takes its minority order, and
+ϕmax = maxa<c ϕac. H1 (ranking instability; Section 3.2)
+is supported if the 2.5th bootstrap percentile of ϕmax is
+at least 0.20. A flip share near 1
+2
+arises in two different
+situations: when the order of two methods truly depends
+on evaluation choices, and when the two methods are too
+close to separate. We therefore never report a flip share
+alone but next to the size of the difference, namely the
+median absolute difference across universes, the median
+lead in each direction, and the number of paired contrasts
+at validation thresholds whose Holm-adjusted interval ex￾cludes zero in each direction. Only sizeable and significant
+leads in both directions show that the evaluation decides
+the order.
+Variance decomposition. On the balanced array yu,m,
+with grand mean y¯, method means y¯·m and, for axis k

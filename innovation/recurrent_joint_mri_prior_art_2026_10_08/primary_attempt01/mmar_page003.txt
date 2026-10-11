@@ -1,0 +1,27 @@
+first issue describes the problem of learning from partially labelled datasets,
+which has been previously explored (Phitidis et al., 2026). In this paper, we
+focus on the second issue, investigating the merits of hetero-modal learning,
+defined as learning from heterogeneous subsets of all unique MRI sequence
+types available throughout the training dataset.
+Whereas in clinical and medical physics the image acquisition method de￾fines the imaging modality (e.g., computerised tomography, MRI, positron￾emission tomography), in the field of computer science, it is becoming more
+common to refer to each distinct sequence type, even within MRI, as a modal￾ity. In this manuscript we have adopted this definition, for compatibility with
+current literature in the field of medical image segmentation.
+A standard multi-modal segmentation model requires a fixed set of input
+modalities. A hetero-modal model, however, is designed to generate predic￾tions from any available subset of imaging modalities. The seminal work in
+this area is HeMIS (Hetero-modal Medical Image Segmentation) by Havaei
+et al. (2016), which proposed the use of independent encoders to embed each
+modality into a shared latent space. Subsequent work (Dorent et al., 2019)
+incorporated variational autoencoders to reconstruct the missing modalities.
+More recently, convolutional neural networks (LeCun et al., 1989) have been
+combined with vision transformers (Vaswani et al., 2017) for more flexible
+hetero-modal processing (Zhang et al., 2022; Liu et al., 2023; Zhu et al., 2025;
+Lan et al., 2025).
+Much of the literature focuses on hetero-modal inference, but hetero￾modal learning is arguably the more important aspect of the framework.
+The primary advantage of training on a dataset where not all samples have
+a complete set of modalities is the ability to include a larger number of in￾dividual subjects during training. This allows a model to capture a greater
+proportion of the anatomical and pathological variation present in the un￾derlying clinical population. In theory, this also allows models to leverage
+“privileged information”—meaning that learning from combined modalities
+can ultimately improve the model’s single-modality performance by encour￾aging richer, correlated feature representations. In practice, however, this
+depends heavily on the dataset and the specific clinical task, and modality￾specialist baselines still frequently outperform hetero-modal methods when
+trained on the same set of subjects.
+3

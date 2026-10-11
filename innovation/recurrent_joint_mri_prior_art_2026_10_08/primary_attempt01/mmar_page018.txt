@@ -1,0 +1,27 @@
+using T1w, T2w, and FLAIR. Interestingly, the second-best result utilised
+T2w, FLAIR, and DWI. While one might expect the integration of all four
+modalities to yield peak performance, these results suggest that three com￾plementary modalities are sufficient. Adding a fourth may actually desta￾bilise model fitting on our small dataset and degrade inference robustness
+by introducing additional modes of distribution shift among the multi-modal
+features. For the hetero-modal methods, the multi-channel U-Net peaked
+at 56.45% (using T1w, T2w, and FLAIR), whereas U-HeMIS and MMAR
+achieved their highest scores of 56.67% (T2w and FLAIR inference) and
+56.69% (full modality inference), respectively.
+4.2. Hetero-modal models win when trained on highly uni-modal data
+Table 2 highlights the value of hetero-modal learning for maximising
+training data utilisation when dealing with mostly non-overlapping MRI se￾quences. Across almost all modality setups, the hetero-modal approaches
+outperformed the specialist models, except MMAR on T1w and U-HeMIS on
+DWI. The mean macro-average result was significantly better for all hetero￾modal models. Furthermore, in every scenario involving more than one in￾ference modality, all hetero-modal approaches yielded statistically significant
+improvements over the specialist U-Nets.
+In contrast to the complete-data scenario of split 1, the multi-channel
+U-Net generally outperformed both U-HeMIS and MMAR in split 2, though
+the mean differences were not statistically significant. The multi-channel U￾Net’s advantage stems primarily from its strong ISL segmentation results,
+achieving the highest DSC across all inference combinations. Meanwhile, the
+MMAR method achieved the best WMH DSC, significantly outperforming
+U-HeMIS, but not the multi-channel U-Net.
+We hypothesise that this dynamic occurs because the independent en￾coders of U-HeMIS and MMAR are exposed to less overall pathological vari￾ation, which is a critical factor for successful ISL segmentation. In this
+highly uni-modal data split, the benefit of sharing features across the entire
+multi-channel U-Net appears to outweigh any drawbacks of early fusion via
+zero-imputation. If this hypothesis is true, then further experimentation is
+required to explore the relative impact of the total volume of multi-modal
+data and the ratio of multi-modal to uni-modal data.
+18

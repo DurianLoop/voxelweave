@@ -1,0 +1,13 @@
+# 本批科研进展及正在运行的医学评价
+
+本批完成两篇直接先例全文、39原HTML表节点独立重析（8非公式表）、1080体素案例和384连续球体组机制核验，完成逐段读流注册。mask/reliability、pulse参数自适应和厚层模拟均已有先例，当前仅保留“强任务/QC之外，可见采集信息对具体动作paired病灶损害差及全费用的增量”作为待验证假设。
+
+四臂session29823已取得真正95b0a1 exit0、无session_id，累计11968 CPU更新、0GPU更新，elapsed25687.77376000001s。actual terminal已保存；原capture真实df9ebf exit0，四last2992、11968history、2992配对及11patient各272核验通过。训练输出此后可冻结，不能重启或再poll旧已结束句柄。
+
+原evaluate_matched.py已实际启动：d26cab返回session78123。下一轮第一优先poll78123。只有整体真实exit0/no session_id后保存ACTUAL_EVALUATION_TERMINAL_TOOL.json（observed_unified_exec_session=78123）→原capture_evaluation_terminal.py→summarize_matched.py。36production+36functional完整FOV，概率3e-6/坐标3e-12/零二值差/六医学门槛保持。当前不预判四臂医学成败，不选部分FOV。原已见4patient/9series，8确认/12series和lockedIXI保持关闭。
+
+新full35904仍是原session90446，从0重放；最新本批已存3e68a8仍live，4368/35904，full-chain最大1.9073486328125e-6/isolated0/coordinate1.1368683772161603e-13。以后以实际poll新进度为准，成功真正terminal后才保存并执行原audit_full_real_terminal.py，旧74234的6216前缀不继承。
+
+CPU原任务未迁GPU，不干预别的终端/PID。GPU已授权但本批fresh1394MiB<8192MiB；最后训练checkpoint写完后磁盘约8.021GB，储备外约21MB，小于六finalpayload33.73MB，且还要预留原医学3MB/full2MB。未安装、不委派、不删除历史腾空间。后续强基线与fold方案准备详见NEXT_TRIAL_PREPARATION.md；训练-ready、独立医学claim和科研goal完成均未获得。
+
+本批新index接上一6515并核全部旧来源，正在运行的评价/full receipt、journal、npz继续排除；训练在真实终态/capture后冻结。实际归档工具返回及公开回复是新post-archive文件，下一新index纳入，禁止覆盖本批index/冻结源。

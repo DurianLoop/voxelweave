@@ -1,0 +1,65 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+generated ones. Their objective becomes:
+min
+θ
+max
+ϕ:∥dϕ∥L≤1
+E(x,y)∼p(x,y)
+z1,z2∼p(z)
+[
+1
+2
+(
+dϕ
+((
+x,gθ(z2, y)
+)
+, y
+)
++dϕ
+((
+gθ(z1, y), x
+)
+, y
+))
+−dϕ
+((
+gθ(z1, y),gθ(z2, y)
+)
+, y
+)] (7.6)
+Neural Conditioner (Belghazi et al., 2019)
+Although not framed as a Bayesian approach, the work of Belghazi et al. (2019) shows
+how to use a regular conditional GAN to learn an exponential amount of conditional
+distributions, which in the bottom line is the same task as learning the posterior dis-
+tribution for various conditionalsy. As they are learning conditionals, their generator
+is called aneural conditioner. Contrarily to Adler and Öktem (2018a), Belghazi et al.
+(2019) focus on the problem of inpainting, where an imagex∈ RP is divided between
+available features indexed by the maskωa and requested features that are not observed,
+and are indexed with the maskωr. Their task then is to train a model to approximate the
+distribution p(xωr|xωa). This corresponds to an inverse problem where the observation
+is described asy = xωa =Pωax. In the sequel, for compactness, we writePωax as a· x.
+Overall, their objective reads
+min
+θ
+max
+ϕ
+Ex,a,r [log (dϕ(r· x,a· x,a,r ))] + Ex,a,r,z [log (1−dϕ (gθ (a· x,a,r, z)·r,a· x,a,r ))]. (7.7)
+Here, the discriminator and generator embed directly the mask informationa and r, and
+as in the conditional model of Equation 7.6, the generator takes the observationa· x
+and the noisez, and the discriminator takes as input both the candidate sampler· x or
+r·gθ (a· x,a,r, z) along with the observationa· x.
+7.1.4 Learning the posterior or learning moments
+If one is primarily interested in using the posterior to compute its mean and variance for
+reconstruction and uncertainty quantification, then alternative approaches exist that rely
+on supervised learning instead of adversarial training. Indeed, adversarial training can
+often be unstable, whereas training in a supervised fashion is often easier.
+The idea, used in particular by Zhang et al. (2019b) for MRI and proposed initially in
+Kendall and Gal (2017), assumes that the data is distributed normally around a mean
+µ∈ RP and a diagonal covariancediag(σ), σ∈ RP, σi≥ 0. As discussed in Section
+3.2.4, minimizing the reconstruction error∥yω−Aω ˆx∥2
+2 can be viewed as maximizing the
+likelihood of a Gaussian distribution with unit diagonal covariance. However, it is possible
+to model the uncertainty at a given pixel as a Gaussian centered at the reconstruction
+108

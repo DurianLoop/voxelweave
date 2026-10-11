@@ -1,0 +1,75 @@
+28 N. K. Hernashki and S. Chatterjee
+Table 16. Bias of the headline metrics (corrupted minus unaltered, cohort mean) and the rank-stability (Spearman) and
+anti-location diagnostics under every injected corruption. The Jaccard bound was never violated.
+Injected corruption Pipeline n ∆ Dice (20 cm3
+) ∆ voxel AUROC ∆ voxel AUPRC ∆ slice-max AUROC ∆ lesion sensitivity rank stability anti-location rate
+LR flip UCCD 312 −0.502 −0.260 −0.510 +0.000 −0.797 0.253 0.122
+LR flip AnomalyDINO 312 −0.145 −0.307 −0.231 +0.021 −0.252 0.297 0.449
+AP flip UCCD 312 −0.341 −0.198 −0.386 +0.012 −0.467 0.140 0.170
+AP flip AnomalyDINO 312 −0.086 −0.147 −0.118 +0.181 −0.158 0.360 0.151
+transpose xy UCCD 312 −0.400 −0.207 −0.430 +0.005 −0.560 0.073 0.215
+transpose xy AnomalyDINO 312 −0.106 −0.184 −0.163 +0.099 −0.192 0.243 0.208
+z shift 2 UCCD 312 −0.002 +0.003 −0.003 +0.009 +0.000 0.959 0.000
+z shift 2 AnomalyDINO 312 +0.001 +0.006 +0.011 +0.030 −0.000 0.987 0.000
+z shift 5 UCCD 312 −0.025 −0.011 −0.041 +0.017 +0.000 0.751 0.000
+z shift 5 AnomalyDINO 312 −0.002 −0.000 +0.012 +0.066 −0.005 0.927 0.000
+z shift 10 UCCD 312 −0.097 −0.060 −0.155 +0.010 −0.007 0.363 0.006
+z shift 10 AnomalyDINO 312 −0.016 −0.036 −0.022 +0.087 −0.033 0.703 0.000
+z scale 1.1 UCCD 312 −0.043 −0.018 −0.082 +0.023 −0.005 0.713 0.000
+z scale 1.1 AnomalyDINO 312 −0.002 −0.011 +0.003 +0.095 +0.000 0.854 0.000
+ID permutation 5% UCCD 297 −0.002 −0.001 −0.002 −0.000 −0.003 0.998 0.003
+ID permutation 5% AnomalyDINO 297 −0.002 −0.002 −0.002 +0.000 −0.003 0.990 0.003
+ID permutation 20% UCCD 256 −0.008 −0.005 −0.008 −0.002 −0.016 0.993 0.008
+ID permutation 20% AnomalyDINO 256 −0.005 −0.006 −0.006 −0.001 −0.012 0.952 0.008
+ID permutation 50% UCCD 166 −0.022 −0.013 −0.022 −0.008 −0.045 0.930 0.006
+ID permutation 50% AnomalyDINO 166 −0.013 −0.016 −0.015 −0.012 −0.033 0.868 0.018
+reference dilation 1.5× UCCD 312 −0.123 −0.077 −0.089 −0.018 +0.004 0.923 0.003
+reference dilation 1.5× AnomalyDINO 312 −0.029 −0.046 +0.030 −0.016 −0.075 0.967 0.006
+reference dilation 2× UCCD 312 −0.192 −0.118 −0.124 −0.027 +0.040 0.829 0.006
+reference dilation 2× AnomalyDINO 312 −0.049 −0.077 +0.042 −0.028 −0.088 0.923 0.010
+sub-floor fragments removed UCCD 312 +0.000 +0.000 +0.000 +0.000 +0.000 1.000 0.000
+sub-floor fragments removed AnomalyDINO 312 +0.000 +0.000 +0.000 −0.000 +0.000 1.000 0.000
+Table 17. Power of the rank-stability and anti-location diagnostics at a false-alarm rate fixed at 0.05 by construction; cohort
+sizes 30, 60 and 312.
+Injected corruption Pipeline rank-stability power, n = 60 anti-location power, n = 60 smallest n with rank-stability power ≥ 0.95 smallest n with anti-location power ≥ 0.95
+LR flip UCCD 1.000 1.000 30 30
+LR flip AnomalyDINO 1.000 1.000 30 30
+AP flip UCCD 1.000 1.000 30 30
+AP flip AnomalyDINO 1.000 1.000 30 30
+transpose xy UCCD 1.000 1.000 30 30
+transpose xy AnomalyDINO 1.000 1.000 30 30
+z shift 2 UCCD 1.000 0.000 30 not reached (n ≤ 312)
+z shift 2 AnomalyDINO 1.000 0.000 30 not reached (n ≤ 312)
+z shift 5 UCCD 1.000 0.000 30 not reached (n ≤ 312)
+z shift 5 AnomalyDINO 1.000 0.000 30 not reached (n ≤ 312)
+z shift 10 UCCD 1.000 0.298 30 not reached (n ≤ 312)
+z shift 10 AnomalyDINO 1.000 0.000 30 not reached (n ≤ 312)
+z scale 1.1 UCCD 1.000 0.000 30 not reached (n ≤ 312)
+z scale 1.1 AnomalyDINO 1.000 0.000 30 not reached (n ≤ 312)
+ID permutation 5% UCCD 0.181 0.198 not reached (n ≤ 312) not reached (n ≤ 312)
+ID permutation 5% AnomalyDINO 0.182 0.195 not reached (n ≤ 312) not reached (n ≤ 312)
+ID permutation 20% UCCD 0.738 0.391 312 not reached (n ≤ 312)
+ID permutation 20% AnomalyDINO 0.730 0.375 312 not reached (n ≤ 312)
+ID permutation 50% UCCD 0.957 0.300 60 not reached (n ≤ 312)
+ID permutation 50% AnomalyDINO 0.965 0.644 60 312
+reference dilation 1.5× UCCD 1.000 0.201 30 not reached (n ≤ 312)
+reference dilation 1.5× AnomalyDINO 1.000 0.325 30 not reached (n ≤ 312)
+reference dilation 2× UCCD 1.000 0.320 30 not reached (n ≤ 312)
+reference dilation 2× AnomalyDINO 1.000 0.415 30 312
+sub-floor fragments removed UCCD 0.754 0.000 312 not reached (n ≤ 312)
+sub-floor fragments removed AnomalyDINO 0.500 0.000 312 not reached (n ≤ 312)
+The single subject that failed the registration gate and the 42 subjects whose tumour extends beyond the 100-slice
+field of view of UCCD and cDDPM do not drive any result. Without subject 0044 (Table 18) five of 588 contrasts
+change interval-excludes-zero status, all by less than 0.0013 at the bound. In the 270 subjects with at least 95% of
+the tumour inside every field of view (Table 19) four estimates change sign and none changes status. A pre-specified
+through-plane offset check (Table 20) was positive only for AnomalyDINO, whose voxel AUROC peaks three slices
+away from the canonical position on both grids and in both subject subsets; its export was verified to be identical
+to the canonical data, and its numbers are reported without a shift.
+Table 18. Contrasts whose interval-excludes-zero status changes when subject BraTS20_Training_0044 is removed (n = 311);
+5 of 588 contrasts, largest absolute change of any point estimate 0.0078.
+Metric Variant b Aggregation Contrast n = 312 n = 311 (without BraTS20_Training_0044)
+Dice interpolated 40 pooled UCCD − cDDPM −0.0087 [−0.0174, −0.0001] −0.0081 [−0.0167, 0.0008]
+Dice testmatched 40 median REFLECT − UCCD +0.0184 [0.0003, 0.0466] +0.0184 [−0.0000, 0.0460]
+Dice validation 5 pooled T2 − AnomalyDINO −0.0202 [−0.0400, 0.0001] −0.0202 [−0.0400, −0.0002]
+Dice validation 20 pooled REFLECT − UCCD +0.0202 [0.0013, 0.0386] +0.0190 [−0.0001, 0.0370]
+Dice validation 40 median REFLECT − UCCD +0.0242 [0.0006, 0.0480] +0.0220 [−0.0001, 0.0480]

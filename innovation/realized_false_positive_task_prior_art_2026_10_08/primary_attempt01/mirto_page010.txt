@@ -1,0 +1,84 @@
+10 N. K. Hernashki and S. Chatterjee
+with nearest-neighbour up-sampling up8
+. We compare
+the mean (a1 =
+1
+4
+P
+c
+ℓc), the median absolute deviation
+across channels (a2 = medc|ℓc − medc
+′ ℓc
+′ |, a measure of
+channel disagreement), the Euclidean norm (a3 = ∥ℓ∥2),
+the 0.99 quantile over channels, and the mean of robustly
+whitened channels, against the published map and three
+controls (image stream only; latent stream only; no clip￾ping). Nothing is trained: each rule is a different function
+of quantities that REFLECT already computes. Each rule
+is mapped and thresholded exactly as the published map
+and evaluated (i) at its own validation threshold, which
+is the result a user would obtain, and (ii) at the burden
+realised by the published map, matched either over the
+cohort or per subject by linear interpolation in FP. MAD
+is retained as the recommended aggregation only if its in￾terval did not overlap that of the best other aggregation.
+2.10 Data
+Test and validation data. BraTS 2020 [49,4,5] pro￾vides multi-institutional pre-operative glioma MRI, co￾registered to a common template, resampled to 1 mm3
+and skull-stripped by the organisers. We evaluate on T2;
+FLAIR is used only by the FLAIR baseline. The refer￾ence is the whole tumour (labels 1, 2 and 4). We use 312
+test subjects and 24 disjoint validation subjects, split at
+random. The canonical arrays are our copy of the data,
+cropped through-plane to remove empty slices: 240 × 240
+in-plane at 1 mm and 98 to 149 slices (median 139); crop￾ping removes no tumour voxel. Median whole-tumour vol￾ume is 91.7 cm3
+(IQR 53.2–147.8; range 7.3–361.8). The
+test reference contains 5,473 6-connected components, of
+which 472 reach the 50 mm3 floor (165 small, 307 large).
+Healthy training data. IXI [35] provides T1 and T2 scans
+from three London sites; our preprocessed T2 pool con￾tains the Hammersmith Hospital (HH, 3 T) and Guy’s
+Hospital (Guys, 1.5 T) sites. MOOD [65] provides T1
+brain scans. From these we formed five training sets
+(Table 2), named after their sources, and tested every
+model on BraTS T2. All main-text results use IXI￾HH+Guys for every method. The choice rests on
+two grounds stated without reference to any score: IXI￾HH+Guys matches the test contrast, and IXI-HH and
+IXI-Guys are strict subsets of it. Because all twenty
+method–training-set combinations were scored on the
+same test cohort, the choice is protected by its stated
+rationale, by showing that each evaluation finding holds
+with every set of training data (Appendix E), and
+by a confirmatory evaluation on a new cohort, to be
+pre-registered with this training set fixed. Within IXI￾HH+Guys each method kept its own training protocol
+(REFLECT 504 volumes; UCCD 324 training and 81 val￾idation volumes; cDDPM 361 and 92; AnomalyDINO a
+memory bank from 50 reference volumes), so a common
+training set means the same source data, not the same
+optimisation budget (Appendix E).
+Table 2. Healthy training sets. All models were tested on
+BraTS 2020 T2. IXI-HH+Guys is used for every method in
+the main text.
+Name Source Training contrasts
+IXI-HH IXI, Hammersmith (3 T) T2
+IXI-Guys IXI, Guy’s (1.5 T) T2
+IXI-HH+Guys IXI, both sites above T2
+MOOD+IXI-HH MOOD and IXI Hammersmith T1 and T2
+MOOD+IXI MOOD and all of IXI T1 and T2
+3 Results
+Unless stated otherwise, all methods were trained on IXI￾HH+Guys and evaluated on the 312 test subjects, inter￾vals in brackets are 95% paired subject-bootstrap inter￾vals, “Dice” is the subject mean at the validation thresh￾old with plain thresholding, and b is a nominal budget.
+Each subsection states the hypothesis that the experi￾ment tests, reports the result and closes with a verdict.
+Hypotheses H1 to H9 carry explicit decision criteria (Ta￾ble 9); secondary hypotheses predict specific effects (Ap￾pendix Table 63); hypotheses without a decision criterion
+are marked exploratory and judged from intervals alone.
+The main text reports the findings that bear on a conclu￾sion; the full set of analyses, at every budget, aggregation
+and set of training data, is in Appendix D, with one sub￾section for each subsection below.
+3.1 Registration and geometry
+Hypothesis. A mapping error that permutes voxels within
+slices should push per-subject voxel AUROC below 0.5
+and scramble its ranks across subjects, whilst leaving
+slice-level scores almost unchanged, because a slice that
+contains tumour still does so after any in-plane permu￾tation. If so, label-free diagnostics can detect such er￾rors without extra labels. H7 (diagnostic power): rank
+stability and the anti-location rate each detect in-plane
+flips and transposes with power of at least 0.95 at a
+false-alarm rate of 0.05 in 60 subjects. A secondary hy￾pothesis predicts that UCCD’s voxel AUROC falls un￾der antero-posterior and left-right flips whereas Anomaly￾DINO’s slice-level AUROC does not fall under an antero￾posterior flip.
+A mapping error that standard metrics miss. Each
+method stores its maps in its own axis order, crop and
+resolution, so any comparison of methods with differ￾ent preprocessing must undo these steps, and an er￾ror in doing so is easy to make and hard to see.
+Such errors arose in practice in assembling this bench￾mark. A mapping that read the stored cDDPM maps
+in the wrong axis order and ignored their field-of￾view crop gave a voxel AUROC of 0.583; with the
+correct mapping the same maps gave 0.873, a change
+of +0.290 [0.277, 0.302], with +0.535 [0.517, 0.553] in

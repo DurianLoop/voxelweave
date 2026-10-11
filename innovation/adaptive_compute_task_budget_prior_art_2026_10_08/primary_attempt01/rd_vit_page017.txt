@@ -1,0 +1,30 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+17
+right flipping would corrupt the FDI numbering (e.g., tooth 11 in the upper-right quadrant would become 
+tooth 21 in the upper-left). Training runs for 200 epochs on an NVIDIA RTX 4090 GPU with mixed 
+precision, batch size 2, gradient accumulation 2 (effective batch 4), learning rate 2× 10−4
+, and cosine 
+annealing.
+FDI assigns different numbers to mirror teeth: tooth 11 (upper-right) vs 21 (upper-left). Flipping swaps 
+these labels, creating inconsistent signals. Upper (quadrants 1-2) vs lower (3-4) also differ.
+FDI-safe augmentations: rotation ±10° around z-axis (preserves left-right), intensity shift/scale (±0.1, 0.9-
+1.1×), Gaussian noise (𝜎 = 0.03).
+Foreground-centered cropping ensures every 1283
+crop contains teeth. CBCT volumes are 300-500 voxels 
+per dimension but teeth occupy only the dental arch fraction.
+6.8.4 Results
+Table 5 presents the tooth segmentation results. Figure 9 shows the training dynamics.
+Table 5: ToothFairy2 tooth segmentation results (RD-ViT Tiny + MoE, 200 epochs, RTX 4090).
+Metric Value
+Model parameters 5,416,775
+Seed Dice (tooth vs background) 0.797
+FDI classification accuracy (foreground) 89.1%
+Mean epoch time (RTX 4090) 210.7 s
+Total training time 11.7 hours
+Loop iterations T 8
+MoE experts 8 routed + 1 shared
+Spectral radius 𝜌(A) 0.368
+Figure 9: ToothFairy2 training dynamics. Left: training loss decreases steadily from 3.0 to 0.4. Center-left: seed Dice (tooth 
+detection) improves from 0.35 to 0.80. Center-right: FDI classification accuracy reaches 89.1%, demonstrating that the ViT’s 
+global attention successfully captures jaw-quadrant context for tooth numbering. Right: epoch time is stable at ~210s with 
+occasional spikes from data loading.

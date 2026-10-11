@@ -1,0 +1,89 @@
+A Content
+In this supplementary file, we further elaborate our Task-Aware
+Dynamic Transformer (TADT) as an efficient feature extractor for
+Arbitrary-Scale Image Super-Resolution. Specifically, we present
+• more ablation studies of our TADT in Sesec:ablation;
+• more quantitative results of our TADT in appendix C;
+• more visual comparisons of our TADT and other feature extractors
+on natural image ASSR in appendix D.
+B Ablation Studies
+Here, we perform more ablation studies to investigate the working
+mechanism of our TADT feature extractor on image ASSR. Similar
+to the main paper, all ablation experiments here are conducted on our
+TADT integrated with the arbitrary-scale upsampler LIIF [9].
+1) Effectiveness of using binary mask M in our intensity loss Lβ.
+To illustrate this point, we remove the binary mask M in Lβ and
+directly set Lβ = β in the loss function L to train our TADT. We
+visualize the β with different s in our TADT when Lβ = β by the red
+curve in Figure 8. One can see that, the β value in our TADT goes a
+slight ascent and then sweep down to about 0.1, which is unreasonable.
+Quantitative results reported in Table 6 further demonstrate that ex￾cluding the mask M from the intensity loss Lβ leads to a significant
+performance drop, with a decrease of 0.09 dB for ×8 upsampling.
+This validates the effectiveness of using a binary mask M in our
+intensity loss Lβ to train our TADT for image ASSR.
+Figure 8. The predicted β in our TADT w.r.t. different SR scales s.
+Table 6. PSNR (dB) results of our TADT trained with Lβ using the
+binary mask or not on Urban100 [22].
+Lβ
+In-scale Out-of-scale
+×2 ×3 ×4 ×6 ×8
+Lβ = β 33.66 29.56 27.36 24.73 23.18
+Lβ = βM 33.65 29.58 27.37 24.75 23.27
+2) Importance of the global self-attention (GSA) branch in the
+MSTB of our feature extraction backbone. To study this aspect,
+we conduct experiments by evaluating our ASSR network with or
+without the GSA branch in each MSTB of our feature extraction
+backbone. Here, we use the Baseline instead of our TADT to use the
+complete feature extraction backbone for fully comparison. As shown
+in Table 7, our ASSR network using the Baseline with GSA achieves
+a performance gain of 0.06 dB on PSNR over that without GSA, on
+the DIV2K validation set for ×2 SR. This validates the importance of
+GSA branch in our feature extraction backbone for image ASSR.
+3) Investigation on dimension reduction in the GSA branch. To
+this end, we explore other dimension reduction variants, e.g., “Ran￾dom Matrix” and “Avgpooling” for the GSA branch in our Baseline
+Table 7. PSNR (dB) results of our Baseline with (w) or without (w/o)
+global self-attention (GSA) branch on the DIV2K validation set.
+Extrator In-scale Out-of-scale
+×2 ×3 ×4 ×6 ×12
+w GSA 35.24 31.51 29.50 27.19 24.04
+w/o GSA 35.18 31.45 29.45 27.14 24.02
+Table 8. PSNR (dB) results of different dimension-reduction operations
+in global self-attention on DIV2K validation set.
+Dimension Reduction In-scale Out-of-scale
+×2 ×3 ×4 ×6 ×12
+Random Matrix 35.22 31.48 29.49 27.16 24.00
+Avgpooling 35.23 31.49 29.49 27.18 24.04
+Maxpooling 35.24 31.51 29.50 27.19 24.04
+Table 9. PSNR (dB) results of different hyper-parameter settings on
+Urban100.
+Hyper-parameters In-scale Out-of-scale
+×2 ×3 ×4 ×6 ×8
+α1 = 0.25, α2 = 0.25, α3 = 0.50 33.65 29.58 27.37 24.75 23.27
+α1 = 0.00, α2 = 0.25, α3 = 1.00 33.62 29.57 27.37 24.77 23.27
+α1 = 0.00, α2 = 0.25, α3 = 0.50 33.64 29.52 27.32 24.61 23.02
+α1 = 0.25, α2 = 0.50, α3 = 0.50 33.64 29.56 27.36 24.74 23.25
+variant. Here, “Random Matrix” performs dimension reduction by a
+linear projection matrix of size m2 × d
+2
+, which is randomly sampled
+from a normal distribution. For “Avgpooling”, we just replaces the
+“maxpooling” operation in the GSA by average pooling. As shown in
+Table 8, the “Maxpooling” employed in GSA achieves slightly better
+results (0.01∼ 0.04dB) on ASSR tasks at most scales. Thus, we use
+“Maxpooling” for dimension reduction in the GSA branch.
+4) Investigation on the sensitivity of hyper-parameters. In Eqn 6,
+we use α1, α2 and α3 to penalize the predicted β by a loss Lβ = βM,
+using a binary value M ≜ β ≥ (α1 +α2s
+α3 ) to avoid small β values.
+α1 is the lower bound of β to be penalized. α2 and α3 should be
+properly set to adjust the binary value M according to the scale s. We
+report the experimental results achieved by different hyper-parameter
+settings on Urban100 in Table 9. We observe that our TADT is not very
+sensitive to the values of α1, α2 and α3 once they are properly set, but
+our setting reported in paper achieves an overall better performance.
+C More Quantitative Results
+In Table 10, we provide more quantitative results on Set5, Set14,
+B100, Urban100, and Manga109.
+D More Visual Comparison on Image ASSR
+In Figures 9-14, we provide more visual comparison results of differ￾ent feature extractors working with three arbitrary-scale upsamplers,
+i.e., MetaSR [18], LIIF [9], and LTE [27], on the image ASSR task.

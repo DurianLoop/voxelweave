@@ -1,0 +1,33 @@
+{
+  "scope": "selector_only_leave_one_patient_out_on_historical_validation",
+  "patients": 23,
+  "slices": 207,
+  "outcome": "whole_slice_PSNR_from_reconstructed_quadratic_MSE",
+  "source_sha256": "ac3cf68847a57c3669e4d1803130a8436d1ae6f0ff798d1c6bfcdfa662b98058",
+  "manifest_sha256": "ee471bd92e48696050a694f371a86483f86f832c5b26571c81137b5dcc6ad4df",
+  "policies": {
+    "loo_fixed": "Grid-tuned alpha on other patients, step 0.01",
+    "loo_phase": "Grid-tuned alpha per phase on other patients",
+    "ridge_phase_gap_z": "Ridge(10) predicts slice-oracle alpha",
+    "ridge_phase_gap_z_d": "Same plus model-disagreement energy",
+    "oracle_slice": "Target-assisted continuous whole-slice alpha"
+  },
+  "mean_patient_psnr": {
+    "loo_fixed": 25.675684307886762,
+    "loo_phase": 25.676849342429012,
+    "ridge_phase_gap_z": 25.682013809893245,
+    "ridge_phase_gap_z_d": 25.6831054682719,
+    "oracle_slice": 25.709119985782486
+  },
+  "patient_wins_over_loo_fixed": {
+    "loo_phase": 17,
+    "ridge_phase_gap_z": 18,
+    "ridge_phase_gap_z_d": 18,
+    "oracle_slice": 23
+  },
+  "limitations": [
+    "Only the selector leaves each patient's labels out; both models saw validation during checkpoint choice.",
+    "Scalar policies were evaluated by MSE algebra, not by new image-level SSIM or HD95 scoring.",
+    "The local patch oracle is a separate, stronger target-assisted action space."
+  ]
+}

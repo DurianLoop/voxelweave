@@ -1,0 +1,19 @@
+# 2026-10-08 本轮研究状态：空间增强训练继续
+
+尚无可发表且独立确认的claim，科研goal保持active。本轮属于progress：补完BigAug主文、新核读SynthSeg+主文，实际执行两项原表CPU算术审计，并准备完成2992步配对实验的五个最终评价入口。普通增强/QC/纠错/收益头均不当宽泛新意。
+
+唯一自有在运行研究session为29823。归档前实际9d9ccd仍返回session_id：native_reference_intensity880/2992，median2.07222555秒，累计1872.385648秒，loss .09531919仅进度不作模型选择。四分支各2992、计划总11968更新尚未真正结束；新实际CPU更新880/GPU0来自同刻1dccc8元数据快照，不能将计划当完成。下一步实际poll29823，不重启、不移动设备、不改已执行训练source、不冻结滚动receipt/journal。
+
+GPU授权保持有效；最新f00315只查GPU totals：总24455MiB/free1394MiB，未达既定8192MiB门槛。本次CPU4/interop1/below-normal继续，未枚举或干预其他PID。磁盘8GB储备外约60.7MB，RAM可用99GB；本新实验全目录<=45MB、wall<=27000秒合同保持。根.gitignore SHA7ecc6ec4f2bebbd8e96ad38f4fa76810a9db5254312f392ba49fd39b8f622524，environment.yml SHA dfdae9bfd34dd605be9dd8a488107fa56863bd99fc1f5835af8cbb8113905257，未修改。
+
+资料入口：
+
+- [两篇主文阅读与创新判断](augmentation_primary_followup_2026_10_08/PRIMARY_READING_AND_PROJECT_DECISIONS.md)，[来源与实际核读范围](augmentation_primary_followup_2026_10_08/READING_PROVENANCE.json)。BigAug小/大数据的归一化配置不同；SynthSeg+绝对Dice QC不能替代paired动作收益，但既有defer/cost-sensitive先例仍保留。
+- [后续QC与动作强对照准备](augmentation_primary_followup_2026_10_08/QC_AND_ACTION_NEXT_TRIAL_PREPARATION.md)。QC筛除后子集Dice不能替代全患者医学门槛，保留coverage、拒绝和全部费用。
+- [最终完整FOV评价协议](spatial_adaptation_matched_2026_10_08/EVALUATION_PROTOCOL.md)，[五入口资格](spatial_adaptation_matched_2026_10_08/ENTRY_PREPARATION_CHECK.json)。0dddb3 exit0仅证明语法/source资格；训练全部真正exit0/11968日志/四state核验后才可运行36FOV评价。未经真实terminal未启动验证。
+- [本轮公开对话](augmentation_primary_followup_2026_10_08/VISIBLE_DIALOGUE_TURN19_PART01.md)，[用户交接原文](augmentation_primary_followup_2026_10_08/USER_PROVIDED_HANDOFF_VERBATIM.md)。17组turn18实际tool恢复；turn19实际观察另存PART01/02及归档前快照。登记器V1因工具返回包装形状KeyError失败64409d=1；原记录不改，V2 ab24fd=0。
+- [BigAug表算术](augmentation_primary_followup_2026_10_08/robust_qc_extraction_attempt01/bigaug_table_arithmetic.json)，[QC正类方向CPU审计](augmentation_primary_followup_2026_10_08/robust_qc_metric_audit_attempt01/receipt.json)。207d68和5e289a均实际exit0，非新患者医学效果。
+
+前原39996训练、V4全部56数值修复、99步四分支396CPU训练及36FOV评价均真正结束，原医学门槛仍未通过，不重跑70619/80513/80828。旧实际结果仍见[99步完整比较](adaptation_paired_pilot_2026_10_08/FINAL_DESCRIPTIVE_COMPARISON.md)。当前异质T2队列不能统称CISS；四已见验证9series、八未见确认12series与lockedIXI边界保持。
+
+本轮归档接旧5907；APPEND_INDEX/APPEND_PROOF生成后以 augmentation_primary_followup_2026_10_08 的实际proof为准。训练目录仅frozen_config纳入静态hash，其余rolling文件排除；archive技术成功不代表训练结束或claim成立。

@@ -1,0 +1,9 @@
+# UPENN-GBM official dataset citation audit
+
+Direct HTTPS reads on 2026-10-01 retrieved the [TCIA collection page](source_cache/upenn_gbm_tcia_citation_2026-10-01.html) and the [DataCite DOI record](source_cache/upenn_gbm_datacite_2026-10-01.json). The page is 326,924 bytes, SHA-256 `12dfaa491640338ab7ba553776bf95aef29f9a349a725c0535af9ebfa9cb24c2`; the JSON is 34,252 bytes, SHA-256 `ee99db7d1bf54350c617bdc484f85b3501d21deb8ad4803f14b3a48071e8016d`. The [retrieval script](fetch_upenn_official_citation.py) checks HTTP status, DOI and the required-citation heading and refuses to overwrite snapshots.
+
+TCIA states **Data Citation Required** and requires the dataset citation including its DOI. The citation shown on the collection page is:
+
+> Bakas, S., Sako, C., Akbari, H., Bilello, M., Sotiras, A., Shukla, G., Rudie, J. D., Flores Santamaria, N., Fathi Kazerooni, A., Pati, S., Rathore, S., Mamourian, E., Ha, S. M., Parker, W., Doshi, J., Baid, U., Bergman, M., Binder, Z. A., Verma, R., ... Davatzikos, C. (2021). *Multi-parametric magnetic resonance imaging (mpMRI) scans for de novo Glioblastoma (GBM) patients from the University of Pennsylvania Health System (UPENN-GBM)* (Version 2) [Data set]. The Cancer Imaging Archive. https://doi.org/10.7937/TCIA.709X-DN49
+
+DataCite independently lists 31 ordered creators, the same title, 2021, Version 2, TCIA, dataset type and CC BY 4.0 rights URI. The official page also discusses processed NIfTI volumes; that text does **not** establish the exact processing operations applied to this study's selected DICOM series. The DICOM headers themselves identify the selected series as `DERIVED/SECONDARY/OTHER`. Dataset citation and permissive attribution license do not establish native acquisition identity, de-identification beyond the source policy, approval to publish patient pixels, checkpoint redistribution, or scientific validity of the context audit.

@@ -1,0 +1,107 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+Secondly, we introduce our environment model, and ﬁnally,
+we introduce the policy learning, which is guided by a mixed
+model-free and a model-based RL.
+It is worth mentioning that our method is generic, and can
+be applicable to PnP methods derived from other proximal
+algorithms, e.g. forward backward splitting, as well. The
+reason is that these are distinct methods, they share the same
+ﬁxed points as PnP-ADMM (Meinhardt et al., 2017).
+3.1. RL Formulation for Automated Parameter
+Selection
+This work mainly focuses on the automated parameter selec-
+tion problem in the PnP framework, where we aim to select
+a sequence of parameters (σ0,µ 0,σ 1,µ 1,··· ,στ−1,µτ−1)
+to guide optimization such that the recovered imagexτ is
+close to the underlying image x. We formulate this prob-
+lem as a Markov decision process (MDP), which can be
+addressed via reinforcement learning (RL).
+We denote the MDP by the tuple(S,A,p,r ), whereS is the
+state space,A is the action space,p is the transition function
+describing the environment dynamics, andr is the reward
+function. Speciﬁcally, for our task,S is the space of opti-
+mization variable states, which includes the initialization
+(x0,z 0,u 0) and all intermedia results (xk,zk,uk) in the op-
+timization process.A is the space of internal parameters,
+including both discrete terminal timeτ and the continuous
+denoising strength/penalty parameters (σk,µk). The transi-
+tion functionp :S×A↦→S maps input states∈S to its
+outcome states′∈S after taking actiona∈A . The state
+transition can be expressed as st+1 = p(st,at), which is
+composed of one or several iterations of optimization. On
+each transition, the environment emits a reward in terms of
+the reward functionr :S×A↦→ R, which evaluates actions
+given the state. Applying a sequence of parameters to the
+initial state s0 results in a trajectory T of states, actions
+and rewards: T ={s0,a 0,r 0,··· ,sN,aN,rN}. Given a
+trajectoryT , we deﬁne the return rγ
+t as the summation of
+discounted rewards afterst,
+rγ
+t =
+N−t∑
+t′=0
+γt′
+r(st+t′,at+t′), (6)
+whereγ∈ [0, 1] is a discount factor and prioritizes earlier
+rewards over later ones.
+Our goal is to learn a policyπ, denoted asπ(a|s) :S↦→A
+for the decision-making agent, in order to maximize the
+objective deﬁned as
+J (π) = Es0∼S0,T∼π [rγ
+0 ], (7)
+where E represents expectation,s0 is the initial state, and
+S0 is the corresponding initial state distribution. Intuitively,
+the objective describes the expected return over all possible
+trajectories induced by the policyπ. The expected return on
+states and state-action pairs under the policyπ are deﬁned
+by state-value functionsVπ and action-value functionsQπ
+respectively, i.e.,
+Vπ (s) = ET∼π [rγ
+0|s0 =s], (8)
+Qπ (s,a ) = ET∼π [rγ
+0|s0 =s,a 0 =a]. (9)
+In our task, we decompose actions into two parts: a dis-
+crete decisiona1 on terminal time and a continuous deci-
+siona2 on denoising strength and penalty parameter. The
+policy also consists of two sub-policies: π = (π1,π 2), a
+stochastic policy and a deterministic policy that generate
+a1 anda2 respectively. The role ofπ1 is to decide whether
+to terminate the iterative algorithm when the next state is
+reached. It samples a boolean-valued outcome a1 from a
+two-class categorical distributionπ1(·|s), whose probability
+mass function is calculated from the current state s. We
+move forward to the next iteration if a1 = 0 , otherwise
+the optimization would be terminated to output the ﬁnal
+state. Compared to the stochastic policy π1, we treat π2
+deterministically, i.e.a2 =π2(s) sinceπ2 is differentiable
+with respect to the environment, such that its gradient can
+be precisely estimated.
+3.2. Environment Model
+In RL, the environment is characterized by two components:
+the environment dynamics and reward function. In our task,
+the environment dynamics is described by the transition
+functionp related to the PnP-ADMM. Here, we elucidate
+the detailed setting of the PnP-ADMM as well as the reward
+function used for training policy.
+Denoiser Prior. Differentiable environment makes the
+policy learning more efﬁcient. To make the environment
+differentiable with respect toπ21, we take a convolutional
+neural network (CNN) denoiser as the image prior. In prac-
+tice, we use a residual U-Net (Ronneberger et al., 2015)
+architecture, which was originally designed for medical im-
+age segmentation, but was founded to be useful in image
+denoising recently. Besides, we incorporate an additional
+tunable noise level map into the input as (Zhang et al., 2018),
+enabling us to provide continuous noise level control ( i.e.
+different denoising strength) within a single network.
+Proximal operator of data-ﬁdelity term. Enforcing con-
+sistency with measured data requires evaluating the proxi-
+mal operator in (4). For inverse problems, there might exist
+fast solutions due to the special structure of the observation
+model. We adopt the fast solution if feasible ( e.g. closed-
+form solution using fast Fourier transform, rather than the
+general matrix inversion) otherwise a single step of gradient
+descent is performed as an inexact solution for (4).
+1π1 is non-differentiable towards environment regardless of the
+formulation of the environment.

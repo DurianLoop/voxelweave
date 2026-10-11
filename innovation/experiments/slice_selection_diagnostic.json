@@ -1,0 +1,190 @@
+{
+  "scope": "historical_fastmri_validation_only",
+  "models": [
+    "old_data_control",
+    "old_data_orientation_stopped_branch"
+  ],
+  "key": [
+    "case_id",
+    "patient_id",
+    "z",
+    "phase"
+  ],
+  "patient_equal_aggregation_verified": true,
+  "slices": 207,
+  "patients": 23,
+  "limitations": [
+    "Both checkpoints were selected using this historical validation cohort.",
+    "Leave-one-patient-out rules only exclude a patient's labels when fitting this simple rule; they do not make the full model pipeline out of fold.",
+    "Oracle policies use the target and cannot be deployed.",
+    "Per-slice metric selection is not the metric of a spatial blend or patchwise correction.",
+    "HD95 and Dice are intensity-threshold proxies, not anatomical segmentation outcomes.",
+    "This comparison does not reopen the stopped orientation branch or enter test data."
+  ],
+  "sources": [
+    {
+      "path": "design/pastnet_v2/runs/full_control_seed3407_vram20/validation/per_slice.csv",
+      "sha256": "5df761d55ea3d5cdeb5195560edd239a5bbf04be93719135084e5ac437f8dc24"
+    },
+    {
+      "path": "design/pastnet_v2/runs/full_control_seed3407_vram20/validation/per_patient.csv",
+      "sha256": "bb467f38b06cff01c501b41b95a59d85f4d4c715adf709120ed9e6a4ab0f9dce"
+    },
+    {
+      "path": "design/pastnet_orientation/runs/full_orientation_seed3407_vram20/validation/per_slice.csv",
+      "sha256": "7ac04b0fdff14fcaf816718e66adbce720814a5dec267a888d9f4eb054c1d6c9"
+    },
+    {
+      "path": "design/pastnet_orientation/runs/full_orientation_seed3407_vram20/validation/per_patient.csv",
+      "sha256": "195f50b90f9d27aa3391b6fd34cadef3fdffda0ac4afff4204520e71db6e3334"
+    },
+    {
+      "path": "design/pastnet_v2/results/domain_audit/per_series.csv",
+      "sha256": "e6b8abcc863cb67e52f2d06979ad162d9f430f17e29e2625afeed4b577984a0a"
+    }
+  ],
+  "phase": {
+    "0.25": {
+      "slices": 69,
+      "patients": 23,
+      "orientation_slice_wins": 43,
+      "mean_psnr_change_db": 0.0464366339711629,
+      "mean_mae_change": 5.411195618652391e-05,
+      "mean_hd95_proxy_change": 0.03756980288214471
+    },
+    "0.5": {
+      "slices": 69,
+      "patients": 23,
+      "orientation_slice_wins": 55,
+      "mean_psnr_change_db": 0.11452872155542136,
+      "mean_mae_change": -5.2639541447109027e-05,
+      "mean_hd95_proxy_change": 0.1798216228285666
+    },
+    "0.75": {
+      "slices": 69,
+      "patients": 23,
+      "orientation_slice_wins": 52,
+      "mean_psnr_change_db": 0.12219778677895703,
+      "mean_mae_change": -6.811176553488875e-05,
+      "mean_hd95_proxy_change": 0.25786817332044143
+    }
+  },
+  "gap_band": {
+    "at_most_16mm": {
+      "slices": 9,
+      "patients": 1,
+      "orientation_slice_wins": 9,
+      "mean_psnr_change_db": 0.3871619449846462,
+      "mean_mae_change": -0.0006270229003082988,
+      "mean_hd95_proxy_change": -0.18254153020929692
+    },
+    "16_to_22mm": {
+      "slices": 189,
+      "patients": 21,
+      "orientation_slice_wins": 136,
+      "mean_psnr_change_db": 0.08522514786404391,
+      "mean_mae_change": -1.2498375519785505e-06,
+      "mean_hd95_proxy_change": 0.1714952789575052
+    },
+    "above_22mm": {
+      "slices": 9,
+      "patients": 1,
+      "orientation_slice_wins": 5,
+      "mean_psnr_change_db": -0.00597262578708503,
+      "mean_mae_change": 0.00014236779946788205,
+      "mean_hd95_proxy_change": 0.22479759800719215
+    }
+  },
+  "policies": {
+    "always_control": {
+      "selected_slices": 0,
+      "total_slices": 207,
+      "patients": 23,
+      "mean_change_vs_control": {
+        "psnr": 0.0,
+        "ssim": 0.0,
+        "mae": 0.0,
+        "mse": 0.0,
+        "ncc": 0.0,
+        "dice_proxy": 0.0,
+        "hd95_proxy": 0.0,
+        "tail10_mse": 0.0
+      }
+    },
+    "always_orientation": {
+      "selected_slices": 207,
+      "total_slices": 207,
+      "patients": 23,
+      "mean_change_vs_control": {
+        "psnr": 0.0943877141018471,
+        "ssim": -0.0004118073569889426,
+        "mae": -2.2213116931824618e-05,
+        "mse": -7.416075566433565e-05,
+        "ncc": 0.0012862264066846056,
+        "dice_proxy": -3.0413648172429535e-07,
+        "hd95_proxy": 0.15841986634371757,
+        "tail10_mse": -0.0008143036243727488
+      }
+    },
+    "oracle_slice_psnr": {
+      "selected_slices": 150,
+      "total_slices": 207,
+      "patients": 23,
+      "mean_change_vs_control": {
+        "psnr": 0.1320099116472088,
+        "ssim": 0.0004591707052622221,
+        "mae": -0.00015496624861848136,
+        "mse": -0.0001013497840672135,
+        "ncc": 0.0018235402400407744,
+        "dice_proxy": 6.338312390494995e-05,
+        "hd95_proxy": 0.10942405388755018,
+        "tail10_mse": -0.0010314581866746751
+      }
+    },
+    "oracle_slice_strict": {
+      "selected_slices": 35,
+      "total_slices": 207,
+      "patients": 23,
+      "mean_change_vs_control": {
+        "psnr": 0.04987520327068782,
+        "ssim": 0.0004267062577513745,
+        "mae": -9.318613084633298e-05,
+        "mse": -4.141983983961568e-05,
+        "ncc": 0.0007253150878469526,
+        "dice_proxy": 7.152501811239546e-05,
+        "hd95_proxy": -0.05075778079607189,
+        "tail10_mse": -0.0004020249442180032
+      }
+    },
+    "phase_only_other_patients": {
+      "selected_slices": 207,
+      "total_slices": 207,
+      "patients": 23,
+      "mean_change_vs_control": {
+        "psnr": 0.0943877141018471,
+        "ssim": -0.0004118073569889426,
+        "mae": -2.2213116931824618e-05,
+        "mse": -7.416075566433565e-05,
+        "ncc": 0.0012862264066846056,
+        "dice_proxy": -3.0413648172429535e-07,
+        "hd95_proxy": 0.15841986634371757,
+        "tail10_mse": -0.0008143036243727488
+      }
+    },
+    "phase_and_gap_other_patients": {
+      "selected_slices": 207,
+      "total_slices": 207,
+      "patients": 23,
+      "mean_change_vs_control": {
+        "psnr": 0.0943877141018471,
+        "ssim": -0.0004118073569889426,
+        "mae": -2.2213116931824618e-05,
+        "mse": -7.416075566433565e-05,
+        "ncc": 0.0012862264066846056,
+        "dice_proxy": -3.0413648172429535e-07,
+        "hd95_proxy": 0.15841986634371757,
+        "tail10_mse": -0.0008143036243727488
+      }
+    }
+  }
+}

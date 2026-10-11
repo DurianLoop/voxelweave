@@ -1,0 +1,42 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+Table 5:Comparison with baseline acquisition strategies at5×acceleration (8
+initial + 32 budget lines).Baselines are evaluated with and without metal
+artifact reduction (MAR). Results are mean±std on the test set. Best results in
+bold. MASC significantly outperforms all baselines (p<0.001, paired t-test).
+Method MAR SSIM↑PSNR↑MSE↓NMSE↓MAE↓
+Random ×0.4037±0.0351 13.95±2.37 0.0471±0.0290 0.2193±0.1143 0.1518±0.0453
+✓0.6789±0.0683 18.36±1.87 0.0162±0.0089 0.0760±0.0358 0.0861±0.0262
+Random-LowBias ×0.4317±0.0441 13.59±2.94 0.0544±0.0361 0.2525±0.1441 0.1616±0.0562
+✓0.6580±0.0875 18.39±2.39 0.0175±0.0156 0.0809±0.0579 0.0885±0.0371
+Equispaced ×0.3670±0.0252 13.77±2.26 0.0486±0.0288 0.2254±0.1120 0.1555±0.0443
+✓0.5716±0.0585 17.01±1.56 0.0214±0.0099 0.1018±0.0391 0.0980±0.0256
+Center-out ×0.5624±0.1164 12.69±3.65 0.0709±0.0446 0.3296±0.1810 0.1845±0.0712
+✓0.5599±0.1114 15.64±2.71 0.0334±0.0242 0.1549±0.0953 0.1313±0.0504
+DQN ×0.5664±0.1057 13.06±3.74 0.0663±0.0439 0.3074±0.1773 0.1767±0.0714
+✓0.5831±0.1130 16.21±2.70 0.0296±0.0237 0.1364±0.0901 0.1225±0.0492
+SS-DDQN ×0.5299±0.0758 13.40±3.50 0.0605±0.0418 0.2795±0.1674 0.1682±0.0676
+✓0.6145±0.1095 16.94±2.57 0.0248±0.0205 0.1143±0.0784 0.1103±0.0438
+MASC (Ours)✓0.7056±0.0528 19.41±1.90 0.0128±0.0074 0.0615±0.0325 0.0742±0.0234
+Appendix C. Experiments and Results at5×Acceleration
+Table 5 presents results at 5×acceleration. MASC achieves the best performance across all
+metrics, with 3.9% improvement in SSIM and 21.0% reduction in MSE compared to the best
+two-stage baseline (Random + MAR). The trends are consistent with 10×acceleration: ran-
+dom sampling strategies benefit most from MAR post-processing, while Center-out shows
+minimal improvement despite its strong performance without MAR. Value-based RL meth-
+ods (DQN and SS-DDQN) again fall between random and deterministic strategies when
+combined with MAR. Notably, the performance gap between MASC and baselines narrows
+at lower acceleration factors, as the increased k-space budget reduces the importance of
+optimal line selection.
+Appendix D. Influence of Simulation Parameters
+Our simulation uses clinically realistic TSE parameters including readout bandwidth of 710
+Hz/pixel, RF bandwidth of 1 kHz, and field strength of 3T. These parameters influence the
+severity of metal artifacts and thus the task difficulty. Higher readout bandwidth generally
+reduces susceptibility-induced distortion but lowers SNR, creating a practical trade-off.
+Field strength also plays a key role since higher field strengths like 7T would produce more
+severe artifacts due to increased susceptibility effects, while lower field strengths like 0.55T
+would result in milder artifacts. The implant material matters as well; our cobalt-chromium
+implant (900 ppm susceptibility) creates substantial artifacts, whereas titanium implants
+(∼180 ppm) would produce milder distortions. Our parameter choices represent a typical
+and challenging clinical scenario for hip imaging at 3T, providing a reasonable testbed for
+evaluating acquisition strategies under metal artifact conditions.
+18

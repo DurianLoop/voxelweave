@@ -1,0 +1,38 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+19
+While direct numerical comparison requires running on the official test server (which we leave for future 
+work), the architectural advantage of the single-phase approach is clear: (1) no cascaded error propagation 
+between stages, (2) end-to-end training with a single loss function, and (3) the transformer backbone 
+naturally provides the global context that CNN baselines must approximate through large receptive fields 
+or multi-scale processing. The 89.1% FDI accuracy from a single-phase model is encouraging and suggests 
+that transformer-based approaches may simplify the tooth segmentation pipeline.
+6.8.6 Why ViT for Teeth: Long-Range Context
+The tooth segmentation results highlight a key architectural advantage of transformers for dental imaging. 
+Consider the task of identifying tooth 15 (upper-left second premolar): a CNN with a typical receptive field 
+of 5–7 patches can only “see” the tooth itself and its immediate neighbors. The model must infer the tooth’s 
+identity from local morphology alone, which is ambiguous because premolars and molars have similar local 
+appearance. In contrast, the ViT’s self-attention allows tooth 15 to attend to tooth 25 (its bilateral 
+counterpart), teeth 14 and 16 (its neighbors), and even to the contralateral jaw, providing rich contextual 
+cues for identification.
+The recurrent depth amplifies this advantage: at each loop iteration, the attention patterns can refine tooth 
+identity estimates based on updated context from all other teeth. A tooth that is initially ambiguous (e.g., 
+could be a premolar or molar) receives progressively more confident identity assignments as its context 
+patches also sharpen their predictions across iterations. This iterative global refinement is precisely the use 
+case where recurrent-depth transformers should outperform both fixed-depth transformers and CNNs.
+7 Discussion
+7.1 Parameter Efficiency and the Role of MoE
+The most striking result is the parameter efficiency of RD-ViT+MoE: it achieves 99.4% of Standard ViT’s 
+3D Dice (0.812 vs 0.817) at only 53% of the parameters (3.0M vs 5.7M) on cardiac segmentation. This 
+demonstrates that the combination of weight sharing (recurrence) and conditional computation (MoE) is a 
+viable architectural strategy for parameter-efficient segmentation.
+The MoE contribution is particularly efficient: 444K additional parameters (17% overhead over the base 
+RD-ViT Tiny) close 60% of the performance gap to Standard ViT. This efficiency arises because MoE adds 
+capacity exactly where it is needed—at the class-specific processing level—rather than uniformly across 
+the entire network. The shared expert handles common features (general cardiac morphology or dental 
+anatomy), while routed experts handle class-specific details (RV geometry vs MYO wall thickness, or 
+incisors vs molars).
+On the tooth segmentation task, MoE is enabled by default and contributes to the strong 89.1% FDI 
+accuracy. With 32 tooth classes mapping to 8 experts (an average of 4 teeth per expert), the model can 
+leverage natural anatomical groupings: incisors (teeth x1–x2), canines (x3), premolars (x4–x5), and molars 
+(x6–x8) have distinct morphological characteristics that are amenable to expert specialization.
+7.2 The 2D vs 3D Dichotomy

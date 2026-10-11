@@ -1,0 +1,2397 @@
+
+=== PDF PAGE 1 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+1
+PhyMRI-SR: Toward Physics-Aware MRI Image
+Super-Resolution
+Lihua Wei, Huatong Gao, Jia Gong, Zhiyu Tan, Hao Li, Jun Liu, and Zhihua Ren
+Abstract—Magnetic resonance imaging (MRI) super-resolution
+is vital for improving diagnostic accessibility, yet most methods
+treat it as a deterministic mapping from a fixed low-resolution
+input to a high-resolution target. This overlooks a key property
+of MRI acquisition physics: spatial resolution and signal-to-
+noise ratio (SNR) are inherently coupled, making any given
+low-resolution scan merely one of many possible realizations
+under varying acquisition trade-offs. We rethink MRI super-
+resolution as a physics-aware reconstruction problem, in which
+the goal is to identify the optimal resolution–SNR configuration
+and then super-resolve it to obtain high-quality MRI results.
+A key implication of this formulation is that MRI resolution
+becomes dynamic rather than fixed. To handle such resolution-
+heterogeneous inputs, we adapt 2D Gaussian Splatting (2D GS)
+to MRI by formulating reconstruction as a coordinate-based,
+resolution-agnostic rendering problem. To futher enhance the
+fidelity of MRI results, we introduce three innovations: (1) a
+prior-aware Gaussian representation that combines an Anatomical
+Structure Prior for tissue-specific kernel initialization with an
+Imaging System Prior that captures hardware characteristics via
+a covariance dictionary; (2) a physics-constrained signal modeling
+scheme that predicts intrinsic tissue parameters (proton density
+ρ and effective relaxation rate R2) and synthesizes intensities
+through governing physical equations, ensuring biophysically
+plausible contrast; and (3) a meta-learning framework that al-
+leviates paired-data scarcity by pretraining on simulated data
+and adapting to real-world conditions. Extensive experiments on
+dynamic-resolution datasets and normal benchmark demonstrate
+that our method achieves state-of-the-art performance, highlight-
+ing its strong potential for clinical deployment. Project Page:
+https://bio-med-i2-lab.github.io/projects/PhyMRI-SR.
+Index Terms—Deep learning, ultra-low-field Magnetic Reso-
+nance Imaging, super-resolution, 2D Gaussian splatting
+I. INTRODUCTION
+Magnetic resonance imaging (MRI) is a cornerstone of
+modern medical diagnostics, providing non-invasive, high-
+contrast visualization of soft tissues essential for detecting
+Lihua Wei is with the School of Biomedical Engineering, ShanghaiTech
+University, Shanghai 201210, China.
+Huatong Gao is with the School of Biomedical Engineering, ShanghaiTech
+University, Shanghai 201210, China, and also with the Shanghai Academy of
+AI for Science, Shanghai, China.
+Jia Gong is with the Shanghai Academy of AI for Science, Shanghai, China.
+Zhiyu Tan and Hao Li are with the Shanghai Academy of AI for Science,
+Shanghai, China, and also with Fudan University, Shanghai, China.
+Jun Liu is with the School of Computing and Communications, Lancaster
+University, Lancaster, U.K.
+Zhihua Ren is with the School of Biomedical Engineering & State Key
+Laboratory of Advanced Medical Materials and Devices, ShanghaiTech Uni-
+versity, Shanghai 201210, China, and also with the Shanghai Clinical Research
+and Trial Center, Shanghai 200231, China.
+Lihua
+Wei,
+Huatong
+Gao
+and
+Jia
+Gong
+contributed
+equally
+to
+this work. Corresponding authors: Jia Gong and Zhihua Ren (e-mail:
+gongjia@sais.com.cn; renzhih@shanghaitech.edu.cn).
+Fig. 1.
+Illustration of the trade-off between spatial resolution and signal-
+to-noise ratio (SNR) under a simulated ultra-low MRI system (64 mT). In
+the high-resolution but low-SNR setting, severe noise leads to fragmented
+and discontinuous anatomical structures, as highlighted in the yellow boxes.
+The balanced regime produces more coherent and structurally consistent
+reconstructions, closely matching the HR reference. In the low-resolution
+but high-SNR setting, structures appear over-smoothed, and fine anatomical
+details are lost due to partial volume effects.
+tumors, cerebrovascular diseases, and neurodegenerative dis-
+orders [1]–[3]. However, acquiring high-quality MRI scans
+typically requires expensive hardware and prolonged acqui-
+sition times [4], [5], significantly limiting accessibility. A
+promising alternative is to capture low-resolution images using
+cost-effective hardware and computationally reconstruct high-
+quality counterparts through super-resolution (SR) [6]–[8].
+Early MRI super-resolution works [9]–[11] typically re-
+lied on handcrafted priors and precise image registration
+to model the correlation between high-resolution (HR) and
+low-resolution (LR) images, such as frequency-domain reg-
+ularization [12]–[14] and spatial-domain interpolation [15],
+[16]. However, relying heavily on handcrafted priors limited
+their ability to faithfully recover fine anatomical structures
+and made them sensitive to noise and motion artifacts [6],
+[17], [18]. To address these limitations, recent approaches
+leverage deep learning to learn data-driven mappings from
+low- to high-resolution MRI images via CNNs [19]–[22] or
+Transformers [23]–[25]. In parallel, generative models [26]–
+[29] have been explored to enhance structural realism by
+optimizing models to generate realistic MRI images.
+Despite strong performance, most MRI super-resolution
+methods [30]–[32] treat the task as a deterministic mapping
+from a given low-resolution scan to a fixed high-resolution tar-
+0000–0000/00$00.00 © 2021 IEEE
+arXiv:2607.06238v1  [cs.CV]  7 Jul 2026
+
+
+=== PDF PAGE 2 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+2
+get. This perspective assumes that the acquired low-resolution
+image is an optimal and static starting point determined by the
+MRI system. In practice, however, each MRI scan represents
+only one of many possible realizations, and MRI image
+quality can vary substantially in both SNR and resolution.
+As dictated by MRI acquisition physics [33], [34], under
+fixed hardware and scan-time constraints, spatial resolution
+and SNR are fundamentally intertwined: increasing resolution
+reduces SNR, while improving SNR can come at the cost
+of spatial resolution. Furthermore, recent studies show that
+tuning acquisition parameters to achieve an SNR of around
+16 dB captures the most structurally informative content [35],
+especially for ultra-low-field MRI systems, as illustrated in
+Figure 1. This underscores that the given low-resolution image
+may be not the optimal one acquired from the MRI system.
+These observations motivate a rethinking of MRI super-
+resolution. Rather than treating super-resolution as the post
+hoc upscaling of a fixed low-resolution input, we ask whether
+MRI super-resolution can be formulated as a physics-
+aware reconstruction problem that is explicitly tied to the
+underlying imaging system. Under this paradigm, super-
+resolution should account for the acquisition process itself,
+where resolution, SNR, and sampling efficiency are inherently
+coupled and dynamically traded off. The goal is thus not
+merely to increase spatial resolution, but to reconstruct images
+with improved structural clarity and physical fidelity under
+given hardware and acquisition constraints. However, realizing
+this paradigm is challenging: models must be capable of
+handling diverse acquisition regimes while preserving physi-
+cally plausible and physiologically meaningful structures. Yet
+most existing MRI super-resolution methods [36]–[38] are
+built for predefined, integer upsampling ratios, limiting their
+applicability to resolution-heterogeneous acquisitions.
+To address this limitation, we propose adapting the 2D
+Gaussian Splatting (2D GS) framework [39] to the MRI
+domain by treating the image as a continuous signal rather
+than a discrete pixel array. The core idea for supporting
+dynamic input resolution is to reformulate reconstruction as
+a coordinate-based rendering problem: instead of operating on
+a fixed-size grid, 2D GS learns to map low-resolution inputs of
+arbitrary dimensions into a unified, continuous Gaussian field,
+thereby enabling flexible, resolution-agnostic reconstruction.
+However, directly applying 2D GS to MRI remains non-trivial
+due to three reasons: (1) Lack of domain-specific priors: Un-
+like natural images, MRI data adheres to specific anatomical
+structures and acquisition-dependent “fingerprints.” Ignoring
+these priors typically leads to suboptimal structural fidelity
+and poor tissue definition. (2) Lack of biophysical plausibility:
+MRI signals are determined by biophysical properties, such as
+proton density and relaxation parameters (T1, T2), rather than
+independent RGB channels. Without enforcing biophysical
+constraints, reconstructions often lack physical validity and
+consistency. (3) Limited Data: Paired low- and high-resolution
+MRI datasets across diverse resolution settings are limited in
+practice, restricting the training of robust, resolution-agnostic
+models.
+To address the first challenge, we introduce the prior-
+aware Gaussian representation, which integrates anatomical
+and system-specific priors into the geometric modeling for
+MRI super-resolution. First, based on the observation that
+geometric complexity varies across different brain regions,
+we propose an Anatomical Structure Prior that initializes
+tissue-specific Gaussian kernel densities, ensuring that repre-
+sentational capacity is concentrated in anatomically intricate
+regions, such as cortical folds. Second, recognizing that MRI
+systems exhibit inherent global patterns (e.g., point spread
+functions and acquisition artifacts), we introduce an Imaging
+System Prior that captures these system-wide characteristics
+through a covariance dictionary. Specifically, this covariance
+dictionary models the discrepancy between raw MRI signals
+and the underlying anatomy, ensuring that the geometric
+shapes of Gaussian primitives remain consistent with the
+unique acquisition properties of the imaging hardware.
+To address the biophysical consistency concern, we ad-
+ditionally introduce physics-constrained
+signal
+modeling
+grounded in MRI acquisition physics. Rather than directly
+regressing pixel intensities, our framework predicts intrinsic
+tissue parameters—proton density (ρ) and effective relaxation
+rate (R2)—and subsequently computes signal intensity through
+the governing physical equations. This formulation ensures
+that reconstructed images maintain biophysically plausible
+contrast relationships (e.g., CSF appearing hyperintense rel-
+ative to gray matter in T2-weighted imaging). Furthermore, to
+overcome data scarcity, we develop a meta-learning frame-
+work that enables effective utilization of rare paired low- and
+high-resolution real data by first pretraining the model on
+simulated data and then adapting it to real-world conditions
+through meta-learning.
+The main contributions of this work are:
+1) Physics-aware
+MRI
+super-resolution
+framework.
+We reformulate MRI super-resolution as a physics-
+aware reconstruction problem that explicitly models the
+resolution-SNR trade-off, enabling enhanced detail recov-
+ery beyond conventional fixed-scale approaches.
+2) 2D Gaussian Splatting-based MRI super-resolution.
+We pioneer the adaptation of 2D Gaussian Splatting
+to MRI super-resolution through multiple carefully de-
+signed modules, including segmentation-guided primitive
+initialization, an MRI-specific covariance dictionary, and
+physics-constrained signal modeling that ensures bio-
+physically plausible reconstructions.
+3) State-of-the-art performance. Our framework signifi-
+cantly outperforms all baseline methods on both dynamic-
+resolution datasets and the FastMRI benchmark in terms
+of quantitative metrics and qualitative comparisons,
+demonstrating considerable potential for practical clinical
+applications.
+II. RELATED WORK
+A. MRI Super Resolution
+High-resolution magnetic resonance imaging (MRI) is cru-
+cial for accurate anatomical assessment, but its acquisition is
+constrained by the inherent trade-off among spatial resolu-
+tion, signal-to-noise ratio (SNR), and scan time. Specifically,
+achieving higher spatial resolution typically requires longer
+
+
+=== PDF PAGE 3 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+3
+scan times to maintain sufficient SNR. Low-resolution (LR)
+imaging is faster and may boost SNR, but often lacks the
+detail needed for high-quality diagnostics [40]. To alleviate
+the inherent trader-off, MRI super-resolution aims to recon-
+struct HR images from more accessible LR scans. MRI SR
+methods can be categorized into model-based approaches and
+learning-based approaches. Model-based methods explicitly
+formulate the image degradation process and recover the HR
+image by solving an inverse optimization problem. Within
+this framework, different approaches are mainly distinguished
+by the choice of handcrafted priors. Classical approaches in-
+clude Tikhonov [41], [42], total variation(TV) [43]–[45], self-
+similarity [15], [46], [47], low-rankness [45], [48]–[50], sparse
+representation [51]–[53], non-local mean [54]–[56], and gradi-
+ent guidance [57]–[59]. However, their effectiveness strongly
+depends on the assumed degradation model and the manually
+designed regularization terms, making them less robust to
+complex real-world degradations, especially in low-field MRI.
+To overcome these limitations, learning-based methods have
+emerged as a powerful alternative, which learn the mapping
+from LR to HR images directly from data without relying
+on explicit degradation models or handcrafted prior terms.
+Recent work leverages generative model such as generative
+adversarial networks (GANs) [60]–[64], diffusion models [28],
+[29], Implicit Neural Representations (INRs) [65], [66] and 2D
+Gaussian Splatting (2D GS) [39], [67] to enhance perceptual
+quality.
+Despite significant progress, existing MRI super-resolution
+methods predominantly frame the task as a deterministic
+mapping from a specific low-resolution input to a fixed high-
+resolution target, without considering the MRI acquisition sys-
+tem itself. In contrast, we propose a physics-aware MRI super-
+resolution framework that explicitly models the resolution-
+SNR trade-off, enabling enhanced detail recovery beyond
+conventional fixed-scale approaches.
+B. Continuous Super-Resolution
+Traditional super-resolution methods are typically designed
+for discrete and predefined integer upscaling factors, such as
+×2, ×4, or ×8. While these approaches have achieved remark-
+able performance, they lack flexibility in handling continu-
+ous resolutions required in real-world scenarios. Additionally,
+separate models are often trained for different scaling factors,
+which significantly increases the computational cost. To ad-
+dress these limitations, recent works have explored arbitrary-
+scale super-resolution (ASSR) methods, which aim to train a
+unified model capable of handling arbitrary upscaling factors.
+For example, MetaSR [68] introduces a meta-learning-based
+framework to predict upsampling filters conditioned on arbi-
+trary scale factors, enabling flexible resolution enhancement.
+LIIF [69] models images as continuous functions by learning
+local implicit representations, allowing pixel-wise prediction
+at arbitrary coordinates. LTE [70] further improves LIIF by
+incorporating local texture estimation to better capture high-
+frequency details. CiaoSR [71] enhances coordinate-based SR
+with improved feature aggregation strategies, achieving more
+accurate continuous reconstruction. However, these implicit
+modeling methods struggle to explicitly capture continuous
+signal structures and rely on time-consuming upsampling and
+decoding processes, resulting in suboptimal efficiency and
+limited generalization capability [39]. Recently, 2D Gaussian
+Splatting (2D GS) [39], [67] has emerged as a promising alter-
+native for continuous super-resolution, demonstrating superior
+performance over previous methods. Motivated by this, we
+adapt 2D GS to MRI super-resolution by introducing prior-
+aware Gaussian representation and a physically-constrained
+intensity module, enabling better structural clarity and contrast
+fidelity.
+III. PRELIMINARY
+A. Resolution-SNR Trade-off in MRI
+We first clarify the resolution-SNR trade-off in MRI, which
+forms the foundation of our work. The MRI signal originates
+from hydrogen protons in the body, and the detected signal
+from each voxel represents the sum of contributions from all
+protons within it. Thus, signal amplitude is approximately
+proportional to voxel volume. When voxel size is reduced
+to increase spatial resolution, signal amplitude decreases pro-
+portionally. However, noise arises primarily from the receiver
+coils and remains constant regardless of voxel size. Because
+noise does not scale down with voxel volume as signal does,
+smaller voxels exhibit lower SNR, creating an intrinsic trade-
+off between spatial resolution and SNR.
+Formally, we start from the basic MRI signal equation to
+derive this resolution–SNR trade-off. Specifically, taken the
+most clinical-widely used sequence Spin Echo sequence [72]
+as example, the measured MRI signal of a single hydrogen
+spin (Shp) can be given by:
+Shp = C · B0 ·
+
+
+1 −e
+−
+TR
+T1(B0)
+
+
+· e
+−
+TE
+T2(B0) ,
+(1)
+where C is a system-dependent constant incorporating hard-
+ware sensitivity and physical constants, B0 is the main mag-
+netic field strength, TR is the repetition time, TE is the
+echo time, and T1(B0) and T2(B0) are the longitudinal and
+transverse relaxation times, respectively.
+For a voxel of volume Vvoxel = ∆x · ∆y · ∆z, the total
+number of contributing spins scales linearly with Vvoxel, so
+the signal amplitude is given by:
+Svoxel ∝
+Z
+Vvoxel
+ρ(r) Shp dr,
+(2)
+where ρ(r) is the proton density (the number of hydrogen
+spins per unit volume) at position r. Consequently, when
+∆x, ∆y, ∆z are small, Svoxel scales approximately linearly
+with the voxel volume.
+Meanwhile, the noise introduced by system hardware during
+acquisition remains approximately independent of voxel size
+and decreases only with signal averaging and acquisition time:
+σn ∝
+1
+p
+NexTacq
+,
+(3)
+
+
+=== PDF PAGE 4 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+4
+where Nex is the number of scanning repetitions and Tacq is
+acquision time.
+From Eqs. (2)–(3), the classical MRI SNR expression be-
+comes [73]:
+SNR ∝Svoxel
+σn
+∝¯ρ∆x∆y∆z
+1
+p
+NexTacq
+= ¯ρ∆x∆y∆z
+p
+NexTacq,
+(4)
+where ¯ρ is the average proton density within the small voxel.
+This Eq. 4 directly reveals the trade-off relationship between
+resolution and SNR, which significantly impact the MRI image
+quality as shown in Fig. 1. This motivates us to search optimal
+resolution image for MRI super-resolution. For more details,
+see in Section S1 of Supplementary Materials.
+B. 2D Gaussian Splatting for Super-Resolution
+Achieving such dynamic super-resolution requires an image
+representation that is inherently continuous and resolution-
+agnostic. 2D Gaussian Splatting (2D GS) [39] offers precisely
+this capability by representing images as collections of geo-
+metric primitives rather than discrete pixel grids. We adopt
+2D GS as the foundation of our method and briefly review its
+formulation here.
+The core idea of 2D GS is to represent an image using N
+anisotropic Gaussian primitives, each defined by learnable spa-
+tial and appearance parameters. This continuous representation
+naturally supports arbitrary-scale super-resolution without re-
+training. The framework operates in three stages: (1) encoding
+a low-resolution input into continuous feature representations,
+(2) predicting the properties of Gaussian primitives from these
+features, and (3) rendering the high-resolution output image.
+We detail each stage below.
+Feature Extraction. Given a low-resolution (LR) input image
+ILR, a backbone encoder E(·) is first employed to extract deep
+feature representations:
+F = E(ILR),
+(5)
+These features encode both local texture details and global
+structural information, providing the foundation for subsequent
+Gaussian parameter prediction.
+Gaussian Parameter Prediction. The parameters of all Gaus-
+sian primitives are predicted from the feature representation F
+via a set of lightweight multilayer perceptrons (MLPs):
+{µi, Σi, ci}N
+i=1 = MLP(F),
+(6)
+where µi
+∈R2 denotes the spatial position, ci
+∈R3
+denotes the color, and Σi ∈R2×2 denotes the covariance
+matrix of the i-th Gaussian primitive. Specifically, the color
+parameter represents the amplitude of the Gaussian distri-
+bution, corresponding to pixel intensity values (e.g., three
+channels for RGB images). The covariance matrix controls the
+spatial extent and orientation of the Gaussian kernel, enabling
+anisotropic modeling of local image structures.
+Image Rendering. Once the Gaussian primitives are defined,
+a high-resolution image is rendered by these primitives:
+I(x) =
+N
+X
+i=1
+G(x; µi, Σi, ci),
+(7)
+High-resolution images at arbitrary scales can be obtained by
+discretizing this field onto a target coordinate grid.
+Training Objective. The rendering process is fully differen-
+tiable, allowing the entire pipeline to be optimized end-to-end.
+Given paired LR–HR training data, the model is supervised
+using a reconstruction loss:
+Lrec = ∥I(x) −IHR∥1.
+(8)
+Limitations for MRI Application. While 2D GS achieves
+strong performance on natural images, direct application to
+MRI presents several challenges:
+• Lack of domain-specific priors: Position and covariance
+estimation without guidance from anatomical and imag-
+ing system priors may generate geometrically unreliable
+primitives, undermining structural coherence.
+• Lack of biophysical plausibility: Direct intensity predic-
+tion without MRI-physics contrains may produce phys-
+ically implausible tissue contrasts, compromising down-
+stream analysis quality.
+• Limited data: Paired low- and high-resolution MRI im-
+ages are scarce. Although this is not a limitation specific
+to 2D GS, this MRI-specific challenge still needs to be
+addressed, as it poses significant difficulties for effective
+model optimization.
+IV. METHOD
+As discussed in the preliminary section, our goal is to
+achieve dynamic adjustment along the resolution-SNR spec-
+trum, enabling MRI super-resolution at informatively optimal
+operating points. Moreover, while 2D Gaussian Splatting (2D
+GS) provides a suitable framework that inherently supports
+continuous input resolution, the limitations identified above
+hinder the direct application of vanilla 2D GS to this task.
+To address these challenges, we propose a physics-aware
+Gaussian splatting framework that enables continuous-scale
+MRI super-resolution. Specifically, as illustrated in Figure 2,
+our approach introduces three targeted innovations: (1) Prior-
+aware Gaussian representation (Section IV-A) that insert
+domian-specific priors to guarantee anatomy structural fidelity
+and clarity, (2) Physics-constrained signal modeling (Sec-
+tion IV-B) that designs a tissue relaxation parameters-based
+signal equation for super-resolution to ensures biophysically
+plausible, and (3) Meta-learning-based adaptation (Sec-
+tion IV-C) that bridges the domain gap between synthetic
+training and real low-field acquisitions.
+A. Prior-Aware Gaussian Representation
+Effective Gaussian splatting relies on appropriate primitive
+initialization and covariance parameterization. However, the
+original 2D GS determines these spatial positions and geomet-
+ric properties without domain-specific guidance, employing
+grid-based uniform initialization and computing covariance pa-
+rameters according to natural image characteristics, leading to
+suboptimal performance. Here, we introduce two critical priors
+in MRI: anatomical structure and imaging system fingerprint.
+The anatomical structure prior models structural complexities
+of different tissues, assisting model to easier initialize and
+
+
+=== PDF PAGE 5 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+5
+Fig. 2. Overview of the proposed physics-aware 2D GS framework. An arbitrary-resolution input is processed through two parallel pathways: a segmentator
+generates tissue masks for segmentation-guided primitive initialization, while an encoder extracts low-resolution features. Two modules subsequently estimate
+Gaussian parameters: prior-aware representation predicts position offsets and selects covariance matrices from an MRI-specific dictionary, while physics-
+constrained signal modeling computes intensities from tissue properties (ρ, R2) via the MRI signal equation. The final high-resolution output is rendered
+through differentiable splatting.
+refine the Gaussian primitive’s position. And the imaging
+system fingerprint refers to the global MRI system pattern,
+such as point spread function and acquisition artifacts, helping
+model to effectively optimize the final covariance of Gaussian
+primitives. We details how to utilize each prior below.
+1) Anatomical structure guided initialization and refine-
+ment: From anatomy perspective, different brain tissues are
+assumed to have different structural complexities, e.g. in brain,
+the structure of components, gray matter (GM), white matter
+(WM) is relatively complex and cerebrospinal fluid (CSF)
+tends to be simpler. Given this, we propose a segmentation-
+guided initialization that places more primitives to structurally
+complex regions, ensuring adequate representational capacity
+where it is most needed.
+Specifically, a segmentator is applied to generate a tissue
+segmentation mask that partitions the image into K regions
+{Ωk}K
+k=1 (e.g., CSF, gray matter, white matter, and back-
+ground for brain). For each region, we assign a density weight
+that jointly accounts for two factors: the region’s spatial extent
+and its structural complexity. Intuitively, tissues with more
+intricate structures should be represented with a denser set of
+Gaussian primitives, while larger regions should also receive
+proportionally more primitives to adequately cover their area.
+Concretely, the density weight for region Ωk is defined as
+dk =
+ak · wk
+PK
+j=1 aj · wj
+,
+(9)
+where ak =
+|Ωk|
+P
+j |Ωj| is the normalized area ratio, and wk is
+a predefined complexity weight reflecting the morphological
+intricacy of each tissue type. We set wGM > wWM > wCSF,
+based on the observation that gray matter usually exhibits the
+most complex folding patterns, white matter has moderate
+complexity, and CSF regions are relatively homogeneous.
+Given a total budget of N primitives, region Ωk receives
+Nk =
+
+dk · N
+
+,
+(10)
+primitives. This design ensures that the Gaussian kernel sam-
+pling density is adaptively higher for tissues that are both more
+complex and occupy a larger area, leading to a more faithful
+and efficient representation of different brain structures.
+Although initialization determines anatomically meaningful
+starting positions, optimal primitive placement may require
+further adjustment to capture local image content. Thus, we
+propose a position refinement module Mpos that predicts per-
+primitive offsets conditioned on the extracted feature map:
+µi = µ(0)
+i
++ δ tanh
+ Mpos(FLR)
+
+i,
+(11)
+where tanh constrains the normalized offsets to [−1, 1],
+and the scaling factor δ controls the maximum displacement
+range [−δ, δ], preventing excessive drift from the anatomically
+grounded initial positions. This two-stage design combines
+anatomical structure priors with data-driven refinement, al-
+lowing primitives to adapt to patient-specific variations while
+maintaining anatomical plausibility.
+2) Image system-prior based Covariance optimization:
+As shown in Figure 2, following position refinement, we
+
+
+=== PDF PAGE 6 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+6
+proceed to optimize the kernel geometry properties. Our key
+insight is that when a Gaussian primitive is optimized to
+represent a local region in an MRI image, its geometry reflects
+not only the underlying anatomical structure but also the
+imaging characteristics introduced by the MRI acquisition
+system. Consequently, the covariance matrices are inherently
+influenced by imaging system priors.
+Motivated by this observation, we introduce an MRI-
+Specific Covariance Dictionary that records the covariance
+distribution of high-resolution MRI images. Specifically, com-
+bined with the anatomical structure designs introduced above,
+this dictionary effectively captures MRI system patterns (such
+as acquisition artifacts and point spread functions), ensuring
+that our model generates structures consistent with hardware-
+specific characteristics.
+To build our dictionary, we collected a large number of
+high-resolution brain MRI slices and fitted each with 2D
+GS using standard optimization. From these fitted primitives,
+we extracted the covariance parameters (σ2
+x, σ2
+y, ρσxσy) and
+analyzed their empirical distributions. The parameters exhibit
+characteristic that are notably distinct from those observed in
+natural images, reflecting the unique spatial statistics imposed
+by MRI physics. We then constructed a dictionary of M
+representative covariance matrices {Σdict
+j }M
+j=1 by sampling
+from these empirical distributions.
+During super-resolution, rather than directly predicting co-
+variance entries, the covariance module Mcov outputs combi-
+nation weights over dictionary elements:
+Σi =
+M
+X
+j=1
+Softmax(Mcov(FLR))i,j · Σdict
+j .
+(12)
+This formulation constrains the covariance space to MRI-
+realistic configurations, improving training stability while pre-
+serving flexibility for diverse anatomical structures.
+B. Physics-Constrained Signal Modeling
+The prior-aware representation introduced above determines
+where Gaussian primitives are placed and how they are shaped.
+Now we turn to the question of what intensity values these
+primitives should carry.
+In MRI, image intensity is not an arbitrary quantity but
+is governed by well-defined biophysical processes described
+by the Bloch equations. Therefore, directly predicting pixel
+intensities neglects this underlying physics and may produce
+outputs that violate expected tissue contrast relationships. To
+address this, we introduce physics-constrained signal modeling
+that grounds intensity prediction in tissue relaxation properties
+and local proton density, ensuring that reconstructed images
+remain consistent with MRI signal formation principles.
+1) Signal Formation Model: MRI signal intensity is fun-
+damentally determined by tissue-specific relaxation properties
+and acquisition parameters. For T2-weighted imaging, the
+signal can be modeled as:
+S(ρ, T1, T2) = ρ · (1 −e−T R/T1) · e−T E/T2,
+(13)
+where ρ is proton density, T1 and T2 are longitudinal and
+transverse relaxation times, and TR, TE are the repetition and
+echo time, respectively. In typical T2-weighted acquisitions,
+TR is chosen to be sufficiently long relative to T1, such that
+the T1-dependent term approaches unity. Under this condition,
+the signal simplifies to:
+S ≈ρ · e−T E/T2 = ρ · e−R2,
+(14)
+where R2 = TE/T2 represents the effective relaxation term.
+This equation captures the dominant contrast mechanism in
+T2-weighted images and serves as the physical basis for our
+intensity prediction.
+2) Tissue Parameter Prediction: Rather than directly re-
+gressing pixel intensities, we leverage the signal model above
+to decompose intensity prediction into physically meaningful
+components. Specifically, we interpret each Gaussian primitive
+as representing a localized proton spin ensemble and predict
+its intrinsic tissue parameters:
+[ρi, R2,i] = Msignal(FLR),
+(15)
+where ρi and R2,i denote the proton density and effective
+relaxation term for primitive i. The final primitive intensity is
+then computed through a physics-constrained intensity layer:
+ci = ρi · e−R2,i + δi,
+(16)
+where δi is a learnable residual that accommodates modeling
+approximations and acquisition imperfections not captured by
+the idealized signal equation.
+This physics-grounded formulation ensures that predicted
+intensities arise from tissue-specific parameters rather than
+unconstrained regression, thereby maintaining biophysically
+plausible contrast relationships. Moreover, since ρ and R2 re-
+flect intrinsic tissue properties that are independent of imaging
+resolution, this decomposition encourages the network to learn
+resolution-invariant representations, improving generalization
+across different super-resolution scales.
+C. Model Training and Meta-Learning for Domain Adaptation
+Building upon the MRI-specific network architecture intro-
+duced previously, we now describe the model training and
+meta-learning pipeline.
+Given a large simulated low-field MRI dataset Dsim (e.g.,
+comprising multiple resolution-SNR configurations of 64mT
+images) and a limited amount of paired real low-field MRI
+data Dreal, our training pipeline operates as follows. We first
+employ a segmentator to predict the segmentation mask Dmask
+from the low-resolution input of Dsim. With the synthetic
+paired data Dsim and corresponding anatomical priors Dmask,
+a conventional two-stage training paradigm (i.e., pre-training
+our framework on simulated data followed by fine-tuning
+on Dreal) would encounter two critical limitations. First,
+models pre-trained exclusively on simulated degradations often
+generalize poorly to real low-field acquisitions, as the complex
+imaging characteristics of ultra-low-field MRI are inherently
+difficult to simulate realistically. Second, when encountering
+novel degradation conditions or imaging protocols, such mod-
+els require extensive fine-tuning from scratch, which is time-
+consuming and impractical for clinical deployment.
+
+
+=== PDF PAGE 7 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+7
+To address these limitations, we propose a meta-learning
+extension that replaces the standard training paradigm with
+episodic meta-training, jointly leveraging both Dsim and
+Dreal. Inspired by MAML [74], we reformulate the train-
+ing objective: rather than learning a fixed low-to-high-field
+mapping, we learn a shared initialization that can rapidly
+adapt to unseen low-field conditions with only a few gradient
+steps. This meta-learning framework enables rapid adaptation
+to novel degradation conditions, even in previously unseen
+settings, significantly reducing fine-tuning costs while im-
+proving generalization to real low-field MRI acquisitions, as
+demonstrated in Section. V-C of Supplementary Materials.
+V. EXPERIMENTS
+A. Implementation Details
+Datasets. To investigate our proposed dynamic-resolution
+hypothesis, we use T2-weighted 3T MRI scans from the
+IXI dataset [75] as Ground Truth and simulate them to
+generate low-resolution (LR) data corresponding to a 64mT
+field. Specifically, the simulated LR data include multiple
+resolution levels (scales of 1.0, 0.9, 0.7, 0.5, and 0.25), aiming
+to mimic real 64mT field MRI scans acquired with different
+spatial resolutions. Details of the simulation procedure and
+degradation parameters are provided in Section S2.11 of the
+Supplementary Material. Following the experimental protocol
+established in [76], we use the fastMRI dataset as the bench-
+mark, selecting 960 T2-weighted axial slices for training and
+145 slices for testing. In addition, low-resolution (LR) inputs
+are simulated from the selected slices via k-space truncation.
+Specifically, for a given scaling factor s ∈{4, 5, 6.4}, only the
+central 1/s portion of k-space is retained. all degraded images
+are resampled to 320 × 320 using bicubic interpolation. To
+demonstrate that our framework generalizes to authentic ultra-
+low-field data, we adopt a publicly available paired 64mT–
+3T dataset released by Leiden University Medical Center [77]
+for training and testing. This dataset contains paired low-field
+(64mT) and high-field (3T) brain MRI scans from 11 healthy
+subjects. We include 210 axial T2 slices for meta-learning-
+based domain adaptation experiments, as detailed in Section
+S3.3 of the Supplementary material.
+Training setup. Following previous work [39], we employ
+SwinIR [78] as the encoder backbone and 2D U-Net [79] as
+the segmentator for all experiments. Adam [80] is used as the
+optimizer, with the initial learning rate 1×10−4 and decaying
+by a factor of 0.5 every 100 epochs. We utilize a combination
+of L1 loss, gradient loss and frequency loss for training, with
+a total batch size of 4 and 1,000 epochs on 1 NVIDIA RTX
+4090 GPU.
+B. Experimental Setup
+In this paper, we set up two types of experiments, fo-
+cusing on dynamic-resolution and static-resolution settings.
+To investigate our proposed dynamic-resolution hypothesis,
+we design experiments on two datasets: a simulated 64
+mT–3T paired dataset that we construct, and a real multi-
+resolution dataset consisting of paired 3T and 5T MRI scans.
+Furthermore, we also conduct experiments to evaluate the
+TABLE I
+QUANTITATIVE RESULTS ON SIMULATED AND REAL MULTI-RESOLUTION
+DATASETS.
+Method / Resolution
+SSIM↑
+PSNR↑
+DISTS↓HFEN↓
+Simulated IXI Dataset
+LIIF (×1.0)
+0.8743
+25.20
+0.1968
+0.9248
+LTE (×1.0)
+0.8772
+25.39
+0.1969
+0.6498
+Pixel-to-Gaussian (×1.0)
+0.8607
+24.68
+0.2175
+0.7121
+Ours (×1.0)
+0.9021
+28.06
+0.1231
+0.3157
+Ours (×0.9)
+0.9179
+27.98
+0.1231
+0.3097
+Ours (×0.7)
+0.9234
+28.10
+0.1148
+0.3051
+Ours (×0.5)
+0.9216
+27.87
+0.1180
+0.3096
+Ours (×0.25)
+0.8791
+26.02
+0.1599
+0.4799
+Real Multi-Resolution Dataset
+LIIF (×1.04)
+0.8745
+25.1987
+0.1279
+0.5549
+LTE (×1.04)
+0.8590
+25.9498
+0.1291
+0.4979
+Pixel-to-Gaussian (×1.04)
+0.8387
+24.1312
+0.1283
+0.5644
+Ours (×1.04)
+0.8775
+26.7837
+0.1274
+0.4647
+Ours (×0.90)
+0.8752
+26.6568
+0.1236
+0.4768
+Ours (×0.83)
+0.8706
+26.5472
+0.1227
+0.4836
+Ours (×0.76)
+0.8775
+26.7648
+0.1246
+0.4570
+Ours (×0.69)
+0.8650
+26.5186
+0.1276
+0.4855
+Ours (×0.625)
+0.8471
+25.6540
+0.1405
+0.5565
+Ours (×0.55)
+0.8627
+26.2193
+0.1569
+0.4870
+Ours (×0.50)
+0.8480
+25.8045
+0.1721
+0.5269
+TABLE II
+QUANTITATIVE COMPARISON ON THE FASTMRI BRAIN BENCHMARK.
+BEST RESULTS ARE IN BOLD.
+Method
+4×
+5×
+6.4×
+PSNR↑
+SSIM↑
+PSNR↑
+SSIM↑
+PSNR↑
+SSIM↑
+SwinIR
+31.47
+0.924
+29.41
+0.885
+27.21
+0.867
+MetaSR
+30.21
+0.921
+29.56
+0.887
+27.48
+0.886
+ArSSR
+31.56
+0.922
+30.04
+0.900
+28.05
+0.890
+McMRSR
+31.62
+0.924
+30.28
+0.902
+28.72
+0.894
+ScASSR
+31.84
+0.925
+30.56
+0.904
+28.65
+0.895
+SA-INR
+31.69
+0.924
+30.24
+0.901
+28.41
+0.892
+Score-MRI
+30.02
+0.921
+30.12
+0.899
+26.70
+0.857
+R2D2+
+30.65
+0.924
+30.59
+0.898
+27.29
+0.865
+SR3
+31.50
+0.927
+30.12
+0.899
+28.42
+0.883
+DiracDiff
+30.88
+0.923
+30.02
+0.883
+29.31
+0.867
+DisC-Diff
+31.99
+0.928
+30.75
+0.904
+28.90
+0.896
+DiffMSR
+32.15
+0.932
+30.92
+0.906
+29.15
+0.897
+SS-PRDDiff
+32.19
+0.937
+31.24
+0.907
+29.36
+0.897
+MS-PRDDiff
+32.81
+0.942
+31.90
+0.914
+29.80
+0.905
+Pixel-to-Gau
+33.62
+0.960
+31.42
+0.904
+29.09
+0.899
+Ours
+34.26
+0.962
+32.20
+0.946
+30.06
+0.917
+performance of our model under the static-resolution condition
+using two datasets: a simulated dataset derived from fastMRI
+and a real paired 64 mT–3 T dataset.
+Dynamic-Resolution Experiments: We design dynamic-
+resolution training and testing on two datasets. Following
+the prior work on arbitrary-scale super-resolution (ASSR),
+including MetaSR [68], LTE [70], LIIF [69], CiaoSR [71], we
+conduct an experiment using multi-resolution data from the
+simulated 64mT-3T paired dataset to evaluate our proposed
+
+
+=== PDF PAGE 8 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+8
+Fig. 3. Effect of input resolution on super-resolution quality on the simulated IXI dataset. Two representative cases are shown with varying scales from ×1.0
+to ×0.25. The optimal visual quality is achieved at ×0.7, exhibiting sharper edges and richer details. Red boxes highlight regions for detailed comparison.
+Fig. 4. Visual comparison on the real 3T–5T dynamic-resolution dataset. Our method produces reconstructions most consistent with the 5T Ground Truth,
+with improved structural details and realistic textures.
+dynamic-resolution hypothesis. For each resolution scale,
+we randomly sample 1225 slice pairs for training, 350 pairs
+for validation, and 175 pairs for testing. Details of the slice
+selection procedure are described in the S2 of the Supple-
+mentary material. To validate our findings on real-world data,
+we conduct an experiment on a real-world dynamic-resolution
+dataset collecting from a 3T United Imaging uMR 890 device
+and a 5T United Imaging uMR Jupiter device. All data collec-
+tion was approved by the Ethics Committee of ShanghaiTech
+Universitty (Approval No. Q2026-015), with further details
+provided in supplymentary S5. The dataset consists of multiple
+resolution 3T data (resolution scales of 1.04, 0.9, 0.83, 0.76,
+0.69, 0.625, 0.55, and 0.5) and full-resolution 5T data as
+ground truth, collected from 10 healthy subjects. Details of the
+acquisition protocol and scanning parameters are provided in
+the S2 of the Supplementary material. We perform comparison
+with the following methods: LIIF [69], LTE [70], and Pixel-
+to-Gaussian [39]. All comparison methods are trained using
+their officially released optimal experimental settings.
+Static-Resolution
+Experiments:
+We
+select
+simulated
+paired
+dataset
+as
+benchmark
+from
+fastMRI,
+comparing
+against 14 state-of-the-art methods: traditional SR methods
+
+
+=== PDF PAGE 9 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+9
+Fig. 5. The qualitative results on three simulated datasets under the optimal input resolution. Our method reconstructs fine details of the Ground Truth on
+these datasets. Red boxes highlight regions for detailed comparison.
+(SwinIR [78], MetaSR [68]), MRI-specific methods (Ar-
+SSR [81], McMRSR [82], ScASSR [82], SA-INR [83]),
+and diffusion-based methods (Score-MRI [84], R2D2+ [84],
+SR3 [85], DiracDiff [86], DisC-Diff [87], DiffMSR [36], SS-
+PRDDiff [76], MS-PRDDiff [76]). Following the benchmark
+protocol in [76]. Inspired by [88], we employ meta-learning
+to alleviate the domain gap between simulated data and real
+data. The detailed task design for meta-learning and the meta-
+optimization strategy are provided in Section S3.3. In this
+experiment, we use 920 simulated paired data slices and 180
+real paired data slices for training, and 60 real paired data
+slices for testing. We compare our method with LIIF [69],
+LTE [70], and Pixel-to-Gaussian [39].
+C. Evaluation results
+1) Evaluation metrics.: Following prior work [69], [89], we
+adopt four complementary metrics for evaluation: Peak Signal-
+to-Noise Ratio (PSNR) [90] for pixel-level fidelity, Structural
+Similarity Index (SSIM) [91] for structural consistency, Deep
+Image Structure and Texture Similarity (DISTS) [92] for
+perceptual quality in deep feature space and High-Frequency
+Error Norm (HFEN) [93] using a Laplacian of Gaussian filter
+for evaluating fine structural recovery.
+2) Results on dynamic resolution: Quantitative Results.
+As shown in Table I, on the simulated IXI dataset, our model
+outperforms the three baseline methods across all resolution
+scales in terms of SSIM, PSNR, HFEN, and DISTS. At
+the ×0.7 resolution scale, our method achieves a PSNR of
+28.10 dB, SSIM of 0.9234, HFEN of 0.3051, and DISTS of
+0.1148, representing the best performance among all scales.
+Among all resolution scales, we observe a non-monotonic re-
+lationship between input resolution and SR performance. This
+finding supports our hypothesis that pursuing the highest input
+resolution is not always optimal for SR. To further validate
+whether this observation holds in real-world scenarios, we test
+our method on multi-resolution tasks using the real-world 3T–
+5T dataset. Specifically, at ×0.76, our method achieves the
+lowest HFEN (0.4570) and competitive performance across
+other metrics (SSIM: 0.8775, PSNR: 26.76 dB), indicating
+superior high-frequency structure recovery. Interestingly, the
+highest PSNR (26.78 dB) and SSIM (0.8775) are achieved
+at ×1.04, while the lowest DISTS (0.1227) is obtained at
+×0.83. This suggests that different metrics may favor slightly
+different resolution settings, but the overall trend confirms that
+the optimal resolution lies in an intermediate range rather than
+at the extreme ends. These results strengthen our hypothesis:
+the optimal resolution for MRI super-resolution is not
+necessarily the highest achievable resolution.
+Qualitative Results. As shown in Figure 3, we validate
+our proposed Dynamic-Resolution hypothesis. At ×1.0, the
+SR results exhibit amplified noise and artifacts. At ×0.25,
+excessive degradation leads to loss of structural information
+that cannot be recovered. At the optimal resolution (×0.7), the
+reconstructions exhibit the sharpest edges and richest structural
+details most consistent with the ground truth. As shown in
+Figure 4, our method produces reconstructions that are more
+consistent with the 5T Ground Truth, exhibiting improved
+structural fidelity and realistic textures. The results at interme-
+diate resolutions show better preservation of fine anatomical
+details compared to both the highest and lowest resolution
+
+
+=== PDF PAGE 10 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+10
+Fig. 6. Visual comparison on real 64mT-3T dataset. The SR results of our method can recover fine details from the Ground Truth.
+inputs. On the simulated dataset and the real multi-resolution
+dataset, our experimental results both support the hypothesis
+that the optimal resolution for MRI super-resolution is not
+necessarily the highest achievable resolution.
+3) Results on static resolution: Quantitative Results. As
+shown in Table II, we quantitatively compare our method
+with 14 state-of-the-art approaches across three challenging
+SR scales (4×, 5×, and 6.4×). Our method consistently
+achieves the best performance across all scales and metrics by
+a significant margin. At the 4× scale, our method achieves
+34.26 dB PSNR and 0.962 SSIM, surpassing the second-
+best method (MS-PRDDiff) by 1.45 dB in PSNR and 0.020
+in SSIM. For the more challenging 5× scale, our approach
+attains 32.20 dB PSNR and 0.946 SSIM, with improvements of
+0.30 dB and 0.032 over MS-PRDDiff, respectively. Even at the
+most demanding 6.4× scale, our method maintains superior
+performance with 30.06 dB PSNR and 0.917 SSIM. These
+results demonstrate substantial improvements over both tradi-
+tional approaches (e.g., SwinIR, MetaSR) and recent diffusion-
+based methods (e.g., DiffMSR, SS-PRDDiff), validating the
+effectiveness and generalizability of our framework beyond
+ultra-low-field MRI super-resolution.
+As shown in Table III, our method with meta-learning-
+based domain adaptation significantly outperforms existing
+continuous SR approaches on real 64mT–3T data. Specif-
+ically, our method achieves 26.85 dB PSNR, substantially
+surpassing LIIF (20.28 dB), LTE (20.09 dB), and Pixel-to-
+Gaussian (19.97 dB) by more than 6.5 dB. The higher SSIM
+(0.8856 vs. <0.862 for baselines) indicates better structural
+preservation. More notably, our method achieves significantly
+lower HFEN (0.5432 vs. >0.75 for baselines), demonstrating
+superior recovery of high-frequency anatomical details.
+Qualitative Results. Figure 5 shows the qualitative results
+of our model on three simulated datasets under the optimal
+input resolution. Our method reconstructs fine details of the
+Ground Truth on these datasets. This is not merely an improve-
+ment in resolution, as the SR data more faithfully recovers the
+anatomical structures of the Ground Truth, thereby enhancing
+the image quality of the LR scans and improving their diag-
+nostic utility. The visual comparisons between our mothod and
+baselines on the fastMRI dataset are provided in the S4.
+Figure 6 presents the qualitative results of our Static-
+Resolution experiments on the real 64mT–3T dataset. Base-
+line methods (LIIF, LTE, Pixel-to-Gaussian) produce over-
+smoothed results that lack fine anatomical details or introduce
+hallucinated structures. In contrast, our method faithfully re-
+covers brain anatomical structures, preserving cortical folding
+patterns, white-gray matter boundaries, and ventricular details
+
+
+=== PDF PAGE 11 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+11
+TABLE III
+QUANTITATIVE COMPARISON ON THE REAL PAIRED 64MT–3T DATASET.
+OUR METHOD WITH META-LEARNING-BASED DOMAIN ADAPTATION
+SIGNIFICANTLY OUTPERFORMS BASELINE APPROACHES.
+Method
+PSNR↑
+SSIM↑
+HFEN↓
+DISTS↓
+LIIF
+20.28
+0.8617
+0.8494
+0.1645
+LTE
+20.09
+0.8596
+0.8585
+0.1679
+Pixel-to-Gaussian
+19.97
+0.8508
+0.7573
+0.1726
+Ours
+26.85
+0.8856
+0.5432
+0.1454
+that are consistent with the 3T reference.
+D. Ablation Study
+To verify the contribution of each proposed component, we
+conduct ablation experiments on the Real 64mT-3T paired
+dataset.
+TABLE IV
+IMPACT OF INITIALIZATION.
+Method
+PSNR ↑
+SSIM ↑
+Baseline
+18.2
+0.71
+Only init
+19.1
+0.68
+Ours
+25.4
+0.85
+Impact of Initialization.
+To
+validate
+the
+effective-
+ness of Segmentation-Guided
+Primitive
+Initialization,
+we
+compare three variants: (1)
+the baseline without any pro-
+posed modules, (2) the base-
+line with a naive initialization strategy (Only init), and (3)
+our full model. As shown in Table IV, our naive initializa-
+tion design improves PSNR from 18.2 to 19.1, indicating
+better pixel-wise fidelity. However, it leads to a decrease in
+SSIM (from 0.71 to 0.68), suggesting that our model with
+initialization lacks structural consistency and may introduce
+anatomical distortions. These results demonstrate that while
+a simple initialization strategy can enhance reconstruction, it
+fails to preserve structural information.
+TABLE V
+IMPACT OF PHYSICS CONSTRAINT.
+Method
+PSNR ↑SSIM ↑
+Baseline
+18.2
+0.71
+w/o Physics
+21.6
+0.55
+Ours
+25.4
+0.85
+Impact
+of
+Physics
+Constraint. To evaluate the
+effectiveness of the proposed
+physics-constrained
+signal
+modeling, we compare three
+variants:
+(1)
+the
+baseline
+model, (2) a model without
+physics-constrained modeling (w/o Physics), and (3) the full
+model. As shown in Table V, the variant without the physics
+constraint leads to clear performance degradation, especially
+in SSIM (from 0.85 to 0.55), indicating a significant loss
+of structural consistency. In addition, PSNR also decreases
+compared to the full model (from 25.4 to 21.6). These results
+demonstrate that the physics-constrained design plays a
+crucial role in improving reconstruction quality by enforcing
+structural consistency and suppressing unrealistic artifacts.
+TABLE VI
+IMPACT OF META-LEARNING.
+Method
+PSNR ↑
+SSIM ↑
+Baseline
+18.2
+0.71
+w/o Physics
+19.7
+0.82
+Ours
+25.4
+0.85
+Impact of Meta-learning.
+To
+evaluate
+the
+effective-
+ness of the proposed meta-
+learning strategy, we com-
+pare three variants: (1) the
+baseline model without any
+proposed components, (2) a
+model without meta-learning (w/o Meta), and (3) the full
+model. As shown in Table VI, the w/o Meta variant achieves
+moderate improvements over the baseline in both PSNR
+(18.2 →19.7) and SSIM (0.71 →0.82), indicating that the
+other components contribute to better reconstruction quality.
+However, the full model significantly outperforms the w/o
+Meta variant, with PSNR increasing from 19.7 to 25.4 and
+SSIM from 0.82 to 0.85. By learning from diverse degradation
+patterns, the meta-learning strategy effectively improves the
+model’s generalization ability, enabling our model to better
+handle domain variations.
+The quantitative results are reported in the supplementary
+material S4.2. These results further validate the effectiveness
+of the proposed components and support the conclusions
+drawn from the main ablation study.
+VI. CONCLUSION
+We reveal that the low-resolution image may be not the
+optimal one acquired from the MRI system due to the MRI
+image quality can vary substantially in both SNR and resolu-
+tion. Based on this finding, we propose a hypothesis that the
+optimal resolution for MRI super-resolution is not necessarily
+the highest achievable resolution. To validate this, we propose
+a physics-informed MRI super-resolution framework based on
+2D Gaussian Splatting. Our methods confirm the proposed
+hypothesis, and outperform all baseline methods on both
+dynamic-resolution datasets and the FastMRI benchmark in
+terms of quantitative metrics and qualitative comparisons.
+VII. ACKNOWLEDGMENT
+This work was supported by the ShanghaiTech AI4S Initia-
+tive. The authors gratefully acknowledge the Advanced MR
+Imaging Research Laboratory, School of Biomedical Engi-
+neering, ShanghaiTech University, for providing the imaging
+facilities and technical support. Computational resources were
+provided in part by the High-Performance Computing Shared
+Services Platform at ShanghaiTech University.
+
+
+=== PDF PAGE 12 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+12
+REFERENCES
+[1] M. J. Kransdorf, “Magnetic resonance imaging of musculoskeletal
+tumors,” Orthopedics, vol. 17, no. 11, pp. 1003–1016, 1994.
+[2] J. A. Detre, D. C. Alsop, L. Vives, L. Maccotta, J. Teener, and E. Raps,
+“Noninvasive mri evaluation of cerebral blood flow in cerebrovascular
+disease,” Neurology, vol. 50, no. 3, pp. 633–641, 1998.
+[3] J. Islam and Y. Zhang, “Brain mri analysis for alzheimer’s disease diag-
+nosis using an ensemble system of deep convolutional neural networks,”
+Brain informatics, vol. 5, no. 2, p. 2, 2018.
+[4] R. Heckel, M. Jacob, A. Chaudhari, O. Perlman, and E. Shimron,
+“Deep learning for accelerated and robust mri reconstruction,” Magnetic
+Resonance Materials in Physics, Biology and Medicine, vol. 37, no. 3,
+pp. 335–368, 2024.
+[5] G. Zeng, Y. Guo, J. Zhan, Z. Wang, Z. Lai, X. Du, X. Qu, and D. Guo,
+“A review on deep learning mri reconstruction without fully sampled
+k-space,” BMC Medical Imaging, vol. 21, no. 1, p. 195, 2021.
+[6] E. Van Reeth, I. W. Tham, C. H. Tan, and C. L. Poh, “Super-resolution
+in magnetic resonance imaging: a review,” Concepts in Magnetic Reso-
+nance Part A, vol. 40, no. 6, pp. 306–325, 2012.
+[7] J. Shi, Q. Liu, C. Wang, Q. Zhang, S. Ying, and H. Xu, “Super-
+resolution reconstruction of mr image with a novel residual learning
+network algorithm,” Physics in Medicine & Biology, vol. 63, no. 8, p.
+085011, 2018.
+[8] D. Qiu, Y. Cheng, and X. Wang, “Medical image super-resolution
+reconstruction algorithms based on deep learning: A survey,” Computer
+Methods and Programs in Biomedicine, vol. 238, p. 107590, 2023.
+[9] A. Muhammad, S. Aramvith, K. Duangchaemkarn, and M.-T. Sun,
+“Brain mri image super-resolution reconstruction: a systematic review,”
+IEEE Access, vol. 12, pp. 156 347–156 362, 2024.
+[10] A. C. Yang, M. Kretzler, S. Sudarski, V. Gulani, and N. Seiberlich,
+“Sparse reconstruction techniques in magnetic resonance imaging: meth-
+ods, applications, and challenges to clinical adoption,” Investigative
+radiology, vol. 51, no. 6, pp. 349–364, 2016.
+[11] E. Plenge, D. H. Poot, M. Bernsen, G. Kotek, G. Houston, P. Wielopol-
+ski, L. Van Der Weerd, W. J. Niessen, and E. Meijering, “Super-
+resolution methods in mri: can they improve the trade-off between reso-
+lution, signal-to-noise ratio, and acquisition time?” Magnetic resonance
+in medicine, vol. 68, no. 6, pp. 1983–1993, 2012.
+[12] G. S. Mayer and E. R. Vrscay, “Measuring information gain for
+frequency-encoded super-resolution mri,” Magnetic resonance imaging,
+vol. 25, no. 7, pp. 1058–1069, 2007.
+[13] Q. M. Tieng, G. J. Cowin, D. C. Reutens, G. J. Galloway, and V. Vegh,
+“Mri resolution enhancement: How useful are shifted images obtained
+by changing the demodulation frequency?” Magnetic resonance in
+medicine, vol. 65, no. 3, pp. 664–672, 2011.
+[14] J. Luo, Z. Mou, B. Qin, W. Li, F. Yang, M. Robini, and Y. Zhu, “Fast
+single image super-resolution using estimated low-frequency k-space
+data in mri,” Magnetic resonance imaging, vol. 40, pp. 1–11, 2017.
+[15] J. V. Manj´on, P. Coup´e, A. Buades, D. L. Collins, and M. Robles, “Mri
+superresolution using self-similarity and image priors,” International
+journal of biomedical imaging, vol. 2010, no. 1, p. 425891, 2010.
+[16] E. Carmi, S. Liu, N. Alon, A. Fiat, and D. Fiat, “Resolution enhancement
+in mri,” Magnetic resonance imaging, vol. 24, no. 2, pp. 133–154, 2006.
+[17] H. Greenspan, G. Oz, N. Kiryati, and S. Peled, “Mri inter-slice recon-
+struction using super-resolution,” Magnetic resonance imaging, vol. 20,
+no. 5, pp. 437–446, 2002.
+[18] W. T. Freeman, T. R. Jones, and E. C. Pasztor, “Example-based super-
+resolution,” IEEE Computer graphics and Applications, vol. 22, no. 2,
+pp. 56–65, 2002.
+[19] C.-H. Pham, C. Tor-D´ıez, H. Meunier, N. Bednarek, R. Fablet, N. Passat,
+and F. Rousseau, “Multiscale brain mri super-resolution using deep 3d
+convolutional networks,” Computerized Medical Imaging and Graphics,
+vol. 77, p. 101647, 2019.
+[20] Z. Zhou, A. Ma, Q. Feng, R. Wang, L. Cheng, X. Chen, X. Yang,
+K. Liao, Y. Miao, and Y. Qiu, “Super-resolution of brain tumor mri
+images based on deep learning,” Journal of applied clinical medical
+physics, vol. 23, no. 11, p. e13758, 2022.
+[21] D. Zhu and D. Qiu, “Residual dense network for medical magnetic
+resonance images super-resolution,” Computer Methods and Programs
+in Biomedicine, vol. 209, p. 106330, 2021.
+[22] M. Lyon, P. Armitage, and M. A. ´Alvarez, “Spatio-angular convolutions
+for super-resolution in diffusion mri,” Advances in Neural Information
+Processing Systems, vol. 36, pp. 12 457–12 475, 2023.
+[23] J. Lyu, G. Li, C. Wang, Q. Cai, Q. Dou, D. Zhang, and J. Qin, “Mul-
+ticontrast mri super-resolution via transformer-empowered multiscale
+contextual matching and aggregation,” IEEE Transactions on Neural
+Networks and Learning Systems, vol. 35, no. 9, pp. 12 004–12 014, 2023.
+[24] S. Huang, J. Li, L. Mei, T. Zhang, Z. Chen, Y. Dong, L. Dong,
+S. Liu, and M. Lyu, “Accurate multi-contrast mri super-resolution via a
+dual cross-attention transformer network,” in International Conference
+on Medical Image Computing and Computer-Assisted Intervention.
+Springer, 2023, pp. 313–322.
+[25] G. Li, L. Zhao, J. Sun, Z. Lan, Z. Zhang, J. Chen, Z. Lin, H. Lin, and
+W. Xing, “Rethinking multi-contrast mri super-resolution: Rectangle-
+window cross-attention transformer and arbitrary-scale upsampling,” in
+Proceedings of the IEEE/CVF international conference on computer
+vision, 2023, pp. 21 230–21 240.
+[26] K. Zhang, H. Hu, K. Philbrick, G. M. Conte, J. D. Sobek, P. Rouzrokh,
+and B. J. Erickson, “Soup-gan: Super-resolution mri using generative
+adversarial networks,” Tomography, vol. 8, no. 2, pp. 905–919, 2022.
+[27] Q. Zhang, Y. Hang, F. Wu, S. Wang, and Y. Hong, “Super-resolution
+of 3d medical images by generative adversarial networks with long and
+short-term memory and attention,” Scientific Reports, vol. 15, no. 1, p.
+20828, 2025.
+[28] J. Wang, J. Levman, W. H. L. Pinaya, P.-D. Tudosiu, M. J. Cardoso,
+and R. Marinescu, “Inversesr: 3d brain mri super-resolution using a
+latent diffusion model,” in International conference on medical image
+computing and computer-assisted intervention.
+Springer, 2023, pp.
+438–447.
+[29] M. Safari, S. Wang, Z. Eidex, Q. Li, R. L. Qiu, E. H. Middlebrooks, D. S.
+Yu, and X. Yang, “Mri super-resolution reconstruction using efficient
+diffusion probabilistic model with residual shifting,” Physics in Medicine
+& Biology, vol. 70, no. 12, p. 125008, 2025.
+[30] A. S. Chaudhari, Z. Fang, F. Kogan, J. Wood, K. J. Stevens, E. K.
+Gibbons, J. H. Lee, G. E. Gold, and B. A. Hargreaves, “Super-
+resolution musculoskeletal mri using deep learning,” Magnetic reso-
+nance in medicine, vol. 80, no. 5, pp. 2139–2154, 2018.
+[31] Y. Chen, Y. Xie, Z. Zhou, F. Shi, A. G. Christodoulou, and D. Li,
+“Brain mri super resolution using 3d deep densely connected neural
+networks,” in 2018 IEEE 15th international symposium on biomedical
+imaging (ISBI 2018).
+IEEE, 2018, pp. 739–742.
+[32] Q. Lyu, H. Shan, C. Steber, C. Helis, C. Whitlow, M. Chan, and
+G. Wang, “Multi-contrast super-resolution mri through a progressive
+network,” IEEE transactions on medical imaging, vol. 39, no. 9, pp.
+2738–2749, 2020.
+[33] D. B. Plewes and W. Kucharczyk, “Physics of mri: a primer,” Journal
+of magnetic resonance imaging, vol. 35, no. 5, pp. 1038–1054, 2012.
+[34] S. Currie, N. Hoggard, I. J. Craven, M. Hadjivassiliou, and I. D. Wilkin-
+son, “Understanding mri: basic mr physics for physicians,” Postgraduate
+medical journal, vol. 89, no. 1050, pp. 209–223, 2013.
+[35] S. Portnoy, S. Kale, A. Feintuch, C. Tardif, G. Pike, and R. Henkelman,
+“Information content of snr/resolution trade-offs in three-dimensional
+magnetic resonance imaging,” Medical physics, vol. 36, no. 4, pp. 1442–
+1451, 2009.
+[36] G. Li, C. Rao, J. Mo, Z. Zhang, W. Xing, and L. Zhao, “Rethinking dif-
+fusion model for multi-contrast mri super-resolution,” in Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition
+(CVPR), 2024, pp. 11 365–11 374.
+[37] B. M. Li, L. V. Castorina, M. d. C. Vald´es Hern´andez, U. Clancy, S. J.
+Wiseman, E. Sakka, A. J. Storkey, D. Jaime Garcia, Y. Cheng, F. Doubal
+et al., “Deep attention super-resolution of brain magnetic resonance
+images acquired under clinical protocols,” Frontiers in Computational
+Neuroscience, vol. 16, p. 887633, 2022.
+[38] C. Zhao, B. E. Dewey, D. L. Pham, P. A. Calabresi, D. S. Reich, and
+J. L. Prince, “Smore: a self-supervised anti-aliasing and super-resolution
+algorithm for mri using deep learning,” IEEE transactions on medical
+imaging, vol. 40, no. 3, pp. 805–817, 2020.
+[39] L. Peng, A. Wu, W. Li, P. Xia, X. Dai, X. Zhang, X. Di, H. Sun, R. Pei,
+Y. Wang et al., “Pixel to gaussian: Ultra-fast continuous super-resolution
+with 2d gaussian modeling,” arXiv preprint arXiv:2503.06617, 2025.
+[40] M. Khateri, S. Vasylechko, M. Ghahremani, L. Timms, D. Ko-
+canaogullari, S. K. Warfield, C. Jaimes, D. Karimi, A. Sierra, J. Tohka
+et al., “Mri super-resolution with deep learning: A comprehensive
+survey,” arXiv preprint arXiv:2511.16854, 2025.
+[41] X. Zhang, E. Y. Lam, E. X. Wu, and K. K. Wong, “Application
+of tikhonov regularization to super-resolution reconstruction of brain
+mri images,” in Medical Imaging and Informatics: 2nd International
+Conference, MIMI 2007, Beijing, China, August 14–16, 2007, Revised
+Selected Papers.
+Springer, 2008, pp. 51–56.
+[42] M.
+Brudfors,
+Y.
+Balbastre,
+P.
+Nachev,
+and
+J.
+Ashburner,
+“A
+tool for super-resolving multimodal clinical mri,” arXiv preprint
+arXiv:1909.01140, 2019.
+
+
+=== PDF PAGE 13 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+13
+[43] L. I. Rudin, S. Osher, and E. Fatemi, “Nonlinear total variation based
+noise removal algorithms,” Physica D: Nonlinear Phenomena, vol. 60,
+no. 1–4, pp. 259–268, 1992.
+[44] S. Tourbier, X. Bresson, P. Hagmann, J.-P. Thiran, R. Meuli, and M. B.
+Cuadra, “An efficient total variation algorithm for super-resolution in
+fetal brain mri with adaptive regularization,” NeuroImage, vol. 118, pp.
+584–597, 2015.
+[45] F. Shi, J. Cheng, L. Wang, P.-T. Yap, and D. Shen, “Lrtv: Mr image
+super-resolution with low-rank and total variation regularizations,” IEEE
+Transactions on Medical Imaging, vol. 34, no. 12, pp. 2459–2466, 2015.
+[46] D. Glasner, S. Bagon, and M. Irani, “Super-resolution from a single
+image,” in 2009 IEEE 12th International Conference on Computer
+Vision.
+IEEE, 2009, pp. 349–356.
+[47] A. Bustin, D. Voilliot, A. Menini, J. Felblinger, C. de Chillou,
+D. Burschka, L. Bonnemains, and F. Odille, “Isotropic reconstruction
+of mr images using 3d patch-based self-similarity learning,” IEEE
+Transactions on Medical Imaging, vol. 37, no. 8, pp. 1932–1942, 2018.
+[48] V. Cherukuri, T. Guo, S. J. Schiff, and V. Monga, “Deep mr brain image
+super-resolution using spatio-structural priors,” IEEE Transactions on
+Image Processing, vol. 29, pp. 1368–1383, 2019.
+[49] P. Li, J. Chen, D. Nan, J. Zou, D. Lin, and Y. Hu, “Motion-aligned 4dmri
+reconstruction using higher degree total variation and locally low-rank
+regularization,” Magnetic Resonance Imaging, vol. 93, pp. 97–107, 2022.
+[50] X. Zhang, H. Lu, D. Guo, Z. Lai, H. Ye, X. Peng, B. Zhao, and X. Qu,
+“Accelerated mri reconstruction with separable and enhanced low-rank
+hankel regularization,” IEEE Transactions on Medical Imaging, vol. 41,
+no. 9, pp. 2486–2498, 2022.
+[51] Y. Zhang, J. Liu, W. Yang, and Z. Guo, “Image super-resolution based on
+structure-modulated sparse representation,” IEEE Transactions on Image
+Processing, vol. 24, no. 9, pp. 2797–2810, 2015.
+[52] Y.-H. Wang, J. Qiao, J.-B. Li, P. Fu, S.-C. Chu, and J. F. Roddick,
+“Sparse representation-based mri super-resolution reconstruction,” Mea-
+surement, vol. 47, pp. 946–953, 2014.
+[53] Y. Zhang, G. Wu, P.-T. Yap, Q. Feng, J. Lian, W. Chen, and D. Shen,
+“Hierarchical patch-based sparse representation—a new approach for
+resolution enhancement of 4d-ct lung data,” IEEE Transactions on
+Medical Imaging, vol. 31, no. 11, pp. 1993–2005, 2012.
+[54] M. Protter, M. Elad, H. Takeda, and P. Milanfar, “Generalizing the
+nonlocal-means to super-resolution reconstruction,” IEEE Transactions
+on Image Processing, vol. 18, no. 1, pp. 36–51, 2008.
+[55] J. V. Manj´on, P. Coup´e, A. Buades, V. Fonov, D. L. Collins, and M. Rob-
+les, “Non-local mri upsampling,” Medical Image Analysis, vol. 14, no. 6,
+pp. 784–792, 2010.
+[56] K. Jafari-Khouzani, “Mri upsampling using feature-based nonlocal
+means approach,” IEEE Transactions on Medical Imaging, vol. 33,
+no. 10, pp. 1969–1985, 2014.
+[57] S. Farsiu, M. D. Robinson, M. Elad, and P. Milanfar, “Fast and robust
+multiframe super resolution,” IEEE Transactions on Image Processing,
+vol. 13, no. 10, pp. 1327–1344, 2004.
+[58] Y. Sui, O. Afacan, A. Gholipour, and S. K. Warfield, “Isotropic mri
+super-resolution reconstruction with multi-scale gradient field prior,” in
+International Conference on Medical Image Computing and Computer-
+Assisted Intervention.
+Springer, 2019, pp. 3–11.
+[59] ——, “Learning a gradient guidance for spatially isotropic mri super-
+resolution reconstruction,” in International Conference on Medical Im-
+age Computing and Computer-Assisted Intervention.
+Springer, 2020,
+pp. 136–146.
+[60] C. Ledig, L. Theis, F. Huszar, J. Caballero et al., “Photo-realistic
+single image super-resolution using a generative adversarial network,”
+in Proceedings of the IEEE Conference on Computer Vision and Pattern
+Recognition (CVPR), 2017, pp. 4681–4690.
+[61] J. Wang, Y. Chen, Y. Wu, J. Shi, and J. Gee, “Enhanced generative
+adversarial network for 3d brain mri super-resolution,” in Proceedings
+of the IEEE/CVF Winter Conference on Applications of Computer Vision
+(WACV), 2020, pp. 3627–3636.
+[62] K. Zhang, H. Hu, K. Philbrick, G. M. Conte, J. D. Sobek, P. Rouzrokh,
+and B. J. Erickson, “Soup-gan: Super-resolution mri using generative
+adversarial networks,” Tomography, vol. 8, no. 2, pp. 905–919, 2022.
+[63] Q. Wang, L. Mahler, J. Steiglechner, F. Birk, K. Scheffler, and
+G. Lohmann, “Disgan: Wavelet-informed discriminator guides gan
+to mri super-resolution with noise cleaning,” in Proceedings of the
+IEEE/CVF International Conference on Computer Vision (ICCV), 2023,
+pp. 2452–2461.
+[64] Q. Zhang, Y. Hang, F. Wu, S. Wang, and Y. Hong, “Super-resolution
+of 3d medical images by generative adversarial networks with long and
+short-term memory and attention,” Scientific Reports, vol. 15, no. 1, p.
+20828, 2025.
+[65] J. Xu, D. Moyer, B. Gagoski, J. E. Iglesias, P. E. Grant, P. Golland, and
+E. Adalsteinsson, “Nesvor: Implicit neural representation for slice-to-
+volume reconstruction in mri,” IEEE Transactions on Medical Imaging,
+vol. 42, no. 6, pp. 1707–1719, 2023.
+[66] W. Fang, Y. Tang, H. Guo, M. Yuan, T. C. Mok, K. Yan, J. Yao, X. Chen,
+Z. Liu, L. Lu et al., “Cycleinr: Cycle implicit neural representation
+for arbitrary-scale volumetric super-resolution of medical data,” in
+Proceedings of the IEEE/CVF Conference on Computer Vision and
+Pattern Recognition (CVPR), 2024, pp. 11 631–11 641.
+[67] J. Hu, B. Xia, B. Chen, W. Yang, and L. Zhang, “Gaussiansr: High
+fidelity 2d gaussian splatting for arbitrary-scale image super-resolution,”
+in Proceedings of the AAAI Conference on Artificial Intelligence, vol. 39,
+2025, pp. 3554–3562.
+[68] X. Hu, H. Mu, X. Zhang, Z. Wang, T. Tan, and J. Sun, “Meta-sr:
+A magnification-arbitrary network for super-resolution,” in Proceedings
+of the IEEE Conference on Computer Vision and Pattern Recognition
+(CVPR), 2019, pp. 1575–1584.
+[69] Y. Chen, S. Liu, and X. Wang, “Learning continuous image representa-
+tion with local implicit image function,” in Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition (CVPR), 2021.
+[70] Y. Xu et al., “Local texture estimator for implicit representation func-
+tion,” in Proceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition (CVPR), 2022.
+[71] J. Cao, Q. Wang, Y. Xian, Y. Li, B. Ni, Z. Pi, K. Zhang, Y. Zhang,
+R. Timofte, and L. Van Gool, “Ciaosr: Continuous implicit attention-
+inattention network for arbitrary-scale image super-resolution,” in Pro-
+ceedings of the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), 2023, pp. 1796–1807.
+[72] B. A. Jung and M. Weigel, “Spin echo magnetic resonance imaging,”
+Journal of Magnetic Resonance Imaging, vol. 37, no. 4, pp. 805–817,
+2013.
+[73] R. W. Brown, Y.-C. N. Cheng, E. M. Haacke, M. R. Thompson, and
+R. Venkatesan, Magnetic resonance imaging: physical principles and
+sequence design.
+John Wiley & Sons, 2014.
+[74] A. Nichol, J. Achiam, and J. Schulman, “On first-order meta-learning
+algorithms,” arXiv preprint arXiv:1803.02999, 2018.
+[75] Information eXtraction from Images (IXI) Consortium, “Ixi dataset,”
+https://brain-development.org/ixi-dataset/, accessed: 2026.
+[76] J. Wang, Z. Shi, X. Gu, Y. Yang, and J. Sun, “Diffusion-based arbitrary-
+scale magnetic resonance image super-resolution via progressive k-space
+reconstruction and denoising,” Medical Image Analysis, p. 103814, 2025.
+[77] R. van den Broek, B. Lena, and A. Webb, “Paired 64mt and 3t brain
+mri scans of healthy subjects for neuroimaging research,” May 2024.
+[Online]. Available: https://doi.org/10.5281/zenodo.15862148
+[78] J. Liang, J. Cao, G. Sun, K. Zhang, L. Van Gool, and R. Timofte,
+“Swinir: Image restoration using swin transformer,” in Proceedings of
+the IEEE/CVF International Conference on Computer Vision Workshops
+(ICCVW), 2021, pp. 1833–1844.
+[79] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional networks
+for biomedical image segmentation,” in International Conference on
+Medical image computing and computer-assisted intervention. Springer,
+2015, pp. 234–241.
+[80] D. P. Kingma and J. Ba, “Adam: A method for stochastic optimization,”
+arXiv preprint arXiv:1412.6980, 2014.
+[81] W. Chen, S. Wu, S. Wang, Z. Li, J. Yang, H. Yao, Q. Tian, and
+X. Song, “Multicontrast image super-resolution with deformable atten-
+tion and neighborhood-based feature aggregation (dance): Applications
+in anatomic and metabolic mri,” Medical Image Analysis, vol. 99, p.
+103359, 2025.
+[82] G. Li, J. Lyu, C. Wang, Q. Dou, and J. Qin, “Wavtrans: Synergizing
+wavelet and cross-attention transformer for multi-contrast mri super-
+resolution,” in International Conference on Medical Image Computing
+and Computer-Assisted Intervention (MICCAI), 2022, pp. 463–473.
+[83] X. Wang, S. Wang, H. Xiong, K. Xuan, Z. Zhuang, M. Liu, Z. Shen,
+X. Zhao, L. Zhang, and Q. Wang, “Spatial attention-based implicit neural
+representation for arbitrary reduction of mri slice spacing,” Medical
+Image Analysis, vol. 94, p. 103158, 2024.
+[84] H. Chung, E. S. Lee, and J. C. Ye, “Mr image denoising and super-
+resolution using regularized reverse diffusion,” IEEE Transactions on
+Medical Imaging, vol. 42, no. 4, pp. 922–934, 2023.
+[85] C. Saharia, J. Ho, W. Chan, T. Salimans, D. J. Fleet, and M. Norouzi,
+“Image super-resolution via iterative refinement,” IEEE Transactions on
+Pattern Analysis and Machine Intelligence, vol. 45, no. 4, pp. 4713–
+4726, 2023.
+[86] Z. Fabian, B. Tinaz, and M. Soltanolkotabi, “Diracdiffusion: Denoising
+and incremental reconstruction with assured data-consistency,” in Pro-
+
+
+=== PDF PAGE 14 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+14
+ceedings of the International Conference on Machine Learning (ICML),
+2024.
+[87] Y. Mao, L. Jiang, X. Chen, and C. Li, “Disc-diff: Disentangled con-
+ditional diffusion model for multi-contrast mri super-resolution,” in
+International Conference on Medical Image Computing and Computer-
+Assisted Intervention (MICCAI), 2023, pp. 387–397.
+[88] Y. He, Y. Wang, and X. Yang, “Metags: A meta-learned gaussian-
+phong model for out-of-distribution 3d scene relighting,” arXiv preprint
+arXiv:2405.20791, 2024.
+[89] J. Lee and K. H. Jin, “Local texture estimator for implicit representation
+function,” in CVPR, 2022.
+[90] Q. Huynh-Thu and M. Ghanbari, “Scope of validity of psnr in im-
+age/video quality assessment,” Electronics Letters, vol. 44, no. 13, pp.
+800–801, 2008.
+[91] Z. Wang, A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli, “Image
+quality assessment: From error visibility to structural similarity,” IEEE
+Transactions on Image Processing, vol. 13, no. 4, pp. 600–612, 2004.
+[92] K. Ding, K. Ma, S. Wang, and E. P. Simoncelli, “Image quality assess-
+ment: Unifying structure and texture similarity,” IEEE Transactions on
+Pattern Analysis and Machine Intelligence, vol. 44, no. 5, pp. 2567–
+2581, 2022.
+[93] S. Ravishankar and Y. Bresler, “Mr image reconstruction from highly
+undersampled k-space data by dictionary learning,” IEEE Transactions
+on Medical Imaging, vol. 30, no. 5, pp. 1028–1041, 2011.
+[94] R. Constable, A. Anderson, J. Zhong, and J. Gore, “Factors influencing
+contrast in fast spin-echo mr imaging,” Magnetic resonance imaging,
+vol. 10, no. 4, pp. 497–511, 1992.
+[95] B. Billot, C. Magdamo, Y. Cheng, S. E. Arnold, S. Das, and J. E. Iglesias,
+“Robust machine learning segmentation for large-scale analysis of
+heterogeneous clinical brain mri datasets,” Proceedings of the National
+Academy of Sciences, vol. 120, no. 9, p. e2216399120, 2023.
+S1. THEORETICAL BACKGROUND: RESOLUTION-SNR
+TRADE-OFF IN MRI
+MRI does not directly measure image intensities at discrete
+pixels. Instead, the received signal is a Fourier encoding of
+the continuous spin distribution modulated by the imaging
+sequence and receiver coils. After demodulation, the signal
+received by the c-th coil at time t can be written as
+sc(t) =
+Z
+Ω
+ρ(r)Cc(r)M(r; TR, TE)e−i2πk(t)·rdr + nc(t),
+(S17)
+where r denotes spatial location, ρ(r) is the proton density,
+Cc(r) is the coil sensitivity, M(r; TR, TE) is the sequence-
+dependent contrast weighting, k(t) is the k-space trajectory
+determined by the applied gradients, and nc(t) is the acquisi-
+tion noise. For a spin-echo acquisition, the contrast term can
+be approximated as
+M(r; TR, TE) ∝B0
+
+1 −e−T R/T1(r)
+e−T E/T2(r), (S18)
+where B0 is the main magnetic field strength, and T1(r) and
+T2(r) are the longitudinal and transverse relaxation times,
+respectively. Substituting Eq. (S18) into Eq. (S17) gives the
+standard interpretation that the measured signal is proportional
+to the number of contributing spins, weighted by tissue con-
+trast and coil sensitivity.
+For notational simplicity, we define the contrast-weighted
+spin density of the c-th coil as
+mc(r) = ρ(r)Cc(r)M(r; TR, TE),
+(S19)
+Then Eq. (S17) becomes
+sc(t) =
+Z
+Ω
+mc(r)e−i2πk(t)·rdr + nc(t),
+(S20)
+This equation shows that MRI acquisition samples the Fourier
+transform of mc(r). Due to finite k-space coverage, the
+reconstructed image is not an ideal point-wise sampling of
+mc(r), but a local average determined by the point spread
+function (PSF). The reconstructed value at voxel j can be
+expressed as
+Ic,j ≈
+Z
+Ω
+mc(r)hj(r)dr + ηc,j,
+(S21)
+where hj(r) is the PSF centered at voxel j, and ηc,j is the
+corresponding image-domain noise. If the tissue properties and
+coil sensitivity vary slowly inside the voxel and the main lobe
+of hj(r) is approximated by the voxel support Vj, Eq. (S21)
+reduces to
+Sc,j ∝
+Z
+Vj
+mc(r)dr ≈¯mc,jVvox,
+(S22)
+where ¯mc,j is the average contrast-weighted spin density
+within the voxel and
+Vvox = ∆x∆y∆z,
+(S23)
+is the voxel volume. Therefore, under a fixed imaging protocol
+and within locally homogeneous tissue, the voxel signal scales
+linearly with the voxel volume.
+
+
+=== PDF PAGE 15 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+15
+The acquisition noise is dominated by thermal noise from
+the receiver chain and is commonly modeled as zero-mean
+complex Gaussian noise. After linear Fourier reconstruction
+and coil combination, coil-dependent constants can be ab-
+sorbed into a proportionality factor. The image-domain noise
+standard deviation then follows the conventional scaling
+σimg ∝
+r
+BW
+Nex
+,
+(S24)
+where BW is the receiver bandwidth and Nex is the number
+of excitations or averages. This relation reflects that the noise
+variance increases approximately linearly with receiver band-
+width, while averaging Nex independent acquisitions reduces
+the variance by a factor of Nex. Combining Eqs. (S22)–(S24),
+the voxel-wise SNR satisfies
+SNRj =
+Sj
+σimg
+∝¯mj∆x∆y∆z√Nex
+√
+BW
+,
+(S25)
+where
+¯mj
+denotes
+the
+coil-combined
+average
+contrast-
+weighted spin density within voxel j. Thus, when tissue
+contrast, receiver bandwidth, and averaging are fixed,
+SNR ∝Vvox = ∆x∆y∆z,
+(S26)
+This dependence directly connects SNR to spatial resolu-
+tion. For Cartesian sampling, the voxel spacing is determined
+by the field of view (FOV) and sampling matrix:
+∆x = FOVx
+Nx
+,
+∆y = FOVy
+Ny
+,
+∆z = FOVz
+Nz
+,
+(S27)
+Equivalently, the nominal resolution is determined by the
+maximum sampled spatial frequency,
+∆x ≈
+1
+2kx,max
+,
+∆y ≈
+1
+2ky,max
+,
+∆z ≈
+1
+2kz,max
+, (S28)
+Therefore, improving resolution requires extending the sam-
+pled k-space extent, i.e., increasing kx,max, ky,max, and
+kz,max, which according to Eq. (S28) reduces the correspond-
+ing spatial resolutions ∆x, ∆y, and ∆z. The resulting decrease
+in Vvox in Eq. (S26) consequently reduces SNR.
+The resulting penalty can be quantified explicitly. Suppose
+the isotropic resolution is improved by a factor of α, i.e.,
+(∆x′, ∆y′, ∆z′) = 1
+α(∆x, ∆y, ∆z),
+(S29)
+Then
+V ′
+vox = ∆x′∆y′∆z′ = Vvox
+α3 ,
+(S30)
+Using Eq. (S26), the SNR becomes
+SNR′ = SNR
+α3 ,
+(S31)
+Since Eq. (S25) also gives SNR ∝√Nex, restoring the
+original SNR by averaging alone requires
+N ′
+ex = α6Nex,
+(S32)
+For example, doubling the isotropic resolution reduces the
+voxel-wise SNR by a factor of 8, and recovering the original
+SNR would require 64 times more averages.
+For 2D acquisitions, if only the in-plane resolution is
+improved while the slice thickness is fixed, i.e.,
+(∆x′, ∆y′, ∆z′) =
+∆x
+α , ∆y
+α , ∆z
+
+,
+(S33)
+then
+V ′
+vox = Vvox
+α2 ,
+SNR′ = SNR
+α2 ,
+N ′
+ex = α4Nex,
+(S34)
+This in-plane case has a milder scaling than isotropic 3D
+resolution enhancement, but still results in a substantial SNR
+loss.
+Finally, increasing Nex directly increases acquisition time.
+For Cartesian acquisitions, the scan time approximately scales
+as
+Tscan ≈TR · Nphase · Nex
+(S35)
+for 2D imaging, and
+Tscan ≈TR · Ny · Nz · Nex,
+(S36)
+for 3D imaging, up to acceleration, partial Fourier, and echo-
+train factors. Hence, directly acquiring higher-resolution MRI
+leads to a fundamental trade-off among spatial resolution,
+SNR, and acquisition time. This theoretical relationship moti-
+vates the need to identify an appropriate resolution level that
+balances anatomical detail and noise robustness, rather than
+simply pursuing the highest nominal spatial resolution.
+S2. DATASET DETAILS
+This section provides comprehensive details on all datasets
+used in this work, including preprocessing pipelines and data
+splits.
+A. IXI-based Simulated Dynamic-Resolution Dataset
+We use T2-weighted 3T MRI scans from the IXI dataset
+as high-resolution (HR) ground truth images. All volumes
+undergo a standardized preprocessing pipeline:
+1) Skull stripping: Brain extraction to remove non-brain
+tissue.
+2) N4 bias field correction: Intensity inhomogeneity cor-
+rection.
+3) Intensity normalization: Rescaling to a unified intensity
+range.
+4) Spatial resampling: Resampling to a unified voxel spac-
+ing to eliminate inter-subject variability.
+For 2D slice extraction, we discard the top 20% and bottom
+20% of axial slices to exclude low-information regions (e.g.,
+skull base and vertex). From the remaining central region, we
+uniformly sample 10 slices per volume, yielding a total of
+1,750 training slices. The corresponding low-resolution images
+are generated using the degradation model described in the
+following Section S2.11.
+
+
+=== PDF PAGE 16 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+16
+1) Degradation Model for Low-Field MRI Simulation: To
+simulate low-field (64mT) MRI from high-field (3T) images,
+we adopt a physics-inspired degradation model that accounts
+for resolution loss, noise corruption, and intensity inhomo-
+geneity:
+y = C (M ⊙(B · (D(x) + n))) ,
+(S37)
+where x denotes the HR image, D(·) represents resolution
+degradation, n is additive noise, B is a multiplicative bias field,
+M is a brain mask, and C(·) denotes intensity clipping.
+Resolution Degradation via PSF Blurring
+Spatial resolution loss in low-field MRI is modeled by
+Gaussian point spread function (PSF) blurring:
+D(x) = Gσ ∗x,
+(S38)
+where Gσ is a Gaussian kernel with standard deviation σ,
+controlling the degree of resolution degradation.
+Noise Modeling
+MRI noise is modeled using a Rician distribution:
+ynoisy =
+q
+(x + nr)2 + n2
+i ,
+(S39)
+where nr, ni ∼N(0, σ2
+n) represent real and imaginary noise
+components, respectively.
+Bias Field Simulation
+Intensity inhomogeneity caused by B1 field variations is
+simulated via a multiplicative bias field:
+B = 1 + β · Gσb(z),
+(S40)
+where z ∼N(0, 1), Gσb is a Gaussian smoothing operator, β
+controls the bias strength, and σb determines spatial smooth-
+ness.
+Brain Masking and Intensity Constraints
+A brain mask M is applied to suppress background noise.
+The output is constrained to be non-negative and clipped to
+[0, 1]:
+y = clip(y, 0, 1).
+(S41)
+Default Parameter Settings
+Unless otherwise specified, we use: bias field strength
+β = 0.35, spatial smoothness σb = 25. The blur parameter σ
+and noise level α are treated as task-dependent variables and
+varied to construct different degradation settings for dynamic-
+resolution simulation and meta-learning tasks.
+B. Real Paired Dataset (64mT–3T)
+For real-world validation of domain adaptation, we adopt
+the publicly available paired 64mT–3T MRI dataset released
+by Leiden University Medical Center [77]. This dataset con-
+tains paired low-field (64mT) and high-field (3T) brain MRI
+scans from 11 healthy subjects.
+Following the same preprocessing procedure as the IXI
+dataset, we discard the top and bottom 20% of slices and
+sample 30 slices from the central region of each volume. The
+data are split as follows:
+• Training: 180 paired slices (6 subjects)
+• Validation: 60 paired slices (2 subjects)
+• Testing: 60 paired slices (3 subjects)
+C. Real Dynamic-Resolution Dataset (3T–5T)
+Paired data were acquired from 10 healthy subjects using a
+3T United Imaging uMR 890 scanner and a 5T United Imaging
+uMR Jupiter scanner. For 5T acquisitions, a T2-weighted Fast
+Spin Echo (FSE) [94] sequence was employed with the follow-
+ing parameters: TR = 4500 ms, TE = 108 ms, flip angle = 110◦,
+slice thickness = 5 mm, FOV = 230 mm×200 mm, and matrix
+size = 576 × 501. For 3T acquisitions, the T2-weighted FSE
+sequence was likewise used with TR = 4545 ms, TE = 120 ms,
+and flip angle = 145◦. To generate dynamic-resolution inputs,
+the readout and phase-encoding resolutions were progressively
+varied from 240×208 down to 120×100, yielding scans with
+in-plane resolution scales of 1.04, 0.90, 0.83, 0.76, 0.69, 0.55,
+and 0.50. The specific scanning parameters are summarized as
+follows:
+TABLE S7
+ACQUISITION PARAMETERS FOR 3T SCANS WITH DIFFERENT RESOLUTION
+SCALES.
+Resolution scale
+FOVa (mm)
+Matrix sizeb
+1.04
+230 × 200
+240 × 209
+0.90
+230 × 200
+208 × 181
+0.83
+230 × 200
+192 × 167
+0.76
+230 × 200
+176 × 153
+0.69
+230 × 200
+160 × 139
+0.625
+230 × 200
+144 × 125
+0.55
+230 × 200
+128 × 111
+0.50
+230 × 200
+112 × 97
+a FOV is reported as readout × phase-encoding.
+b Matrix size is reported as Nx × Ny.
+D. Supplementary Unpaired 5T Data
+Due to the inconvenience and high cost of paired dynamic-
+resolution acquisitions, we additionally collect unpaired 5T
+scans from 18 subjects using the same 5T scanner and T2-
+weighted FSE sequence with the same parameters as described
+in Section S2.3. These unpaired 5T images serve as high-
+resolution references, from which we synthesize pseudo-paired
+3T images at multiple resolution scales using our degradation
+model described in Section S2.11. This simulation-assisted
+strategy enables effective model training without requiring
+extensive paired acquisitions.
+S3. ADDITIONAL IMPLEMENTATION DETAILS
+A. MRI-Specific Covariance Dictionary Statistics
+We collect 4,241 5T MRI slices and fit each with
+2D Gaussian primitives to obtain optimal representations.
+Statistical analysis reveals that the covariance parameters
+(σ2
+x, σ2
+y, ρσxσy) follow characteristic distributions within the
+ranges [0, 2.39], [−0.18, 1.12], and [0, 2.05], respectively,
+which are notably distinct from those observed in natural
+images. We then sample 10 values for each parameter, yielding
+103 = 1,000 unique covariance kernel combinations. Append-
+ing the zero kernel (0, 0, 0) results in a final dictionary of
+1,001 covariance kernels.
+
+
+=== PDF PAGE 17 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+17
+B. Segmentation Mask Generation
+For high-resolution images (e.g., 3T/5T MRI), we employ
+the open-source pre-trained model SynthSeg [95] to generate
+segmentation masks. SynthSeg is trained on synthetic MRI
+data and supports contrast-agnostic whole-brain segmentation,
+partitioning the brain into 60 anatomical regions while produc-
+ing both segmentation masks and resampled volumetric data
+(resampled from the original voxel spacing to 1×1×1 mm3).
+We consolidate these regions into three primary tissue classes:
+gray matter (GM), white matter (WM), and cerebrospinal
+fluid (CSF). The volumetric images and their corresponding
+masks are subsequently divided into axial slices. Although this
+segmentation procedure can in principle be applied to low-field
+data (e.g. 64mT) to achieve uniform voxel spacing, SynthSeg
+fails to produce complete and reliable segmentations for such
+images due to their inherently low signal-to-noise ratio.
+To address this limitation, we train a 2D U-Net as a
+dedicated low-field segmentation network using paired high-
+resolution masks and spatially aligned low-resolution slices.
+This approach enables accurate generation of three-tissue brain
+masks for low-resolution slices and integrates seamlessly into
+our 2D super-resolution framework.
+C. Additional
+details
+of
+Domain
+Adaptation
+via
+Meta-
+Learning
+As stated before (Method Section IV-C), to generalize our
+model to real-world low-field MRI data, we design a meta-
+learning-based domain adaptation framework that enables
+knowledge transfer from simulated degradation domains to
+real paired 64mT–3T data (Experiment Section V-C). Here
+we provide more details serving as a proof-of-concept for de-
+ploying our super-resolution framework in practical scenarios
+where paired training data is scarce.
+1) Motivation: Despite careful design, simulated low-field
+MRI inevitably differs from real acquisitions due to unmodeled
+physical factors and scanner-specific characteristics. Direct
+application of models trained on simulated data often leads
+to suboptimal performance on real data.
+Our meta-learning framework addresses this challenge by:
+1) Learning a robust initialization that can quickly adapt to
+new degradation domains with minimal samples.
+2) Leveraging limited real paired data as target-domain
+guidance during meta-training.
+3) Modeling domain variability through task-based episodic
+training across a spectrum of simulated and real degra-
+dation conditions.
+2) Task Formulation: We formulate domain adaptation as
+a meta-learning problem where each task corresponds to a
+distinct MRI degradation domain characterized by specific
+blur, noise, and resolution parameters, rather than a semantic
+category. This enables the model to learn domain-agnostic rep-
+resentations that generalize across varying imaging conditions.
+Specifically, we construct two categories of tasks:
+Simulated Tasks Tsim = {T s
+1 , . . . , T M
+s }: Simulated tasks
+are generated by varying degradation parameters (blur ker-
+nels, noise levels, resolution factors) to emulate diverse MRI
+acquisition conditions. They are ordered by increasing Fr´echet
+Inception Distance (FID), spanning a spectrum from low-gap
+to high-gap relative to the real data distribution. Concretely,
+we design four simulated tasks as shown in Table S8:
+TABLE S8
+SIMULATED TASK CONFIGURATIONS WITH CORRESPONDING DOMAIN
+GAPS MEASURED BY FID.
+Task
+Blur (σ)
+Noise (α)
+Resolution
+FID
+T s
+1 (Low-gap)
+0.8
+0.12
+1.0
+18.54
+T s
+2 (Mid-gap)
+1.4
+0.12
+1.0
+21.46
+T s
+3 (Mid-gap)
+0.8
+0.12
+0.7
+25.42
+T s
+4 (High-gap)
+1.4
+2.0
+1.0
+28.38
+Real Tasks Treal = {T r
+1 , . . . , T K
+r }: Due to limited availabil-
+ity of real paired data, we partition the real 64mT–3T training
+set into two subsets (K=2), each forming a real task. These
+tasks provide direct supervision from the target distribution
+and are incorporated during meta-training to continuously
+inject target-domain constraints and prevent overfitting to
+synthetic artifacts.
+For each task Ti ∈Tsim ∪Treal, we construct a support set
+Di
+sup and a query set Di
+qry sampled from different subjects,
+ensuring that the adaptation and evaluation phases remain
+independent and promote generalization.
+3) Episodic Meta-Optimization:
+We adopt a first-order
+Model-Agnostic Meta-Learning (MAML) framework, where
+the meta-objective is to find a model initialization θ that can
+be rapidly adapted to any task with a small number of gradient
+steps.
+Episode Sampling: In each meta-training episode, we
+sample a task batch B = {Tb1, . . . , Tbn} with the constraint
+that at least one task must originate from Treal. This ensures
+continuous exposure to realistic imaging characteristics while
+leveraging the diversity of simulated degradations.
+Inner-Loop Adaptation: For each sampled task Ti ∈B,
+the model performs a single gradient update on the support
+set Di
+sup. Starting from the current meta-parameters θ, the task-
+specific adapted parameters are computed as:
+θ′
+i = θ −α∇θLrec(θ; Di
+sup),
+(S42)
+where α is the inner-loop learning rate and Lrec is the recon-
+struction loss defined in the main paper (Method Section ??).
+In practice, the support set consists of 2 slices drawn from one
+subject.
+Outer-Loop Meta-Update: After inner-loop adaptation, the
+adapted parameters θ′
+i are evaluated on the corresponding
+query set Di
+qry (2 slices from a different subject). The meta-
+parameters θ are then updated by aggregating gradients across
+all tasks in the episode:
+θ ←θ −β
+X
+Ti∈B
+∇θLrec(θ′
+i; Di
+qry),
+(S43)
+where β is the outer-loop learning rate. We employ a first-
+order approximation (i.e., we do not differentiate through the
+inner-loop update) for computational efficiency.
+The overall episodic training procedure is summarized as
+follows:
+
+
+=== PDF PAGE 18 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+18
+(i) Episode sampling: Sample task batch B with at least one
+real task from Treal.
+(ii) Inner-loop adaptation: For each Ti ∈B, compute task-
+specific parameters θ′
+i via Eq. (S42) using the support set
+Di
+sup.
+(iii) Outer-loop optimization: Update meta-parameters θ via
+Eq. (S43) using query sets {Di
+qry}.
+This dual-domain episodic strategy directly addresses the
+data scarcity problem inherent in real-world MRI enhance-
+ment. Simulated tasks spanning a range of FID values provide
+diverse degradation patterns that encourage the model to learn
+generalizable super-resolution priors. Meanwhile, the manda-
+tory inclusion of real tasks in every episode anchors the meta-
+optimization toward the target distribution, preventing the
+learned initialization from drifting toward synthetic artifacts.
+The resulting model acquires an initialization θ from which
+rapid, few-shot adaptation to unseen degradation conditions—
+including real low-field MRI acquisitions—becomes feasible
+with minimal paired samples.
+S4. ADDITIONAL EXPERIMENT RESULTS
+A. More FastMRI Benchmark Results
+We provide additional visual comparisons on the fastMRI
+benchmark to further validate the effectiveness of our proposed
+method.
+Figure S7 presents qualitative comparisons against state-
+of-the-art SR methods, including PRDDIFF and Pixel-to-
+Gaussian, across degradation scales of ×4, ×5, and ×6.4.
+Across all three scales, our method successfully recovers
+fine structural details that are absent in competing methods.
+Most notably, neither baseline is able to reconstruct the inter-
+hemispheric fissure separating the left and right cerebral hemi-
+spheres. Pixel-to-Gaussian produces visibly over-smoothed
+outputs, losing high-frequency anatomical details and blurring
+tissue boundaries. While PRDDIFF generates sharper-looking
+results, it fails to faithfully recover fine-grained structures and
+introduces residual noise artifacts; moreover, its reconstruc-
+tions exhibit weaker anatomical fidelity and structural consis-
+tency compared to our method. These qualitative observations
+are fully consistent with the quantitative results reported in the
+main paper, further confirming the superiority of our approach
+in MRI super-resolution.
+B. More Ablation Study Results
+Figure S8 provides additional visual comparisons to com-
+plement the ablation study presented in the main paper. We
+compare four configurations from left to right: the LR input,
+the result without initialization (w/o Init.), the result with
+initialization only (w/ Init.), the result with both initialization
+and the physics module (w/ Init. + Phy.), and the ground truth
+(GT).
+As can be observed, before the physics module is in-
+troduced, the super-resolved outputs tend to retain intensity
+distributions that closely resemble the LR input, leading
+to a pronounced deviation from the GT in terms of over-
+all grayscale fidelity. Specifically, removing the initialization
+Fig. S7. Visual comparison on the fastMRI benchmark at scales ×4, ×5, and
+×6.4. Our method consistently recovers fine anatomical structures (e.g, the
+inter-hemispheric fissure between the left and right cerebral hemispheres) that
+are lost by competing methods. Pixel-to-Gaussian produces over-smoothed
+reconstructions, while PRDDIFF suffers from residual noise and inferior
+anatomical fidelity and structural consistency.
+Fig. S8.
+Visual comparison of the ablation study. From left to right: LR
+input, w/o initialization (w/o Init.), with initialization only (w/ Init.), with
+initialization and physics module (w/ Init. + Phy.), and ground truth (GT).
+The incorporation of the physics module significantly improves the grayscale
+fidelity and recovers finer structural details that are consistent with the GT.
+module results in visibly blurred reconstructions, where fine
+structural details are largely smoothed out. Incorporating the
+initialization module partially alleviates this issue by improv-
+ing the sharpness of internal structures; however, a noticeable
+gap in the global intensity distribution persists relative to
+the GT. Upon integrating the physics module, the grayscale
+distribution is faithfully restored to be consistent with the
+GT. Moreover, finer and more anatomically accurate structural
+details are recovered, which are otherwise absent in the
+physics-free variants. These observations are consistent with
+the quantitative results reported in the main paper and further
+confirm the necessity of each proposed component.
+S5. ETHICS STATEMENT
+The dynamic-resolution 3T-5T paird data used in this study
+were collected under the oversight of the Ethics Committee
+of ShanghaiTech University (Application No. Q2026-015).
+Written informed consent was obtained from all participants
+
+
+=== PDF PAGE 19 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+19
+prior to data acquisition. All data were anonymized before
+analysis and used only for research purposes.
+The following page provides the original ethics approval
+document for this study.
+S6. BIOGRAPHY SECTION
+Lihua Wei received the B.E. degree in Computer
+Science and Technology from Donghua University,
+China, in 2025. She is currently pursuing the M.E.
+degree with the School of Biomedical Engineer-
+ing, Shanghaitech University, China. Her research
+interests include MRI super-resoluton, MRI Image
+enhancement, MRI image synthesis.
+Huatong Gao is a master’s student in the School of
+Biomedical Engineering at ShanghaiTech University,
+China. She received her B.Eng. degree in Biomedical
+Engineering from ShanghaiTech University in 2025
+and is currently pursuing an M.Eng. degree in the
+same school. Her research interests include artifi-
+cial intelligence for medical imaging, MRI super-
+resolution and reconstruction.
+Jia Gong is a researcher at the Shanghai Academy
+of Artificial Intelligence for Science. He received
+his B.Eng. degree in Optoelectronic Engineering
+from Chongqing University, China, and his Ph.D. in
+Information Systems Technology and Design from
+the Singapore University of Technology and Design.
+His research interests span human pose estimation,
+human mesh reconstruction, digital avatars, and ac-
+tive learning.
+Zhiyu Tan is currently pursuing the Ph.D. degree
+with the Artificial Intelligence Innovation and Incu-
+bation (AI³) Institute, Fudan University. His research
+interests include multimodal understanding and gen-
+eration, reinforcement learning-based post-training
+methods, and multimodal large language models. His
+current research focuses on developing AI models
+with stronger visual perception, generative capa-
+bility, and alignment with human instructions and
+preferences.
+Hao Li is currently a Professor at the Artificial
+Intelligence Innovation and Incubation Institute, Fu-
+dan University. He received his Ph.D. in 2012 from
+the Chinese Academy of Sciences. His research
+interests span video generation and AI for Science.
+He has published over 80 papers in top-tier venues,
+including CVPR, ICLR, Nature Communications,
+and Science Advances. He is the lead researcher
+of the FuXI model, a highly influential weather
+forecasting system.
+
+
+=== PDF PAGE 20 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+20
+Jun Liu is Professor (Chair of Digital Health)
+at the School of Computing and Communications,
+Lancaster University. He obtained his PhD from
+Nanyang Technological University in 2019, subse-
+quently serving as faculty at Singapore University of
+Technology and Design from 2019 to 2024. Prior to
+his academic career, he worked at Tencent from 2014
+to 2015. He is a Fellow of British Computer Society
+(BCS). He obtained the Best Paper Awards from
+PREMIA (2016, 2019), the Best Doctoral Thesis
+Award from EEE at NTU (2020), and the IEEE
+VSPC Rising Star Award (runner-up) (2024). He was nominated for the
+Singapore President’s Young Scientist Award in 2024. He serves as Associate
+Editor-in-Chief for Pattern Recognition, Senior Area Editor for IEEE Trans-
+actions on Image Processing, and Associate Editor for IEEE TCSVT, IEEE
+TNNLS and ACM CSUR. He received the Best Associate Editor Award of
+IEEE TBIOM in 2026. He is General Chair of BMVC 2026 and Program
+Chair of BMVC 2025, and has served as Area Chair for premier conferences
+including CVPR, ECCV, ICML, NeurIPS, ICLR, IJCAI, AAAI, WACV, and
+ACM Multimedia. His research focuses on computer vision, machine learning,
+and digital health applications.
+Zhihua Ren is an Assistant Professor and Direc-
+tor of the Biomedical Imaging and Instrumenta-
+tion Laboratory (Bio-Med I² Lab) at the School of
+Biomedical Engineering, ShanghaiTech University.
+He received his Ph.D. from the Singapore University
+of Technology and Design in 2020 and was a visiting
+scholar at Columbia University in 2019. He subse-
+quently worked as a Postdoctoral Research Scientist
+at Columbia University for three years. His research
+interests include MRI physics and instrumentation,
+electromagnetic biomedical devices, and their appli-
+cations in healthcare and medical imaging.
+
+
+=== PDF PAGE 21 ===
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+21

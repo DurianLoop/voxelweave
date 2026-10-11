@@ -1,0 +1,15 @@
+# 连续科研交接，目标仍 active
+
+主科研目标尚未达成：原最终模型已完成全部训练，但医学门槛失败；V4数值通过不代表医学通过。用户授权GPU有效，禁止干预其终端进程/其他PID。所有新增只innovation，未见8确认患者/12series与lockedIXI继续不打开。
+
+70619已真实退出0，绝不再poll或重启；完整56严格通过，旧二值变化0，最大概率误差5.960464477539063e-8。实际退出cc6710与来源绑定保存ACTUAL_PRECISION_V4_EXIT.json/result SHA49601b5d3b528275cf8da13cc91054aba394045c9aabfffd49fe2f9a861066df。原native/raw已见验证full Dice仍.506632/.445159。
+
+新四分支标准增强续训 pilot已经真正启动session80513，入口相邻adaptation_paired_pilot_2026_10_08/run_paired_pilot.py。各分支99步，共396，从每输入各自last19998初始化，basic/strong同标签/几何/起始state，optimizer同样重置；跨输入参数和噪声seed一致。GPUfree1394MiB未通过8192MiB门槛，使用CPU4/interop1。第一分支已99，第二分支至少11，尚未真正退出；接续先poll80513，不重启、不假装结束、不哈希冻结mutable receipt/history。
+
+其synthetic full-size独立变换资格exit0（3a4c7d）已完成；无神经forward。四分支真正完成后保存实际terminal tool JSON，并创建ACTUAL_PILOT_EXIT.json（observed_tool_exit、result_sha256、各cp/history SHA、frozen config/source绑定核查）。然后相邻evaluate_pilot.py：4×9已见验证全FOV，生产+functional、严格概率/坐标/零二值、无损重读/独立计数/患者先均值，CPU4，wall3600，整个pilot含评价40MB上限。评价入口仅AST读检查，未执行；不要把准备当结果。新增评价不重跑开发19series，不声称全28医学资格。短99step即使门槛通过也不证明充分适配或新意，后续正式预算需依据实测冻结。
+
+四篇实际原文文字阅读的笔记和精确范围已写，见ADAPTATION_PAPER_NOTES.md/READING_PROVENANCE.json。BigAug旧NCBI429，新一次EuropePMC500，均不计原文已读；无新PDF、视觉审图、作者代码执行或预训练权重下载。复读MC-RC不重复计数。不可把预训练、增强、ROI、3D、收益头本身当新意；主候选仍具体病灶缺层动作的真实净收益与完整成本强控制，充分任务能力前不运行下游动作claim。
+
+已恢复并落盘turn15与turn16真实store（33个turn16 key无缺），公开用户交接原文与当前对话分别保留。静态AST重构、template cleanup缺完整tool对象的局限明确记录。新tools部分未store完整返回的仅记录可见chunk/exit，不伪造完整输出。
+
+本目录archive_completed_stage.py将核验前5535证据并追加真正结束的原训练rolling文件、主评价、V3strict、V4、文献、watch9–14/MoEDiff后附资料；新pilot attempt01明确排除。归档成功后的下一delta纳入本目录APPEND_INDEX/APPEND_PROOF及后附观察文件。归档执行/退出要以真实tool返回为准，不把hand-off文字作为完成证明。

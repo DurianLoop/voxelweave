@@ -1,0 +1,68 @@
+lished networks is that we focus on exploiting the
+multi-task imaging framework rather than propos￾ing a reconstruction or segmentation network struc￾ture. The trained multi-task MR imaging method
+takes the under-sampled k-space data as input and
+outputs both the reconstructed images and the seg￾mented masks simultaneously.
+2.2 Dynamic Re-weighted Loss Con￾straint
+The proposed multi-task MR imaging framework was
+designed to produce high-quality reconstructed im￾ages and the segmented masks simultaneously. For
+the multi-task MR imaging method, the quality of
+the output of the downstream module was influenced
+by the upstream module greatly. The reason for it
+is that the input of the segmentation module is the
+output of the reconstruction module. Combining the
+segmentation module with the reconstruction module
+as a dual-task network could bridge the gap between
+two relational tasks. Multi-task imaging framework
+has the ability to make the reconstruction module
+keep the feature that is critical for segmentation in￾stead of only the feature that is critical for visual
+performance. Commonly, this kind of network can
+be trained in an end-to-end manner with a loss func￾tion that is a fixed weighted summation of each task￾specific loss function as shown in Eq. (1):
+L =
+X
+N
+i=1
+αiLi (1)
+where Li denotes the loss function of the i-th task
+and αi denotes the corresponding weight. It makes
+the reconstruction module under the guidance of the
+loss function to keep the feature that can improve the
+quality of segmentation results. Such loss function
+has advantages including simple structure, easy im￾plementation and low calculation amount. However,
+it can’t guarantee the contribution balance between
+the two sub-tasks. Besides, this kind of loss func￾tion keeps the same weight for the training stage. In
+other words, the training process of the network will
+keep constant whether the particular sub-task is suf￾ficiently optimized. It may be insufficient for produc￾ing high-quality reconstructed images and segmented
+masks simultaneously as the results shown in our ex￾periments. Therefore, we hope that the weight of
+the task can be dynamically changed with the train￾ing process. It means that the center of the training
+process can be automatically transformed. Specif￾ically, the center of the training process should be
+more inclined to optimize the reconstruction module
+instead of the segmentation module in the early train￾ing stage. In the later training stage, it is advisable
+to spend more efforts in optimizing the segmentation
+module when the loss of the reconstruction module
+is basically stable. It helps the network to keep the
+contribution balance of each task to ensure the qual￾ity of the final result. In summary, we proposed the
+following dynamic re-weighted loss constraint for the
+proposed network as shown in Eq. (2):
+L = α(t)Lrecon + β(t)Lseg (2)
+where Lrecon and Lseg denote the loss function of the
+reconstruction and segmentation tasks respectively.
+α(t) and β(t) denote the corresponding weights, and
+t denotes the corresponding training epoch. α(t) and
+β(t) are the monotonic functions of t. In this paper,
+we selected L2-norm as the loss function for recon￾struction task and Cross-Entropy as the loss function
+for the segmentation task. The loss function of the
+reconstruction task is defined as Eq. (3):
+Lrecon = kC(IFS) − IUSk
+2
+2
+(3)
+where IFS and IUS denote the images reconstructed
+from fully-sampled and under-sampled k-space data
+respectively, C denotes the proposed network and k ·
+k2 represents the L2-norm. The loss function of the
+segmentation task is defined as Eq. 4:
+Lseg = 1.0 −
+2 × |y. ∗ yˆ|
+|y| + |yˆ| + 0.1
+(4)
+where y and yˆ denote the segmentation and annota￾tion mask respectively, .∗ denotes the pixel-wise mul￾4

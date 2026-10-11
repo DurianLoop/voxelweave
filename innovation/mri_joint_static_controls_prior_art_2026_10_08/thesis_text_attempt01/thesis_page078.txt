@@ -1,0 +1,41 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+Experiments with different anatomies.In these experiments, we consider both the
+single coil cardiac dataset and the vocal imaging dataset, both of size256×256×10. The
+cardiac dataset was trained on5 samples and tested on2, using only the first ten frames
+of each scan, whereas the vocal one used2 training samples and2 testing samples. In this
+setup, the k-space of the cardiac dataset tends to vary more from one sample to another
+than the vocal one, making the generalization of the mask more complicated. This issue
+would require more training samples, but imposing SG-v1 algorithm to start with4
+central phase encoding lines on each frame was found to be sufficient to acquire the peaks
+in the k-space across the whole dataset.SGv1-Cardiac refers to the stochastic greedy
+algorithm using cardiac data, andSGv1-Vocalis its vocal counterpart. The algorithm
+used a batch of sizek = 64 at each iteration4, and the results were obtained using only
+KTF.
+The results are reported on the Figures 5.10 and 5.11, and we see that, for the both
+datasets, the greedy approach provides superior results against VD sampling methods
+across all sampling rates. It is striking that, in this setting, the SG-v1 approach
+outperforms even more convincingly all the baselines, and the LB-VD approach, in this
+case, is outperformed by more than2dB by SG-v1, where it remained very competitive in
+the other settings. This difference is clear in the temporal fidelity of both reconstructions
+on Figure 5.11, where we see that the LB-VD approach loses sharpness and accuracy
+compared to SG-v1.
+Comparison across anatomies.The main complication coming from applying the
+masks across anatomies is that the form of the k-space might vary heavily across datasets:
+the vocal spectrum is very sharply peaked, while the cardiac one is much broader.
+Comparing the cross-performances on Figures 5.11, we see that the andSGv1-vocal
+masks generalizes much better on the cardiac datasets than the other way around. This
+can be explained from the differences in the spectra: the cardiac one being more spread
+out, the cardiac mask less faithfully captures the very low frequencies of the k-space,
+which are absolutely crucial to a successful reconstruction on the vocal dataset, thus
+hindering the reconstruction quality. Also, we see that it is important for the trained
+mask to be paired with its anatomy to obtain the best performance.
+Additional visual reconstructions for cardiac and vocal dataset.We show in
+Figures 5.12 and 5.13 reconstruction at different frames which provide clearer visual
+information to the quality of reconstruction compared to the temporal profiles.
+For these images, the PSNR and SSIM are computed with respect to each individual
+frame, showing the quality of the reconstruction in a much more detailed fashion than
+before, where we considered each dynamic scan as a whole. Generally, we as previously
+observed, the mask trained for a specific anatomy will most faithfully capture the sharp
+contrast transitions in the dynamic regions of the images. For the vocal images, we see
+4This follows the rule of thumb of using25% of the number of lines in a given frame fork.
+65

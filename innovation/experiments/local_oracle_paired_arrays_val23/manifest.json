@@ -1,0 +1,43 @@
+{
+  "scope": "old_fastmri_validation_paired_cpu_predictions",
+  "patients": 23,
+  "slices": 207,
+  "paired_predictions_sha256": "de8fa2986f732b5b5ad6db7914d1bc57fbf796404d6b575989499c2b268db2b1",
+  "cpu_vs_historical_psnr_difference_db": {
+    "control": {
+      "mean": -0.000542465092539256,
+      "max_absolute": 0.008149613103242359
+    },
+    "orientation": {
+      "mean": -0.0001787300096606424,
+      "max_absolute": 0.004450491219291308
+    }
+  },
+  "sources": [
+    {
+      "path": "design/pastnet_v2/manifests/fastmri/fold_00.json",
+      "sha256": "ee471bd92e48696050a694f371a86483f86f832c5b26571c81137b5dcc6ad4df"
+    },
+    {
+      "path": "design/pastnet_v2/runs/full_control_seed3407_vram20/best.pth",
+      "sha256": "a5c41336f160b42ae168e9747fda05d1c472c77823185ae30730b6045db34127"
+    },
+    {
+      "path": "design/pastnet_orientation/runs/full_orientation_seed3407_vram20/best.pth",
+      "sha256": "37aba16ede23cd923b73afdfd90a073a9830ce48dfd5d5488305e6f8f07fdf8c"
+    },
+    {
+      "path": "design/pastnet_v2/runs/full_control_seed3407_vram20/validation/per_slice.csv",
+      "sha256": "5df761d55ea3d5cdeb5195560edd239a5bbf04be93719135084e5ac437f8dc24"
+    },
+    {
+      "path": "design/pastnet_orientation/runs/full_orientation_seed3407_vram20/validation/per_slice.csv",
+      "sha256": "7ac04b0fdff14fcaf816718e66adbce720814a5dec267a888d9f4eb054c1d6c9"
+    }
+  ],
+  "limitations": [
+    "Targets are withheld at deployment; this archive is for development diagnostics only.",
+    "Both checkpoints were previously selected on this validation cohort.",
+    "CPU float32 output differs slightly from historical GPU autocast output."
+  ]
+}

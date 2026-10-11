@@ -1,0 +1,38 @@
+Introduction
+Chapter 4 – Optimizing sampling patterns
+In this last introductory chapter, we review the different approaches that have been taken
+to optimize sampling masks. We argue that, in a similar way that reconstruction methods
+moved from model-driven to data-driven approaches, a double shift has taken place in
+mask design. We show that mask design methods gradually moved frommodel-based,
+model-driven to learning-based, data-driven approaches. We discuss how this trend can be
+seen in the literature, and how it ties in with the empirical performance of these methods.
+Then, we proceed to formalizing the problem of learning-based, data-driven mask design
+and show how this problem changes when one aims at designingfixed policies– where a
+mask is trained and re-used as is at test time – oradaptive policies– that adapt to the
+current patient by integrating on-the-fly the information as it acquired. We conclude
+by proving the optimality of the discrete mask optimization problem, compared to the
+problem of finding the optimal samplingdistribution.
+Related publication.
+Sanchez, T., Gözcü, B., van Heeswijk, R. B., Eftekhari, A., Ilıcak, E., Çukur, T., and
+Cevher, V. (2020a). Scalable learning-based sampling optimization for compressive
+dynamic MRI. InICASSP 2020 - 2020 IEEE International Conference on Acoustics,
+Speech and Signal Processing (ICASSP), pages 8584–8588.
+Chapter 5 – Scalable learning-based sampling optimization
+In this chapter, we extend the Learning-Based Compressive Sensing (LBCS) approach
+of Gözcü et al. (2018). We primarily aim atdrastically improving their scalability of
+their method. We first discuss how their approach is rooted in submodular optimization
+(Krause and Golovin, 2014) and how algorithms proposed in this field could provide
+solutions to the limitation of LBCS. Their method scales asO(P 2), where P is the
+resolution of the image, such a complexity is prohibitive in high dimensional settings
+such as 3D MRI or dynamic MRI, and is not convenient when reconstruction becomes
+slow, such as in multi-coil MRI. To address this, we first proposelazy LBCS(lLBCS), for
+the multi-coil and 3D settings. This algorithm leverages lazy evaluations (Minoux, 1978),
+where a list of upper bounds isprecomputedand then traversed sequentially, drastically
+reducing the amount of computation over LBCS. Secondly, in the context of dynamic
+(multi-coil) MRI and large datasets, we proposestochastic LBCS(sLBCS) and show that
+it can achieve a very significant computational gain compared to LBCS, while retaining
+its performance.
+Related publications.
+Gözcü, B., Sanchez, T., and Cevher, V. (2019). Rethinking sampling in parallel MRI:
+A data-driven approach. In27th European Signal Processing Conference (EUSIPCO).
+6

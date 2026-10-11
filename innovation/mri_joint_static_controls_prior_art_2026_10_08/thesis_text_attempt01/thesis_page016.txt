@@ -1,0 +1,42 @@
+Introduction
+Reconstructor
+Undersampling
+iﬀt
+iﬀt
+Fully sampled  
+image
+Fourier spectrum
+Undersampled 
+Fourier spectrum
+ Reconstructed 
+image
+Undersampled 
+image
+Sampling mask
+Observed dataUnobserved data
+Figure 1.2: Accelerated MRI by undersampling. Undersampling is governed by a sampling mask
+that tells what locations are acquired. The undersampled Fourier spectrum is then mapped back to
+image domain through an inverse Fourier transform, which gives an aliased image which needs
+to go through a reconstruction method in order to obtain a de-aliased estimation of the original,
+unobserved image. Hereifft stands for inverse fast Fourier transform.
+relies onsparsity-based priors, where it is assumed that if the signal can be represented
+sparsely, or compactly in some transform domain, then, it can be reconstructed from
+undersampled measurements. This approach is known as Compressed Sensing (CS)
+(Donoho, 2006; Candès et al., 2006), and has been successfully applied to MRI (Lustig
+et al., 2008), for instance by representing the signal sparsely in the Wavelets domain.
+The signal is retrieved by solving an optimization problem with two components: a
+data-fidelity term that ensures that the reconstructed image is close to the measurements,
+and aregularization term that encourages the reconstructed to be sparse in some domain.
+In the latter half of 2010s, deep learning-based approaches allowed pushing even further
+the boundaries of the state-of-the-art in MRI reconstruction (Sun et al., 2016; Schlemper
+et al., 2017; Mardani et al., 2018). By leveraging increasingly large amount of data,
+these methods are able to learn the structure directly from data, rather than imposing it
+through a mathematical model such as sparsity. These methods not only improved the
+quality of reconstruction, but also enabled fast reconstruction times, where CS methods
+often relied on slow iterative procedures.
+However, in parallel to these developments, only few works tackled the problem ofhow the
+k-space should be undersampled. Although CS prescribed random sampling, practitioners
+quickly turned to heuristics favoring low frequency sampling, where a lot of energy and
+information about the structure of the signal is located (Lustig et al., 2008). Nevertheless,
+there were only a few works in the early 2010s aiming at directly optimizing the sampling
+3

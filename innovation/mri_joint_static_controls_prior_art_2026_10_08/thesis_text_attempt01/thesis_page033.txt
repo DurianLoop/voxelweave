@@ -1,0 +1,36 @@
+CHAPTER 2. MRI BACKGROUND
+2.2.1 Accelerated MRI
+In the case of accelerated MRI, the full k-space is not observed, and in practice, entire
+phase encoding lines are skipped at once, resulting in an acceleration of the scanning time
+proportional to the number of lines removed. We represent this operation as masking our
+unobserved coefficients, which is achieved by defining a diagonal masking matrixPω that
+masks out coefficients indexed by the setω, namelyPω,ii = 1 if i∈ω and 0 otherwise. ω
+is defined as the sampling mask and has cardinality|ω| =N. ω is typically structured so
+that entire lines are skipped at once, and a formal presentation of this structure will be
+discussed in Chapter 5. We refer to the ratioN/P as thesampling rate. This masking
+results in observing the partial image
+ρ =F−1Pωs +ϵ (2.11)
+Remark (Sampling mask and trajectories). There is a difference between a sampling
+mask and a sampling trajectory. The former only provides a fixed view of all locations
+acquired, while the latter comprises adynamic component. The sampling trajectory
+tells not only what locations were acquired, but also the temporal ordering of the
+acquisition, detailing the order in which the samples are acquired throughout the
+multiple acquisition steps.
+In the sequel, we will consider problems where we aim at learning how to reconstruct data
+from partial Fourier measurements, and how to optimize sampling masks to obtain the
+best reconstruction quality. In order to be aligned with the commonly used terminology,
+we will need to redefine some of the notation used until here. We assume that there
+exists some underlying ground truth imagex∈ CP from which we acquire partial Fourier
+measurements (or observations)yω that can be noisy, i.e.
+yω =Aωx +ϵ =PωFx +ϵ. (2.12)
+This will be our basic acquisition model for the whole of this thesis.Aω is defined as a
+shorthand forPωF. Note that Equations 2.11 and 2.12 can be related by settings =Fx
+andρ =F−1yω. This reformulation allows to describe the imagex as the fundamental
+unknown, and the partial measurements to be described in the Fourier domain.
+Remark. In the case of parallel or multicoil acquisition, Equation 2.12 is slightly
+adapted to account for acquisition on j = 1,...,C coils with different spatial
+sensitivities
+yω,j =AωSjx +ϵj =PωFSjx +ϵj, (2.13)
+where the coil sensitivities can be represented as aP×P diagonal matrix whereSj,ii
+describes the spatial sensitivity for thei-th pixel. We will also sometimes use the
+20

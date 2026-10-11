@@ -1,0 +1,49 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+mask and willnot adapt to the current subject.
+6.1.4 Policy Gradient
+Bakker et al. (2020) took a different approach to the problem, called policy gradient.
+Contrarily to Q-learning, this approach aims at directly learning a policy, without first
+learning a value function. The policy itself is parametrized as a functionπϕ(s) :S→A
+that associates to each state the probability of taking an actiona∈A . It aims finding
+the set of parametersϕ that maximize
+max
+ϕ
+{
+J (ϕ) =Vπϕ[s1] =
+∑
+a
+πϕ(a|s1)Qπϕ(s1,a 1)
+}
+.
+In this case, as the policy is parametrized byϕ and notQ as we previously had, the
+function Qπϕ(s,a ) must becomputed rather than simply evaluated on the input. This is
+achieved by using the relation connecting the value function to the state-action function
+and the definition of the state-action function (cf. Equations 6.3 and 6.2).
+The policy gradient theorem aims at providing an analytical expression for∇ϕJ (ϕ), in
+order to optimizeϕ using a gradient-based approach. We will directly use its result and
+refer the interested reader to Sutton and Barto (2018, p.324ff). The policy gradient
+theorem yields
+∇ϕJ (ϕ)∝ Eπϕ [Gt∇ logπϕ(At|St)]. (6.5)
+This result is significant because it allows to estimate the gradient of the policy with an
+expectation over the return and the gradient of the logarithm of policy. The expectation
+means that the gradient of the policy is amenable to a Monte-Carlo approximation, where
+one takes samples of the policy to approximate the expectation.
+This is the basis used by Bakker et al. (2020), but the result in their case is slightly
+modified to have
+∇ϕJ (ϕ)∝ Eπϕ,x0
+[T∑
+t=1
+∇ logπϕ(At|St)
+T∑
+t′=t
+(
+γt′−t (r(St′,At′)−b(St′))
+)]
+(6.6)
+where the expectation overx0 is the expectation over the initial states, andb(St′) is a
+baseline that is aimed at reducing the high variance of the gradient estimator (Sutton
+and Barto, 2018, pp. 329-331).
+TheexpressioninEquation6.6isnotdirectlycomputableasitstillcontainsanexpectation
+over the policy, andAt, St depend on it. Bakker et al. (2020) propose both agreedyand
+88

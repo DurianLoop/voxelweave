@@ -1,0 +1,44 @@
+Task adapted reconstruction for inverse problems
+Jonas Adler∗ , Sebastian Lunz † , Olivier Verdier ‡ , Carola-Bibiane Sch¨ onlieb§ , and Ozan ¨Oktem¶
+Abstract. The paper considers the problem of performing a task deﬁned on a model parameter that is only
+observed indirectly through noisy data in an ill-posed inverse problem. A key aspect is to formalize
+the steps of reconstruction and task as appropriate estimators (non-randomized decision rules) in
+statistical estimation problems. The implementation makes use of (deep) neural networks to pro-
+vide a diﬀerentiable parametrization of the family of estimators for both steps. These networks are
+combined and jointly trained against suitable supervised training data in order to minimize a joint
+diﬀerentiable loss function, resulting in an end-to-end task adapted reconstruction method. The
+suggested framework is generic, yet adaptable, with a plug-and-play structure for adjusting both the
+inverse problem and the task at hand. More precisely, the data model (forward operator and statis-
+tical model of the noise) associated with the inverse problem is exchangeable, e.g., by using neural
+network architecture given by a learned iterative method. Furthermore, any task that is encodable
+as a trainable neural network can be used. The approach is demonstrated on joint tomographic
+image reconstruction, classiﬁcation and joint tomographic image reconstruction segmentation.
+Key words. Inverse problems, image reconstruction, tomography, deep learning, feature reconstruction, seg-
+mentation, classiﬁcation, regularization
+AMS subject classiﬁcations. 47A52, 65F22, 65F22, 34A55, 49N45, 35R30, 62G86, 62C10, 92B20, 92C55
+1. Introduction. The overall goal in inverse problems is to determine model parameters
+such that model predictions match measured data to suﬃcient accuracy. Such problems arises
+in various scientiﬁc disciplines. One example is biomedical imaging where the image is the
+“model parameter” that needs to be determined from data acquired using an imaging device
+like a tomographic scanner or a microscope. The prime example of this is tomographic imaging
+in medicine which has revolutionized health care over the past 30 years, allowing doctors to
+ﬁnd disease earlier and improve patient outcomes [19, 82]. Likewise, scientiﬁc computing
+is nowadays considered to be the “third pillar of science” standing right next to theoretical
+analysis and experiments for scientiﬁc discovery, much thanks to possibilities for simulating
+and optimizing complex physical and engineering systems. A key element in realizing this role
+is the ability to solve the inverse problem of calibrating parameters in a mathematical model
+of the system so that simulations match benchmark data [8].
+The inverse problem of reconstructing the model parameter from data is often only one
+out of many steps in a procedure where the recovered model parameter is used in decision
+∗Department of Mathematics, KTH–Royal Institute of Technology, 100 44 Stockholm, Sweden; Elekta AB, Box
+7593, SE-103 93 Stockholm, Sweden (jonasadl@kth.se).
+†Centre for Mathematical Sciences, University of Cambridge, Cambridge CB3 0WA, United Kingdom
+(sl767@cam.ac.uk).
+‡Department of Mathematics, KTH–Royal Institute of Technology, 100 44 Stockholm, Sweden; Department
+of Computing, Mathematics and Physics, Western Norway University of Applied Sciences, Bergen, Norway
+(olivierv@kth.se, olivier.verdier@hvl.no).
+§Centre for Mathematical Sciences, University of Cambridge, Cambridge CB3 0WA, United Kingdom
+(cbs31@cam.ac.uk).
+¶Department of Mathematics, KTH–Royal Institute of Technology, 100 44 Stockholm, Sweden (ozan@kth.se).
+1
+arXiv:1809.00948v1  [cs.CV]  27 Aug 2018

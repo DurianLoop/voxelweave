@@ -1,0 +1,1 @@
+第一入口实际9d1768 exit1：四日志共享记录与浮点值分解未保留Windows原文本CRLF，严格raw-byte等同性断言失败。代码和attempt01已写gzip保留，不计为通过。V2输出另立attempt02，保存各原branch newline并重建，再用gzip与zlib两种解压器逐字节核验。此修复不修改已冻结训练日志或权重。

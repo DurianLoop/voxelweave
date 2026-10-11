@@ -1,0 +1,98 @@
+, VOL. XX, NO. XX, XXXX 2020 2
+may disappear, or it may not co-shift in the same way as
+the objects of interest. In the above example, the model may
+fail or underperform on real-world images, where metal
+token does not exist, or does not correlate with pneumonia
+anymore.
+To mitigate domain shift, previous attempts include un￾supervised domain adaptation (UDA) [16] and multi-source
+domain generalization (MDG) approaches [17]. Unfortunately,
+UDA or MDG may not always be practical: they rely on
+training data from the target domain or from multiple source
+domains, which are often unavailable due to cost or privacy
+concerns. UDA also requires expertise for fine-tuning on target
+data, incurring difficulties to its deployment in the real world.
+A more practical setting is single-source domain generaliza￾tion: to train a deep learning model to be robust against domain
+shifts, using training data from only one source domain. Since
+no examples of the target domain are available, we resort
+to bottom-up approaches that are built on the above causal
+analysis of acquisition shift. We aim to 1) steer the network
+toward shape information which is domain-invariant and is
+intuitively causal to segmentation results; 2) to immunize the
+segmentation model against the shifted-correlation effect, by
+removing the confounder that spuriously correlates objects in
+the background and the objects of interest during training.
+Learning causal features and removing confoundings usu￾ally require intervention: fixing the variable of interest while
+incorporating other variables in a fair way [14]. This is similar
+to randomized controlled trials. To mitigate acquisition shift, a
+straightforward intervention is to train the model with images
+of a fixed cohort of patients that are taken under all possible
+acquisition processes. Since this is unrealistic, we resort to
+data-augmentation-based intervention [18] that incorporates
+possible acquisition shifts via simulations.
+In this work, we propose a causality-inspired data aug￾mentation approach for single-source domain generalization.
+It exposes the network to synthetic acquisition-shifted train￾ing samples that incorporate shifts in intensity/texture and
+shifted correlations. Specifically, to efficiently synthesize di￾verse appearances (intensities and textures) without losing
+generality, we employ shallow convolutional networks with
+random weights that are sampled at each training iteration to
+augment images. As stable decision rules can hardly be formed
+on constantly-varying intensities/textures, the network would
+resort to domain-invariant features such as shapes. To remove
+the confounder that leads to the shifted-correlation effect, we
+first reveal that the image acquisition process naturally con￾founds objects in the background and the objects of interest, in
+terms of their appearances. We then design a practical method
+for simulating and independently resampling the appearances
+of potentially confounded objects during training. This is
+achieved by applying different appearance transformations in a
+spatially-variable manner, with the help of pseudo-correlation
+maps computed using unsupervised algorithms. The overall
+approach is used as additional stages following standard data
+augmentations. It is therefore generic to architectures of the
+segmentation network. In summary, we make the following
+contributions:
+• We investigate single-source domain generalization prob￾lem for cross-domain medical image segmentation from a
+causal view. We propose a simple and effective causality￾inspired data augmentation approach.
+• We propose 1) global intensity non-linear augmentation
+(GIN) technique that efficiently transforms images to
+have diverse appearances via randomly-weighted shal￾low convolutional networks; 2) interventional pseudo￾correlation augmentation (IPA) technique that removes
+the confounder that leads to the shifted-correlation effect.
+This is realized by independently resampling appearances
+of potentially confounded objects. These two components
+function as cores of the proposed approach.
+• We build a comprehensive testing environment for single￾source domain generalization for cross-domain medi￾cal image segmentation. It covers cross-modality, cross￾sequence (MRI) and cross-site settings with various
+anatomical structures. We hope this testing environment
+to facilitate future works on domain robustness for med￾ical image segmentation.
+II. RELATED WORKS
+A. Unsupervised domain adaptation and domain generaliza￾tion for medical image segmentation
+Considerable efforts have been made to alleviate domain
+shift for deep networks. Unsupervised domain adaptation
+(UDA) transfers a model trained on a source domain to a
+target domain using unlabeled target-domain data [9]. Existing
+techniques are mainly based on distribution alignment [16],
+[19], or self-training [20]. The former enforces features from
+two domains to have the same distribution, by minimizing the
+distance between two distributions [16], [19]. By this mean the
+decision rules in the source domain can be applied to the target
+domain [9], [16], [19]. The latter first predicts pseudolabels in
+the target images, and then fine-tunes the source model on
+pseudo-labeled target images [20]. Applications of UDA in
+medical image segmentation include [7], [8], [21]–[23].
+Multi-source domain generalization (MDG) usually learns
+domain-invariant features in a one-off manner from multiple
+source domains. Recent techniques include meta-learning [24],
+[25], style transfer [26], [27], transfer learning [28], dynamic
+networks [29] and so on. Among them meta-learning optimizes
+model parameters on synthetic domain generalization sub￾problems [24]. Style transfer augments the training data by
+swapping/mixing appearances among training images from
+different domains [27]. Transfer learning techniques exploit
+the mutual-boosting effect between the main task and the
+carefully-designed auxiliary task [28]. Dynamic networks
+make the model weights/architectures adaptive to the specific
+domain of each input [29]. In medical imaging, recent methods
+[30]–[32] have achieved promising results. However, for both
+UDA and MDG, target data or multi-source data are often
+unavailable due to privacy or cost concerns.
+Single-source domain generalization requires training data
+from one domain only. Representation self-challenging (RSC)
+[33] removes features that cause the largest loss gradients,
+which are believed to be domain-dependent. Liu et al. [34]
+propose to unify statistics of image features, which control

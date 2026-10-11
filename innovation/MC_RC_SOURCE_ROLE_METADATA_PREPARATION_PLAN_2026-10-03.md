@@ -1,0 +1,9 @@
+# 下一批来源与患者角色：仅已存元数据审计
+
+本次不下载图像、不解码MR或新label、不计算患者模型效果。重新核对已有官方候选和历史开发身份，生成后续资格核验队列；它不是已合格训练/验证/确认split。
+
+输入为已存官方series API、官方overlap CSV、既有159 labelled T2/71人候选表，以及已完成native16/8人开发报告。候选UID必须与API精确匹配，PatientID/StudyUID一致、label路径归属同一患者；不得仅凭文件名T2就承认原生薄层。对官方API内所有VS-SEG前缀共享患者保持排除，不能只排overlap CSV列出的8个共享series。当前8开发患者的全部时点一律开发，不能将新series当新患者。
+
+对其余候选只写`catalogue_candidate_not_yet_qualified`；未在本次选定历史来源中记录效果不代表完整项目的未见身份已证明。首次后续非像素资格批次按PatientID字典序固定3人，包含每人的全部候选T2 series，记录API ImageCount/FileSize、label路径及所需检查。禁止按Dice、病灶大小或某个header有利结果选择series。此次不预分确认患者；在所有来源完整交叉身份与资格结束后才能按患者分组冻结训练/验证/确认。
+
+后续该批应先非像素DICOM头及label网格/语义：ImageType、2D/3D、真实物理step与thickness、重复SOP/derived链、FOV/方向、同网格、全部时点归并。元数据公开可用不是合格独立确认，失败必须保留并在原分母中报告。已见8人可用于任务模型开发；现官方checkpoint native能力失败需新任务训练，不能以native Dice筛选将来确认患者。

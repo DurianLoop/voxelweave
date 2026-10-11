@@ -1,0 +1,26 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+11
+0.36, well below the instability threshold of 1.0. Bottom-right: mean ACT ponder time decreases from ~2.6 to ~1.4 effective 
+iterations, indicating the model learns computational efficiency during training.
+6.2 Ablation Analysis
+Figure 4: 3D ACDC ablation results across seven configurations. MoE provides the largest improvement over baseline RD-ViT 
+Tiny (+0.8 pp). RD-ViT Small matches Standard ViT at 0.817 Dice. Doubling loop depth to T=16 slightly hurts performance, 
+suggesting overprocessing with limited training data.
+The ablation study reveals a clear hierarchy of component contributions. MoE is the most parameter￾efficient enhancement: adding only 444K parameters (17% overhead) closes 60% of the Dice gap between 
+RD-ViT Tiny (0.804) and Standard ViT (0.817). This is because the MoE router learns to associate different 
+patch tokens with different expert sub-models, effectively creating implicit class-specific processing 
+pathways within the shared recurrent block.
+ACT contributes +0.3 pp by enabling the model to allocate more compute to boundary regions. LoRA 
+contributes +0.2 pp by allowing depth-wise specialization. Together, ACT and LoRA account for 
+approximately 0.5 pp of improvement, confirming their roles as auxiliary mechanisms that enhance the 
+base recurrence.
+Increasing loop depth from T=8 to T=16 slightly hurts performance (0.804 → 0.796). This counter-intuitive 
+result reflects the small training set size: with only 140 training volumes, very deep recurrence increases 
+the effective model expressivity beyond what the data can support, leading to overprocessing. The ACT 
+mechanism partially mitigates this by allowing early halting, but the effect is insufficient at T=16.
+RD-ViT Small (10.3M parameters) matches Standard ViT (5.7M) at Dice 0.817, confirming that the 
+recurrent architecture can match non-recurrent performance when given sufficient capacity. The 1.8×
+parameter overhead for matching performance (10.3M vs 5.7M) is the “cost” of weight sharing: the shared 
+block must represent a universal computation applicable at all depths, which requires more capacity per 
+iteration than a specialized single-use block.
+6.3 MoE Expert Specialization

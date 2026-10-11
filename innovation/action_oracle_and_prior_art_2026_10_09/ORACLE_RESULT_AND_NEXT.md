@@ -1,0 +1,11 @@
+# 当前两个部署流程的选择器上界
+
+[实际完整枚举](existing_action_oracle_attempt01/receipt.json)与[独立整数/75位Decimal审核](oracle_terminal_audit_attempt01/receipt.json)已结束，真实工具exit0。只读旧完整FOV的JSON整数TP/FP/FN/TN；新MRI/GT/概率/model数组读取0、训练更新0。
+
+raw_pchip_intensity和raw_pchip_spatial沿同parent、2992预算、合法observed输入。全部4已见验证患者9series保留，先series在患者内平均再平均患者。穷举16个患者一致策略、512个逐series策略；GT为每series挑最高Dice的乐观上界fullDice=0.5545512725845162（原gate .70），missingDice=.5531000700720804、recall=.5145594398716831、absRVE=.4137778416675646。通过原六gate的策略均为0；不是全部四个均值指标同时最优的oracle。
+
+准确fullDice Fraction为329214433836254638369892077542619 / 593659144089477854737724167075920。独立审核用整数cross-product选max；患者先均值与原实现误差<1e-70。开发11患者19series对应上界.8847471928009376只是训练病例描述。
+
+此界只约束这两个既有whole-series流程及在它们之间逐series选择的策略，不约束新SR/TTA、新模型、局部融合或分区决策。native_reference因使用missing原始像素不列为部署动作。费用全部乐观置0，界仅用于必要条件，不是费用匹配净收益或新的临床确认。
+
+原receipt键all_whole_series_selectors_can_meet_fullDice_gate实际是该动作集合的feasibility flag，不能解释成“每个策略都能过gate”。下一步优先补强任务泛化/真实候选动作；不从此负结果得出“所有自适应选择都无效”。

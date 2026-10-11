@@ -1,0 +1,32 @@
+Conclusion and future works
+Nonetheless, this last work provides a promising all-in-one approach to Bayesian modeling
+of inverse problems, and would deserve to be investigated in greater depth. GAN-based
+approach have generally achieved strong performances in MRI reconstruction (Chen
+et al., 2022), and seem like a promising approach to provide an integrated approach to
+MRI reconstruction, uncertainty quantification and sampling. But as our methodology is
+tied to learning the posterior rather than GANs themselves, we anticipate that novel
+contributions to Bayesian modeling would also benefit from these observations, further
+giving credit to learning the full posterior distribution rather than the pixel-wise mean
+and variance.
+Insights
+In addition to the methodological contributions, our work provides insights into how
+sampling policies can be designed efficiently. Figure 8.1 shows the connections that we
+established in this thesis. We used the common notions of fixed (non-adaptive) and
+adaptive policies and refined the distinction between greedy and long-horizon policies to
+include theinformation horizonaccessible to the policy, distinguishing between0-step
+and 1-step greedy policies. The first are driven by the error at the current reconstruction,
+whereas the second integrates feedback about theactual effect on reconstruction of adding
+a sampling location to the mask.
+We found that this is the most significant distinction between the existing methods, as
+in Chapter 6, our results suggest that at least in their current state, neither long-horizon
+planning (N-steps information horizon) nor adaptivity allow significant and consistent
+improvements over (s)LBCS, a1-step non-adaptive policy. The distinction between
+0-step and 1-step methods was explored in Chapter 7, where we showed that even an
+adaptive oracle that acquires the line with the largest current mean-squared error is
+outperformed by a non-adaptive policy that leverages1-step information.
+Overall, our experiments suggest that the most important structure that a policy should
+include in order to achieve near state-of-the-art performance is1-step information, i.e.
+taking into account thereal impact on performance of acquiring a new location. Further
+refinements, at least in the current state, seem to bring at most very modest performance
+improvements, challenging the common trend to design ever-more complex models.
+130

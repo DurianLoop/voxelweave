@@ -1,0 +1,90 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+ples frequency-consistent decomposition with content-adaptive
+computation, comprising three key components:
+• Hierarchical Shared-Routed Mixture-of-Experts (SR￾MoE): performs per-pixel top-1 sparse routing through
+shared and local experts, enabling adaptive specializa￾tion while maintaining cross-depth stability. Multi-level
+features from different resolutions are concatenated and
+fed into this module to capture both global and local
+frequency patterns.
+• Separable Frequency-Consistent Laplacian Pyramid (SF￾Lap): employs depthwise binomial filtering and sym￾metric expansion for energy-preserving, alias-resistant
+multi-scale decomposition, ensuring stable low- and high￾frequency streams.
+• Lightweight SE-Guided Residual Path: injects holistic
+global context before frequency splitting, serving as an
+auxiliary enhancement branch within an unrolled, data￾consistency-regularized reconstruction backbone.
+HiFi-MambaV2 improves reconstruction fidelity across di￾verse anatomies. Section V presents consistent gains on bench￾mark datasets (i.e., fastMRI, CC359, ACDC, M4Raw, and
+Prostate158), and validates each component through ablations.
+The hierarchical shared-routed design establishes a principled
+balance between global coherence and local detail—reflected
+in the frequency-domain complementarity visualized in Fig￾ure 1.
+II. RELATED WORK
+Deep Learning-based MRI Reconstruction. Early data￾driven methods learn a direct mapping from undersampled
+inputs to artifact-reduced images using CNNs [13], [14].
+Subsequently, model-based reconstruction methods integrate
+MR physics by unrolling iterative schemes and inserting data
+consistency (DC) operators that enforce k-space fidelity. CNNs
+act as learned priors in image, k-space, or hybrid domains
+(e.g., ADMM-Net [15], DuDoRNet [16], ISTA-Net [17]).
+These designs improve alias suppression, stability, and inter￾pretability within unrolled iterations. However, convolutional
+priors are locality-bound and limit long-range anatomical
+coherence under high acceleration and large fields of view
+(FOVs). Moving beyond convolutional priors, vision trans￾formers have been explored to model long-range dependencies
+and enhance global structural fidelity (e.g., SwinMR [18],
+ReconFormer [19], FpsFormer [20]). Self-attention improves
+context aggregation and boundary continuity. However, the
+quadratic computational and memory cost impedes scalability
+to clinical resolutions and large FOVs. In addition, patchwise
+attention at high resolutions can erode multi-scale contextual
+coherence [21].
+Mamba-based MRI Reconstruction. Mamba is a selective
+state space model that achieves dynamic long-range depen￾dency modeling through input-dependent gating and selective
+state transitions. Following its use in vision backbones (e.g.,
+VMamba [22]), Mamba has achieved promising results in MRI
+reconstruction (e.g., MambaMIR [21], LMO [23]). Despite
+these advances, existing Mamba-based reconstruction models
+still face key limitations: redundant multi-directional scanning,
+local state parameterization weakens anatomical coherence,
+and a lack of frequency control. Our prior work, HiFi Mamba
+[12], addressed part of this gap through dual-stream frequency
+decoupling. However, it still lacked adaptive routing and global
+coordination between high- and low-frequency paths.
+Mixture-of-Experts and Adaptive Routing. The Mixture of
+Experts (MoE) paradigm [24], [25] scales model capacity by
+routing feature tokens to specialized expert modules, achiev￾ing greater expressiveness with sparse computation. Recent
+variants incorporate hierarchical routing and load balancing to
+stabilize training and improve specialization [26], [27]. MoE
+architectures have demonstrated effectiveness across language
+[28] and vision domains, enhancing feature diversity and
+adaptive computation. However, their potential remains under￾explored in MRI reconstruction, where adaptive expert routing
+could be particularly beneficial for balancing global structural
+reasoning with localized frequency preservation. Our HiFi￾MambaV2 builds on this insight by integrating a hierarchical
+shared–routed Mixture-of-Experts within a frequency-aware
+Mamba backbone, enabling content-adaptive dispatch between
+shared and routed experts specialized for different frequency
+components. This design allows the model to dynamically
+balance global coherence and high-frequency detail during
+reconstruction.
+III. MOTIVATION
+Global Context Enhancement. HiFi-Mamba adopts dual￾stream frequency modeling with cross-stream guidance, where
+high-frequency features condition the low-frequency global
+context. While this alleviates locality bias, the backbone lacks
+an independent pathway to consolidate global context before
+frequency decomposition. We therefore introduce a lightweight
+Squeeze-and-Excitation (SE)–guided global branch that runs
+in parallel with the backbone, aggregates holistic context into
+a stable global representation, and injects this representation
+into frequency-specific modules and expert routing. This en￾sures each frequency stream receives coherent context before
+specialization.
+Adaptive Frequency Allocation. Routing between high- and
+low-frequency streams in HiFi-Mamba is fixed across layers.
+Such a static configuration ignores spatial and anatomical
+variability in MRI, allocating identical compute to regions
+with vastly different textural and structural complexity. Conse￾quently, fine anatomical details may be under-modeled, while
+homogeneous areas are over-provisioned. HiFi-MambaV2 ad￾dresses this limitation with a hierarchical shared–routed MoE
+that performs per-pixel top-1 sparse routing to experts. Con￾cretely, shared experts are always active and provide a stable,
+general prior, while routed experts are selectively activated by
+a local (per-layer) token router conditioned on content. Multi￾level features from different streams are concatenated and fed
+into the MoE, enabling adaptive compute allocation between
+high- and low-frequency experts, encouraging frequency spe￾cialization, and maintaining stable behavior across depth. (See
+the frequency-domain evidence in Fig. 1.)
+Frequency Decomposition. The w-Laplacian decomposition
+in HiFi-Mamba relies on fixed, non-learnable filters, which

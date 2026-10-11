@@ -1,0 +1,39 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+(second column) already invalidates these results, with LBCS matching RL. But the
+change is even more significant by changingsettings. By moving from images where the
+field of view is cropped and undersampling occurs vertically (1st and 2nd column) to a
+different field of view with horizontal undersampling (3rd and 4th column), the relative
+ordering of LBCS and RL isreversed, and LBCS shows the best performance.
+However, if we include Table 6.3 into the picture, then even the previous conclusions do
+not hold: on thec+rhz setting (3rd and 4th columns), RL matches or outperforms LBCS.
+Conclusions drawn from the results can be reversed or invalidated by using a different way
+to aggregate the results or by changing the setting on which the evaluation is carried out.
+Although contradicting conclusions can be drawn by looking at individual results, a
+consistent trend from Tables 6.2 and 6.3, as well as the ablations in Appendix A.2.3, is
+that the return on investment (ROI) of adopting RL over LBCS is generally marginal
+compared to what changes in the modeling pipeline can bring.
+We see for instance that improving the reconstruction architecture yields much more
+significant quantitative gains. Moving from a UNet to a cResNet brings an order of
+magnitude more improvement (around0.01 SSIM difference) than what RL brings over
+LBCS (around 0.0015 at best).
+We see also in Appendix A.2.3 that the distribution of masks used to pretrain the
+reconstruction algorithm has a similar impact over performance. Theb masks of Bakker
+et al. (2020) are discretely distributed from sampling rates12.5% to 25%, which matches
+exactly the short horizon experiment range. On the contrary thez masks of Zhang et al.
+(2019b) are distributed from7% to 37.5%, whereas the long horizon experiment spans a
+range from 3% to 25% sampling rate. As a result, we observe thatb masks consistently
+perform better thanz in the short horizon experiment, whereas the opposite holds in
+the long horizon experiments.
+As an example, in the long horizon case, usingz masks over b masks brings a consistent
+improvement of∼ 0.004 in the SSIM AUC, whereas RL improves over LBCS by∼ 0.0006
+in the SSIM AUC.
+Main conclusion.These results suggest that steps such as matching the pretraining
+and evaluation mask distributions and using strong reconstructors has a significantly
+larger influence and consistent effect on the performance than moving from a greedy,
+fixed policy (LBCS) to a greedy, adaptive one (RL).
+Additional observations.We also see that the performance of LBCS always remains
+close to the NA Oracle, testifying to the generalization ability of the fixed LBCS masks
+as indicated by theory. Other reversals can be observed in both cases when changing the
+data processing for both the SSIM at25% and the AUC evaluations.
+96

@@ -1,0 +1,7 @@
+# 费用优化参考实现的完整队列再资格（执行前）
+
+严格复用 certified_resolution_rounding_2026_10_09/qualify_all_patient_stress.py 的完整原40强度synthetic、270分辨率synthetic、228真实stress、旧3模式和v2一模式失败，共542字段。唯一数值参考实现替换为本目录 direct_separable_reference.py；candidate、独立强度reference、全部原病例/位置/primitive、门槛保持。先要求旧542真实工具整体exit0且独立终态audit通过，以及本目录144同形状tiny+3百万体素预试真实exit0。
+
+预试144 tiny的形状/flip/三axis覆盖与原144相同，但纹理表达式和padding常数有差异，不能称原144逐字节重放；原完整40/270在本队列脚本中重新执行。旧参考预试allaxes 11.4911秒、新1.6339秒只是同一固定字段且与另一个本地资格并行时的费用观察，不能称跨患者稳定加速比。此队列记录完整新费用作为35904资格forecast依据。
+
+CPU1/below-normal、wall1800秒、本目录2MB、磁盘/RAM8GB；预留本目录2MB、旧数值2MB、文献2MB、回收2MB、医学3MB、开发2.8MB。GT/model/确认集/lockedIXI关闭；新生产及training_ready仍false。只有全队列实际exit0及独立audit后才选新oracle进入完整35904从头资格，不继承14673失败prefix。

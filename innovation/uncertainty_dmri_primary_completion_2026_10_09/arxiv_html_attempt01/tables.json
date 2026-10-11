@@ -1,0 +1,494 @@
+[
+  {
+    "id": "S3.E1",
+    "rows": [
+      [
+        "",
+        "p ⁡ ( I H ​ i ​ g ​ h | I L ​ o ​ w ) = ∏ i ∈ 𝒮 p ⁡ ( 𝐲 i | 𝐱 i ) p(I_{High}|I_{Low})=\\prod_{i\\in\\mathcal{S}}p(\\mathbf{y}_{i}|\\mathbf{x}_{i})",
+        "",
+        "(1)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.E2",
+    "rows": [
+      [
+        "",
+        "p ⁡ ( 𝐲 | 𝐱 , θ 1 , θ 2 ) = 𝒩 ⁡ ( 𝐲 , μ ⁡ ( 𝐱 , θ 1 ) , Σ ⁡ ( 𝐱 , θ 2 ) ) = exp ​ ( ( 𝐲 − μ ⁡ ( 𝐱 , θ 1 ) ) T ​ Σ − 1 ​ ( 𝐱 , θ 2 ) ​ ( 𝐲 − μ ⁡ ( 𝐱 , θ 1 ) ) ) ( 2 ​ π ) k ​ det ​ Σ ​ ( 𝐱 , θ 2 ) p(\\mathbf{y}|\\mathbf{x},\\mathbf{\\theta}_{1},\\mathbf{\\theta}_{2})=\\mathcal{N}\\big(\\mathbf{y};\\mu(\\mathbf{x};\\mathbf{\\theta}_{1}),\\Sigma(\\mathbf{x};\\theta_{2})\\big)=\\frac{\\text{exp}\\Big(\\big(\\mathbf{y}-\\mu(\\mathbf{x};\\theta_{1})\\big)^{\\text{T}}\\Sigma^{-1}(\\mathbf{x};\\theta_{2})\\big(\\mathbf{y}-\\mu(\\mathbf{x};\\theta_{1})\\big)\\Big)}{\\sqrt{(2\\pi)^{k}\\text{det }\\Sigma(\\mathbf{x};\\theta_{2})}}",
+        "",
+        "(2)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.EGx1",
+    "rows": [
+      [
+        "",
+        "ℒ θ ​ ( 𝒟 ) \\displaystyle\\mathcal{L}_{\\theta}(\\mathcal{D})",
+        "= ∑ ( 𝐱 i , 𝐲 i ) ∈ 𝒟 − log p ( 𝐲 | 𝐱 , θ 1 , θ 2 ) \\displaystyle=\\sum_{(\\mathbf{x}_{i},\\mathbf{y}_{i})\\in\\mathcal{D}}-\\text{log }p(\\mathbf{y}|\\mathbf{x},\\mathbf{\\theta}_{1},\\mathbf{\\theta}_{2})",
+        "",
+        "(3)"
+      ],
+      [
+        "",
+        "",
+        "= ∑ ( 𝐱 i , 𝐲 i ) ∈ 𝒟 − log 𝒩 ( 𝐲 i ; μ ( 𝐱 i ; θ 1 ) , Σ ( 𝐱 i ; θ 2 ) ) \\displaystyle=\\sum_{(\\mathbf{x}_{i},\\mathbf{y}_{i})\\in\\mathcal{D}}-\\text{log }\\mathcal{N}\\big(\\mathbf{y}_{i};\\mu(\\mathbf{x}_{i};\\mathbf{\\theta}_{1}),\\Sigma(\\mathbf{x}_{i};\\mathbf{\\theta}_{2})\\big)",
+        "",
+        "(4)"
+      ],
+      [
+        "",
+        "",
+        "= ℳ θ ​ ( 𝒟 ) + ℋ θ ​ ( 𝒟 ) + c \\displaystyle=\\mathcal{M}_{\\theta}(\\mathcal{D})+\\mathcal{H}_{\\theta}(\\mathcal{D})+c",
+        "",
+        "(5)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.Ex1",
+    "rows": [
+      [
+        "",
+        "ℳ θ ​ ( 𝒟 ) = 1 N ​ ∑ i = 1 N ( 𝐲 i − μ ⁡ ( 𝐱 i , θ 1 ) ) T ​ Σ − 1 ​ ( 𝐱 i , θ 2 ) ​ ( 𝐲 i − μ ⁡ ( 𝐱 i , θ 1 ) ) , ℋ θ ​ ( 𝒟 ) = 1 N ​ ∑ i = 1 N log det ​ Σ ​ ( 𝐱 i , θ 2 ) . \\mathcal{M}_{\\theta}(\\mathcal{D})=\\frac{1}{N}\\sum_{i=1}^{N}\\big(\\mathbf{y}_{i}-\\mu(\\mathbf{x}_{i};\\theta_{1})\\big)^{\\text{T}}\\Sigma^{-1}(\\mathbf{x}_{i};\\theta_{2})\\big(\\mathbf{y}_{i}-\\mu(\\mathbf{x}_{i};\\theta_{1})\\big),\\quad\\mathcal{H}_{\\theta}(\\mathcal{D})=\\frac{1}{N}\\sum_{i=1}^{N}\\text{log det }\\Sigma(\\mathbf{x}_{i};\\theta_{2}).",
+        ""
+      ]
+    ]
+  },
+  {
+    "id": "S3.E6",
+    "rows": [
+      [
+        "",
+        "ℒ ϕ ( 𝒟 ) = ∑ ( 𝐱 i , 𝐲 i ) ∈ 𝒟 ( 𝔼 q ϕ ​ ( θ ) [ − log p ( 𝐲 i | 𝐱 i , θ ) ] + KL ( q ϕ ( θ ) | | p ( θ ) ) ) \\mathcal{L}_{\\phi}(\\mathcal{D})=\\sum_{(\\mathbf{x}_{i},\\mathbf{y}_{i})\\in\\mathcal{D}}\\Big(\\mathbb{E}_{q_{\\phi}(\\theta)}[-\\text{log }p(\\mathbf{y}_{i}|\\mathbf{x}_{i},\\theta)]+\\text{KL}(q_{\\phi}(\\theta)||p(\\theta))\\Big)",
+        "",
+        "(6)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.E7",
+    "rows": [
+      [
+        "",
+        "𝔼 q ϕ ​ ( θ ) [ − log p ( 𝐲 | 𝐱 , θ ) ] ≈ 1 S ∑ s = 1 S − log p ( 𝐲 | 𝐱 , θ ( s ) ) , θ ( s ) ∼ q ϕ ( θ ) \\mathbb{E}_{q_{\\phi}(\\theta)}[-\\text{log }p(\\mathbf{y}|\\mathbf{x},\\theta)]\\approx\\frac{1}{S}\\sum_{s=1}^{S}-\\text{log }p(\\mathbf{y}|\\mathbf{x},\\theta^{(s)}),\\quad\\theta^{(s)}\\sim q_{\\phi}(\\theta)",
+        "",
+        "(7)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.E8",
+    "rows": [
+      [
+        "",
+        "F out = Δ μ Y + σ Y ⊙ ϵ , ϵ ∼ 𝒩 ⁡ ( 0 , I ) . F_{\\text{out}}\\mathrel{\\hbox{\\hskip 3.8889pt\\hskip-3.8889pt\\hbox{=}\\hskip-3.8889pt\\hskip-2.7431pt\\raisebox{4.66875pt}{\\hbox{$\\scriptscriptstyle\\Delta$}}\\hskip-2.7431pt\\hskip 3.8889pt}}\\mu_{Y}+\\sigma_{Y}\\odot\\mathbf{\\epsilon},\\quad\\mathbf{\\epsilon}\\sim\\mathcal{N}(0,I).",
+        "",
+        "(8)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.EGx2",
+    "rows": [
+      [
+        "",
+        "q ϕ ∗ ​ ( 𝐲 | 𝐱 ) \\displaystyle q_{\\phi}^{*}(\\mathbf{y}|\\mathbf{x})",
+        "= Δ ∫ OPEN 𝒩 ⁡ ( 𝐲 , μ ⁡ ( 𝐱 , θ 1 ) , Σ ⁡ ( 𝐱 , θ 2 ) ) ) ⏟ Network prediction ⋅ q ϕ ​ ( θ 1 , θ 2 ) ⏟ Approx. posterior ​ d ​ θ 1 ​ d ​ θ 2 \\displaystyle\\mathrel{\\hbox{\\hskip 3.8889pt\\hskip-3.8889pt\\hbox{=}\\hskip-3.8889pt\\hskip-2.7431pt\\raisebox{4.66875pt}{\\hbox{$\\scriptscriptstyle\\Delta$}}\\hskip-2.7431pt\\hskip 3.8889pt}}\\int\\underbrace{\\mathcal{N}(\\mathbf{y};\\mu(\\mathbf{x};\\theta_{1}),\\Sigma(\\mathbf{x};\\theta_{2})))}_{\\text{Network prediction}}\\cdot\\underbrace{q_{\\phi}(\\theta_{1},\\theta_{2})}_{\\text{Approx. posterior}}\\mathrm{d}\\theta_{1}\\mathrm{d}\\theta_{2}",
+        "",
+        "(9)"
+      ],
+      [
+        "",
+        "",
+        "≈ ∫ p ⁡ ( 𝐲 | 𝐱 , θ 1 , θ 2 ) ⋅ p ⁡ ( θ 1 , θ 2 | 𝒟 ) ​ d ​ θ 1 ​ d ​ θ 2 = p ⁡ ( 𝐲 | 𝐱 , 𝒟 ) \\displaystyle\\approx\\int p(\\mathbf{y}|\\mathbf{x},\\theta_{1},\\theta_{2})\\cdot p(\\theta_{1},\\theta_{2}|\\mathcal{D})\\mathrm{d}\\theta_{1}\\mathrm{d}\\theta_{2}=p(\\mathbf{y}|\\mathbf{x},\\mathcal{D})",
+        "",
+        "(10)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.EGx3",
+    "rows": [
+      [
+        "",
+        "μ ^ 𝐲 | 𝐱 \\displaystyle\\hat{\\mu}_{\\mathbf{y}|\\mathbf{x}}",
+        "= Δ 1 T ​ ∑ t = 1 T μ ⁡ ( 𝐱 , θ 1 t ) → T → ∞ 𝔼 q ϕ ∗ ​ ( 𝐲 | 𝐱 ) ​ [ 𝐲 ] \\displaystyle\\mathrel{\\hbox{\\hskip 3.8889pt\\hskip-3.8889pt\\hbox{=}\\hskip-3.8889pt\\hskip-2.7431pt\\raisebox{4.66875pt}{\\hbox{$\\scriptscriptstyle\\Delta$}}\\hskip-2.7431pt\\hskip 3.8889pt}}\\frac{1}{T}\\sum_{t=1}^{T}\\mu(\\mathbf{x};\\theta_{1}^{t})\\xrightarrow[T\\rightarrow\\infty]{}\\mathbb{E}_{q_{\\phi}^{*}(\\mathbf{y}|\\mathbf{x})}[\\mathbf{y}]",
+        "",
+        "(11)"
+      ],
+      [
+        "",
+        "Σ ^ 𝐲 | 𝐱 \\displaystyle\\hat{\\Sigma}_{\\mathbf{y}|\\mathbf{x}}",
+        "= Δ 1 T ​ ∑ t = 1 T ( Σ ⁡ ( 𝐱 , θ 2 t ) + μ ⁡ ( 𝐱 , θ 1 t ) ​ μ ​ ( 𝐱 , θ 1 t ) T ) − μ ^ 𝐲 | 𝐱 ​ μ ^ 𝐲 | 𝐱 T → T → ∞ cov q ϕ ∗ ​ ( 𝐲 | 𝐱 ) ​ [ 𝐲 , 𝐲 ] \\displaystyle\\mathrel{\\hbox{\\hskip 3.8889pt\\hskip-3.8889pt\\hbox{=}\\hskip-3.8889pt\\hskip-2.7431pt\\raisebox{4.66875pt}{\\hbox{$\\scriptscriptstyle\\Delta$}}\\hskip-2.7431pt\\hskip 3.8889pt}}\\frac{1}{T}\\sum_{t=1}^{T}\\Big(\\Sigma(\\mathbf{x};\\theta_{2}^{t})+\\mu(\\mathbf{x};\\theta_{1}^{t})\\mu(\\mathbf{x};\\theta_{1}^{t})^{\\text{T}}\\Big)-\\hat{\\mu}_{\\mathbf{y}|\\mathbf{x}}\\hat{\\mu}_{\\mathbf{y}|\\mathbf{x}}^{\\text{T}}\\xrightarrow[T\\rightarrow\\infty]{}\\text{cov}_{q_{\\phi}^{*}(\\mathbf{y}|\\mathbf{x})}[\\mathbf{y},\\mathbf{y}]",
+        "",
+        "(12)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.E13",
+    "rows": [
+      [
+        "",
+        "𝕍 p ⁡ ( 𝐲 | 𝐱 , 𝒟 ) ​ [ g ⁡ ( 𝐲 ) ] = Δ m ​ ( g ⁡ ( 𝐲 ) ) + Δ i ​ ( g ⁡ ( 𝐲 ) ) \\mathbb{V}_{p(\\mathbf{y}|\\mathbf{x},\\mathcal{D})}[g(\\mathbf{y})]=\\Delta_{m}(g(\\mathbf{y}))+\\Delta_{i}(g(\\mathbf{y}))",
+        "",
+        "(13)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.EGx4",
+    "rows": [
+      [
+        "",
+        "Δ m ​ ( g ​ ( 𝐲 ) ) \\displaystyle\\Delta_{m}(g(\\mathbf{y}))",
+        "= 𝔼 p ⁡ ( θ | 𝒟 ) ​ [ 𝕍 p ⁡ ( g ⁡ ( 𝐲 ) | θ , 𝐱 , 𝒟 ) ​ [ g ⁡ ( 𝐲 ) ] − 𝕍 p ⁡ ( g ⁡ ( 𝐲 ) | θ , 𝐱 , 𝒟 ) ​ [ g ⁡ ( 𝐲 ) | θ ] ] \\displaystyle=\\mathbb{E}_{p(\\theta|\\mathcal{D})}\\big[\\mathbb{V}_{p(g(\\mathbf{y})|\\theta,\\mathbf{x},\\mathcal{D})}[g(\\mathbf{y})]-\\mathbb{V}_{p(g(\\mathbf{y})|\\theta,\\mathbf{x},\\mathcal{D})}[g(\\mathbf{y})|\\theta]\\big]",
+        "",
+        "(14)"
+      ],
+      [
+        "",
+        "",
+        "= 𝕍 p ⁡ ( θ | 𝒟 ) ​ [ 𝔼 p ⁡ ( g ⁡ ( 𝐲 ) | θ , 𝐱 , 𝒟 ) ​ [ g ⁡ ( 𝐲 ) | θ ] ] ⏟ propagated parameter uncertainty \\displaystyle=\\underbrace{\\mathbb{V}_{p(\\theta|\\mathcal{D})}[\\mathbb{E}_{p(g(\\mathbf{y})|\\theta,\\mathbf{x},\\mathcal{D})}[g(\\mathbf{y})|\\theta]]}_{\\text{propagated parameter uncertainty}}",
+        "",
+        "(15)"
+      ],
+      [
+        "",
+        "Δ i ​ ( g ​ ( 𝐲 ) ) \\displaystyle\\Delta_{i}(g(\\mathbf{y}))",
+        "= 𝔼 p ⁡ ( θ | 𝒟 ) ​ [ 𝕍 p ⁡ ( g ⁡ ( 𝐲 ) | θ , 𝐱 , 𝒟 ) ​ [ g ⁡ ( 𝐲 ) | θ ] ] ⏟ propagated intrinsic uncertainty \\displaystyle=\\underbrace{\\mathbb{E}_{p(\\theta|\\mathcal{D})}[\\mathbb{V}_{p(g(\\mathbf{y})|\\theta,\\mathbf{x},\\mathcal{D})}[g(\\mathbf{y})|\\theta]]}_{\\text{propagated intrinsic uncertainty}}",
+        "",
+        "(16)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.E17",
+    "rows": [
+      [
+        "",
+        "Δ m ​ ( 𝐲 ) = 𝕍 p ⁡ ( θ 1 | 𝒟 ) ​ [ μ θ 1 ​ ( 𝐱 ) ] , Δ i ​ ( 𝐲 ) = 𝔼 p ⁡ ( θ 2 | 𝒟 ) ​ [ Σ θ 2 ​ ( 𝐱 ) ] \\Delta_{m}(\\mathbf{y})=\\mathbb{V}_{p(\\theta_{1}|\\mathcal{D})}[\\mu_{\\theta_{1}}(\\mathbf{x})],\\quad\\Delta_{i}(\\mathbf{y})=\\mathbb{E}_{p(\\theta_{2}|\\mathcal{D})}[\\Sigma_{\\theta_{2}}(\\mathbf{x})]",
+        "",
+        "(17)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.EGx5",
+    "rows": [
+      [
+        "",
+        "Δ ^ m ​ ( 𝐲 ) \\displaystyle\\widehat{\\Delta}_{m}(\\mathbf{y})",
+        "= 1 T ​ ∑ t = 1 T μ ⁡ ( 𝐱 , θ 1 t ) ​ μ ​ ( 𝐱 , θ 1 t ) T − μ ^ 𝐲 | 𝐱 ​ μ ^ 𝐲 | 𝐱 T \\displaystyle=\\frac{1}{T}\\sum_{t=1}^{T}\\mu(\\mathbf{x};\\theta_{1}^{t})\\mu(\\mathbf{x};\\theta_{1}^{t})^{\\text{T}}-\\hat{\\mu}_{\\mathbf{y}|\\mathbf{x}}\\hat{\\mu}_{\\mathbf{y}|\\mathbf{x}}^{\\text{T}}",
+        "",
+        "(18)"
+      ],
+      [
+        "",
+        "Δ ^ i ​ ( 𝐲 ) \\displaystyle\\widehat{\\Delta}_{i}(\\mathbf{y})",
+        "= 1 T ​ ∑ t = 1 T Σ ⁡ ( 𝐱 , θ 2 t ) \\displaystyle=\\frac{1}{T}\\sum_{t=1}^{T}\\Sigma(\\mathbf{x};\\theta_{2}^{t})",
+        "",
+        "(19)"
+      ]
+    ]
+  },
+  {
+    "id": "S3.EGx6",
+    "rows": [
+      [
+        "",
+        "Δ ^ m ​ ( g ​ ( 𝐲 ) ) \\displaystyle\\widehat{\\Delta}_{m}(g(\\mathbf{y}))",
+        "= Δ 1 T ​ ∑ t ( μ ^ t ) 2 − ( 1 ( J − 1 ) ​ T ​ ∑ j , t ( g j t ) ) 2 \\displaystyle\\mathrel{\\hbox{\\hskip 3.8889pt\\hskip-3.8889pt\\hbox{=}\\hskip-3.8889pt\\hskip-2.7431pt\\raisebox{4.66875pt}{\\hbox{$\\scriptscriptstyle\\Delta$}}\\hskip-2.7431pt\\hskip 3.8889pt}}\\frac{1}{T}\\sum_{t}(\\hat{\\mu}^{t})^{2}-\\Big(\\frac{1}{(J-1)T}\\sum_{j,t}(g^{t}_{j})\\Big)^{2}",
+        "",
+        "(20)"
+      ],
+      [
+        "",
+        "Δ ^ i ​ ( g ​ ( 𝐲 ) ) \\displaystyle\\widehat{\\Delta}_{i}(g(\\mathbf{y}))",
+        "= Δ 1 ( J − 1 ) ​ T ​ ∑ j , t ( g j t ) 2 − 1 T ​ ∑ t ( μ ^ t ) 2 \\displaystyle\\mathrel{\\hbox{\\hskip 3.8889pt\\hskip-3.8889pt\\hbox{=}\\hskip-3.8889pt\\hskip-2.7431pt\\raisebox{4.66875pt}{\\hbox{$\\scriptscriptstyle\\Delta$}}\\hskip-2.7431pt\\hskip 3.8889pt}}\\frac{1}{(J-1)T}\\sum_{j,t}(g^{t}_{j})^{2}-\\frac{1}{T}\\sum_{t}(\\hat{\\mu}^{t})^{2}",
+        "",
+        "(21)"
+      ],
+      [
+        "",
+        "μ ^ t \\displaystyle\\hat{\\mu}^{t}",
+        "= 1 J ​ ∑ j g j t . \\displaystyle=\\frac{1}{J}\\sum_{j}g^{t}_{j}.",
+        "",
+        "(22)"
+      ]
+    ]
+  },
+  {
+    "id": "S4.T1.2",
+    "rows": [
+      [
+        "Data",
+        "Size of input 𝐱 \\mathbf{x}",
+        "Size of output 𝐲 \\mathbf{y}",
+        "No. pairs ( 𝐱 , 𝐲 ) (\\mathbf{x},\\mathbf{y}) per subject",
+        "No. subjects"
+      ],
+      [
+        "DTIs",
+        "11 × 11 × 11 × 6 11\\times 11\\times 11\\times 6",
+        "14 × 14 × 14 × 6 14\\times 14\\times 14\\times 6",
+        "8000 8000",
+        "16 16"
+      ],
+      [
+        "MAP-MRIs",
+        "21 × 21 × 21 × 22 21\\times 21\\times 21\\times 22",
+        "14 × 14 × 14 × 22 14\\times 14\\times 14\\times 22",
+        "4000 4000",
+        "16 16"
+      ],
+      [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    ]
+  },
+  {
+    "id": "S4.T2.2",
+    "rows": [
+      [
+        "Models",
+        "HCP (interior)",
+        "HCP (exterior)",
+        "Life (interior)",
+        "Life (exterior)"
+      ],
+      [
+        "CSpline-interpolation",
+        "10.069 ± 10.069\\pm n/a",
+        "31.738 ± 31.738\\pm n/a",
+        "32.483 ± 32.483\\pm n/a",
+        "49.066 ± 49.066\\pm n/a"
+      ],
+      [
+        "β \\beta -Spline interpolation",
+        "9.578 ± 9.578\\pm n/a",
+        "98.169 ± 98.169\\pm n/a",
+        "33.429 ± 33.429\\pm n/a",
+        "186.049 ± 186.049\\pm n/a"
+      ],
+      [
+        "IQT-RF",
+        "6.974 ± 0.024 6.974\\pm 0.024",
+        "23.139 ± 0.351 23.139\\pm 0.351",
+        "10.038 ± 0.019 10.038\\pm 0.019",
+        "25.166 ± 0.328 25.166\\pm 0.328"
+      ],
+      [
+        "BIQT-RF",
+        "6.972 ± 0.069 6.972\\pm 0.069",
+        "23.110 ± 0.362 23.110\\pm 0.362",
+        "9.926 ± 0.055 9.926\\pm 0.055",
+        "25.208 ± 0.290 25.208\\pm 0.290"
+      ],
+      [
+        "3D-ESPCN(baseline)",
+        "6.212 ± 0.017 6.212\\pm 0.017",
+        "13.609 ± 0.084 13.609\\pm 0.084",
+        "8.902 ± 0.020 8.902\\pm 0.020",
+        "16.389 ± 0.114 16.389\\pm 0.114"
+      ],
+      [
+        "+ Binary Dropout ( p = 0.1 p=0.1 )",
+        "6.319 ± 0.015 6.319\\pm 0.015",
+        "13.738 ± 0.048 13.738\\pm 0.048",
+        "9.093 ± 0.024 9.093\\pm 0.024",
+        "16.489 ± 0.099 16.489\\pm 0.099"
+      ],
+      [
+        "+ Gaussian Dropout ( p = 0.05 p=0.05 )",
+        "6.463 ± 0.034 6.463\\pm 0.034",
+        "14.168 ± 0.051 14.168\\pm 0.051",
+        "9.184 ± 0.048 9.184\\pm 0.048",
+        "16.653 ± 0.092 16.653\\pm 0.092"
+      ],
+      [
+        "+ Variational Dropout (I)",
+        "6.194 ± 0.013 6.194\\pm 0.013",
+        "13.412 ± 0.041 \\mathbf{13.412\\pm 0.041}",
+        "8.874 ± 0.027 8.874\\pm 0.027",
+        "16.147 ± 0.051 \\mathbf{16.147\\pm 0.051}"
+      ],
+      [
+        "+ Variational Dropout (II)",
+        "6.201 ± 0.015 6.201\\pm 0.015",
+        "13.479 ± 0.047 13.479\\pm 0.047",
+        "8.878 ± 0.031 8.878\\pm 0.031",
+        "16.230 ± 0.075 16.230\\pm 0.075"
+      ],
+      [
+        "+ Hetero.",
+        "6.135 ± 0.029 6.135\\pm 0.029",
+        "15.469 ± 0.231 15.469\\pm 0.231",
+        "8.885 ± 0.041 8.885\\pm 0.041",
+        "17.208 ± 0.211 17.208\\pm 0.211"
+      ],
+      [
+        "+ Hetero. + Variational Dropout (I)",
+        "6.121 ± 0.015 6.121\\pm 0.015",
+        "13.591 ± 0.051 13.591\\pm 0.051",
+        "8.837 ± 0.043 \\mathbf{8.837\\pm 0.043}",
+        "16.261 ± 0.053 16.261\\pm 0.053"
+      ],
+      [
+        "+ Hetero. + Variational Dropout (II)",
+        "6.116 ± 0.013 \\mathbf{6.116\\pm 0.013}",
+        "13.622 ± 0.099 13.622\\pm 0.099",
+        "8.861 ± 0.031 8.861\\pm 0.031",
+        "16.387 ± 0.098 16.387\\pm 0.098"
+      ]
+    ]
+  },
+  {
+    "id": "S4.T3.2",
+    "rows": [
+      [
+        "Models",
+        "HCP (interior)",
+        "HCP (exterior)",
+        "Life (interior)",
+        "Life (exterior)",
+        ""
+      ],
+      [
+        "CSpline interpolation",
+        "5.234 ± 5.234\\pm n/a",
+        "30.362 ± 30.362\\pm n/a",
+        "7.135 ± 7.135\\pm n/a",
+        "29.232 ± 29.232\\pm n/a",
+        ""
+      ],
+      [
+        "β \\beta -Spline interpolation",
+        "4.852 ± 4.852\\pm n/a",
+        "63.446 ± 63.446\\pm n/a",
+        "6.523 ± 6.523\\pm n/a",
+        "56.937 ± 56.937\\pm n/a",
+        ""
+      ],
+      [
+        "IQT-RF [ 40 ]",
+        "4.538 ± 0.113 4.538\\pm 0.113",
+        "25.541 ± 0.131 25.541\\pm 0.131",
+        "5.882 ± 0.121 5.882\\pm 0.121",
+        "26.137 ± 0.279 26.137\\pm 0.279",
+        ""
+      ],
+      [
+        "BIQT-RF [ 39 ]",
+        "4.838 ± 0.129 4.838\\pm 0.129",
+        "25.523 ± 0.175 25.523\\pm 0.175",
+        "5.949 ± 0.131 5.949\\pm 0.131",
+        "27.509 ± 0.233 27.509\\pm 0.233",
+        ""
+      ],
+      [
+        "3D-ESPCN(baseline)",
+        "2.285 ± 0.126 2.285\\pm 0.126",
+        "9.316 ± 0.127 9.316\\pm 0.127",
+        "4.195 ± 0.163 4.195\\pm 0.163",
+        "11.922 ± 0.192 11.922\\pm 0.192",
+        ""
+      ],
+      [
+        "+ Binary Dropout ( p = 0.1 p=0.1 )",
+        "2.283 ± 0.154 2.283\\pm 0.154",
+        "9.272 ± 0.132 9.272\\pm 0.132",
+        "4.120 ± 0.178 4.120\\pm 0.178",
+        "11.652 ± 0.204 11.652\\pm 0.204",
+        ""
+      ],
+      [
+        "+ Gaussian Dropout ( p = 0.1 p=0.1 )",
+        "2.370 ± 0.155 2.370\\pm 0.155",
+        "9.335 ± 0.144 9.335\\pm 0.144",
+        "4.327 ± 0.157 4.327\\pm 0.157",
+        "11.907 ± 0.211 11.907\\pm 0.211",
+        ""
+      ],
+      [
+        "+ Variational Dropout (I)",
+        "2.155 ± 0.122 2.155\\pm 0.122",
+        "9.205 ± 0.193 9.205\\pm 0.193",
+        "3.997 ± 0.153 3.997\\pm 0.153",
+        "11.547 ± 0.177 11.547\\pm 0.177",
+        ""
+      ],
+      [
+        "+ Variational Dropout (II)",
+        "2.172 ± 0.128 2.172\\pm 0.128",
+        "9.112 ± 0.173 9.112\\pm 0.173",
+        "3.972 ± 0.132 3.972\\pm 0.132",
+        "11.511 ± 0.172 11.511\\pm 0.172",
+        ""
+      ],
+      [
+        "+ Hetero.",
+        "1.998 ± 0.132 1.998\\pm 0.132",
+        "11.294 ± 0.216 11.294\\pm 0.216",
+        "3.872 ± 0.140 3.872\\pm 0.140",
+        "12.084 ± 0.129 12.084\\pm 0.129",
+        ""
+      ],
+      [
+        "+ Hetero + Variational Dropout (I)",
+        "1.951 ± 0.122 \\textbf{1.951}\\pm\\textbf{0.122}",
+        "9.102 ± 0.181 9.102\\pm 0.181",
+        "3.572 ± 0.171 \\textbf{3.572}\\pm\\textbf{0.171}",
+        "11.037 ± 0.192 \\textbf{11.037}\\pm\\textbf{0.192}",
+        ""
+      ],
+      [
+        "+ Hetero + Variational Dropout (II)",
+        "1.969 ± 0.119 1.969\\pm 0.119",
+        "9.052 ± 0.162 \\textbf{9.052}\\pm\\textbf{0.162}",
+        "3.606 ± 0.141 3.606\\pm 0.141",
+        "11.311 ± 0.195 11.311\\pm 0.195",
+        ""
+      ],
+      [
+        "3D-ESPCN(without outlier removal)",
+        "3.425 ± 0.163 3.425\\pm 0.163",
+        "13.284 ± 0.239 13.284\\pm 0.239",
+        "6.032 ± 0.229 6.032\\pm 0.229",
+        "15.513 ± 0.273 15.513\\pm 0.273",
+        ""
+      ],
+      [
+        "+ Hetero.",
+        "2.264 ± 0.153 2.264\\pm 0.153",
+        "11.306 ± 0.172 11.306\\pm 0.172",
+        "3.919 ± 0.140 3.919\\pm 0.140",
+        "12.821 ± 0.150 12.821\\pm 0.150",
+        ""
+      ],
+      [
+        "+ Hetero + Variational Dropout (I)",
+        "2.138 ± 0.159 2.138\\pm 0.159",
+        "10.022 ± 0.187 10.022\\pm 0.187",
+        "3.681 ± 0.193 3.681\\pm 0.193",
+        "12.133 ± 0.205 12.133\\pm 0.205",
+        ""
+      ],
+      [
+        "+ Hetero + Variational Dropout (II)",
+        "2.133 ± 0.188 2.133\\pm 0.188",
+        "9.988 ± 0.209 9.988\\pm 0.209",
+        "3.690 ± 0.184 3.690\\pm 0.184",
+        "12.052 ± 0.212 12.052\\pm 0.212",
+        ""
+      ]
+    ]
+  }
+]

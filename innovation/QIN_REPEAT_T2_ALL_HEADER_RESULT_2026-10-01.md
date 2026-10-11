@@ -1,0 +1,20 @@
+# QIN repeated T2: complete header-only cohort result
+
+**Decision: stop the exact-plane independent-acquisition branch on this source.** The [prewritten full-cohort rule](QIN_REPEAT_T2_ALL_HEADER_PLAN_2026-10-01.md) selected all 15 patients and all 30 axial T2 MR series from the official TCIA `QIN-PROSTATE-Repeatability` inventory (DOI `10.7937/K9/TCIA.2018.MR1CKGND`). All 30 official NBIA ZIPs were downloaded or reused, SHA-256 recorded, and 15 pairs scored without a download or parse failure. The full [machine-readable result](literature/qin_repeat_t2_all_header_screen.json) includes every selected series, ZIP digest, pair metric and rejection reason. DICOM was parsed with `stop_before_pixels=True`; no PixelData was read.
+
+| Frozen check | Result |
+|---|---:|
+| Patients / series / evaluated pairs | 15 / 30 / 15 |
+| Pairs passing all exact-plane conditions | **0 / 15** |
+| Orientation-component mismatch | 15 / 15 |
+| Image-position grid mismatch or unequal layer counts | 15 / 15 |
+| TR / TE / pixel-spacing mismatch | 5 / 1 / 2 |
+| Download or parse failures | 0 |
+
+All series have per-image acquisition date/time, `ORIGINAL/PRIMARY` image type and `2D` MR acquisition labels; each within-patient pair has distinct study and acquisition dates. These fields support the provenance of repeat imaging, but do not show unchanged anatomy or isolate acquisition identity. The smallest between-repeat plane-normal angle is 0.2243 degrees (patient 00009); even that pair's recomputed field-of-view center displacement reaches 29.29 mm. Eight pairs have equal image counts, and none of those eight has all matched field-of-view centers within 0.5 mm. Unequal-count pairs have no one-to-one layer comparison under the frozen rule.
+
+**Geometry terminology correction.** The frozen pilot and cohort scripts called `ImagePositionPatient` a "center"; DICOM defines it as the position of the first transmitted pixel, so the archived `max_matched_center_distance_mm` actually measures paired **first-pixel positions**. The independent [read-only verifier](experiments/verify_qin_repeat_t2_all_headers.py) separately computes each field-of-view center from `ImagePositionPatient`, image orientation, matrix and pixel spacing. It verified the official inventory SHA-256 `2aa9a41cd2871ac16f1cea588cf2970c32cd8152aab7e3bfd465cd0d5f2f88b5`, all 30 ZIP SHA-256 values and technical headers, the 15 preregistered reasons, and 0/15 eligibility. Correcting the position terminology does **not** change the decision: every pair already fails the orientation rule, and all eight equal-count pairs also fail the true center rule. The frozen scripts and raw output are retained unchanged for auditability.
+
+The TCIA collection is **prostate**, while the current MIRA evidence concerns brain T2 interpolation. These prostate scans are a source-qualification result, not a brain-model external replication or a test of MIRA predictions. Re-registering a repeat pair could answer a different question, but would co-vary patient motion, anatomy, orientation, slice sampling and reconstruction. Registration would also interpolate pixel values; it cannot retrospectively turn these data into a same-plane counterfactual where only independent measurement identity changes. No target-pixel or registration experiment is authorized by this failed header gate; do not relax tolerances after seeing these results.
+
+The next useful action is a different **source search** with independently documented repeat measurements at physically matched centers and a usable release/access contract. Before any pixels, freeze full geometry, field-of-view overlap, motion/registration rules, target planes, patient split and failure handling. If only unmatched rescan data are found, formulate a separate registered repeatability study with explicit interpolation controls; do not label its result a pure acquisition-identity effect. The current public-only manuscript retains its narrower published-slice context claim and its existing prior-art and release gates.

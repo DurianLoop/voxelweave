@@ -1,0 +1,44 @@
+Demosaicing: The task here is to reconstructing a full color image from the incomplete color
+samples output from an image sensor [90]. Almost all digital cameras, ranging from
+smartphone cameras to the top-of-the-line digital SLR cameras, use a demosaicing
+algorithm to convert the captured sensor information into a color image.
+Colourising: The task is to apply color to grey scale photos and videos [45].
+Image translation: The task is to translate between two classes of images of the same
+object, e.g., CT and MRI images [95].
+Object recognition: This visual classiﬁcation task involves localization, detection and clas-
+siﬁcation and this can be seen as an example of constellation models, which are a
+general class of model that describe objects in terms of a set of parts and their spa-
+tial relations [77, section 20.5]. An integrated framework based on deep convolutional
+networks for detection and localizatio was already introduced in [86], see also [40]
+for recognition and [26] for scene understanding. The most well-known use case is
+recognition of multiple faces in an image where statistical shape models play a central
+role [100, 22, 94] An analogous task relevant for clinical image guided diagnostics is
+detecting melanoma from images of skin lesions [24, 36].
+Non-rigid image registration: The task here is to deform a template image in a “natural”
+way so that it matches a target image. This is a key step in spatiotemporal imaging
+and deep neural networks have been utilized for this purpose [29, 98].
+Parametric regression: The task here is to statistically determine relationships among vari-
+ables (parameters) in a statistical model. This is important in clinical diagnostics
+where one seeks to determine risk factors and biomarkers of diagnostic and prognostic
+value associated with clinical progression and severity of speciﬁc diseases. An example
+of image guided regression is estimating cardiovascular risk factors, such as age, from
+retinal fundus photographs [76]. Another is predicting patient overall survival as in
+the 2018 Multimodal Brain Tumor Segmentation Challenge based on BRATS imaging
+data [68], and predicting scores for Alzheimer’s disease from imaging data [67, 59].
+The abstract framework in section 7.1 allows one to perform any of the above tasks (and
+those in section 6.2) jointly with a reconstruction step for solving an inverse problem. Ex-
+amples of the latter are deconvolution, Fourier inversion (MRI imaging), or more elaborate
+schemes for various types of tomographic imaging. A key success factor is access to suit-
+able training data, another is usage of a diﬀerentiable loss function along with a trainable
+diﬀerentiable parametrization (deep neural network architecture) of the task operator.
+7. Task adapted reconstruction. As stated in the introduction (section 1), solving an
+inverse problem (reconstruction) is one step in a pipeline (Figure 1) that often involves further
+coupled tasks necessary for decision making. Task adapted reconstruction refers to methods
+that integrate the reconstruction with (parts of) the decision making procedure, thereby
+adapting the reconstruction method for the speciﬁc task at hand.
+7.1. Abstract setting. We will present a generic framework for task adapted reconstruc-
+tion that is computationally feasible and adaptable to speciﬁc inverse problems and tasks. A
+key element is to formalize both the reconstruction and task as non-randomized decision rules
+within a statistical estimation problem.
+More precisely, our starting point is the inverse problem in section 5 where the data model
+15

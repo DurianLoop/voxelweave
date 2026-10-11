@@ -1,0 +1,58 @@
+B.2. EXTENDED RESULTS
+B.2 Extended results
+We first provide additional knee results in Section B.2.1, then evaluate our GAN model on
+a small MRI dataset of brain images in Section B.2.2 and finish with additional MNIST
+evaluations in Section B.2.3.
+B.2.1 Additional MRI knee results
+In Figure B.1, we find the PSNR counterpart of the SSIM plot of Figure 7.1. It is
+interesting to see that there are noticeably different behaviors between the two models,
+and the results are overall consistent with the trends seen on the SSIM plot of Figure
+7.1. Note also that the scales are different in each plot.
+0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+Sampling rate
+29
+30
+31
+32
+33
+34
+35PSNR
+Random
+Gaussian NLL
+Evaluator
+GAN
+LBCS
+RL
+MSE Oracle
+0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+Sampling rate
+29
+30
+31
+32
+33PSNR
+Random
+Gaussian NLL
+Evaluator
+GAN
+LBCS
+RL
+MSE Oracle
+Figure B.1: PSNR plots of results shown in Table 7.2, showing the different performance of the
+sampling methods. The left plot is the result of the evaluation on our GAN model, and the right
+plot is evaluated using the reconstructor of Zhang et al. (2019b). Although Table 7.2 computes
+the AUC until25%, this table extends the evaluation until50% sampling rate.
+B.2.2 Brain experiment
+Experimental setting
+Thedatasetusedinthefirstthreeexperiments(subsections)belowconsistsofaproprietary
+dataset of 2D T1-weighted brain scans. In our experiments, we use 100 slices of sizes
+256× 256 from five such subjects,20 per subject. Three subjects (60 slices) were used for
+training the network, two subjects (30 slices) for testing. The data were then massively
+augmented with both rigid transformations and elastic deformations to counter overfitting
+as our dataset is very small, following the recommendations of Ronneberger et al. (2015);
+Schlemper et al. (2017). Namely, we apply both rigid transformations and elastic
+deformations. Specifically, at training time, each image was dynamically augmented with
+a randomly applied translation of±6 pixels alongx- andy-axes, rotations of [0, 2π),
+reflection along thex-axis with 50% probability. We also apply elastic deformations
+using the implementation in (Simard et al., 2003)withα∈ [0, 40] and σ∈ [5, 8].
+151

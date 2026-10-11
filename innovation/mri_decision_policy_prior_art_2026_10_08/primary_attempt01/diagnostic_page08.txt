@@ -1,0 +1,42 @@
+8 Y.Du et al.
+high-frequency data. When center fraction increases, the policy samples even
+more high-frequency information early on. While this might be obvious it is ac-
+tually driven by low AUC performance when forcing the model to sample more
+center lines from the start (the AUC drops from 0 .794 to 0.743 when the center
+fraction is set to 0 .05, see also more metrics in the supplementary). By forcing
+the model to sample redundant low-frequency data, the policy tries to recover
+to identify diagnostically significant data within the k-space.
+5 Discussion
+Clinical Relevance: Our method actively samplesk-space data whilst simulta-
+neously conducting disease inference, enabling real-time diagnosis during scan-
+ning. This approach eliminates the need for sampling fullk-space, thereby reduc-
+ing acquisition time. In addition, our approach does not require high-fidelity fully
+sampled data for policy training, which is a hard requirement of reconstruction
+policies. We believe this has the potential to further accelerate the development
+of low-field MR. We envision applications in pre-screening by offering prelimi-
+nary diagnostic results to aid in resource allocation, particularly in regions with
+limited medical resources.
+Limitations: Our proof of concept is based on the fastMRI knee data and specif-
+ically MT. One could readily see the application of a portable low-field scanner
+in sports medicine [10] but it is a less compelling clinical application. Ideally, a
+dataset of e.g. stroke and acute brain trauma [9], which would probe diverse, and
+not only structural, MR signal characteristics would be more compelling. At this
+moment such dataset is currently lacking. Our policy network relies on a pre-
+trained classifier, which requires pre-training with diverse undersampled data. It
+is of great interest to train the classifier simultaneously with the policy network.
+Finally, our policy network does not leverage physical priors of k-space utility
+which are implicitly leveraged by reconstruction policies using a pre-trained re-
+construction network. Such prior also may encode physical limitations [7] of the
+employed sequence in making sampling decisions.
+6 Conclusion
+Our proposed framework presents a novel approach to enhance the efficiency
+and accessibility of MRI as a Point of Care (POC) diagnostic tool by optimising
+sampling patterns in a learnable fashion. Our approach distinctly stipulates that
+k-space sampling acquisition decisions are undertaken by an agent optimising a
+dynamic per-patient classification task. Results reporting direct inference from
+undersampled k-space data, concerning the presence of Meniscus Tear, showed
+that our approach achieves the comparable performance as an Oracle Classifier
+whilst reducing acquisition time with only 25% k-space usage. Furthermore,
+our analysis of task-specific sampling policies revealed that the policy network
+adapted its sampling strategy based on the nature of the task, demonstrating
+the adaptability of the active sampling approach.

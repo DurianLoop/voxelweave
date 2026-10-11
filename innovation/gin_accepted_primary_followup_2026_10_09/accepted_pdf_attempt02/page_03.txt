@@ -1,0 +1,100 @@
+, VOL. XX, NO. XX, XXXX 2020 3
+image styles [35], among images from different domains. A
+major stream of works exploits data augmentation: training the
+network on deliberately perturbed samples to improve network
+robustness to real-world perturbations [36]–[38]. We review
+this stream of methods later with more details. Some most
+recent works such as [39] employ multiple techniques: data
+augmentation [40], adversarial training [41] and contrastive
+learning [42].
+B. Data augmentation for domain robustness
+Theoretical analysis [43] suggests that data augmentation
+improves domain generalization by enlarging the span of the
+data and by regularizing decision boundaries. In practice,
+Cutout [37] strengthens robustness against the feature missing
+caused by domain shift, by partially occluding training images.
+Mixup [44], [45] regularizes decision boundaries by inter￾polating among training samples. RandConv [40] drives the
+network to learn shape information, which is domain-invariant,
+by randomly altering image textures using linear filtering. Our
+method is closely related to RandConv [40]. However, we
+show in our experiments that the linear filtering mechanism
+in RandConv [40] is oversimplified for accounting for domain
+gaps in real-world settings. Adversarial data augmentation
+generates image perturbations that easily flip predictions of
+classifiers [38], [46]–[48].
+In medical imaging, Zhang et al. [4] employ a stack of
+photometric and geometric transformations to training images
+to improve domain robustness. Billot et al. [49] propose a
+contrast-agnostic brain MRI segmentation strategy, which syn￾thesizes training examples by sampling from pre-built genera￾tive models of brain images. However, this method necessities
+well-defined generative models that map segmentation labels
+to images, which is usually unavailable in most of medical
+imaging applications. Furthermore, these generative models
+are often oversimplified. AdvBias [50] is specially designed
+for medical image segmentation. It employs an adversarial
+augmentation technique based on a multiplicative bias field
+model. It outperforms a series of competitive methods on
+cross-site MRI segmentation [51].
+C. Leveraging causality for robust deep learning
+As discussed in Sec. I, learning causalities and mitigat￾ing confoundings usually require causal intervention [14].
+In causal intervention, the variable of interest in a causal
+relationship is fixed, while other variables are fairly incorpo￾rated. A model then learns causalities from these intervened
+samples. For example, a model that recognizes a camel
+might be mistakenly focusing on the background: desert
+[52], since most of pictures of camels are taken in deserts. In
+this case, intervention can be done by incorporating different
+backgrounds: training with pictures of camels that are taken in
+diverse backgrounds such as grassland and city. By this mean
+the model would learn that it is the camel rather than the desert
+that cause a camel label. Causal relationships are usually
+modeled using structural causal models (SCM) [14]. The fixing
+operation is usually noted as do(·) [14]. The distribution
+p(Y |do(X = camel)) is called interventional distribution.
+Compared with conditional distribution p(Y |X = camel)
+that reflects correlation in the observed data, p(Y |do(X =
+camel)) reflects causation [14].
+Causal ideas have been used for discovering image features
+that are semantically essential and robust [52]–[55]. Invariant
+risk minimization [52] learns causal image representations
+by enforcing these representations to be Bayesian optimal in
+all the environments. Mahajan et al. [53] improve domain
+robustness using contrastive losses. Atzmon et al. [54] propose
+a causal mechanism to generalize a model to novel samples
+with unseen combinations of attributions.
+Our idea of using data-augmentation-based intervention is
+inspired by [18], [55]. [18] proves that post-hoc data aug￾mentation theoretically commutes with ”physical” interven￾tion. Mitrovic et al. [55] derive a practical loss function for
+causality-based domain generalization. Different from [55],
+we focus on the unanswered practical problem of designing
+an augmentation technique that is tailored to the real-world
+problem: cross-domain medical image segmentation. Our work
+is also related to causal weakly-supervised segmentation by
+Zhang et al. [15], as both works study the adverse effect of
+confoundings among objects in image segmentation. While
+Zhang et al. [15] focus on the intra-domain scenario, we focus
+on the effect of confoundings under domain shift.
+III. METHOD
+Our causality-inspired data augmentation approach aims to
+improve network robustness against domain shift, in particu￾lar, shifts caused by the differences in acquisition processes
+[10]. Based our analysis in Sec. I, we propose to expose
+the network to training examples that incorporate simulated
+intensity/texture shifts and shifted correlations among objects.
+Specifically, our approach is a synergy of a global intensity
+non-linear augmentation technique (GIN) and an interven￾tional pseudo-correlation augmentation technique (IPA). As
+shown in Fig. 2-B, GIN transfers training images to have
+diverse appearances while it keeps the shapes of anatomical
+structures unchanged, discouraging the network from biasing
+towards appearances. IPA resamples possible appearances of
+potentially spuriously correlated objects (due to confounding)
+in the background and those of the objects of interest, in
+an independent and diverse manner. This is implemented
+as spatially-variable blendings between two GIN-augmented
+images. The entire approach functions as additional steps in a
+standard data augmentation pipeline.
+In the following sections, we first introduce the general
+problem formulation of the proposed data augmentation ap￾proach. We introduce GIN in Sec. III-B, with a detailed
+reasoning behind its design choices. IPA is introduced in Sec.
+III-C, where we firstly reveal that it is the image acquisition
+process that naturally confounds objects in the background and
+the objects of interest. We then describe how IPA removes con￾foundings. Finally, we summarize the overall training process.
+A. Problem formulation
+A causal view of image generation and segmentation:
+We first introduce the problem formulation of our data-

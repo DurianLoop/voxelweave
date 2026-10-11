@@ -1,0 +1,72 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+has a large variance. Then, as the batch size increases, resulting masks seem to converge
+to very similar designs, but those are slightly different from the ones obtained with G-v1.
+Overall, our initial experiments suggest, as a rule of thumb, that roughly sampling25%
+of a frame enables sLBCS to match the performance of G-v1.
+0.15
+1
+0.25
+5
+ 10
+ 20
+ 38
+ 50
+ 76
+ 152
+ Greedy
+Figure 5.4: Learning-based masks ob-
+tained with SG-v1 for different batch
+sizesk using KTF as a reconstruction
+algorithm, shown in the title of each
+column, for 15% and 25% sampling
+rate. The optimization used data of
+size 152× 152× 17, with a total of
+2584 possible phase encoding lines for
+the masks to pick from.
+Influence of the batch sizel. We then include the effect of using a smaller data batch
+size l into the equation, comparing the performances of G-v1 with SG-v1 and SG-v2.
+The results are presented on Figure 5.5. Both SG-v1 and SG-v2 behave similarly, and
+for k = 38, both methods end up outperforming G-v1, with respectively60 times less
+and 180 times less computation. As seen before, using atoo small batch sizek (e.g. 10)
+yields a drop in performance. Using a batch of training imagesl (SG-v2) does not seem
+to significantly reduce the performance compared to SG-v1, while substantially reducing
+computations. As a result, in the sequel, we usek = 38 and l = 1 for SG-v2.
+0.05 0.15 0.25
+28
+31
+34
+37
+40
+Sampling rate
+PSNR SG-v1 k = 10
+SG-v1 k = 38
+SG-v2 k = 10
+SG-v2 k = 38
+G-v1 Greedy
+0.21 0.23 0.25
+37
+38
+39
+Figure 5.5: PSNR as a function of the sam-
+pling rate for KTF, comparing the different
+reconstruction methods as well as the effect
+of the batch size on the quality of the recon-
+struction for SG.
+Computational costs. We discuss now the
+computational costs for the different variations
+of the greedy methods used in the single coil
+experiments. Table 5.1 provides the running
+times and empirically measured speedup for
+the greedy variation, and Table 5.2 provides
+the computational times required to obtain
+the learning-based variable density (LB-VD)
+parameters through an extensive grid-search.
+The empirical speedup is computed as
+Speedup = tG-v1·nprocs, G-v1
+tSG-v2·nprocs, SG-v2
+(5.5)
+where tG-v1, tSG-v2 refer to the measured run-
+ning times of the algorithms, andnprocs, G-v1,
+nprocs, SG-v2 to the number of CPU processes
+used to carry out the computations.
+59

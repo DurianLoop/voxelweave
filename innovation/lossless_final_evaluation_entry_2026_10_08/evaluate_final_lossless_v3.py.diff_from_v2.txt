@@ -1,0 +1,21 @@
+--- evaluate_final_lossless_v2.py
++++ evaluate_final_lossless_v3.py
+@@ -1,6 +1,6 @@
+ """Evaluate only terminal paired last19998 models; readiness-only never loads MRI."""
+ import argparse,gc,json,sys,time,traceback
+-from final_eval_lossless_v2 import *
++from final_eval_lossless_v3 import *
+ def main():
+     sys.stdout.reconfigure(encoding='utf-8');ap=argparse.ArgumentParser();ap.add_argument('--readiness-only',action='store_true');a=ap.parse_args()
+     status=readiness()
+@@ -15,8 +15,8 @@
+     try:
+         r['resources_before']=guard(started);checkpoints,sources=frozen_training();cases=roles()
+         r['planned_series_per_arm']=28;r['planned_prediction_files']=56
+-        sourcefiles=[HERE/'final_eval_lossless_v2.py',Path(__file__),
+-            HERE/'verify_final_lossless_v2.py']
++        sourcefiles=[HERE/'final_eval_lossless_v3.py',Path(__file__),
++            HERE/'verify_final_lossless_v3.py']
+         sources.extend(sourcefiles)
+         for role,c,row in cases:
+             sources.extend(ROOT/c[k] for k in ('header_file','mr_zip_file','label_file'));sources.append(ROOT/row['observed_package'])

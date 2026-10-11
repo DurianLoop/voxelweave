@@ -1,0 +1,20 @@
+# All multi-T2 local fastMRI cases: header-only result
+
+The [rule was frozen](FASTMRI_ALL_T2_HEADER_GATE_PLAN_2026-10-01.md) before this run. The [script](experiments/fastmri_all_t2_header_gate.py) read 2,944 DICOM headers with `stop_before_pixels=True` from every local directory selected by the unchanged manifest: 61 cases, 138 manifest T2 rows, 184 DICOM SeriesInstanceUID groups. It did not decode pixels, use model weights or GPU, or access locked test images. The exact local release/access and image-publication rights remain unverified.
+
+The manifest selection and DICOM-label comparison are different levels of evidence. Only 71 of the 184 DICOM series had `T2` in their own `SeriesDescription`; among 61 selected cases, 3 had zero, 46 had one, 11 had two, and 1 had three such series. Thus 12 cases generated 14 pairs with two DICOM T2 labels. This discrepancy must be traced to the manifest-generation and source export chain before treating the other 49 cases as definitively lacking repeats. The screen does not assert that 138 manifest T2 rows correspond one-to-one to 138 distinct T2-labeled DICOM UID groups.
+
+| Header criterion, applied to all 14 DICOM T2 pairs | Count |
+|---|---:|
+| Matched physical slice centers within 0.1 mm | 11 |
+| Full checked geometry/protocol/identity match, excluding time | 4 |
+| Above plus usable distinct series/acquisition time | **0** |
+| Independently acquired raw-plane identity proven | **0** |
+
+All 14 pairs lacked usable timing under the frozen rule. Across the 14, the common technical failure codes were matrix mismatch/missing (9), TR mismatch (9), TE mismatch (8), pixel-spacing mismatch (7), center mismatch (3), orientation mismatch (2), frame mismatch/missing (1), and thickness mismatch (1). Counts overlap because one pair can fail several checks. Four technically matched pairs are anonymous `candidate_01`/series 1--2, `candidate_05`/2--3, `candidate_43`/1--2 and `candidate_45`/1--5; two have a `REPEAT` label and two do not. All four have a zero maximum center difference under the stored precision, but no usable time evidence. They are trace-back leads only, not accepted independent scans. The earlier seven-`REPEAT` screen contributed four of the 14 T2 pairs and two of these four technical leads; it is a subset, not independent confirmation.
+
+The complete [anonymous JSON](experiments/fastmri_all_t2_header_gate/summary.json) contains all cases, pair outcomes, failure codes and scalar differences. It has no source case ID, path, patient identifier, raw UID, acquisition date, source description or image pixel. Plan SHA-256: `86BDF1A5A3E235632774F536D384E370157378829A295838E3C04FF63CBE2446`; script: `B8FCB56F2E31E250C2DD646E3BDA41594B64ABC892B381EA3DC8BE86BB16CEF8`; reused helper: `E19183100BA67E904875EDE14A2C67AA685B5BBB79E774EEFDF5FC760867D8A1`; result JSON: `8B585E7391896A4440A0DEAE0C2EB3D322A58BB66D514316D7259BC0EDDC6374`.
+
+**Decision.** This broadens the source trace-back list by two non-`REPEAT` pairs but does not open a target-pixel experiment. First verify the exact official release and rights; reconcile manifest rows with exported DICOM series; obtain acquisition records showing genuinely independent measurements and explain missing time fields. Only then freeze a separate patient/series target list, physical registration and motion controls, weights, endpoints and failure handling before reading target pixels. The public-source manuscript remains a published-slice context audit; this local material is excluded.
+
+**Follow-up crosswalk:** The separately frozen [manifest-linked screen](FASTMRI_MANIFEST_LINKED_PAIR_RESULT_2026-10-01.md) resolves 138 manifest T2 rows to 122 distinct UIDs and tests 64 UID pairs, including 55 pairs where one or both DICOM labels lack literal `T2`. It finds the **same four** technical matches and zero usable timing evidence. Thus the present 14-pair result should be read as a literal-label subset, not the only examination of manifest-classified candidate series.

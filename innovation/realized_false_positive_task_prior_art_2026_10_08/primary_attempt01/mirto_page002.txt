@@ -1,0 +1,127 @@
+2 N. K. Hernashki and S. Chatterjee
+Stored anomaly maps Am,i on
+each method’s native grid Ωm
+(no retraining, no new inference)
+Fixed training data: IXI T2,
+Hammersmith (3 T) and Guy’s
+(1.5 T), the same for every method
+Cohort: BraTS 2020 T2, n = 312 test
+subjects, 24 disjoint validation subjects
+R · registration-gated T · threshold-transfer￾aware
+metrics with
+exact identities M · multiverse-tested I · interval-based
+one canonical reference Ci
+on the 1 mm grid
+(v = 1 mm3
+, never
+resampled)
+repaired transform Tm per
+method, fixed before
+scoring
+registration gate: centroid
+≤3 mm; applied Tm
+maximises overlap amongst
+56 candidates; overlap floor
+0.85
+five label-free discordance
+diagnostics
+τˆb chosen on validation
+subjects only (max Dice s.t.
+FP ≤ b, sensitivity guard)
+realised burden FPi(ˆτb):
+mean, median, p95, share
+> b
+transfer gap gi(b) and
+matched-burden contrasts
+CRC: Pr[FPn+1 > b] ≤ α
+Dice: subject mean,
+median, pooled
+voxel AUROC (midranks),
+AUPRC (tie-collapsed)
+lesion sensitivity: bijective
+IoU matching, stated floor
+slice AROC,
+anatomy-adjusted,
+borrowed-map null
+exact post-processing
+identity
+10 axes of evaluation
+choices: 155,520 universes
+per method, 15,552
+defensible
+pairwise flip shares
+sum-of-squares shares:
+method vs evaluation axes
+Kendall τb; training
+configuration as an axis
+paired subject bootstrap,
+B = 104
+; τ re-selected in
+every replicate where it
+uses test data
+Holm within declared
+families
+nine hypotheses with
+decision criteria and eight
+secondary hypotheses
+Catches an axis-order mismatch:
+cDDPM voxel AUROC 0.583→0.873
+once corrected, whereas slice AUROC
+moved by only 0.112
+Catches nominal ̸= realised burden:
+15.7–29.8 % of subjects exceed
+20 cm3; UCCD−cDDPM Dice
++0.020 at validation thresholds but
+−0.001 at equal realised FP
+Catches anatomy posing as detection:
+brain area alone gives slice AUROC
+0.884; 92 % of the UCCD
+post-processing gain is threshold
+relaxation
+Catches evaluation deciding the
+winner: the method explains ≥0.95 of
+the variance in voxel AUROC but 0.14
+in lesion sensitivity; residual-model
+pairs swap places in 36–49 % of Dice
+universes
+Catches unpaired, unadjusted claims:
+each contrast is stated per budget,
+aggregation and operating point with
+Holm-adjusted p
+Report: every claim indexed by (geometry, τ rule, budget b, metric, aggregation, training
+data), with paired intervals, the realised burden and the share of universes in which it holds
+Fig. 1. The MIRTO protocol. Frozen anomaly maps from every method enter four components. R: one canonical reference
+and a repaired, gated transform per method. T: thresholds chosen on validation data alone, with the realised (not the nominal)
+false-positive burden, the threshold-transfer gap and a conformal per-scan guarantee. Exact identities accompany the metrics
+and explain how they relate. M: a multiverse of defensible evaluation pipelines. I: paired subject-bootstrap intervals with
+Holm adjustment inside declared families. Dashed boxes give, for each component, a failure it caught in this study (numbers
+from Section 3).
+1.1 Related work
+UAD methods for brain MRI. Reconstruction-based
+methods train a generative model on healthy scans and
+read anomalies from the residual between an input and its
+pseudo-healthy reconstruction. Autoencoders and their
+variants were surveyed by Baur et al. [9]. In our ear￾lier work, StRegA, we combined a compact context￾encoding VAE with pre- and post-processing steps cho￾sen for clinical data, and reported a Dice of 0.642 on
+BraTS T2 tumours against 0.522 for the best base￾line [21]. Denoising diffusion probabilistic models [33] im￾proved reconstruction fidelity but tend either to copy
+the anomaly or to hallucinate healthy tissue that differs
+from the subject. Patched diffusion [10], automatic mask￾ing and re-sampling (AutoDDPM) [14], implicit guidance
+(THOR) [15], masked diffusion (MAD-AD) [13], cold￾diffusion restorations (DISYRE) [51] and aggregated nor￾mative diffusion (ANDi) [29] each address this dilemma
+differently. Kascenas et al. showed that the spatial scale
+and magnitude of the training noise largely determine
+how well denoising autoencoders and diffusion models de￾tect anomalies, and that a denoising autoencoder trained
+with coarse noise is competitive with far more complex
+models [37]. Two lines condition the denoiser on the in￾put itself: cDDPM conditions on a learnt encoding of the
+image so that the reconstruction keeps the subject’s inten￾sity characteristics [11], and UCAD-CDM (here UCCD)
+conditions on a contrastive encoder trained to be invari￾ant to the anomaly factor [54]. REFLECT replaces it￾erative sampling by a rectified flow [44] in the latent
+space of a VAE, transporting an abnormal latent to
+the healthy manifold in essentially one Euler step [12].
+Feature-based methods compare deep features with those
+of healthy references: AnomalyDINO uses frozen DI￾NOv2 [53] patch features and nearest-neighbour distances
+to a memory bank [24]; Dinomaly and Dinomaly2 re￾construct foundation-model features [31,30]; SCRD4AD
+uses scale-aware contrastive reverse distillation [41]. Iter￾Mask3D refines masks iteratively in 3D at test time [43].
+We study REFLECT, UCCD, cDDPM and Anomaly￾DINO, which cover one-step transport, two forms of con￾ditioned diffusion and a training-free foundation-model
+memory bank.
+How UAD is evaluated. Comparative studies have repeat￾edly found evaluation to be the weak link. Meissen et al.
+showed that thresholding FLAIR scans gives better Dice
+and precision-recall curves than several learnt anomaly
+detectors on tumour and multiple-sclerosis data [48]. La-

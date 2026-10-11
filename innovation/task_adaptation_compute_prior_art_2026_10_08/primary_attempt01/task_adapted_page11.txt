@@ -1,0 +1,67 @@
+We conclude with examples showing how a wide range of image processing tasks can be
+phrased as decision rules in a statistical decision problem.
+6.2. Examples. The abstract framework in section 6.1 for formalizing a task on model
+parameter space is very generic and covers a wide range of possible tasks. In the following,
+we list concrete examples from imaging in order to show how this framework can be adapted
+to speciﬁc cases. To ensure a computational feasible implementation, our focus is on tasks
+that have been successfully addressed using techniques from deep learning. Deep learning has
+proven to be an eﬃcient computational framework for many tasks, much thanks to its ability
+to progressively learn discriminative hierarchal features of the input data by means of training
+a suitable deep neural network. Hence, this limitation is not as restrictive as it may seem at
+a ﬁrst glance, which will also become evident by the examples listed here and in section 6.3.
+Unless otherwise stated, tasks are formulated for grey-scale images deﬁned on a ﬁxed
+domain Ω⊂ Rn, i.e., X := L2(Ω, R). We will also assume that X is a measurable space for
+someσ-algebra SX. Finally, M denotes the space of measurable mappings, e.g., M (X,D ) is
+D-valued measurable mappings deﬁned on X.
+6.2.1. Classiﬁcation. The task is to classify an image into one of k distinct labels, or
+more precisely, associate an image to a probability distribution over all k labels. This task
+is represented by a non-randomized decision rule in a statistical estimation problem where
+∆ := Zk and the decision space D := P∆ is probability distributions over the k labels. The
+task adapted loss function is given by (9) with
+𝓁D(d,d′) :=−
+∑
+z∈∆
+d(z) logd′(z) for d,d′∈D and τ(z) :=δz for z∈∆ .
+Bayes risk in (10) associated with a decision rule T : X→ D for given task prior η0∈ P∆
+becomes
+Rη0(T) := Eη0⊗Pz
+[
+𝓁D
+(
+τ(z),T(x)
+)]
+=
+∫
+X
+∫
+∆
+[
+− log
+[
+T(x)(z)
+]]
+dη0(z) dPz(x).
+The corresponding empirical risk minimization in (11) is
+(12) ϑ∗∈ arg min
+ϑ∈Ξ
+{ 1
+m
+m∑
+i=1
+[
+− log
+[
+T(xi)(zi)
+]}
+for training data (zi,xi)∈∆× X.
+There are several papers dealing with how to construct a suitable (deep) neural network
+architecture for the set of decision rules D ={Tϑ}ϑ∈RN and solving (12) will then correspond
+to training a classiﬁer, see [58] for an early approach based on a convolutional neural network,
+AlexNet [54] and ResNet [39] represent examples of further development along this line.
+6.2.2. Semantic segmentation. The task here is to classify each point in an image into
+one of k possible labels, so the special case k = 2 corresponds to (binary) segmentation.
+Stated more formally, semantic segmentation applies a mapping that associates each point in
+an image in X to a probability distribution over all k labels.
+This task becomes a non-randomized decision rule in a statistical estimation problem
+where∆ := M (Ω, Zk) and the decision space D := M (Ω, PZk) is the set of measurable
+11

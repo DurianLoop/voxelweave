@@ -1,0 +1,58 @@
+tiplication of the two matrices and | · | indicates the
+element-wise sum operation.
+As shown in Fig. 2, α(t) increases while β(t)
+decreases with the increase of t. In our proposed
+method, we set α(t) as the maximum value of the
+difference between the exponential transformation of
+−t and 0.2, and 0.05 as shown in Eq. (5). β(t) was
+set as the difference between 1 and α(t) as shown in
+Eq. (6). It is designed to let the neural networks
+automatically adapt to the new weights according to
+their training stage. It was set to avoid over-large
+or over-small value of α(t) to make sure each task￾specific loss is effective. The use of DRLC guaran￾tees the proposed method can take into account both
+the reconstruction task and the segmentation task to
+produce high-quality reconstructed images and seg￾mented masks simultaneously.
+Training Epoch (t)
+Weight
+α(t)
+β(t)
+Figure 2: The change trend of α(t) and β(t) with t.
+α(t) = max{exp(−t) − 0.2, 0.05} (5)
+β(t) = 1 − α(t) (6)
+2.3 Iterative Teacher Forcing Scheme
+In the training phase, supposing there is a serializa￾tion task with T steps. Let xt, yt and yˆt denote the
+input, ground truth and output of the step t respec￾tively. For common auto-regressive mode, xt is given
+with yˆt−1. The limitation of it is that the error of
+low-level models will be accumulated gradually even
+to make the network divergent. For teacher forcing
+mode, yt−1 is taken as the input of the step t in￾stead of yˆt−1. It is equivalent to take the ground
+truth as the teacher to correct the output of low￾level models in time. The benefit provided by the
+use of the teacher forcing scheme is making the train￾ing process stable and quick to reduce the training
+difficulty of the network. However, the teacher forc￾ing scheme may lead to bias exposure. It refers to
+the performance gap between the training and test￾ing processes. Namely, the use of the teacher forcing
+scheme makes the inputs of the step t of the network
+in the training process and the testing process are
+inferred from different distributions. It may lead to
+discrepancy between the decoding actions of the net￾work in the training and testing phases. Meanwhile,
+the constraint provided by the teacher forcing scheme
+may over-correct the output to reduce the represen￾tation ability of the network.
+To overcome the aforementioned limitations of the
+original teacher forcing scheme, we propose an itera￾tive teacher forcing scheme. As shown in Fig. 3, we
+use the blue line to denote the actual output of step
+t − 1 and the orange line to denote the ground truth
+of step t − 1 respectively. The difference between the
+original teacher forcing scheme and the proposed iter￾ative teacher forcing scheme is that taking the ground
+truth and the actual output of step t − 1 as the in￾put of step t alternately rather than the fixed ground
+truth of step t − 1. The proposed iterative teacher
+forcing scheme not only can correct the prediction of
+the low-level model to a certain extent but also can
+avoid the performance gap between the training and
+testing processes.
+Specifically, we treated multi-task MR imaging as
+a two-step serialization task that begins from the re￾construction step to the segmentation step for apply￾ing the iterative teacher forcing scheme. As far as
+we know, it is the first time that the teacher forc￾ing scheme has been used in neural networks outside
+RNN. In the training phase of the proposed network,
+we took the under-sampled k-space data as the input
+of the first step x1. The output yˆ1 and the ground
+truth y1 of the first step were selected as the input of
+5

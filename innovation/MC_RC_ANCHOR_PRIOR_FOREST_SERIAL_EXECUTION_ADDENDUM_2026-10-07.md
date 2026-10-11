@@ -1,0 +1,11 @@
+# 数据准备完成后的执行修订
+
+隔离runtime v4已导入成功，toolc8677b实际exit0（此前pip权限、joblib TLS与Schannel失败均保留）。固定包版本/官方SHA已核，不改原MRI环境。
+
+首数据诊断tool8a9599实际exit1：完成全部19观测MRI和19观测标签数组读取、矩和抽样数据保存；第一次forest拟合尚未完成，预测0、完整GT评分0。traceback明确为joblib ThreadPool内部multiprocessing.SimpleQueue创建Windows命名管道时CreateFile遭WinError5，不是模型覆盖/性能失败或自动审批审查拒绝。
+
+新v2仅将forest fit并发n_jobs4改为1，保留64trees、所有数学超参、seed、观测样本/权重/患者剔除、阈值和ROI规则。采用新输出目录，从失败v1的已完成19训练数据准备读取经SHA核对的矩/采样，不重新读准备MRI/标签；预测时仍重新读19认证observed包，所有预测完成后才读完整GT。v1原源码和失败JSON不可覆盖。
+
+独立forest refit使用实际生产n_jobs1，比较704trees所有分裂/value/样本数组；独立Cholesky和ROI/cost规则不变。没有旧4thread成功模型，因此不声称已实测其逐位并发等价。新资源记录fit1thread、预测1thread，1800秒/250MB与8GB reserve不变。
+
+预检14ee6a输出中将旧input-preparation的`label_foreground`误标为observed_label_foreground：该来源字段实际为完整GT前景。新训练不使用这个字段，而直接解码observed planes取得真实观测标签；例如001第一为236个观测前景，而完整GT来源1011。错误命名仅为预检输出，不曾作为训练统计或样本选择依据。

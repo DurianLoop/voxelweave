@@ -1,0 +1,144 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4
+B. Separable Frequency Laplacian Split (SF-Lap)
+To achieve alias-resistant and frequency-balanced separa￾tion of feature tensors, SF-Lap reformulates the classical
+Gaussian–Laplacian operation into a single-stage, depthwise￾separable decomposition that couples (i) binomial low-pass
+filtering and (ii) bilinear frequency-balanced expansion.
+Separable binomial filtering. We employ a normalized 5-
+tap binomial kernel k = [1, 4, 6, 4, 1]/16 that approximates a
+Gaussian with σ ≈ 1 and provides isotropic smoothing. The
+kernel is applied horizontally and vertically in a depthwise￾separable manner with reflect padding, reducing the 2-D
+convolutional cost from O(k
+2
+) to O(2k) while preserving
+Gaussian-like smoothness.
+Low-pass reduction. Prior to decimation, a two-pass low-pass
+with reflect padding suppresses aliasing:
+L = Conv(s=2)
+v
+
+Conv(s=1)
+h
+
+Pref(x), k
+
+, k
+
+. (3)
+Here, Conv(s)
+h
+(·, k) and Conv(s)
+v
+(·, k) denote depthwise
+separable 1D convolutions with a horizontal 1 × 5 binomial
+kernel and a vertical 5 × 1 binomial kernel, respectively. We
+first apply a horizontal pass at unit stride s = 1 to smooth
+along the width, and then apply a vertical pass with stride
+s = 2 to jointly low-pass filter and perform 2× decimation
+along both spatial axes. This separable implementation reduces
+the cost from O(k
+2HW) for a full k × k 2D convolution to
+O(2kHW).
+High-frequency extraction and upsampling. The Laplacian
+residual is obtained by interpolating the low-frequency com￾ponent to the original resolution:
+L˜ = U×2(L), H = x − L˜, (4)
+where U×2 denotes 2× bilinear upsampling. Compared with
+zero-insertion expansion followed by separable filtering, bilin￾ear interpolation offers a smoother synthesis path and avoids
+checkerboard artifacts in the feature domain.
+C. Lightweight SE-Guided Global Context Path
+Although SF-Lap enables frequency-aware decomposition,
+the backbone lacks an explicit mechanism to capture global
+anatomical context before frequency separation. To enhance
+global anatomical awareness, we introduce a lightweight SE￾guided global context path that performs channel-wise gating
+based on globally aggregated features. Given an input feature
+tensor x∈ R
+B×H×W×C , global spatial statistics are captured
+through global average pooling (GAP):
+z = GAP(x) = 1
+HW
+X
+H
+i=1
+X
+W
+j=1
+xi,j . (5)
+A compact two-layer gating network generates channel-wise
+modulation weights:
+s = Sigmoid
+W2 ReLU(W1z)
+
+, (6)
+where W1 ∈ R
+C×(C/r)
+and W2 ∈ R
+(C/r)×C are linear
+projections with reduction ratio r. The final output is obtained
+via residual channel-wise modulation:
+x
+′ = x ⊙ s + x, (7)
+where ⊙ denotes element-wise multiplication with broadcast￾ing along (H, W). This SE-guided path operates in parallel
+with the main reconstruction backbone and injects global
+anatomical cues before the SF-Lap module, enhancing long￾range structural consistency with negligible computational
+overhead.
+D. Hierarchical Shared-Routed MoE
+While the SE-guided path enhances global contextual
+awareness and SF-Lap separates features by frequency, these
+modules still operate under a fixed computational pathway that
+does not adapt to the spatially varying complexity of anatom￾ical structures. Regions with high textural detail or aliasing
+artifacts require greater modeling capacity than homogeneous
+areas. In MR images, where signal sparsity and anatomical
+complexity vary spatially, pixel-wise routing enables adaptive
+frequency modeling across tissue boundaries and aliasing
+regions. To this end, we introduce a hierarchical shared-routed
+Mixture-of-Experts (MoE) module that dynamically allocates
+expert specialization across pixels.
+Shared and routed experts. Given a fused feature map
+x ∈ R
+B×H×W×C formed by concatenating global, high-,
+and low-frequency streams, the module comprises two ex￾pert groups: shared experts, which are always active for all
+tokens, and routed experts, which are adaptively selected by
+a lightweight pixel-wise router. Each expert is implemented
+as a lightweight channel-wise MLP operating independently
+across spatial locations. The outputs of the shared experts are
+aggregated as
+yshared =
+X
+Ns
+i=1
+E
+(sh)
+i
+(x), (8)
+where Ns is the number of shared experts. A pixel-wise router
+produces gating logits over Nr routed experts:
+G = Softmax
+Wr x
+
+, G ∈ R
+B×H×W×Nr
+, (9)
+where Wr is a 1×1 linear projection. Top-1 selection is applied
+per pixel to obtain the routing mask:
+Mb,h,w,e =
+(
+1, e = arg max Gb,h,w,:
+,
+0, otherwise.
+(10)
+The routed output is then computed as
+yrouted =
+X
+Nr
+e=1
+M:,:,:,e ⊙ E
+(rt)
+e
+(x), (11)
+and the final output combines both expert groups:
+y = yshared + yrouted. (12)
+The shared-routed MoE module is placed after SF-Lap and
+the SE-guided path within each reconstruction stage. Shared
+experts capture globally consistent responses, while routed
+experts specialize in localized, frequency-dependent varia￾tions. Since routing is top-1 and all experts share lightweight
+channel-MLP structures, the computational overhead is negli￾gible. The hierarchical formulation maintains consistent rout￾ing behavior across depths, ensuring stable specialization
+throughout the unrolled reconstruction.

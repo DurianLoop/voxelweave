@@ -1,0 +1,35 @@
+8 Qiaoying Huang, Xiao Chen, Dimitris Metaxas, and Mariappan S. Nadar
+Table 2. Comparisons to State-of-the-Art
+Method Pretrain Loss
+10% noise 20% noise
+CSF WM GM Aver. CSF WM GM Aver.
+One-step No lce 0.7677 0.8334 0.7900 0.7970 0.7600 0.8324 0.7911 0.7945
+LI-net [10] Yes lce 0.6849 0.7576 0.7558 0.7328 0.6686 0.7276 0.7282 0.7081
+Syn-net [10] Yes lce+l2 0.7558 0.8256 0.7961 0.7925 0.7307 0.8095 0.7808 0.7737
+SegNetMRI [11] Yes lce+l2 0.8210 0.8905 0.8575 0.8563 0.7817 0.8472 0.7728 0.8006
+SERANet-2 No lce 0.8344 0.8977 0.8669 0.8663 0.8053 0.8706 0.8373 0.8377
+SERANet-7 No lce 0.8548 0.9175 0.8905 0.8876 0.8122 0.8798 0.8457 0.8459
+Ground truth One-step LI-net Syn-net SegNetMRI SERANet-7
+Fig. 4. Segmentation result with different approaches.
+this as a pretraining technique. We observe that SERANet-2 and SERANet-7
+consistently outperform the three state-of-the-art approaches for both 10% and
+20% noises. Additionally, the Dice’s scores drop more for the SegNetMRI when
+noise level increases compared to SERANet, which may be due to the fact that
+SegNetMRI contains information from the noisy ground truth images. Example
+segmentation results are shown in Figure 4. Improvements of SERANet-7 on
+detailed anatomy structure are highlighted by the green arrows.
+4 Conclusion
+In this paper, we propose a novel end-to-end approach SERANet for MR brain
+segmentation, which performs segmentation directly on under-sampled k-space
+data via a segmentation-aware attention mechanism. Moreover, we design a
+training data generation workflow to simulate realistic MR scans on digital
+brain phantoms with ground truth segmentation maps. Extensive experiments
+are conducted and the results demonstrate the effectiveness and the superior
+performance of our model compared to the state-of-the-art methods.
+5 Additional Implementation Details
+In this paper, we consider a segmentation problem with four brain segmentation
+masks: 0-Background, 1-CSF, 2-Gray Matter and 3-White Matter. As mentioned
+in the paper, these four masks are adapted from original 11 brain tissues. The
+reason to use the four masks is that CSF, Gray Matter and White Matter cover
+most parts of the brain, as shown in Figure 5 (a) and (b). The other eight tissues,
+such as vessels, skulls and skins, are grouped as Background mask.

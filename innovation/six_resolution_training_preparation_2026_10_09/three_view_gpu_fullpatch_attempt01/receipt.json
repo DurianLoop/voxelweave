@@ -1,0 +1,119 @@
+{
+  "complete": true,
+  "errors": [],
+  "branches": [
+    {
+      "mode": "packed6",
+      "complete": false,
+      "errors": [
+        "OutOfMemoryError: CUDA out of memory. Tried to allocate 768.00 MiB. GPU 0 has a total capacity of 23.88 GiB of which 20.64 GiB is free. 2.24 GiB allowed; Of the allocated memory 1.47 GiB is allocated by PyTorch, and 81.27 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+      ],
+      "actual_forward_calls": 0,
+      "optimizer_update_applied": false,
+      "transfer_seconds": 0.005171699915081263,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\MRI\\innovation\\six_resolution_training_preparation_2026_10_09\\probe_three_view_gpu_fullpatch_v1.py\", line 59, in branch\n    outputs=model(torch.cat(gv,dim=0));q['actual_forward_calls']+=1\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\conda\\envs\\MRI\\Lib\\site-packages\\torch\\nn\\modules\\module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\conda\\envs\\MRI\\Lib\\site-packages\\torch\\nn\\modules\\module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\MRI\\innovation\\gpu_graph_cost_smoke_2026_10_09\\checkpointed_model.py\", line 15, in forward\n    x=checkpoint(dec,torch.cat((x,skip),dim=1),use_reentrant=False,preserve_rng_state=True);outputs.append(head(x))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 768.00 MiB. GPU 0 has a total capacity of 23.88 GiB of which 20.64 GiB is free. 2.24 GiB allowed; Of the allocated memory 1.47 GiB is allocated by PyTorch, and 81.27 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)\n",
+      "GPU_peak_reserved_bytes_on_failure": 2172649472
+    },
+    {
+      "mode": "sequential2",
+      "complete": false,
+      "errors": [
+        "OutOfMemoryError: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 23.88 GiB of which 20.17 GiB is free. 2.24 GiB allowed; Of the allocated memory 1.96 GiB is allocated by PyTorch, and 57.95 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+      ],
+      "actual_forward_calls": 2,
+      "optimizer_update_applied": false,
+      "transfer_seconds": 0.0030698999762535095,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\MRI\\innovation\\six_resolution_training_preparation_2026_10_09\\probe_three_view_gpu_fullpatch_v1.py\", line 64, in branch\n    for view in gv:separate.append(model(view));q['actual_forward_calls']+=1\n                                   ^^^^^^^^^^^\n  File \"D:\\conda\\envs\\MRI\\Lib\\site-packages\\torch\\nn\\modules\\module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\conda\\envs\\MRI\\Lib\\site-packages\\torch\\nn\\modules\\module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\MRI\\innovation\\gpu_graph_cost_smoke_2026_10_09\\checkpointed_model.py\", line 15, in forward\n    x=checkpoint(dec,torch.cat((x,skip),dim=1),use_reentrant=False,preserve_rng_state=True);outputs.append(head(x))\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 23.88 GiB of which 20.17 GiB is free. 2.24 GiB allowed; Of the allocated memory 1.96 GiB is allocated by PyTorch, and 57.95 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)\n",
+      "GPU_peak_reserved_bytes_on_failure": 2373976064
+    }
+  ],
+  "comparisons": [],
+  "MRI_arrays_loaded": 0,
+  "GT_arrays_loaded": 0,
+  "parent_model_arrays_loaded": 0,
+  "synthetic_GPU_optimizer_updates": 0,
+  "synthetic_GPU_whole_model_forward_calls": 2,
+  "new_medical_training_updates": 0,
+  "complete19series_GPU_three_view_qualified": false,
+  "clinical_lambda_chosen": false,
+  "medical_effect_scored": false,
+  "confirmation_patients_opened": false,
+  "lockedIXI_opened": false,
+  "original_training_modified": false,
+  "other_PIDs_enumerated": false,
+  "other_PIDs_modified": false,
+  "publication_claim_confirmed": false,
+  "goal_status": "active",
+  "resources_before": {
+    "workspace_free_bytes": 8049135616,
+    "available_ram_bytes": 103948468224,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false
+  },
+  "source_bindings": [
+    {
+      "path": "six_resolution_training_preparation_2026_10_09/probe_three_view_gpu_fullpatch_v1.py",
+      "bytes": 9367,
+      "sha256": "447f8a144ea628bc3d70a357bc761aa5b004bdd3dd100058299ffb354eb58c13"
+    },
+    {
+      "path": "six_resolution_training_preparation_2026_10_09/THREE_VIEW_GPU_FULLPATCH_PROTOCOL.md",
+      "bytes": 1705,
+      "sha256": "80d41edf08470811aa8f31f579b51e664ca37e8a2cb358bc61f17b38d79ae3f0"
+    },
+    {
+      "path": "six_resolution_training_preparation_2026_10_09/three_view_synthetic_attempt02/receipt.json",
+      "bytes": 82588,
+      "sha256": "451caa1dd1cd0f06cc55107af6c383468f7bb9f258dadc61440e6efdc6ecd8a1"
+    },
+    {
+      "path": "six_resolution_training_preparation_2026_10_09/gin_reference_adapter_v1.py",
+      "bytes": 2345,
+      "sha256": "8239398b67627e1645dae6fe43dfd9991773a1aed1b996dff1bfe7fc7af78231"
+    },
+    {
+      "path": "gpu_graph_cost_smoke_2026_10_09/checkpointed_model.py",
+      "bytes": 810,
+      "sha256": "040d7fafd16578eb394f4c557c449cda010063d170fc0d59c7138613148d341a"
+    },
+    {
+      "path": "experiments/mc_rc_3d_baseline_2026_10_07.py",
+      "bytes": 9073,
+      "sha256": "4f498b5ff3ae7309947d4ca45ffc4a630516b037223e940cedeac2ed49b4798f"
+    }
+  ],
+  "common_initial_state_sha256": "2f7987cf7b4f1d6160170a304df9b1dd4d6d88bb86f490888a3dd68f50b9f59a",
+  "GIN_CPU_preparation_seconds": 0.26918300008401275,
+  "shared_view_sha256": [
+    "7b099d82f65adaa04de4bd038b938b9185baecec2473f7a6b5e825b4bcf1fd0a",
+    "66ae4fafdb176be439de3ce9806ed6d95356c30e3415c0c3df3ad6d7f188ef38",
+    "315e18c92af63ece8c7667acfe72de669c4c63e96273a8736ab5e5e8be336b68"
+  ],
+  "GPU_aggregate_before": [
+    [
+      0,
+      22788,
+      0
+    ]
+  ],
+  "strict_complete_graph_comparison_passed": false,
+  "all_planned_branches_attempted": true,
+  "sequential_fullpatch_graph_completed": false,
+  "resources_after": {
+    "workspace_free_bytes": 8049127424,
+    "available_ram_bytes": 103128494080,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "GPU_free_bytes": 23826792448,
+    "GPU_peak_reserved_bytes": 2373976064
+  },
+  "elapsed_seconds": 1.895768699934706
+}

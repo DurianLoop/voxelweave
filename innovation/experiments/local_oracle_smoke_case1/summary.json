@@ -1,0 +1,103 @@
+{
+  "scope": "historical_fastmri_validation_target_assisted_oracle",
+  "complete_validation": false,
+  "patients": 1,
+  "slices": 9,
+  "patch_size": 32,
+  "stride": 16,
+  "patch_window": "0.05 + 0.95*hanning",
+  "best_fixed_alpha": 0.73,
+  "best_fixed_alpha_grid_step": 0.01,
+  "summary": {
+    "base": {
+      "psnr": 25.93107312863239,
+      "ssim": 0.8689248659343102,
+      "mae": 0.021586090398917398,
+      "mse": 0.002681618527030135,
+      "ncc": 0.9499204213164337,
+      "dice_proxy": 0.9848992283768924,
+      "hd95_proxy": 7.227931952279921,
+      "tail10_mse": 0.024137692087299798
+    },
+    "orientation": {
+      "psnr": 26.022232144514025,
+      "ssim": 0.868188766877456,
+      "mae": 0.02174404491506889,
+      "mse": 0.0026176047408011114,
+      "ncc": 0.9511899253625855,
+      "dice_proxy": 0.9846737114244658,
+      "hd95_proxy": 7.317773577091933,
+      "tail10_mse": 0.02333129991214947
+    },
+    "best_fixed": {
+      "psnr": 26.036594788161146,
+      "ssim": 0.8690638372941178,
+      "mae": 0.021610029980612292,
+      "mse": 0.002610147133103497,
+      "ncc": 0.9513318834300932,
+      "dice_proxy": 0.9848491507601381,
+      "hd95_proxy": 7.23827210595709,
+      "tail10_mse": 0.023323775174414443
+    },
+    "oracle_slice": {
+      "psnr": 26.050734801028923,
+      "ssim": 0.8690716230563026,
+      "mae": 0.021620219366956683,
+      "mse": 0.002602404371319202,
+      "ncc": 0.9514613498156478,
+      "dice_proxy": 0.9847974312096801,
+      "hd95_proxy": 7.205494380291853,
+      "tail10_mse": 0.02322758731681017
+    },
+    "oracle_patch32": {
+      "psnr": 26.177738260285977,
+      "ssim": 0.8713892488508961,
+      "mae": 0.021205665007689476,
+      "mse": 0.0025263947026277077,
+      "ncc": 0.9529439723414319,
+      "dice_proxy": 0.9851571463007353,
+      "hd95_proxy": 7.1203247654192205,
+      "tail10_mse": 0.02260686202690206
+    }
+  },
+  "cpu_vs_historical_psnr_difference_db": {
+    "control": {
+      "mean": -0.0007529258132924118,
+      "max_absolute": 0.001906561086805425
+    },
+    "orientation": {
+      "mean": 0.0003512428660082081,
+      "max_absolute": 0.003906787690731051
+    }
+  },
+  "limitations": [
+    "Oracle alpha uses withheld target pixels and is not deployable.",
+    "CPU float32 inference can differ slightly from historical GPU autocast metrics.",
+    "Both checkpoints were selected using this historical validation cohort.",
+    "Best fixed alpha is also selected on the same validation cohort.",
+    "This is the old-data control/orientation pair; orientation remains a stopped branch.",
+    "HD95 and Dice are intensity-threshold proxies, not segmentation outcomes."
+  ],
+  "sources": [
+    {
+      "path": "design/pastnet_v2/manifests/fastmri/fold_00.json",
+      "sha256": "ee471bd92e48696050a694f371a86483f86f832c5b26571c81137b5dcc6ad4df"
+    },
+    {
+      "path": "design/pastnet_v2/runs/full_control_seed3407_vram20/best.pth",
+      "sha256": "a5c41336f160b42ae168e9747fda05d1c472c77823185ae30730b6045db34127"
+    },
+    {
+      "path": "design/pastnet_orientation/runs/full_orientation_seed3407_vram20/best.pth",
+      "sha256": "37aba16ede23cd923b73afdfd90a073a9830ce48dfd5d5488305e6f8f07fdf8c"
+    },
+    {
+      "path": "design/pastnet_v2/runs/full_control_seed3407_vram20/validation/per_slice.csv",
+      "sha256": "5df761d55ea3d5cdeb5195560edd239a5bbf04be93719135084e5ac437f8dc24"
+    },
+    {
+      "path": "design/pastnet_orientation/runs/full_orientation_seed3407_vram20/validation/per_slice.csv",
+      "sha256": "7ac04b0fdff14fcaf816718e66adbce720814a5dec267a888d9f4eb054c1d6c9"
+    }
+  ]
+}

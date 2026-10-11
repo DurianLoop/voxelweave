@@ -1,0 +1,44 @@
+5.2. LBCS MOTIVATION: SUBMODULARITY
+providesagoodapproximationtotheoptimalsolutionofNP-hardinstancesofsubmodular
+function maximization (Krause and Golovin, 2014).
+Theorem 1(Nemhauser et al. (1978)). Letη : 2P→ R+ be a nonnegative monotone
+submodular function. Letωt, t≥ 0 be the sequence obtained by the greedy algorithm.
+Then, for all positivet,N ,
+η(ωt)≥
+(
+1−e−t/N
+)
+max
+ω:|ω|≤N
+η(ω). (5.4)
+In particular, fort =N, η(ωN)≥ (1− 1/e) maxω:|ω|≤Nη(ω).
+For many classes of submodular functionsh, this result is the best that can be achieved
+with any efficient algorithm (Krause and Golovin, 2014). In particular, Nemhauser and
+Wolsey (1978) proved that any algorithm that can only evaluateh on a polynomial
+number of set will not be able to obtain an approximation guarantee that is better than
+(1− 1/e). This property could be key to explaining the strong empirical performance of
+the LBCS algorithm of Gözcü et al. (2018) in the context of MRI.
+Although the approximation guarantee cannot be generally improved, many works have
+proposed moreefficient approaches than the simple greedy algorithm. Two works are of
+particular interest to us, as they serve as the motivation to the algorithms that we will
+describe in the next section. These algorithms are thelazy greedy(Minoux, 1978) and
+stochastic greedy, called lazier than lazy greedy (Mirzasoleiman et al., 2015).
+The lazy greedy algorithm relies on the fact that if at thei-th iteration of the greedy
+algorithm, anelementS isexpectedtobringamarginalbenefit ∆(S|ωi) =η(ωi∪S)−η(ωi),
+then it holds that∆(S|ωj)≤ ∆(S|ωi) for allj≥ifor a submodular functionη. Exploiting
+this fact, one can keep a list of upper bounds on the marginal benefits of each element
+S, calledρ(S), initialized at+∞. Then, at each iteration, the element S with largest
+value ρ(S) is picked and updated asρ(S) = ∆(S|ω). If ρ(S)≥ ρ(S′)∀S′∈S , the
+marginal benefit of this elementS is larger than the upper bounds of each other marginal
+contribution, and is consequently added permanently toω. This can speed up the
+algorithm by several orders of magnitude, sinceρ(S)≥ρ(S′) can be satisfied after a few
+trials, instead of trying each availableS at every iteration (Krause and Golovin, 2014).
+The stochastic greedy algorithm (Mirzasoleiman et al., 2015) samples at each step of the
+greedy algorithm a subset of candidatesSiter⊆S , with|Siter| =k at line 3 of Algorithm 1.
+As a result, given a nonnegative monotone submodular functionη : 2P→ R+ and taking
+k = P
+N log (1/ϵ), the stochastic greedy algorithm achieves a(1− 1/e−ϵ) approximation
+guarantee in expectation to the optimum, using onlyO (P log(1/ϵ)) evaluations.
+Both of these algorithms inspired the methods that we proposed to scale up LBCS, and
+their implementation in the context of MRI will be respectively covered in Sections 5.3.3
+51

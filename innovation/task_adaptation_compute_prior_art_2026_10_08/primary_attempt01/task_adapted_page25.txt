@@ -1,0 +1,51 @@
+8. Theoretical considerations. The joint task adapted reconstruction deﬁned in (21) is
+given by combining two optimal decision rules into a single decision rule, one for reconstruction
+that acts on data and the other encoding a task that acts on model parameters. It is therefore
+natural to investigate whether the theoretical machinery developed for Bayesian inversion can
+be used to analyze regularizing properties of this joint approach. An example would be to
+investigate the conditions under which the joint approach is a regularization in the formal
+sense, which means proving existence, stability, and posterior consistency that is preferably
+complemented by providing contraction rates, see [30, chapters 6-9] for the precise deﬁnitions.
+Much of the theory on Bayesian inversion that deals with such matters is well under-
+stood for linear problems in the ﬁnite dimensional setting [48], but things quickly become
+complicated for inﬁnite dimensional non-parametric problems. There has been nice progress
+recently on consistency, posterior contraction rates, and characterization of the microscopic
+ﬂuctuations of the posterior that is relevant for Bayesian inversion, see [88, 18, 73] for nice
+surveys and [71] for a in-depth treatment of reconstruction relevant for tomographic imaging.
+On the other hand, the theory and associated results require too many restrictive assumptions
+that renders them inapplicable for analyzing the task adapted approach in (21). To conclude,
+theory of Bayesian inversion is in its current state not useful for characterizing conditions for
+when the joint task adapted reconstruction in (21) is a regularization.
+Another line of investigation considers the potential advantage that comes with using
+a joint approach over a sequential one. Since the reconstruction and task operators are
+trained separately in a sequential approach, some information is inevitably lost when applying
+a regularized reconstruction operator. In contrast, both reconstruction and task operators
+are trained simultaneously in a joint approach so there is a better chance of preserving the
+information. Hence, we expect a joint approach to perform better, which is also supported by
+the observation in (22) and the empirical evidence in section 7.3.
+Now, albeit convincing, the above heuristic argument is ﬂawed! In fact, as stated by
+Proposition 1, it is surprisingly diﬃcult to theoretically prove that a joint approach outper-
+forms a sequential one in a non-parametric setting where one has access to all of data. The
+reason is that many standard operators that map data space to model parameter space are
+formally information conserving in such a setting. The adjoint of the forward operator, its
+Moore-Penrose pseudo-inverse, and even some regularized reconstruction operators such as
+the usual Tikhonov regularization are information conserving under standard Gaussian noise.
+For 2D parallel beam tomography, yet another example is the ﬁltered backprojection (FBP)
+reconstruction operator (with a ﬁlter that is strictly non-zero in frequency space).
+Proposition 1. Let x be a X-valued random variable, and y be a Y -valued random variable,
+both deﬁned on the same probability space. Let Π: Y →Y be a measurable operator with closed
+range. LetB be an arbitrary measurable map deﬁned on Y that is injective when restricted to
+ran(Π). Then, the following holds:
+(30) E
+[
+f(x)|y
+]
+= E
+[
+f(x)|B (Πy)
+]
+for all f ⇐⇒ x⊥ ⊥(y− Πy)| Πy
+wheref spans all random variables over X.
+Before getting to the proof, let us comment on the implication of the statement above. The
+operator Π typically represents an orthogonal projection onto the closure of the range of A.
+25

@@ -1,0 +1,79 @@
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING 9 1
+(a) Ground Truth (b) JRS,
+SNR: 21.01, CSF:0.71,
+GM:0.74, WM:0.81
+(c) Proposed,
+SNR: 22.87, CSF:0.80,
+GM:0.85, WM:0.91
+Fig. 6. Comparison of JRS [22] with the proposed scheme on 6x
+accelerated multi-channel brain data. SNR (dB) and Dice coefficient
+values are reported for the particular slice in each case. The data
+was undersampled using a Cartesian 2D non-uniform variable-density
+mask. The top row shows reconstructions (magnitude images) and
+their zoomed-in portions, while the bottom row shows corresponding
+zoomed-in segmentations. The proposed method outperforms JRS ar￾chitecture; the key differences are highlighted by zoomed-in images in
+red boxes.
+segmentation output of decoders from all the iterations are
+linearly combined to obtain a final segmentation. We observe
+that both the reconstruction and segmentation quality of the
+proposed scheme are superior to JRS; we note a reduction in
+blurring and improved preservation of details in the proposed
+reconstruction. JRS segmentation shows errors in the regions
+indicated by arrows which are not present in the proposed
+segmentation. Thus, there is a significant improvement in
+segmentation quality.
+VI. DISCUSSION
+The comparison of the proposed spatial domain deep￾SLR scheme (IDSLR) against other calibrationless methods
+in Table I and Fig. 4 shows the benefit of the proposed
+framework, which combines the image domain annihilation
+relations (IDSLR) with the segmentation task. The improved
+performance of KDSLR over K-UNET can be attributed to the
+model-based strategy that offers improved data consistency.
+We observe that the proposed IDSLR scheme offers more than
+1 dB of improvement over all of the other methods, which can
+be evidenced by the lower alias artifacts and sharper edges
+shown in Fig. 4. The improved performance over KDSLR [17]
+can be attributed to the use of the spatial domain annihilation
+relations that result from the multi-channel acquisition scheme,
+as well as those resulting from the redundancy of patches. The
+additional improvement in the reconstruction performance of￾fered by the proposed scheme, which uses a linear combination
+of segmentation and reconstruction losses, may be slightly
+counterintuitive from an optimization perspective. However,
+this improved performance confirms our hypothesis that the
+exploitation of the synergies between the segmentation and
+reconstruction tasks will aid both tasks. In particular, the
+addition of the segmentation task encourages the network to
+learn improved latent representations, resulting in improved
+preservation of edges and details in the reconstructed images.
+The segmentation results in Table II and Fig. 5 clearly show
+the benefit of the joint training strategy IDSLR-SEG compared
+to straightforward cascading of a pre-trained segmentation net￾work with reconstruction algorithms, including IDSLR+SEG.
+In particular, the SEG scheme that was pre-trained on fully
+sampled images will offer lower performance in the presence
+of blurring and alias artifacts. By contrast, the proposed joint
+training strategy IDSLR-SEG offers improved segmentation,
+evidenced visually and by the lower Dice scores. The slight
+degradation in the segmentation accuracy of IDSLR-SEG over
+the SEG approach, where fully sampled images are used, is
+the price to pay for the acceleration.
+The comparison of the few-shot training setting with only
+10% of segmentation labels against the previous setting with
+all the segmentation labels in Table III shows that the proposed
+architecture with shared encoders offers minimal degradation
+in segmentation and reconstruction performance. By contrast,
+the performance of the cascade approach is seen to degrade
+with a reduced number of segmentation labels. The shared
+encoder enables the segmentation network to reduce gener￾alization errors, even though it is trained with few subjects.
+Since the encoder is trained with a supervised reconstruction
+loss from several subjects, it learns a very robust feature
+representation, thus reducing the risk of overfitting in the
+segmentation network. In contrast to the few-shot learning of
+the cascade network, the segmentation algorithm fails to learn
+enough features due to insufficient training data. We also note
+that this trend is mirrored by the reconstruction performances
+in Table III. The proposed few-shot approach gives similar
+performance to the fully supervised one in terms of average
+SNR.
+VII. CONCLUSION
+We introduced a novel image-domain deep structured low￾rank algorithm (IDSLR) for calibrationless PMRI recovery.
+The proposed IDSLR scheme is a DL-based non-linear ex￾tension of locally low-rank approaches such as CLEAR. The

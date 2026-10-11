@@ -1,0 +1,56 @@
+Learning to Sample and Reconstruct for Accelerated MRI 13
+Algorithm 2 Learning to Sample and Reconstruct (L2SR)
+Require: a sampler π, a reconstructor R, a heuristic sampling policy πh, an MRI
+datasetD, the number of alternationsL, and the maximum number of BP iterations
+{n(l)}L
+l=0
+for i = 1 to n(0) do
+sample a batch{x(b)}B
+b=1∼D and binary mask vectors a(b)∼πh
+computeL(θR) =− 1
+B
+∑B
+b=1 S(R(Ma(b)
+F(x(b));θR), x(b))
+optimize θR with the lossL by Adam
+end for
+for l = 1 to L do
+build environment (sparse-reward POMDP)
+train sampler π with the environment by A2C
+for i = 1 to n(l) do
+sample a batch{x(b)}B
+b=1∼D and its acquisition sequences a(b)∼π(x(b))
+computeL(θR) =− 1
+B
+∑B
+b=1 S(R(Ma(b)
+F(x(b));θR), x(b))
+optimize θR with the lossL by Adam
+end for
+end for
+Output sampler π and reconstructorR
+T able 1. Acceleration factors and initial accelerations factors of random sampling
+policies for pre-training reconstructors. We utilize Rdense for PG-MRI [11] and
+Greedy Oracle, andRsparse for Random and L2S.
+×4 acceleration
+acceleration factor initial acceleration factor
+Rdense [4,4,4,6,6,8] [4,6,8,6,8,8]
+Rsparse 4 8 (Base) or 32 (Long)
+×8 acceleration
+acceleration factor initial acceleration factor
+Rdense [8,8,8,12,12,16] [8,12,16,12,16,16]
+Rsparse 8 16 (Base) or 64 (Long)
+×16 acceleration
+acceleration factor initial acceleration factor
+Rdense [16,16,16,24,24,32] [16,16,16,24,24,32]
+Rsparse 16 32 (Base) or 128 (Long)
+Similarity Metric : In our training process, we adopt the Structural Similarity
+Index (SSIM) [38] as the image similarity metric S. We recognize its potential
+limitations for medical imaging tasks due to its sensitivity to scale differences, shifts,
+and rotations. It reflects the broader challenge within medical imaging of aligning
+quantitative evaluation metrics closely with the qualitative ‘eyeball’ assessments used
+by medical professionals. To address these concerns, we emphasize our framework’s
+inherent adaptability, designed to accommodate a variety of metrics such as Peak
+Signal-to-Noise Ratio (PSNR), Wasserstein GAN (WGAN) distance [39, 40] or some
+downstream task metrics, depending on the particular application requirements. This
+adaptability ensures the framework’s applicability across various medical imaging tasks

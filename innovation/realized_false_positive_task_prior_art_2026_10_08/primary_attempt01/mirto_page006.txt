@@ -1,0 +1,156 @@
+6 N. K. Hernashki and S. Chatterjee
+(a) mapping a stored map to the canonical grid
+native grid Ωm (axes z, x, y)
+stored map Am,i, method’s own reference
+Tm: axis order,
+flips, crop, scale,
+z placement
+field of view F
+canonical grid Ω, 1 mm
+c =
+
+x − aj + 1
+2
+
+Sj /Lj − 1
+2
+per canonical axis j (reversed if flagged);
+maps: linear interpolation; references and F : nearest neighbour; outside F : score 0
+0
+0.5
+1
+(iii)
+applied Tm = argmax (ii)
+2 transp. × 4 flips × dz ∈ {−3, . . . , 3}
+Dice(Tf , Cf )
+(b) registration gate: 56 candidate transforms
+(i) ∥centroid(Tf
+) − centroid(Cf
+)∥ ≤ 3 mm; (ii-b) no candidate
+beats the applied transform by > 0.02; Tf = Tg ∩ F , Cf = C ∩ F
+0.5 1
+0.5
+flipped map:
+anti-location rate = share < 0.5
+correct map
+per-subject voxel AUROC
+(c) label-free diagnostics
+other diagnostics: rank stability of per-subject AUROC;
+shared conspicuity; transform scan;
+Jaccard bound dJ (RA, RB) ≥ |dJ (P, RA) − dJ (P, RB)|
+Fig. 2. Registration gating (schematic). (a) Each stored map is mapped to the canonical grid by a per-method transform
+Tm (Eq. 7); voxels outside the field of view F score zero. (b) The registration gate compares the applied transform with the
+other candidate transforms on the overlap between the method’s own reference, mapped, and the canonical reference inside
+F (Eq. 8). (c) Label-free diagnostics: an in-plane error pushes per-subject voxel AUROC below 0.5 (anti-location rate) and
+scrambles its ranks (rank stability). Bars are illustrative, not data.
+gap is a burden mismatch multiplied by a local slope. A
+method whose validation threshold happens to realise its
+budget on test has g¯ ≈ 0 whatever its map quality, and a
+method with a conservative threshold (β < b ˆ ) on a steep
+part of its curve has a large positive gap (Fig. 3a). The
+decomposition is exact for subject means; for medians and
+pooled values it holds only approximately.
+Conformal per-scan burden guarantee. Nominal budgets
+constrain a cohort mean; a clinician cares about the scan
+in front of them. Define the bounded, non-increasing loss
+Li(τ ) = 1[FPi(τ ) > b] and the empirical risk Rˆ
+n(τ ) =
+n
+−1 P
+i∈V Li(τ ) on n = |V| calibration subjects. CRC [3]
+picks
+τˆ = inf n
+τ :
+n
+n + 1
+Rˆ
+n(τ ) + 1
+n + 1
+≤ α
+o
+, (15)
+which guarantees E[Ln+1(ˆτ )] ≤ α under exchangeability:
+the probability that a new scan exceeds b is at most α.
+The rule is feasible only if α ≥ 1/(n+ 1), i.e. α ≥ 0.04 for
+n = 24. We also evaluate RCPS [8] with a binomial upper
+bound at δ = 0.10, and a label-free CRC that controls
+predicted volume rather than false positives, each at α ∈
+{0.05, 0.10, 0.20}; RCPS at α = 0.05 is infeasible with
+n = 24, which leaves eight calibrated rules. The CRC
+guarantee is marginal over calibration sets. Its behaviour
+conditional on one calibration set follows from a known
+result, which we restate for this loss.
+Lemma 1 (Exceedance law of CRC for an indica￾tor loss). Let ti = inf{τ : FPi(τ ) ≤ b} be subject i’s
+critical threshold, so that Li(τ ) = 1[ti > τ ], and suppose
+the ti are i.i.d. with continuous distribution function F.
+Let j = ⌊(n + 1)α − 1⌋ and k = n − j. Then, for j ≥ 0
+and no ties, τˆ = t(k)
+, the k-th order statistic of the cal￾ibration ti, and the exceedance probability conditional on
+the calibration set,
+ρ(ˆτ ) = P
+
+FPn+1(ˆτ ) > b
+
+t1:n
+
+= 1 − F
+
+t(k)
+
+∼ Beta(n + 1 − k, k).
+(16)
+In particular E[ρ] = (n + 1 − k)/(n + 1) ≤ α.
+Lemma 1 is not new. With an indicator loss, CRC se￾lects an order statistic of the calibration scores exactly
+as split-conformal prediction does, and 1 − ρ is then the
+coverage conditional on the calibration set, whose Beta
+law is the classical training-conditional result of the con￾formal literature [64,1]. We state it because, applied to
+the per-scan burden, it turns a marginal guarantee into
+a prediction that a user can make before seeing any test
+data. For n = 24 and α = 0.10, j = 1 and ρ ∼ Beta(2, 23),
+whose mean is 0.080, whose 97.5th percentile is 0.211, and
+which puts only 70.8% of its mass at or below α. CRC
+therefore controls the average over calibration sets whilst
+leaving roughly three calibration sets in ten above the
+target; a guarantee that holds with high probability for
+the calibration set in hand requires RCPS or Learn-then￾Test [8,2], at the price of a stricter threshold. We com￾pare this prediction with 1,000 random calibration splits
+in Section 3.3. Figure 3c illustrates the construction.
+2.5 Metrics and their identities
+Dice and its aggregations. We report the subject mean
+D =¯ n
+−1 P
+i Di
+, the subject median and the pooled value
+Dpool = 2P
+i TPi/
+P
+i
+(pi + Gi). The reference estimand
+is the subject mean at b = 20 cm3
+, validation threshold,
+plain thresholding, canonical reference and full support.
+Identity 2 (Pooled Dice is a size-weighted mean).
+Dpool =
+P
+i wiDi with wi = (pi + Gi)/
+P
+k
+(pk + Gk).
+The identity follows from TPi =
+1
+P
+2Di(pi + Gi). Since
+i
+(wi − 1/n) = 0,
+D
+pool − D =¯ X
+i
+
+wi −
+1
+n
+
+Di − D¯
+
+= n Cov( d w, D), (17)
+where Cov d is the empirical covariance over subjects with
+divisor n. Pooling therefore helps exactly those methods

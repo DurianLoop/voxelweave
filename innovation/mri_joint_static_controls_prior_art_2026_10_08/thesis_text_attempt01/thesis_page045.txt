@@ -1,0 +1,36 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+based, model-driven approaches towards learning-based, data-driven approaches. We will
+conclude by formalizing the problems linked with optimizing mask design in this context.
+4.2 Compressed sensing and MRI: Model-based, model-
+driven approaches
+4.2.1 The contribution of Lustig et al. (2007)
+With the onset of Compressed Sensing (CS), random sampling patterns were used, as they
+allowed to obtain noise-like, incoherent aliasing, as illustrated on Figure 3.1. This was
+indeed theoretically motivated, as random sampling easily enables to achieve incoherent
+sampling, which in turn meant that a small number of measurements were sufficient to
+exactly solve the problem 3.1 forR(x) =∥Wx∥1 with high probability.
+Definition. Let (A,W ) be two orthonormal bases ofCp, whereA is the observation
+domain, andW is the sparsifying (representation) basis. Then, thecoherence
+between these bases is defined as (Candès and Wakin, 2008)
+µ(A,W ) =√p· max
+1≤i,j≤p
+|⟨ai,wj⟩|. (4.1)
+The coherence measures the maximal correlation between any element ofA and
+W. µ(A,W )∈ [1,√p], where coherence1 implies maximal incoherence between the
+bases, and√p maximal coherence.
+Coherence then allows to bound the minimal number of measurementsN required for
+exactly solving 3.1 with high probability. Indeed, for a given signalx∈ Cp observed in
+domainA, assuming thatx is S-sparse in the transformed domainW, then a typical
+compressive sensing result (Candes and Romberg, 2007) dictates that, givenN random
+measurements, exact reconstruction will occur with high probability when
+N≥C·S·µ2(A,W )· logP (4.2)
+for some positive constantC.
+While the theory of CS obtains results forrandom measurements, practitioners have
+quickly sought to optimize the measurements, and a natural initial criterion has been
+to minimize the coherence between measurements, i.e. to select a sampling pattern
+ω with|ω| = N that enables to minimizeµ(Aω,W ) (Lustig et al., 2007). However,
+when applying compressed sensing to MRI, it was quickly observed that purely random
+undersampling of the Fourier space is not practical, for several reasons (Lustig et al.,
+2007, 2008):i) it does not satisfy hardware and physical constraints that require smooth
+trajectories in Fourier space and the use of trajectories robust to system imperfections,
+32

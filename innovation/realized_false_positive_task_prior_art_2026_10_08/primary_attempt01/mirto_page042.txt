@@ -1,0 +1,71 @@
+42 N. K. Hernashki and S. Chatterjee
+Table 60. All twenty method–training-set combinations: validation criteria of the six selection rules, test Dice and AUPRC,
+and test regret relative to the method’s best training set (Dice at 20 cm3
+, validation threshold, subject mean). “test” denotes
+the median-slice-Dice rule applied to the test cohort.
+Method Config validation median slice Dice [95 % CI] validation pooled Dice validation median volume Dice validation canonical Dice 20 cm3 validation canonical AUPRC test canonical Dice 20 cm3
+(validation τ) test voxel AUPRC test regret vs best config chosen by primary flag
+AnomalyDINO IXI-HH 0.198 [0.159, 0.232] 0.319 0.309 0.176 0.293 0.148 0.312 0.018 AUPRC AnomalyDINO IXI-Guys 0.190 [0.155, 0.228] 0.317 0.305 0.175 0.277 0.158 0.310 0.007 none AnomalyDINO IXI-HH+Guys 0.227 [0.195, 0.251] 0.320 0.297 0.189 0.286 0.166 0.311 0.000 pooled Dice, Dice at 20 cm3 yes AnomalyDINO MOOD+IXI-HH 0.247 [0.218, 0.273] 0.309 0.291 0.164 0.261 0.152 0.297 0.013 slice Dice, test AnomalyDINO MOOD+IXI 0.169 [0.131, 0.208] 0.309 0.316 0.180 0.273 0.161 0.289 0.005 volume Dice REFLECT IXI-HH 0.538 [0.516, 0.564] 0.524 0.479 0.404 0.509 0.425 0.569 0.127 none REFLECT IXI-Guys 0.526 [0.499, 0.548] 0.518 0.496 0.377 0.509 0.407 0.585 0.145 none REFLECT IXI-HH+Guys 0.561 [0.537, 0.579] 0.574 0.543 0.474 0.567 0.497 0.611 0.055 slice Dice yes REFLECT MOOD+IXI-HH 0.542 [0.522, 0.567] 0.572 0.532 0.487 0.601 0.521 0.645 0.031 none REFLECT MOOD+IXI 0.560 [0.536, 0.588] 0.599 0.585 0.498 0.605 0.552 0.663 0.000 pooled Dice, volume Dice, Dice at 20 cm3
+, AUPRC, test UCCD IXI-HH 0.526 [0.503, 0.549] 0.538 0.525 0.488 0.550 0.500 0.569 0.076 none UCCD IXI-Guys 0.618 [0.595, 0.639] 0.605 0.554 0.531 0.621 0.576 0.655 0.000 slice Dice, pooled Dice, volume Dice, Dice at 20 cm3
+, AUPRC, test UCCD IXI-HH+Guys 0.569 [0.543, 0.592] 0.563 0.548 0.505 0.573 0.539 0.608 0.037 none yes UCCD MOOD+IXI-HH 0.507 [0.480, 0.530] 0.534 0.495 0.477 0.535 0.496 0.565 0.080 none UCCD MOOD+IXI 0.481 [0.463, 0.505] 0.494 0.450 0.460 0.517 0.452 0.526 0.125 none
+cDDPM IXI-HH 0.427 [0.368, 0.498] 0.528 0.522 0.458 0.518 0.467 0.550 0.052 none
+cDDPM IXI-Guys 0.457 [0.363, 0.524] 0.569 0.567 0.496 0.564 0.507 0.587 0.012 pooled Dice, volume Dice, Dice at 20 cm3
+cDDPM IXI-HH+Guys 0.482 [0.414, 0.538] 0.562 0.539 0.471 0.586 0.519 0.630 0.000 slice Dice, AUPRC, test yes
+cDDPM MOOD+IXI-HH 0.365 [0.319, 0.420] 0.484 0.491 0.409 0.461 0.417 0.483 0.102 none
+cDDPM MOOD+IXI 0.345 [0.311, 0.381] 0.351 0.345 0.243 0.289 0.216 0.297 0.303 none multi-contrast training (72 % T1); training completed
+Table 61. Training-set selection on the 24 validation subjects: point choice, its frequency over 104 bootstrap resamples and
+its test regret.
+Selection rule Method Point choice Bootstrap frequency of point choice Test regret of point choice Mean test regret over resamples 2.5th to 97.5th pct Label
+validation median slice Dice REFLECT IXI-HH+Guys 36.8 % 0.055 0.031 [0.000, 0.055] unstable
+validation median slice Dice UCCD IXI-Guys 97.8 % 0.000 0.001 [0.000, 0.000] stable
+validation median slice Dice cDDPM IXI-HH+Guys 57.1 % 0.000 0.010 [0.000, 0.052] unstable
+validation median slice Dice AnomalyDINO MOOD+IXI-HH 27.3 % 0.013 0.008 [0.000, 0.018] unstable
+validation pooled Dice REFLECT MOOD+IXI 86.4 % 0.000 0.006 [0.000, 0.055] stable
+validation pooled Dice UCCD IXI-Guys 99.3 % 0.000 0.000 [0.000, 0.000] stable
+validation pooled Dice cDDPM IXI-Guys 62.8 % 0.012 0.008 [0.000, 0.012] unstable
+validation pooled Dice AnomalyDINO IXI-HH+Guys 36.4 % 0.000 0.010 [0.000, 0.018] unstable
+validation median volume Dice REFLECT MOOD+IXI 85.2 % 0.000 0.006 [0.000, 0.055] stable
+validation median volume Dice UCCD IXI-Guys 76.4 % 0.000 0.011 [0.000, 0.080] unstable
+validation median volume Dice cDDPM IXI-Guys 68.1 % 0.012 0.010 [0.000, 0.052] unstable
+validation median volume Dice AnomalyDINO MOOD+IXI 16.2 % 0.005 0.009 [0.000, 0.018] unstable
+validation canonical Dice 20 cm3 REFLECT MOOD+IXI 67.7 % 0.000 0.011 [0.000, 0.055] unstable
+validation canonical Dice 20 cm3 UCCD IXI-Guys 91.4 % 0.000 0.004 [0.000, 0.037] stable
+validation canonical Dice 20 cm3 cDDPM IXI-Guys 70.5 % 0.012 0.017 [0.000, 0.052] unstable
+validation canonical Dice 20 cm3 AnomalyDINO IXI-HH+Guys 51.8 % 0.000 0.004 [0.000, 0.018] unstable
+validation canonical AUPRC REFLECT MOOD+IXI 53.4 % 0.000 0.015 [0.000, 0.031] unstable
+validation canonical AUPRC UCCD IXI-Guys 99.6 % 0.000 0.000 [0.000, 0.000] stable
+validation canonical AUPRC cDDPM IXI-HH+Guys 82.6 % 0.000 0.002 [0.000, 0.012] stable
+validation canonical AUPRC AnomalyDINO IXI-HH 90.0 % 0.018 0.016 [0.000, 0.018] stable
+validation Dice at 20 cm3
+, nested τ REFLECT MOOD+IXI 66.6 % 0.000 0.012 [0.000, 0.055] unstable
+validation Dice at 20 cm3
+, nested τ UCCD IXI-Guys 86.2 % 0.000 0.007 [0.000, 0.076] stable
+validation Dice at 20 cm3
+, nested τ cDDPM IXI-Guys 70.2 % 0.012 0.018 [0.000, 0.052] unstable
+validation Dice at 20 cm3
+, nested τ AnomalyDINO IXI-HH+Guys 55.8 % 0.000 0.004 [0.000, 0.018] unstable
+Table 62. Verdicts of H1 to H9 in every set of training data.
+Hypothesis provisional set test-selected set validation-selected set primary
+ranking instability supported (max. flip share 0.302 [0.278, 0.374]) supported (0.459 [0.357, 0.497]) supported (0.472 [0.393, 0.498]) supported (0.472 [0.414, 0.499])
+evaluation dominance supported (0.607 vs 0.173) supported (0.598 vs 0.184) supported (0.613 vs 0.169) supported (0.614 vs 0.162)
+intensity baseline not not not not
+contrast dependence not not not partly tested; not
+pruning trade-off not not not not (point estimates)
+test-tuning optimism REFLECT only REFLECT (MOOD+IXI) only (lower bound 0.022) none (lower bound 0.019) not (lower bound 0.0191 REFLECT, 0.0199 cDDPM)
+diagnostic power supported supported supported supported (power 1.000)
+conformal control 0/128 over 1/128 over 1/128 over supported (0/128)
+anatomy adjustment not not not not (0.668 [0.654, 0.682])
+F Secondary hypotheses and deviations
+Table 9 gives the nine primary hypotheses. Table 63 gives the eight secondary hypotheses, each a prediction about
+a specific effect that follows from the identities of Section 2 or from the primary analyses, tested with all methods
+trained on IXI-HH+Guys. Deviations from the stated analyses are listed after the table.
+Deviations and disclosures. (1) The stated description of the training data names all three IXI sites; our IXI T2
+data contain no subjects from the third site (IOP), so IXI-HH+Guys comprises the Hammersmith and Guy’s sites,
+identically for all methods. (2) The canonical arrays are a through-plane-cropped copy (98–149 slices) of the 240 ×
+240×155 originals; no tumour voxel is affected. (3) The contrast-dependence hypothesis could be tested only in part,
+because the available labels are binary. (4) The pruning trade-off was judged from point estimates, as no interval was
+computed for it. (5) The stratified and matched slice-level estimators named in H9 fail their covariate-only check; the
+regression estimator, added as an exploratory alternative, fails as well. (6) The family of six latent-aggregation rules
+specified for this experiment could not be computed from the stored latents; the family reported here is exploratory.
+(7) A pre-specified through-plane offset check was positive for AnomalyDINO, whose voxel AUROC peaks three slices
+from the canonical position (+0.008); its export was verified to be identical to the canonical data and its numbers

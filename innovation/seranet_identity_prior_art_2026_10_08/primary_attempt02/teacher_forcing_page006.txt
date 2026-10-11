@@ -1,0 +1,43 @@
+Iterative Teacher Forcing Scheme
+t
+Figure 3: The difference between the original teacher forcing scheme and the proposed iterative teacher
+forcing scheme is that we take the ground truth denoted by the blue line and the actual output denoted by
+the orange line of step t − 1 as the input of step t alternately instead of the fixed ground truth of step t − 1.
+It is beneficial for improving the training process while avoiding exposure bias and over-correction issue.
+the second step x2 iteratively. It prevents the error
+accumulation of the reconstruction step from propa￾gating to the segmentation step. In addition, the use
+of teacher forcing scheme is beneficial for stabilizing
+the training process, reducing the training difficulty
+and protecting the presentation ability of the pro￾posed network.
+3 Experiments and Results
+3.1 Experimental Setting
+3.1.1 Data
+We instantiated our method on two competitive MR
+image datasets including ATLAS [27] and realistic
+simulated k-space data generated from Brainweb [28].
+The ATLAS dataset consists of 229 intensity nor￾malized subjects on T1 modality in standard space
+(normalized to the MNI-152 template) collected from
+11 cohorts worldwide, with an in-plane resolution of
+1mm3
+, in which 120 subjects were used for training,
+40 for validation and 69 for testing. 20 cases were
+employed from the publicly available simulated brain
+dataset, Brainweb, where 12 brain tissue types were
+included with known distributions, in which 17 cases
+were used for training and 3 for testing.
+We also conducted our approach on an in house
+in-vivo dataset. It consists of 40 cases and 485 slices
+from FLAIR sequence obtained with a Siemens 1.5T
+scanner. The FOV phase amplitude is 70% − 87.5%.
+The slice thickness ranges from 6.0 mm to 7.0 mm and
+the slice interval ranges from 7.8 mm to 9.1 mm. Le￾sions were annotated by experienced clinicians using
+ITK snap. 20 cases (247 slices) are used for training
+with the rest 20 cases (238 slices) for testing.
+For k-space data sub-sampling, we performed
+masks as shown in Fig. 4 on the fully-sampled acqui￾sition retrospectively. For a volume, all slices were
+applied to the same under-sampling mask. The over￾all acceleration factor was set as four. To achieve
+the desired acceleration factor, 8% of all k-space lines
+from the central region were kept and the remaining
+k-space lines were kept with a set probability uni￾formly at random. It was set to meet the general
+conditions for compressed sensing [29, 30].
+6

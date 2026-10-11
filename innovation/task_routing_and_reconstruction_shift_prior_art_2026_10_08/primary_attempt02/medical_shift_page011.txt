@@ -1,0 +1,41 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+Reweighted EODD
+Chex UCSF Chex UCSF
+PSNR 0.54 -0.75 -0.64 -7.28
+Down. 0.07 -1.97 0.02 -2.94
+Table 4: Mean change (%) in PSNR and downstream performance (AUROC/Dice) per
+dataset after each mitigation averaged over reconstruction models and tasks. Per-
+formance drops are modest, except for PSNR in UCSF-PDGM for EODD.
+larger drops with EODD (see Figure 13 in the Appendix). Reweighting incurs the smallest
+penalties overall.
+Additional results using EOP and ∆Dice fairness metrics before and after mitigation
+are provided in the Appendix (Figures 14 and 15) and support the trends described above.
+5. Discussion
+We developed and applied an analysis framework that integrates reconstruction and predic-
+tion models to evaluate the effects of image reconstruction on downstream clinical perfor-
+mance and fairness, and investigate bias mitigation strategies at the reconstruction stage.
+Our analysis revealed several important insights, as summarized below.
+Stability of Downstream Performance:Despite notable reductions in image quality,
+indicated by decreased PSNR at higher noise levels, downstream segmentation and clas-
+sification performances remained robust to image reconstruction. This stability suggests
+that current diagnostic models are largely resilient to reconstruction-induced image degra-
+dations, at least for the studied tasks, which implies that minor reconstruction noise might
+not adversely impact clinical diagnostic accuracy. This finding may be surprising given that
+deep learning classification models are often thought to lack robustness, such as showing
+changes if the data are heterogeneous or noisy (Chuah et al., 2024). This suggests a nuanced
+interpretation of robustness, where models may be robust to certain transformations (e.g.,
+reconstruction noise) but not others. Critically, these findings also have implications for
+the studied reconstruction models. Even if the downstream models were robust, we would
+expect that the performance of these models would drop if the reconstruction models re-
+moved the true underlying information necessary to perform the tasks. Instead, we observe
+largely stable downstream performance even as PSNR decreases, suggesting retainment of
+diagnostic features for the studied tasks. Nonetheless, there was a mild dependence on
+task difficulty, where more subtle pathologies (e.g. lung lesions) showed larger performance
+effects, highlighting future opportunities of applying our framework to other subtle tasks
+where the implications of AI-based reconstruction are currently unknown.
+Fairness Implications and Variability:The aggregate effect of reconstruction on fair-
+ness was relatively modest, though certain pathologies and sensitive attributes showed sig-
+nificant shifts. These shifts varied in magnitude and direction, with a tendency toward
+increased bias, especially for patient sex. In most cases, the magnitude represented only
+a small fraction of the bias already present in the diagnostic models, though some would
+11

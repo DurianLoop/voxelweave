@@ -1,0 +1,1500 @@
+[
+  {
+    "index": 0,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Introduction"
+    ],
+    "text": "Introduction"
+  },
+  {
+    "index": 1,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Introduction"
+    ],
+    "text": "Inter-scanner variability in magnetic resonance imaging (MRI) adversely affects the diagnostic and prognostic quality of scans and necessitates the development of models that are robust to domain shift arising from the unseen scanner data. A review of recent advances in domain adaptation and domain generalization showed that the efficacy of strategies involving modifications or constraints on the latent space appears to be contingent upon the level and/or depth of supervision during model training."
+  },
+  {
+    "index": 2,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Methods"
+    ],
+    "text": "Methods"
+  },
+  {
+    "index": 3,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Methods"
+    ],
+    "text": "We propose an adaptive multi-stage domain unlearning (ADMU) technique to improve robustness to unseen scanner domains. Building on the state-of-the-art segmentation framework nnU-Net, we employ deep supervision at deep encoder stages by applying domain classifier unlearning, sequentially across these stages to reduce domain-discriminative latent features. Following the self-configurable approach of nnU-Net, the auxiliary feedback loop implements an adaptive backpropagation schedule for unlearning. Experiments were conducted on four public datasets (one for training, three for testing) to benchmark white-matter lesion segmentation methods. Five benchmark models and/or strategies, spanning passive to active domain-robust training strategies, were tested, and five state-of-the-art methods were compared."
+  },
+  {
+    "index": 4,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Results"
+    ],
+    "text": "Results"
+  },
+  {
+    "index": 5,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Results"
+    ],
+    "text": "AMDU demonstrated consistent, robust and improved cross-dataset segmentation performance on three test sets versus baseline nn-Unet variants. The advantage of AMDU was in enhanced lesion sensitivity with balanced false detections, resulting in good overall segmentation quality, as measured by segmentation overlap and relative lesion volume error. Compared to continuous domain unlearning, the adaptive scheduling balanced the adverse impact of unlearning onto the main segmentation task. Intensity-based preprocessing was found to be detrimental to segmentation performance."
+  },
+  {
+    "index": 6,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Discussion"
+    ],
+    "text": "Discussion"
+  },
+  {
+    "index": 7,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract",
+      "Discussion"
+    ],
+    "text": "The proposed AMDU strategy was shown to be complementary to data augmentation. Demonstrated for white-matter lesion segmentation it relied only the FLAIR modality, simplifying preprocessing to spatial normalization to brain atlas, with no intensity harmonization, for best cross-dataset segmentation performance. The source code is available at https://github.com/Pubec/nnunetv2-unlearning."
+  },
+  {
+    "index": 8,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "Introduction"
+  },
+  {
+    "index": 9,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "The proliferation of brain magnetic resonance imaging (MRI) in conjunction with deep learning (DL) image analysis enables state-of-the-art white-matter lesion (WML) segmentation (1–3). Segmentation should be accurate and robust, as the total number and volume of lesions quantified from MRI have been established as biomarkers for diagnosis, assessment of response to therapy (4), and future Multiple Sclerosis (MS) disease progression (5). However, inter-scanner variability in intensity contrast and noise distributions (Figure 1) remains the most detrimental factor for the diagnostic and prognostic quality of MRI scans (6). This variability undermines a segmentation model's ability to generalize to new domains (i.e., new scanners). Obtaining high-quality expert lesion annotations for new-domain data to fine-tune the model is often prohibitively time-consuming and impractical. These observations necessitate the development of broadly applicable segmentation models that are not restricted to the source domain on which they were trained."
+  },
+  {
+    "index": 10,
+    "kind": "fig",
+    "id": "F1",
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "Figure 1Comparison of MRI scans between different domains.Three axial brain MRI scans are shown side by side for comparison, labeled Siemens 3T, Philips 3T, and GE 1.5T, highlighting differences in image contrast and clarity among scanners and magnetic field strengths."
+  },
+  {
+    "index": 11,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "The difficulty of consistently analyzing data from an unseen domain is increasingly highlighted in the DL literature. For example, Alzubaidi et al. (7) and the Google Research Team (8) refer to underspecification to explain the poor behavior of DL systems when deployed in real-world domains, regardless of the application area. When evaluating WML segmentation, the same phenomenon is apparent in the results of public WML segmentation challenges. In MICCAI 2016 MS Lesion Segmentation Challenge (MSSEG) results (9), the segmentation performances of all tested methods generalized well on the test set of the source scanner data, on which they were trained, but dropped substantially on the unseen test set (Center 3). Similar observations hold for the MICCAI 2021 MS New Lesions Segmentation Challenge (MSSEG-2) results (10). Even the top-ranking team's method exhibited a drop in DSC score from 0.52 (seen) to 0.26 (unseen). The domain shift, therefore, needs to be addressed accordingly."
+  },
+  {
+    "index": 12,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "We hypothesize that poor generalization of DL models across domains and domain overfitting mainly arise from an inability to discriminate between task- and domain-related features, from the enhancement rather than suppression of these features, and from other factors, such as inadequate data augmentation, MRI preprocessing and/or harmonization, and data imbalance. To address cross-domain robustness in WML segmentation, we propose adaptive multi-stage domain unlearning (AMDU) by augmenting nnU-Net with multi-stage encoder supervision through domain-classifier unlearning. The main methodological contributions of this study are:"
+  },
+  {
+    "index": 13,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "(1) We propose an adaptive multi-stage domain unlearning strategy that reduces scanner-specific discriminability without requiring target-domain data during training;"
+  },
+  {
+    "index": 14,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "(2) We introduce an adaptive learning–unlearning schedule that triggers unlearning according to domain-classifier behavior rather than a fixed alternation rule;"
+  },
+  {
+    "index": 15,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "(3) We integrate the proposed strategy into nnU-Net (11), providing an open-source implementation for domain-affected segmentation tasks."
+  },
+  {
+    "index": 16,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "Empirically, the proposed AMDU improved cross-domain lesion segmentation performance on unseen datasets while maintaining competitive performance on seen data. We further found that intensity-based preprocessing was detrimental, whereas the proposed unlearning strategy complemented data augmentation and yielded competitive results compared with recent state-of-the-art methods, despite using only FLAIR input."
+  },
+  {
+    "index": 17,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s1"
+    ],
+    "text": "A note on terminology: we use adaptive multi-stage domain unlearning to denote the proposed mechanism, adaptive learning–unlearning schedule to denote its triggering strategy, and source-only domain-robust training to denote the experimental setting in which no target-domain data is used during training or adaptation. We therefore discuss the method in relation to the broader domain adaptation literature while evaluating it as zero-shot transfer to unseen domains."
+  },
+  {
+    "index": 18,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Related work"
+  },
+  {
+    "index": 19,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Domain adaptation is a specific type of transfer learning in which domain features, i.e., a feature subspace defined by the source dataset, and task features, defined by labels and goals, are disentangled to enable knowledge transfer, e.g., by emphasizing task features and disregarding/suppressing domain-identifying features. This adaptation allows models to adequately apply prior knowledge to previously unseen target domain (12). In practice, cross-domain MRI segmentation methods span several distinct settings that should be differentiated clearly: (i) source-free or source-only domain generalization approaches, which aim to improve robustness without target-domain data during training; (ii) test-time or post-deployment adaptation approaches, which exploit target-domain information at inference or fine-tuning time; (iii) minimal-instance and few-shot adaptation approaches, which adapt using very limited target-domain samples; and (iv) multi-dataset minimal-instance adaptation studies, which assess such strategies across several external datasets."
+  },
+  {
+    "index": 20,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Data and model diversification is a prospective strategy for source-only domain-robust training and is also commonly used within unsupervised domain adaptation (UDA) pipelines to aid model generalizability. Simple techniques involve aggressive data augmentation and the generation of synthetic data during training (13–16), provided that domain-identifying variations can be modeled reasonably well. Ensembling is an established approach for aggregating diverse model outputs, e.g., using multiview models (17, 18). In LST-AI (19), which is based on an ensemble of three 3D U-Nets (20, 21), each trained with deep supervision at one or two layers and various combinations of losses to promote model diversity, showed good generalization performance over state-of-the-art models on unseen datasets. A related, but more explicitly domain-generalization-oriented, direction is represented by DeepLesionBrain (22), which simulates acquisition variability and MRI artifacts to improve robustness across datasets without target-domain adaptation during training."
+  },
+  {
+    "index": 21,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Data harmonization techniques for domain-shift mitigation aim to reduce variability arising from differences in acquisition protocols, scanners, or sites. A common prospective form is MRI preprocessing (23). It may include registration to standard brain atlas space, non-brain tissue removal, bias field correction, denoising, and intensity normalization. The preprocessing is standardized in many public segmentation challenges, which usually provide preprocessed scans alongside raw ones; e.g., Commowick et al., (10), Kuijf et al. (24), Commowick et al., (25). The downside is that bias correction or denoising may inadvertently remove task-relevant features, potentially degrading the downstream segmentation model's effectiveness."
+  },
+  {
+    "index": 22,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "As an alternative to centralized harmonization, distributed learning paradigms such as federated learning have recently emerged, enabling multi-site model training without sharing raw patient data while still addressing inter-site heterogeneity; for example, Hindawi et al. (26) demonstrated the feasibility of federated nnU-Net training for multiple sclerosis lesion segmentation across geographically distributed clinical centers. However, compared with federated learning, UDA can offer a more practical and often more effective solution for post-deployment domain shift, as it explicitly optimizes model adaptation to a previously unseen target domain using only unlabeled target-domain data, without requiring access to participating institutions, repeated collaborative training, or re-exposure to the original distributed datasets. This broader target-adaptive family includes both test-time adaptation and minimal-instance adaptation, in which some target-domain information is made available after deployment rather than being suppressed already during source training."
+  },
+  {
+    "index": 23,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Voxel-level harmonization methods such as Ravel (27), ComBat and its extensions (28–30) have been successfully used to evaluate and correct harmonization effects in diffusion MRI and longitudinal structural imaging, but they are applied retrospectively. Image-level harmonization, such as MURD (31), seeks to translate scanner-specific appearance while preserving anatomy, but it risks altering or hallucinating anatomically relevant details, which is particularly problematic for pathology-sensitive tasks like WML segmentation. In general, these techniques require recalibration each time new scanners or acquisition sites are added to the dataset and rely on demographic subject information, which is not always available."
+  },
+  {
+    "index": 24,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Feature-level methods, such as MSCDA (32), align representations using contrastive objectives but depend on carefully designed positive/negative pairs and often assume access to all domains at inference, limiting their clinical applicability. Domain-randomized synthetic training, exemplified by SynthSeg (33), offers scalability yet may fail to capture realistic pathological variability because it relies on fully synthetic images."
+  },
+  {
+    "index": 25,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Generative methods have also been proposed to address domain shift in MRI. ImUnity (16) is a self-supervised VAE-GAN-based harmonization approach that removes scanner-specific biases and preserves clinical features, but is currently limited to T1-weighted scans and may introduce task-irrelevant features due to the inherent choice of the target domain in the decoder. SAMSEG (34) uses a forward probabilistic model with latent variables to constrain WML shape and location for automated segmentation. A more recent target-adaptive study has also explored few-shot adaptation across datasets. In particular, Coppola et al. (35) studied cross-domain few-shot adaptation in a multi-modal setting, training on one dataset and adapting the evaluation to external public datasets, thereby representing both a minimal-instance and a multi-dataset adaptation strategy. However, generative, harmonization, and target-adaptive methods share an important practical trade-off: they typically rely on additional modalities, target-domain samples, or post-deployment adaptation steps that are not available in strict source-only deployments. They also share two broader limitations: (i) reduced robustness in cases with marked biological or pathological variability (e.g., severe atrophy or extensive WMLs), and (ii) they may not consistently improve downstream segmentation performance."
+  },
+  {
+    "index": 26,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Recent implicit, representation-free techniques like domain unlearning involve training a domain classification network based on encoder and/or decoder outputs of the main task network, and unlearning it via a domain classifier confusion loss to nullify encoding of domain-related information (36, 37). This is analogous to the confusion module at the bottleneck layer in ImUnity (16), a self-supervised Variational AutoEncoder developed for T1-weighted MRI scan normalization. Another approach fuses latent space representations with respect to domain-identifying features via latent embeddings, while contrasting them for the main task (38). Similarly, a disentanglement of anatomical and domain feature representations was achieved by penalizing interdependence among feature maps via mutual information minimization (39). Based on these advances, we hypothesize that the efficacy of strategies involving modifications or constraints on the latent space depends on the level and/or depth of model supervision during training."
+  },
+  {
+    "index": 27,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Taken together, the existing literature shows that domain-shift mitigation in WML segmentation can be pursued through source-free robustness induction, test-time or few-shot target adaptation, multi-dataset minimal-instance adaptation, harmonization, and representation-level suppression. The identified limitations of these strategies motivate our focus on representation-level unlearning, which avoids assumptions about generative translation, does not require target-domain samples at inference, and remains compatible with heterogeneous multi-scanner FLAIR datasets in real-world scenarios."
+  },
+  {
+    "index": 28,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s2"
+    ],
+    "text": "Efficacy of the segmentation advances should be determined through a comparative analysis with state-of-the-art segmentation frameworks such as nnU-Net (11), Transformer networks (40), attention-guided networks (41), or their ensembles (42), which is not always the case. As pointed out in Isensee et al. (43) and Christodoulou et al. (44), the use of inadequate baselines may leave a gap in understanding the relative effectiveness of novel approaches. While based on a simple U-Net architecture and using aggressive data augmentation, the nnU-Net proved surprisingly effective as a source-only robust transfer baseline. We aim to address the same goal, i.e., with model training performed on seen data, while testing on unseen domains, in the context of WML segmentation in MRI scans of different scanner vendors and sites."
+  },
+  {
+    "index": 29,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s3"
+    ],
+    "text": "Methods"
+  },
+  {
+    "index": 30,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "nnU-Net baseline"
+  },
+  {
+    "index": 31,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "Our baseline model was the default nnU-Net self-configuring framework.1 The 3D-fullres model is depicted in Figure 2, with the encoder consisting of six stages (denoted with E1–6), each consisting of two consecutive Conv blocks of 3 × 3 × 3 convolutional layers, instance normalization (IN), and leaky rectified linear unit (lReLU) activation. In the top stage, the first block had a stride of 1 in the convolutional layer, while the respective stride was 2 in the other stages to achieve downsampling. The decoder consisted of six stages D1–6, with skip connections between the respective encoder blocks E1–6 at the same resolution. Each decoder block consisted of a 2 × 2 × 2 transpose convolution with stride 2, IN, and an lReLU activation, followed by a Conv block. For training segmentation models, a Dice Similarity Coefficient (DSC) based loss (45) is a common (non) overlap measure defined as:"
+  },
+  {
+    "index": 32,
+    "kind": "disp-formula",
+    "id": "EQ1",
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "LDSC=1-2×TP2×TP+FP+FN, (1)"
+  },
+  {
+    "index": 33,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "where TP, FP, and FN denote the true positive, false positive, and false negative voxel labels, respectively. Similarly, the Cross Entropy (CE) loss (46) measures pixel-wise classification performance:"
+  },
+  {
+    "index": 34,
+    "kind": "disp-formula",
+    "id": "EQ2",
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "LCE=-∑n=1Ntnlogyn, (2)"
+  },
+  {
+    "index": 35,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "where N is the number of classes (i.e., pixel labels for the segmentation task), tn is the true probability, and yn is the predicted probability for class n. The nnU-Net employs the sum of DSC and CE as the segmentation loss function:"
+  },
+  {
+    "index": 36,
+    "kind": "disp-formula",
+    "id": "EQ3",
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "Lseg=LDSC+LCE. (3)"
+  },
+  {
+    "index": 37,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "The default nnU-Net trainer uses patching into 128 × 128 × 128 chunks and implements a comprehensive data augmentation consisting of a sequence of input/output image/label manipulation steps. Each step is applied with random parameters according to a predefined probability in the following order: (i) spatial transformation by image/label rotation and scaling, (ii) addition of Gaussian noise, (iii) Gaussian blurring, (iv) brightness, (v) contrast and (vi) gamma intensity manipulation on the input image, (vii) low resolution (thick slice) simulation of the input image, and (viii) input/output patch mirroring applied symmetrically to the input/output image/label patches."
+  },
+  {
+    "index": 38,
+    "kind": "fig",
+    "id": "F2",
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "Figure 2(a) MRI preprocessing and (b) adaptive multi-stage domain unlearning with nnU-Net.Diagram with two main sections labeled (a) and (b). Section (a) shows MRI preprocessing steps: image size standardization (registration to atlas, crop/pad, intensity scaling) and intensity preprocessing (denoising, bias correction, non-brain tissue removal), resulting in minimally and extensively preprocessed scans. Section (b) presents a nnU-Net-based segmentation model architecture, with standardized images from different scanners processed into patches, augmented, passed through encoder-decoder blocks, and modality classifiers, ending in predicted segmentations. Adaptive unlearning is visualized with plots of classifier accuracy and segmentation loss, annotated with legend for arrows and parameters, ensuring clarity of data flow."
+  },
+  {
+    "index": 39,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net baseline"
+    ],
+    "text": "During inference, the nnU-Net ensembles predicted segmentation probability maps for original and mirrored image patches by averaging. The comprehensive augmentation strategy and ensembling render nnU-Net a robust, state-of-the-art deep learning model for segmentation tasks. Posterior lesion probability maps were binarized at the default nnU-Net threshold of 0.5 to obtain final segmentation masks used in all subsequent voxel-wise, volumetric, and lesion-wise evaluations."
+  },
+  {
+    "index": 40,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net with multi-stage unlearning"
+    ],
+    "text": "nnU-Net with multi-stage unlearning"
+  },
+  {
+    "index": 41,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net with multi-stage unlearning"
+    ],
+    "text": "To enable multi-stage unlearning, the output of each encoder stage (E1–6) was fed to the corresponding domain classifier (blocks C1–6). Each classifier Cx consisted of x−1 blocks of 3 × 3 × 3 convolution layers with stride 2, IN and lReLU, to achieve a feature map size of 4 × 4 × 4. This was superseded by two Conv blocks, a flatten layer, and a fully connected layer with Nd outputs corresponding to the number of seen domains. Each classifier was trained by minimizing categorical CE loss as in Equation 2, with N equal to Nd, which is the number of domains seen during training."
+  },
+  {
+    "index": 42,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net with multi-stage unlearning"
+    ],
+    "text": "The final model included one C block for each E stage (six pairs in total), with the C blocks trained specifically for features output by the corresponding E stage. For domain unlearning purposes we computed confusion loss based on output of each C block as the Kullback–Leibler divergence:"
+  },
+  {
+    "index": 43,
+    "kind": "disp-formula",
+    "id": "EQ4",
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net with multi-stage unlearning"
+    ],
+    "text": "Lconf=-∑i=1Npilog(piqi) (4)"
+  },
+  {
+    "index": 44,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "nnU-Net with multi-stage unlearning"
+    ],
+    "text": "where pi∈P are the domain classifier's posterior probabilities and qi∈Q are the target uniform probabilities of domain classes. Ideally, qi = 1/Nd, such that noninformative predictions (e.g., p0/p1 = 0.5/0.5 in case of two domains) yield a minimal, while highly informative predictions (e.g. p0/p1 = 1.0/0.0 in case of two domains) a maximal value of confusion loss. In this way, an informative classifier output that identifies the source image domain beyond random choice motivates task/domain feature disentanglement and reduces domain-discriminative features. Namely, we backpropagate Lconf through the corresponding and preceding encoders, encouraging them to reduce domain-discriminative features. As the classifier predictions become less informative, we interpret this as reduced domain discriminability available to the classifier, rather than as definitive proof that all domain information was removed by the encoder. This unlearning process has to balance with the main segmentation learning task, for effective task/domain feature disentanglement."
+  },
+  {
+    "index": 45,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule"
+    ],
+    "text": "Learning–unlearning schedule"
+  },
+  {
+    "index": 46,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule"
+    ],
+    "text": "The learning/unlearning schedule is detailed in Algorithm 1. First, during the warm-up stage (denoted by the number of epochs ew), the main task training takes place, in which: (i) the model is updated for the main segmentation task by minimizing the Lseg (Equation 3) and (ii) all the classifiers C1–6 are trained for domain classification task. The features output by each encoder block are passed to corresponding classifier, which is trained using the LCE (Equation 2)."
+  },
+  {
+    "index": 47,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule"
+    ],
+    "text": "Adaptive multi-stage domain unlearning. Excerpt from a scientific paper displaying a list of variable definitions followed by pseudo-code for segmentation, classifier update, and unlearning procedures, explaining algorithm steps in machine learning model training."
+  },
+  {
+    "index": 48,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule"
+    ],
+    "text": "In the subsequent learning-unlearning stage steps (i) and (ii) were followed by (iii) unlearning of encoder blocks by backpropagation of Lconf, steming from domain classifier predictions. Before computing each Lconf for C1–6, a new forward pass had to be performed, since backpropagating Lconf causes change of encoder block's forward features. For each classifier C1–6, the corresponding Lconf was computed based on preceding encoder block features, hence, the Lconf was backpropagated via all the preceding encoder blocks. As such, the domain classifier at the U-net bottleneck, will update all E1–6 blocks of the encoder."
+  },
+  {
+    "index": 49,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule"
+    ],
+    "text": "In each iteration, we form a batch of the same number of images from each source domain. For instance, a batch of eight input images from two source domains included four images from each domain. Providing an unequal number of images per domain impedes model unlearning ability, since the confusion loss function (Equation 4) optimizes the model toward non-informative predictions, which are best discernible at equal source domain distributions."
+  },
+  {
+    "index": 50,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule",
+      "Adaptive schedule"
+    ],
+    "text": "Adaptive schedule"
+  },
+  {
+    "index": 51,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule",
+      "Adaptive schedule"
+    ],
+    "text": "Following the self-configuring philosophy of nnU-Net, we employ an adaptive learning–unlearning schedule. It is grounded in prior domain-adversarial and domain-confusion study (47, 48), and in information-bottleneck theory, which suggests that task-agnostic, MRI-scanner-specific nuisance signals reside in higher-level representations (49), thereby rendering unlearning effective. However, in a prior study, MRI unlearning from the bottleneck layer (36) was rather ineffective, despite hyperparameter tuning. This necessitates a curriculum-style patience mechanism (50) that triggers training changes only when a stable above-chance domain signal is detected."
+  },
+  {
+    "index": 52,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule",
+      "Adaptive schedule"
+    ],
+    "text": "Concretely, for a domain classifier Ci operating at a given encoder depth we compute an upper-bound accuracy (UBA) as:"
+  },
+  {
+    "index": 53,
+    "kind": "disp-formula",
+    "id": "EQ5",
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule",
+      "Adaptive schedule"
+    ],
+    "text": "UBA=1Nd+Tol, Tol∈[0,1-1Nd], (5)"
+  },
+  {
+    "index": 54,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s3",
+      "Learning–unlearning schedule",
+      "Adaptive schedule"
+    ],
+    "text": "where Nd is the number of domains (e.g., scanners) and Tol is a small tolerance above random chance (0.5) that indicates a practically meaningful level of domain discriminability. While monitoring accuracy Accti of classifier Ci at iteration t a counter IterUBAi of consecutive iterations where Accti>UBA is maintained. When IterUBAi reaches the patience threshold Pat, the training alternates to an unlearning (gradient reversal) step for the particular classifier. Specifically, the confusion loss Lconfi is backpropagated via corresponding and previous encoders (Ej; j = 1, …, i) in order to force the classifier toward random chance accuracy. When in effect, unlearning is applied alternately with the segmentation loss Lsegi in to preserve segmentation performance."
+  },
+  {
+    "index": 55,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s4"
+    ],
+    "text": "Experiments"
+  },
+  {
+    "index": 56,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Datasets"
+    ],
+    "text": "Datasets"
+  },
+  {
+    "index": 57,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Datasets"
+    ],
+    "text": "Four public MRI datasets containing cases with WMLs were employed in this study, namely the White-Matter Hyperintensities (WMH) 2017 Segmentation Challenge (24), the MSSEG (25), MS Ljubljana dataset (MSLJ) (51) and ISBI 2015 training dataset (52). Details about datasets are summarized in Table 1, with reported train/test data splits as used later in experimental evaluation."
+  },
+  {
+    "index": 58,
+    "kind": "table-wrap",
+    "id": "T1",
+    "scope": [
+      "body",
+      "s4",
+      "Datasets"
+    ],
+    "text": "Table 1Dataset information and train/test splits as used in experimental evaluation.Source/subsetVendorFSAMTrainTestWMH/seenPhilips3T2D2030Siemens3T2D2030WMH/unseenPhilips3T3D10GE3T3D30GE1.5T3D10MSSEG/unseenPhilips3T3D15Siemens3T3D15Siemens1.5T3D14†GE3T3D8MSLJ/unseenSiemens3T3D30ISBI/unseenPhilips3T2D21FS, field strength; AM, acquisition mode.†Originally 15, but one case (msseg-test-center07-08) was removed due to incorrect reference mask."
+  },
+  {
+    "index": 59,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Preprocessing"
+    ],
+    "text": "Preprocessing"
+  },
+  {
+    "index": 60,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Preprocessing"
+    ],
+    "text": "All FLAIR scans were preprocessed from raw acquisitions in the same manner: (i) linearly registered to the T1-weighted MNI 2009c brain atlas space (53), (ii) intensity range linearly rescaled to the [0–1 interval, and (iii) cropped to size 192 × 224 × 192, containing the whole brain. Such a preprocessing pipeline standardized the scan dimensions and intensity range, but intentionally did not modify the tissue contrasts, bias field, and noise distributions. To assess the impact of intensity preprocessing (itself a domain-shift mitigation strategy) on cross-domain performance of the WML segmentation models, we additionally evaluated an extended preprocessing pipeline that included the aforementioned three steps and subsequently applied: (iv) N4 bias correction (54), (v) adaptive non-local means denoising (55), and (vi) non-brain tissue removal. Computations were performed using the AntsPy package2 (56)."
+  },
+  {
+    "index": 61,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Experimental setup"
+    ],
+    "text": "Experimental setup"
+  },
+  {
+    "index": 62,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Experimental setup"
+    ],
+    "text": "The proposed model and four benchmark strategies were applied to the WMH seen-train subset (Table 1), using 32 cases for training and eight for validation and hyperparameter tuning. The four benchmarks were: (i) the nnU-Net without data augmentation; (ii) the default nnU-Net; (iii) the default nnU-Net applied to N4 bias-corrected and denoised train and test subsets; and (iv) a Dinsdale et al. (36) unlearning approach implemented into nnU-Net. Weight initialization and the order of the training data were randomized using a fixed seed. Three experiments were performed, as detailed in the following three paragraphs."
+  },
+  {
+    "index": 63,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Experimental setup"
+    ],
+    "text": "Ablation study involved the evaluation of the proposed approach on WMH's unseen subset of 50 scans from three scanners. We systematically explored unlearning strategies and schedules, evaluated their impact on the WML segmentation performance and generalization capability, and determined the best model. To avoid bias, these scans were not used further for evaluation."
+  },
+  {
+    "index": 64,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Experimental setup"
+    ],
+    "text": "Impact of preprocessing, augmentation and unlearning on segmentation and generalization performance was analyzed by comparing the best proposed model as determined in the ablation study against the default nnU-Net (with and without data augmentation), and the default nnU-Net applied to bias-corrected and denoised data. To further analyze the impact of unlearning, we compared the best proposed model against nnU-Net with unlearning implemented as in Dinsdale et al. (36), which uses a single-domain classifier at the bottleneck layer and a fixed learning-unlearning schedule. Quantitative evaluation was performed on three unseen test datasets (MSSEG, MSLJ, and ISBI) on a total of 103 FLAIR scans. Additionally, evaluation was performed on 60 test FLAIR scans from the seen WMH dataset (different subjects but the same scanners as in training) to assess the impact of scanner variability."
+  },
+  {
+    "index": 65,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Experimental setup"
+    ],
+    "text": "State-of-the-art comparison was then conducted using published results from methods evaluated on the same public unseen test sets, enabling contextual comparison using shared benchmarking data rather than retraining all external methods within our experimental pipeline. In addition to source-only and multimodal baselines, this comparison now explicitly includes test-time adaptation operating points with progressively increasing target-domain supervision, namely nnUNet fine-tuning with 1, 3, or 5 target-domain cases from Coppola et al. (35) on MSSEG and ISBI, as well as the one-shot adaptation model of (57) on ISBI. This design enables a more direct comparison between our source-only train-time adaptation strategy and post-deployment target-adaptive methods under low-resource supervision budgets."
+  },
+  {
+    "index": 66,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Experimental setup"
+    ],
+    "text": "Results are reported in corresponding subsections of Section 5."
+  },
+  {
+    "index": 67,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "Evaluation metrics"
+  },
+  {
+    "index": 68,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "Output segmentation maps were evaluated using established metrics, such as the DSC (1-LDSC, cf. Equation 1) and the TP Rate (TPR) defined as:"
+  },
+  {
+    "index": 69,
+    "kind": "disp-formula",
+    "id": "EQ6",
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "TPR=TPTP+FN. (6)"
+  },
+  {
+    "index": 70,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "We further employed lesion-specific metrics, such as lesion-wise TPR (LTPR) (Equation 7) and lesion-wise False Discovery Rate (LFDR) (Equation 8), computed on the binarized segmentation masks using a predefined intersection-over-union threshold at tIOU = 0.05. Specifically, the LTPR was defined as the ratio between the number of predicted lesions that overlap with lesions in the ground-truth, with percentage overlap higher than tIOU, and the total number of lesions in the ground-truth, namely:"
+  },
+  {
+    "index": 71,
+    "kind": "disp-formula",
+    "id": "EQ7",
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "LTPR=#(LTP)#(RL), (7)"
+  },
+  {
+    "index": 72,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "where LTP stands for Lesion True Positives and RL for Reference Lesions, and operator #(·) denotes lesion count, obtained via 18-connected neighborhood labeling operator."
+  },
+  {
+    "index": 73,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "The LFDR was defined as the ratio between the number of predicted lesions that do not overlap with any lesions in the ground-truth (overlap less than tIOU) and the total number of predicted lesions, and computed as:"
+  },
+  {
+    "index": 74,
+    "kind": "disp-formula",
+    "id": "EQ8",
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "LFDR=#(LFP)#(PL), (8)"
+  },
+  {
+    "index": 75,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "where LFP stands for Lesion False Positives and PL for Predicted Lesions."
+  },
+  {
+    "index": 76,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "Volumetric discrepancy between predicted and ground-truth segmentations was evaluated by the Relative Volume Error (RVE), defined as follows:"
+  },
+  {
+    "index": 77,
+    "kind": "disp-formula",
+    "id": "EQ9",
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "RVE=|V(PL)-V(RL)|V(RL), (9)"
+  },
+  {
+    "index": 78,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "where V(L) represents the volume obtained via pixel count of the specified label L."
+  },
+  {
+    "index": 79,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "To compare the overall performance in a set of different methods (or models or strategies), accounting for all aforementioned metrics, we used an average rank score defined as:"
+  },
+  {
+    "index": 80,
+    "kind": "disp-formula",
+    "id": "EQ10",
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "RS=15⋅[R(DSC)+R(TPR)+R(LTPR)+R(LFDR)+R(RVE)] (10)"
+  },
+  {
+    "index": 81,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "where R(m) is the ranking of the method in the set according to a particular metric m. When having M methods in comparison, RS is in the range [1.0, M]."
+  },
+  {
+    "index": 82,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "To analyze the effectiveness of unlearning, we also compute for each domain classifier Ci its accuracy as Acci = TP+TN/(TP+TN+FP+FN)."
+  },
+  {
+    "index": 83,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s4",
+      "Evaluation metrics"
+    ],
+    "text": "In the results, we report the mean (μ) and standard deviation (SD), or, where indicated, the bootstrap 95% confidence interval (CI) for all evaluated metrics. In performance comparisons, we used the Wilcoxon signed-rank test (58) or, where applicable, the independent-samples t-test to compare metric values of our proposed strategy against those of the other tested models or strategies. To adjust for multiple pairwise comparisons, we used Bonferroni correction by multiplying the obtained p-values by the number of methods in comparison. If the adjusted p-value was less than the significance threshold α = 0.05, we considered the observed difference statistically significant."
+  },
+  {
+    "index": 84,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s5"
+    ],
+    "text": "Results"
+  },
+  {
+    "index": 85,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Ablation study"
+  },
+  {
+    "index": 86,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Results in Table 2 provide a comparison of the effectiveness of unlearning strategies, exploring the hyperparameter space by varying: (i) stages that are unlearned (indicated by checkmarks and corresponding to stages as depicted in Figure 2); (ii) the ratio of learning to unlearning training steps (LUR); for instance, setting LUR to 5–1 indicates a schedule of five learning iterations of the main task and one iteration of encoder unlearning; (iii) the parameters of the adaptive unlearning schedule, i.e., patience (Pat) and tolerance (Tol) (Equation 5) for the best adaptive model. In case of using the adaptive learning-unlearning strategy as described in Section 3.2, we simply indicated specific stages that were being unlearned, but for which the proposed strategy controlled the execution of unlearning steps as described in Section 3.3."
+  },
+  {
+    "index": 87,
+    "kind": "table-wrap",
+    "id": "T2",
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Table 2Ablation study results on the 2017 WMH segmentation challenge's unseen test split.Unlearning stagesLURUnseen data - not used for model training: Philips 3T 3D, GE 3T 3D, GE 1.5T 3D123456DSC↑TPR↑LTPR↑LFDR↓RVE↓RS↓✓1–10.719 ±0.1000.794 ± 0.1160.717 ± 0.0970.251 ±0.1130.262 ±0.2353.0✓Adaptive0.712 ± 0.0990.805 ± 0.1150.759 ± 0.1030.294 ± 0.1360.308 ± 0.2723.2✓✓✓5–10.674 ± 0.1200.832 ± 0.1010.813 ± 0.0950.474 ± 0.1850.527 ± 0.4493.4✓✓✓Adaptive0.715 ± 0.1050.814 ± 0.1200.764 ± 0.0950.313 ± 0.1360.316 ± 0.250 2.8 ✓✓✓✓✓✓3–10.642 ± 0.1320.856 ±0.0960.741 ± 0.1040.347 ± 0.1850.763 ± 0.5894.2✓✓✓✓✓✓Adaptive0.629 ± 0.1220.813 ± 0.1140.792 ± 0.1100.453 ± 0.1720.687 ± 0.5974.4Values are mean ± standard deviation, while bold indicates the best result for a particular evaluation metric. LUR is the ratio of the number of learning steps to unlearning steps."
+  },
+  {
+    "index": 88,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "We explored five manual LUR settings (1–1, 2–1, 3–1, 4–1, 5–1) across four representative stage configurations: bottleneck-only unlearning; stages 1–3; stages 4–6; and stages 1–6. Table 2 reports, for these explored configurations, the settings that achieved the best value for each evaluation metric, whereas Figure 3 visualizes the broader behavior across the manual LUR settings. Establishing a single optimal set of unlearning stages and LUR is challenging, since different segmentation metrics favor different settings (as indicated by the bolded values in Table 2). Although the adaptive model did not achieve the best value in any individual metric, it provided the most balanced overall performance across metrics. The average ranking score RS was lowest for the adaptive model with deeper unlearning stages (layers 4, 5 and 6), at 2.8 (Equation 10). We therefore selected this configuration for subsequent experiments and refer to it as the AMDU model."
+  },
+  {
+    "index": 89,
+    "kind": "fig",
+    "id": "F3",
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Figure 3Ablation study metric values with respect to learn-to-unlearn ratio (LUR = 1–1, 2–1, 3–1, 4–1, 5–1), for various unlearning stages: (A) from bottleneck layer 3, (B) layers 4, 5, and 6, (C) layers 1, 2, and 3, (D) all layers 1–6.Grid of box plots showing statistical comparison for five metrics—DICE, TPR, LTPR, LFDR, and AVD—across four columns labeled A, B, C, and D, with each column containing five colored groups numbered one through five in the horizontal axis. Each metric appears to evaluate distributional differences, with variability and median values represented for multiple groups in each plot."
+  },
+  {
+    "index": 90,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Results in Figure 3 show that (i) most stage settings exhibited better performance with balanced LUR of 1–1, while LUR of 5–1 proved to be the worst across most metrics and stages. An exception is TPR and LTPR for setting B, which has a very high LFDR of 0.527 (Equation 6 and 7). (ii) We notice overall poor performance in setting D, with lowest values for all metrics at LUR 5–1. As expected (iii), with the increase in the LUR ratio, the TPR and LTPR tend to increase (cf. settings A, B, and C), since performing more learning vs. unlearning steps benefits the main segmentation task. However, (iv) performance varies more in settings C and D, whereas A and B yield consistent results across all LURs."
+  },
+  {
+    "index": 91,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Table 3 shows that the nnU-Net and AMDU post-warm-up stages were able to identify the domain with nearly perfect accuracy across all six encoder stages. After unlearning the upper three stages, the accuracy of the corresponding domain classifiers remained in the range 77%–85%, indicating a limited reduction in domain discriminability. When unlearning the deeper stages (4, 5, and 6), the corresponding classifier accuracies were 48%–67% and 48%–50% for stages 5 and 6, respectively. Interestingly, when unlearning all stages, the reduction in domain discriminability was generally less effective, leading to near-chance accuracy only at the bottleneck (i=1–5: 99–65%; i = 6: 52%). Within the explored configurations, these findings indicate that unlearning deeper encoder stages was associated with the strongest reduction in scanner-related signal available to the auxiliary classifiers, alongside the most balanced segmentation performance."
+  },
+  {
+    "index": 92,
+    "kind": "table-wrap",
+    "id": "T3",
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Table 3Domain classifier accuracy, post warm-up and post-unlearning, per stage of the nnU-Net AMDU on the 2017 WMH dataset's seen train split, comparing first- and last-three and unlearning of all stages.ModelClassifier accuracy, AcciUnlearning stagesStepi = 1i = 2i = 3i = 4i = 5i = 6nnU-Net*100%100%100%100%100%100%nnU-Net* AMDUPost warm-up100%100%100%100%100%99%Unlearning stages: 1 –3Post unlearning 85% 77% 80% 98%99%91%nnU-Net* AMDUPost warm-up100%99%99%99%99%99%Unlearning stages: 4–6Post unlearning100%100%100% 67% 48% 50% nnU-Net* AMDUPost warm-up100%99%99%99%99%99%Unlearning stages: 1–6 (all)Post unlearning 99% 90% 76% 65% 67% 52% Values in bold indicate stages actively unlearned.*Predefined default trainer in nnU-Net."
+  },
+  {
+    "index": 93,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Figure 4 shows the impact of adaptive unlearning schedule hyperparameters, i.e., patience (Pat) and tolerance (Tol), on the segmentation performance of the proposed AMDU model. Continuous unlearning (Pat = 0) yielded the poorest overall performance, indicating that immediate suppression of domain-related features does not allow sufficient learning of the main segmentation task. Increasing patience improved overall performance by allowing longer task-focused optimization before unlearning was triggered. The tolerance parameter Tol determines how far above chance the domain classifier accuracy must rise before unlearning is applied; a higher Tol therefore enforces a stricter criterion for activating feature suppression. Overall, the best performance was obtained with Pat = 20 and Tol = 0.25, which were used in subsequent experiments."
+  },
+  {
+    "index": 94,
+    "kind": "fig",
+    "id": "F4",
+    "scope": [
+      "body",
+      "s5",
+      "Ablation study"
+    ],
+    "text": "Figure 4Impact of adaptive unlearning schedule parameters patience (Pat) and tolerance (Tol) on the lesion segmentation performance [model with last three unlearning stages (4, 5, and 6)].Horizontal bar chart compares LFDR, LTPR, and DSC values in green, orange, and blue for different Pat and Tol conditions."
+  },
+  {
+    "index": 95,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "Impact of preprocessing, augmentation, and unlearning"
+  },
+  {
+    "index": 96,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "Lesion segmentation results for the proposed and other models and domain-robustness strategies are shown in Table 4. The WMH results on the seen subset indicate that values of DSC and RVE for the proposed AMDU model are on par with the default nnU-Net. On the other hand, the proposed model comparatively improved TPR and LTPR, while LFDR increased (all noted differences were statistically significant). Despite a larger LFDR, indicating more incorrectly detected lesions. However, these were small FP lesions, as indicated by the lower RVE value in the proposed model."
+  },
+  {
+    "index": 97,
+    "kind": "table-wrap",
+    "id": "T4",
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "Table 4Segmentation evaluation on seen (WMH) and three unseen (MSSEG, MSLJ, ISBI) datasets, using respective seen and unseen test splits (Table 1).ModelDSC↑TPR↑LTPR↑LFDR↓RVE↓RS↓WMH-seen test datasetnnU-Net no DA0.750 ± 0.120†0.775 ± 0.132†0.680 ± 0.160†0.390 ± 0.160†0.220 ± 0.3533.2nnU-Net*0.773 ±0.1080.785 ± 0.129†0.679 ± 0.103†0.210 ±0.1310.205 ± 0.3882.0nnU-Net* preprocessing**0.732 ± 0.123†0.748 ± 0.149†0.630 ± 0.105†0.219 ± 0.137†0.232 ± 0.3713.8Dinsdale et al. (36)0.724 ± 0.149†0.793 ± 0.123†0.624 ± 0.108†0.426 ± 0.187†0.304 ± 0.4774.4nnU-Net AMDU (ours)0.772 ± 0.0970.810 ±0.1240.718 ±0.0970.262 ± 0.1600.197 ±0.228 1.6 MSSEG-unseen test datasetnnU-Net no DA0.515 ± 0.198†0.468 ± 0.145†0.628 ± 0.188†0.684 ± 0.227†0.877 ± 2.042†4.2nnU-Net*0.588 ± 0.169†0.479 ± 0.163†0.619 ± 0.188†0.281 ±0.1970.516 ± 0.668†2.6nnU-Net* preprocessing**0.548 ± 0.185†0.442 ± 0.168†0.584 ± 0.186†0.337 ± 0.229†0.493 ± 0.330†3.6Dinsdale et al. (36)0.564 ± 0.204†0.548 ± 0.1500.740 ±0.1790.708 ± 0.204†0.828 ± 2.189†3.0nnU-Net AMDU (ours)0.635 ±0.1640.563 ±0.1560.700 ± 0.1710.384 ± 0.1990.420 ±0.785 1.6 MSLJ-unseen test datasetnnU-Net no DA0.475 ± 0.183†0.357 ± 0.146†0.375 ± 0.108†0.476 ± 0.262†0.519 ± 0.141†4.8nnU-Net*0.523 ± 0.194†0.403 ± 0.178†0.389 ± 0.120†0.151 ±0.1510.507 ± 0.180†2.4nnU-Net* preprocessing**0.507 ± 0.181†0.384 ± 0.156†0.431 ± 0.100†0.194 ± 0.183†0.512 ± 0.149†3.0Dinsdale et al. (36)0.501 ± 0.171†0.389 ± 0.137†0.401 ± 0.111†0.492 ± 0.264†0.468 ± 0.145†3.4nnU-Net AMDU (ours)0.574 ±0.1700.475 ±0.1610.479 ±0.1080.273 ± 0.1960.371 ±0.165 1.4 ISBI - unseen test datasetnnU-Net no DA0.535 ± 0.149†0.398 ± 0.154†0.500 ± 0.157†0.353 ± 0.178†0.554 ± 0.169†4.6nnUnet*0.609 ± 0.137†0.477 ± 0.165†0.543 ± 0.131† 0.154 ± 0.098 0.472 ± 0.190†2.2nnU-Net preprocessing**0.540 ± 0.139†0.393 ± 0.143†0.574 ± 0.1190.191 ± 0.1150.578 ± 0.149†3.4Dinsdale et al. (36)0.588 ± 0.130†0.471 ± 0.150†0.522 ± 0.158†0.437 ± 0.146†0.428 ± 0.210†3.4nnU-Net AMDU (ours)0.674 ±0.1150.560 ±0.1540.575 ±0.1380.203 ± 0.1040.366 ±0.191 1.4 Values are mean ± standard deviation, while bold indicates best results for each performance metric for methods in direct comparison.DA, data augmentation; AMDU, adaptive multi-stage domain unlearning.*Predefined default trainer in nnU-Net.**Preprocessing done on train and test splits with denoise and N4 bias correction.†Mean significantly different (adj. p < 0.05; Bonferroni correction) from nnU-Net AMDU, per Wilcoxon signed-rank test."
+  },
+  {
+    "index": 98,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "When applying models to the unseen scanner data in MSSEG, MSLJ, and ISBI datasets, we observe a larger gap between methods, with DSC scores ranging from 0.52–0.64, 0.48–0.57, and 0.54–0.67, respectively. The proposed AMDU outperformed other tested models, with significant increases in DSC, TPR, and LTPR [except in one comparison to Dinsdale et al. (36)] and a significantly lower RVE metric value. Similar to the seen dataset, the LFDR was significantly higher compared to all other model results, but these FPs were small based on small RVE values (Equation 9). Figure 5 visualizes axial MRI cross-sections with superimposed manual, nnU-Net, and AMDU segmentations; the highlights clearly indicate the higher sensitivity to lesions of the AMDU model."
+  },
+  {
+    "index": 99,
+    "kind": "fig",
+    "id": "F5",
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "Figure 5Axial cross-sections of MSSEG 2016 MR scans with superimposed manual (top row) and second-best default nnU-Net (middle row) and the proposed AMDU model segmentations (bottom row). Arrows highlight important differences.Grid of eighteen axial brain MRI scans with outlined regions in red, blue, or green and blue arrows indicate differences in lesion detection and/or segmentation"
+  },
+  {
+    "index": 100,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "The 95% CIs for the DSC values on the MSSEG unseen test set in Figure 6 indicate improved results by the AMDU compared to other tested methods. Furthermore, Figure 7 shows that the proposed strategy had consistent DSC values across different scanners in MSSEG, albeit slightly higher for the Siemens 3T 3D."
+  },
+  {
+    "index": 101,
+    "kind": "fig",
+    "id": "F6",
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "Figure 6DSC with 95% confidence intervals for MSSEG 2016 unseen test set. For notes (*,**) see caption of Table 4.Horizontal box plot compares DSC values for Philips 3T 3D, Siemens 3T 3D, Siemens 1.5T 3D, and GE 3T 3D, with mean values shown by segment color: grey 0.63, yellow 0.68, green 0.60, orange 0.63."
+  },
+  {
+    "index": 102,
+    "kind": "fig",
+    "id": "F7",
+    "scope": [
+      "body",
+      "s5",
+      "Impact of preprocessing, augmentation, and unlearning"
+    ],
+    "text": "Figure 7DSC with 95% confidence intervals per source domain of MSSEG unseen test set for nnU-Net AMDU.Grid of eighteen axial brain MRI scans with outlined regions in red, blue, or green and several blue arrows indicating specific areas in some slices; each row and color highlights different anatomical or structural regions."
+  },
+  {
+    "index": 103,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "State-of-the-art comparison"
+    ],
+    "text": "State-of-the-art comparison"
+  },
+  {
+    "index": 104,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "State-of-the-art comparison"
+    ],
+    "text": "Methods evaluated on the same public unseen test sets as used in this study, namely MSSEG, MSLJ, and/or ISBI, were considered, enabling a direct and reproducible comparison under shared benchmarking conditions. As summarized in Table 5, the selected methods span diverse model architectures and training datasets differ in their input modalities and represent complementary domain-shift compensation strategies, including implicit robustness through preprocessing and augmentation, test-time adaptation, and train-time adaptation."
+  },
+  {
+    "index": 105,
+    "kind": "table-wrap",
+    "id": "T5",
+    "scope": [
+      "body",
+      "s5",
+      "State-of-the-art comparison"
+    ],
+    "text": "Table 5Segmentation evaluation on three public datasets (MSSEG, MSLJ, ISBI; cf. test splits in Table 1).ModelDSC↑TPR↑LTPR↑LFDR↓RVE↓MSSEG - unseen test datasetnnUNet*0.537 ± 0.1900.409 ± 0.188†0.519 ± 0.204†0.365 ± 0.2020.548 ± 0.217LST-AI*0.659 ± 0.1590.675 ± 0.172†0.815 ±0.170†0.452 ± 0.1890.094 ± 0.568samseg-7.3.2*0.574 ± 0.1770.518 ± 0.1790.369 ± 0.171†0.425 ± 0.2050.041 ±1.677nnUNet FT 10.62 ± 0.060.63 ± 0.06†———nnUNet FT 30.68 ± 0.060.67 ± 0.06†———nnUNet FT 50.70 ±0.050.72 ±0.06†———nnU-Net AMDU (ours)0.635 ± 0.1640.563 ± 0.150.700 ± 0.1710.384 ± 0.1990.420 ± 0.785MSLJ - unseen test datasetnnUNet*0.443 ± 0.242†0.325 ± 0.200†0.215 ± 0.116†0.367 ± 0.2740.647 ± 0.216†LST-AI*0.743 ±0.104†0.703 ±0.138†0.617 ±0.126†0.175 ±0.1110.122 ±0.154†samseg-7.3.2*0.480 ± 0.2500.393 ± 0.2310.192 ± 0.145†0.494 ± 0.255†0.496 ± 0.289DeepLesionBrain*0.554 ± 0.2140.476 ± 0.2230.283 ± 0.102†0.370 ± 0.2220.337 ± 0.254nnU-Net AMDU (ours)0.574 ± 0.1700.475 ± 0.1610.479 ± 0.1080.273 ± 0.1960.371 ± 0.165ISBI - unseen test datasetnnUNet*0.515 ± 0.122†0.381 ± 0.123†0.365 ± 0.144†0.315 ± 0.148†0.545 ± 0.130†LST-AI*0.610 ± 0.1260.541 ± 0.1510.552 ± 0.1500.391 ± 0.132†0.248 ± 0.174†samseg-7.3.2*0.610 ± 0.1110.556 ± 0.1130.402 ± 0.140†0.374 ± 0.099†0.167 ± 0.290†nnUNet FT 10.63 ± 0.150.34 ± 0.19†———nnUNet FT 30.82 ± 0.02†0.73 ± 0.05†———nnUNet FT 50.76 ±0.07†0.60 ±0.11———One-shot DA (61 test)***0.58 ± 0.16†0.48 ± 0.19———DeepLesionBrain*0.607 ± 0.1280.518 ± 0.1650.475 ± 0.127†0.343 ± 0.139†0.328 ± 0.209nnU-Net AMDU (ours)0.674 ± 0.1150.560 ± 0.1540.575 ± 0.1380.203 ± 0.1040.366 ± 0.191Values are mean ± standard deviation, while bold indicates the best results for each performance metric.AMDU, adaptive multi-stage domain unlearning.*Results were sourced from Supplementary Data 1 in Wiltgen et al. (19).**Results were sourced from Table 2 in Coppola et al. (35).**Results were sourced from Table 4 in Valverde et al. (57).†Mean significantly different (p < 0.05) from the nnU-Net AMDU, as per independent sample t-test."
+  },
+  {
+    "index": 106,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "State-of-the-art comparison"
+    ],
+    "text": "The state-of-the-art comparison in Table 5 indicates that on MSSEG, the proposed AMDU achieved DSC and RVE comparable to those of stronger external methods, while significantly improving sensitivity-related metrics over the default nnU-Net and SAMSEG. On the same dataset, the added test-time adaptation operating points from Coppola et al. (35) provide a clearer supervision-budget perspective: nnUNet FT 1 and FT 3 did not yield a significant DSC advantage over AMDU, although both improved TPR, and FT 5 achieved the strongest overall adapted performance. This suggests that a small amount of target-domain supervision can improve sensitivity before producing a clear overlap advantage, whereas more extensive post-deployment adaptation begins to surpass the source-only regime more consistently. On MSLJ, AMDU significantly outperformed the default nnU-Net in DSC, TPR, LTPR, and RVE, and also improved LTPR relative to SAMSEG and DeepLesionBrain, but remained significantly below LST-AI in DSC, TPR, LTPR, and RVE."
+  },
+  {
+    "index": 107,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s5",
+      "State-of-the-art comparison"
+    ],
+    "text": "On ISBI, AMDU showed the most favorable overall balance among source-only methods: compared with the default nnU-Net, it achieved significant improvements across all reported metrics, and relative to SAMSEG and DeepLesionBrain, it significantly improved lesion-wise sensitivity and false discovery rate. The low-resource target-adaptive baselines further refine this picture. The One-shot DA model of (57) and nnUNet FT 1 did not outperform AMDU, whereas nnUNet FT 3 and FT 5 from Coppola et al. (35) achieved higher adapted performance, indicating that once several target-domain cases are available, post-deployment adaptation can offer a measurable advantage. Conversely, LST-AI remained statistically comparable to AMDU in DSC, TPR, and LTPR, but achieved significantly lower LFDR and RVE. Overall, these tests suggest that AMDU is most competitive in the strict source-only or very-low-target-supervision regime, whereas multimodal or more strongly target-adapted methods may retain advantages in false-positive control, volume error, or peak overlap once target-domain samples are introduced."
+  },
+  {
+    "index": 108,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6"
+    ],
+    "text": "Discussion"
+  },
+  {
+    "index": 109,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6"
+    ],
+    "text": "This study introduced and comparatively evaluated a novel ADMU strategy, dubbed AMDU, for WML segmentation, using four established public datasets and evaluation metrics. The strategy was implemented into the state-of-the-art nnU-Net framework and evaluated in a source-only setting on seen and unseen scanner domains. The main implication is that domain robustness in WML segmentation can be improved at training time by reducing scanner-related discriminability in learned features, without requiring target-domain samples, retraining at inference time, or multimodal input."
+  },
+  {
+    "index": 110,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6"
+    ],
+    "text": "This interpretation is supported by the ablation evidence (Table 2; Figures 3, 4), the direct strategy comparison (Section 5.2; Table 4), and the external comparison with recent methods (Section 5.3; Tables 5, 6)."
+  },
+  {
+    "index": 111,
+    "kind": "table-wrap",
+    "id": "T6",
+    "scope": [
+      "body",
+      "s6"
+    ],
+    "text": "Table 6Overview of state-of-the-art lesion segmentation methods.ModelArchitectureInput modalitiesTrain set (#patients/#scans)Domain shift compensation strategynnUNet Isensee et al. (43)3D U-NetT1w, FLAIRPrivate (491/491)Image and space standardization, intensity augmentationLST-AI Wiltgen et al. (19)Ensemble of 3D U-NetsT1w, FLAIRPrivate (491/491)Image and space standardization, intensity augmentation, ensemble averagingsamseg-7.3.2 Cerri et al. (34)Generative Bayesian model with deformable atlas + EMT1w, FLAIRSAMSEG Atlas + UH Basel dataset (20+54/20+108)Space standardization and test-time MRI sequence adaptationDeepBrainLesion Kamraoui et al. (22)Ensemble of compact 3D CNNs + AssemblyNetT1w, FLAIRPrivate + MSSEG2016train (43+15/43+15)Distributed regional network voting (akin to ensemble averaging) and low-resolution artifact simulation via augmentationOne-shot DA Valverde et al. (57)11-layer CNNT1w, FLAIRMICCAI2008+MSSEG2016 + 1 target domain scan (20/15+X)One-shot test-time adaptation of ultimate three FC layers of pre-trained 11-layer CNN to target domainnnUNet FT X Coppola et al. (35)3D U-netT1w, T2w, FLAIRICPR2024 + X target domain scans (90+X/114+X)X-shot test-time adaptation of pre-trained nnUnet to target domainnnU-Net AMDU (ours)3D U-netFLAIRWMH2017 (40/40)Source-only train-time adaptation via domain feature suppressionUH, University Hospital; EM, expectation maximization; CNN, convolutional neural network; ICPR2024-Rondinella et al. (59);WMH2017-Kuijf et al. (24); FC, fully connected; AMDU, adaptive multi-stage domain unlearning."
+  },
+  {
+    "index": 112,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Adaptive multi-stage domain unlearning"
+    ],
+    "text": "Adaptive multi-stage domain unlearning"
+  },
+  {
+    "index": 113,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Adaptive multi-stage domain unlearning"
+    ],
+    "text": "Prior research has explored domain unlearning strategies in medical imaging, notably for brain age regression and tissue segmentation (36) and for T1-weighted scans harmonization (16). While conceptually related, these implementations differ in that the domain classifier is attached solely to the U-Net bottleneck features. Furthermore, Dinsdale et al. (36) injected features from the segmentation output into the domain classifier, thereby unlearning the decoder as well. We experimentally found this to result in unstable training loss dynamics and worse segmentation performance, requiring extensive hyperparameter tuning to achieve a reasonable outcome."
+  },
+  {
+    "index": 114,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Adaptive multi-stage domain unlearning"
+    ],
+    "text": "Compared with this literature, the main contribution of AMDU is not the unlearning concept, but a different way of organizing it within the segmentation network. Rather than treating domain suppression as a single bottleneck-level adversarial constraint, AMDU distributes it across multiple encoder depths and couples it to an adaptive schedule. This recasts unlearning as a staged representation-control mechanism that is better aligned with the hierarchical structure of nnU-Net and the need to preserve task-relevant detail."
+  },
+  {
+    "index": 115,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Adaptive multi-stage domain unlearning"
+    ],
+    "text": "The stated hypothesis is that the efficacy of strategies involving modifications or constraints on the latent space depends on the level and/or depth of segmentation model supervision during training is supported by our findings in Table 3. Models with deeper supervision showed a larger reduction in domain-classifier discriminability, as reflected in accuracies closer to random output (around 50%, cf. Figure 3). This pattern was not observed when unlearning the earlier stages (1, 2, and 3) or all stages (1–6), which aligns with broader representation-learning arguments that nuisance suppression is not uniformly effective across network depth. In the present setting, and within the explored configurations, the deeper encoder stages appear to be the more appropriate targets for reducing scanner-related signal available to the auxiliary classifiers, whereas applying the same to higher-resolution features conflicts with task-relevant detail preservation (cf. Figure 3, settings A–D)."
+  },
+  {
+    "index": 116,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Adaptive multi-stage domain unlearning"
+    ],
+    "text": "The second important contribution is the adaptive schedule 3.3.1. Unlike fixed alternation rules commonly used in adversarial or confusion-based training, AMDU delays suppression until a stable domain signal is present. This makes unlearning conditional rather than continuous, aligning with curriculum-style optimization (50) and better suited to the segmentation setting, where premature suppression of nuisances can compete with early task formation. Supporting evidence is provided in Table 3 and Figures 3, 4."
+  },
+  {
+    "index": 117,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Effectiveness of domain-shift generalization strategies"
+    ],
+    "text": "Effectiveness of domain-shift generalization strategies"
+  },
+  {
+    "index": 118,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Effectiveness of domain-shift generalization strategies"
+    ],
+    "text": "The comparative evidence in Section 5.2 and Table 4 suggests that the key issue is not simply exposure to more variability, but how that variability is handled during training. Standard augmentation improved robustness, indicating that synthetic variability remains an important baseline defense against domain shift. However, the gains from AMDU imply that variability injection alone is insufficient when scanner-identifying information remains encoded in latent features. The extended external comparison further shows that train-time robustness induction and test-time adaptation operate in different regimes: AMDU improves zero-shot transfer without target data, whereas few-shot target-adaptive methods can leverage even 1–5 target cases to selectively improve cross-domain performance after deployment."
+  },
+  {
+    "index": 119,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Effectiveness of domain-shift generalization strategies"
+    ],
+    "text": "The consistently inferior performance of preprocessing-based harmonization in Table 4 has broader implications for scanner-robust WML segmentation. Intensity manipulation appears to reduce nuisance variability at the cost of removing information useful for lesion delineation. This interpretation aligns with the case-level and cross-dataset trends in Section 5.2 and with earlier reports that achieved good generalization without skull stripping and/or bias field correction in brain and WML segmentation (19, 34) and in tasks such as brain age regression (60)."
+  },
+  {
+    "index": 120,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "State-of-the-art comparison"
+    ],
+    "text": "State-of-the-art comparison"
+  },
+  {
+    "index": 121,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "State-of-the-art comparison"
+    ],
+    "text": "The proposed AMDU is an effective source-only, train-time robustness strategy that preserves zero-shot inference at test time while delivering competitive cross-dataset performance compared with recent alternatives across several families of domain-shift mitigation (Table 6). These include source-free or domain-generalization-oriented methods such as DeepLesionBrain (22), multimodal ensemble-based robustness strategies such as LST-AI (19), generative or harmonization-based methods such as SAMSEG (34), and explicit target-adaptive methods such as one-shot adaptation by Valverde et al. (57) and few-shot adaptation by Coppola et al. (35). These findings suggest that robust cross-domain WML segmentation does not depend on a single recipe but can be achieved through different combinations of architectural capacity, modality richness, aggregation, source-only robustness induction, and target-domain adaptation. Within this landscape, AMDU occupies a complementary position: unlike few-shot or other target-adaptive strategies, it does not require target-domain samples or parameter updates during inference, yet still achieves competitive performance. This supports the view that train-time unlearning can serve as a strong zero-shot baseline."
+  },
+  {
+    "index": 122,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "State-of-the-art comparison"
+    ],
+    "text": "The added test-time adaptation variants make the trade-off more concrete. On MSSEG, AMDU remained comparable to the 1-shot and 3-shot nnUNet fine-tuning variants in DSC, while the larger 5-shot adaptation setting provided the clearest advantage in adaptation. On ISBI, the single-case target-adaptive baselines, namely One-shot DA and nnUNet FT 1, did not exceed AMDU, whereas nnUNet FT 3 and FT 5 achieved higher adapted overlap and sensitivity. This pattern suggests that the practical breakpoint at which target adaptation becomes clearly advantageous may lie above the strict one-shot regime and may depend on both dataset and architecture. In other words, AMDU is most attractive when no target-domain data are available or when only extremely limited adaptation is feasible, whereas test-time adaptation becomes increasingly compelling as the supervision budget grows from one to several target-domain cases."
+  },
+  {
+    "index": 123,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "State-of-the-art comparison"
+    ],
+    "text": "Simultaneously, this broader comparison should be interpreted cautiously. Our experiments showed that simple intensity-based preprocessing and harmonization were detrimental to addressing domain shift, whereas more advanced and heterogeneous strategies, including source-free robustness induction, multimodal context, ensembling, minimal-instance or few-shot adaptation, and explicit post-deployment adaptation, may provide complementary advantages. Accordingly, AMDU appears best viewed not as a universal replacement but as a competitive, practical alternative that may also be combined with other mitigation strategies when target data are available."
+  },
+  {
+    "index": 124,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Annotation variability and benchmarking challenges"
+    ],
+    "text": "Annotation variability and benchmarking challenges"
+  },
+  {
+    "index": 125,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Annotation variability and benchmarking challenges"
+    ],
+    "text": "Performance differences between seen and unseen sets cannot be attributed solely to domain shift. Table 4 shows a substantial and consistent gap between the seen and unseen subsets, and within the unseen subsets, for each tested model or strategy. Hence, beyond scanner variability, other sources of variability in publicly available datasets affect the consistency and objectivity of benchmarking efforts."
+  },
+  {
+    "index": 126,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Annotation variability and benchmarking challenges"
+    ],
+    "text": "Lesion size affects segmentation performance and its assessment. Figure 8 shows that lesion size substantially affected the baseline nnU-Net and the AMDU models: smaller lesions had lower segmentation overlap, subject to quantization effects, and lower lesion-wise detection rates, depending on the chosen detection thresholds. Across all lesion-size groups, however, the proposed AMDU model consistently achieved higher DSC and LTPR than the baseline nnU-Net, indicating improved sensitivity, particularly for small lesions (volume < 100 μl), for which the median LTPR increased from 0.55 to 0.67. Although LFDR was also consistently higher for AMDU across lesion-size groups (median 0.38 vs. 0.25), this was accompanied by improved overlap and lesion detection performance, suggesting AMDU provides a more favorable overall balance between sensitivity and precision."
+  },
+  {
+    "index": 127,
+    "kind": "fig",
+    "id": "F8",
+    "scope": [
+      "body",
+      "s6",
+      "Annotation variability and benchmarking challenges"
+    ],
+    "text": "Figure 8Lesion segmentation performance according to lesion size, i.e., small (SM), medium (MED), and large (LG); obtained on the MSSEG dataset.Box plot graphic compares nnU-Net and nnU-Net ADMU across three metrics—DICE, LTPR, and LFDR—for three lesion size groups: SM (less than 100 microliters), MED (100–500 microliters), and LG (greater than 500 microliters). Each panel shows grouped box plots for both models, illustrating distributions and performance differences across size categories."
+  },
+  {
+    "index": 128,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Annotation variability and benchmarking challenges"
+    ],
+    "text": "Inconsistencies in ground truth WML segmentations can confound performance comparisons and hinder the development of universally robust models. The four public datasets used in this study involved different numbers of expert raters who annotated lesions using different tools and protocols, inevitably introducing inconsistencies into the ground truth or reference WML segmentations. Compared to nnU-Net, the proposed AMDU model achieved significantly higher DSC, TPR, and LTPR, and lower RVE on the unseen test set, while exhibiting a higher LFDR. At the case level, our analysis of the 52 MSSEG 2016 unseen test scans shows that nnU-Net was superior in only five cases, whereas AMDU performed best in 47 cases. This pattern informs the interpretation of the false-positive burden. As illustrated in Figure 9, AMDU typically produces more false-positive voxels (cf. columns 2, 3, 4, and 6), yet visual inspection suggests that many of these may correspond to plausible lesions that were not annotated in the reference standard. In subjects with very few lesions, such false positives can disproportionately affect LFDR, shifting the balance in favor of the baseline. Nonetheless, the lower RVE from AMDU indicates that the false positives tend to be smaller. Independent qualitative clinical validation would be needed to determine how many apparent false positives actually correspond to subtle lesions missing from the reference standard."
+  },
+  {
+    "index": 129,
+    "kind": "fig",
+    "id": "F9",
+    "scope": [
+      "body",
+      "s6",
+      "Annotation variability and benchmarking challenges"
+    ],
+    "text": "Figure 9Axial cross-sections of six MSSEG 2016 MR scans (columns) for the nnU-Net baseline (top row) and the proposed nnU-Net AMDU (bottom row) with superimposed true positives (green), false positives (blue) and false negatives (red) (bottom row). Red frame indicates the best result according to the DSC metric. Overall, the nnU-Net baseline was best in 5, while the proposed nnU-Net AMDU was best in 47 out of 52 test cases.Grid of twelve brain MRI scan slices, arranged in two rows of six. Each scan shows cross-sectional brain anatomy with overlaid markings in green and red, indicating identified regions or abnormalities. Red frames indicate best result according to DSC value. All scans display similar anatomical levels for consistent visual assessment."
+  },
+  {
+    "index": 130,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "Mitigation of study limitations"
+  },
+  {
+    "index": 131,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "Segmentation of WMLs is an active and competitive research field, with many effective methods available beyond those evaluated in this study. To enable future comparative analyses, we trained and evaluated our models on four publicly available datasets (Table 1). Furthermore, we integrated the proposed AMDU strategy into the nnU-Net framework, which has consistently delivered state-of-the-art results across a wide range of medical segmentation challenges (43). The source code is publicly available,3 enabling reproducibility, extension, and fair comparison by the broader research community."
+  },
+  {
+    "index": 132,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "One limitation of this study is that the proposed approach was evaluated exclusively on the WML segmentation task. Because the proposal is architectural rather than lesion-specific, it appears applicable to other segmentation problems affected by site, scanner, or protocol variability. While beyond the scope of this study, the seamless integration of AMDU into the nnU-Net framework, along with its adaptive training schedule, minimal hyperparameter tuning, and publicly available source code makes it readily applicable to other datasets and segmentation tasks. This flexibility encourages further exploration and validation of the method in broader clinical and research settings."
+  },
+  {
+    "index": 133,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "Another limitation is the relatively small size of the training dataset of 40 cases. This choice was intentional, as we prioritized the use of publicly available datasets to ensure reproducibility and to provide a transparent foundation that others can build upon. While this approach supports openness and comparability, it inherently restricts the biological and scanner variability available during training, which may impact segmentation performance and generalization capability. Notably, the LST-AI model (19) was trained on a substantially larger in-house acquired and annotated dataset of 491 cases and evaluated on the same unseen datasets, reporting similar performance on MSSEG (all cases), superior on MSLJ and inferior on ISBI.4 Besides a larger train set, which may scale the performance, their model inputs both T1-weighted and FLAIR scans, whereas AMDU used only FLAIR. Interestingly, the other methods tested in Wiltgen et al. (19) all showed inferior performance compared to AMDU on all three unseen test sets."
+  },
+  {
+    "index": 134,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "These findings indicate that multimodal inputs can provide complementary information, yet they also show that a carefully designed FLAIR-only model—trained on heterogeneous public datasets and equipped with ADMU—can achieve performance competitive with a substantially larger multimodal system, and in some cases surpass it on unseen scanners. Moreover, the WMH dataset forming our training set contains vascular-origin lesions that differ in phenotype from MS lesions, likely increasing task difficulty on unseen MS lesions, but also limiting potential gains from additional modalities."
+  },
+  {
+    "index": 135,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "Most models use multimodal MRI for WML segmentation, typically T1-weighted and FLAIR (19, 22), or even more (34, 35). We limited our experiments to using a single FLAIR modality for WML segmentation as this offers several practical and methodological advantages. FLAIR imaging provides high sensitivity and contrast for detecting WMLs, especially in periventricular and juxtacortical regions, making it well-suited as a standalone modality. Relying on one modality simplifies preprocessing pipelines, reduces inter-modality registration errors, and eliminates the need for inter-modality harmonization, which can introduce variability. Clinically, single-modality approaches increase applicability, particularly in retrospective studies or settings where only FLAIR is routinely acquired. Moreover, single-modality models are significantly less memory- and computation-intensive, enabling training and inference on a wider range of hardware, including resource-constrained environments. This increases the method's accessibility and usability in both research and clinical settings."
+  },
+  {
+    "index": 136,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Mitigation of study limitations"
+    ],
+    "text": "Although the proposed ADMU framework is compatible with other forms of nuisance-variable suppression (e.g., modality, age, or sex unlearning), extending it to other anatomies or multi-modal inputs would require additional architectural considerations, such as modality-specific encoders or separate unlearning branches, and therefore represent an important direction for future research."
+  },
+  {
+    "index": 137,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Conclusion"
+    ],
+    "text": "Conclusion"
+  },
+  {
+    "index": 138,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "s6",
+      "Conclusion"
+    ],
+    "text": "The proposed AMDU enhancement of the nnU-Net segmentation method shows strong potential for clinical application in estimating lesion-based biomarkers, such as lesion volume and count, which are critical for diagnosis and monitoring treatment response (4). It also shows promise for cortical lesion segmentation (61) and for predicting MS progression (5). The nnU-Net AMDU achieved low RVE, directly reflecting good accuracy and low uncertainty in lesion volume estimation. Additionally, its performance on lesion-wise metrics, particularly the high LTPR and balanced LFDR, indicates reliable lesion count estimation, with high LTPR being especially important for detecting new or enlarging lesions in longitudinal studies. Therefore, we conclude that nnU-Net AMDU reasonably addresses the clinical demands for an accurate, versatile, and robust biomarker extraction method in MS imaging."
+  }
+]

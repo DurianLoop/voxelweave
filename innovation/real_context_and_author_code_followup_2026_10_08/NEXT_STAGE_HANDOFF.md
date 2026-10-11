@@ -1,0 +1,24 @@
+# 下一步：同时真实轮询29823和56132（本轮接续）
+
+本轮新实际观察：原训练a260a1仍含session29823，两个native分支已2992完成，native spatial累计12713.7063717秒、median2.13666175秒，raw两臂仍待。新几何a54ac5仍含session56132：3600/5984、active1082、FG不足0、elapsed1184.2919077秒。GPU1ed717仍free1394MiB/total24455/util94%，未达原8192MiB起跑储备。以下较早观察为历史，新的状态以本段及之后POST真实返回为准。
+
+七个额外固定版本源码取得真正1c2de9 exit0，六组未截断核读合计1609行；全阶段11文件3970行。训练配置连接内部SF Gaussian、默认None分支、top_left和梯度累积已核；不是精确2022训练版本/执行/权重/分折认证，不新增不同论文正文或医学效益。[研究决定](AUTHOR_TRAINING_CHAIN_FINDINGS.md)与[whole-patch候选基线政策](ORDINARY_WHOLE_PATCH_POLICY_PREPARATION.md)新增准备：全部target支持才执行RT，否则identity；不得通过FG-only或loss mask绕过InstanceNorm污染。完整MRI与训练费用仍未资格，无新训练。
+
+5984真实terminal后先原audit，再 `analyze_whole_patch_eligibility.py`：只从完成journal/audit按完整患者分母生成确定decision与coverage统计，零新增医学数组。该脚本事前静态语法/字段核查已完成，但还没执行，不能称policy已通过/训练就绪。stage 5MB、wall/RAM/disk原门槛保持。只接续已有待办，不无限新开查新目录。
+
+两个handle均已实际确认live，不重启/迁移：
+
+- 原四臂训练session29823，最近非空c4279b：native_reference_intensity2992完成，native_reference_spatial2530/2992、median2.1298886999720708秒、累计11707.0925881秒；后e33f69空但仍session29823，不是停止；raw-PCHIP两臂未观察完成。frozen_config为CPU。新GPU最新bb8c50 total24455/free1394MiB/util94%，原新阶段8192MiB储备不改，用户GPU授权持续有效。
+- 新CPU几何session56132，5b8af5实际到800/5984、active229、FG不足0、elapsed253.636秒，仍live。只读19开发labels/metadata，无MRI/model/训练；不据部分结果宣称5984完成。wall5400sec/CPU1/low priority/stage5MB/8GBRAMdisk储备，原/其他PID不干预。
+
+新geometry完整terminal exit0（无session_id）后，把实际完整工具返回保存ACTUAL_FULL_SCHEDULE_TERMINAL_TOOL.json，加observed_unified_exec_session=56132，再执行已准备audit_full_schedule_terminal.py；该脚本原sample_batch+零broadcast dummy重放全部2992步母GT/geometry，核5984journal/完整患者曝光/严格gate，不能事先执行。它不二次跑支持fields，fields独立SciPy已由qualifier逐体素做；不要混称跨进程全mask重算。
+
+原四臂真实terminal exit0后仍原capture_training_terminal→evaluate_matched→capture_evaluation_terminal→summarize_matched；先四last2992/11968日志、每患者272曝光，再4已见验证9series、36production+36functional完整FOV。原六医学门槛和3e-6/3e-12/zero binary/完整分母不降，8未见确认12series与lockedIXI关闭。
+
+本轮已完成：real context首跑eb79d9来源链StopIteration于MRI/GT前，旧脚本/空attempt01保留；V2 session55568真实563565 exit0，236.428秒，19series/11患者/76field，全目标MRI强度独立error≤5.960e-8、support≤6.783e-14、zero binary/76maskSHA及所有base/motherlabelSHA匹配，FG支持不足0。输入specific强度体素79691776、独特geometry target39845888。MRI38/GT19/model0/forward0/newtraining0/newmedicaleffect0。
+
+作者API e0096c exit1限流403，公开Git refs b9f50a exit0取得v2.3.0 commit550e84596b7adbc01bd0f2e93f1a127b1cb2df99并四源码；2361行全部实际未截断核读，未import执行/权重下载/精确2022训练版本资格。核实实际SF修正+crop/pad+native skip、加性同轴noise和BatchNorm（gn名称不是GroupNorm）；未取得trainer/dataset/config，也未解决论文表矛盾或2026ensemble OOF/weight归一化。
+
+fullschedule候选是往返图像增强分布，不是原四臂单次spatial实际支持结果；geometry包含合法训练GT-derived forcedcrop/pivot，支持仅条件给定这些geometry不额外用GT。future部署必须GT-free定位。mask仍不认证InstanceNorm任务输出独立，也有background监督代价。全分布和原医学评价收齐后，先固定ordinary强baseline，再严格patient-fold外actual动作损害/全费用；不从全11GT训练parent做宣称折外独立任务模型。
+
+本轮已完成内容准备接6224delta归档，原rolling training与新rolling fullschedule目录除immutable frozen_config均排除；不归档半成品receipt/journal。archive真正exit0后另POST记录终值；该任务仍未给出发表claim，goalactive。

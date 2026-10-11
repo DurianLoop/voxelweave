@@ -1,0 +1,95 @@
+Learning to Sample and Reconstruct for Accelerated MRI 7
+ta
+ta
+Sampler
+
+Sampler
+
+vector
+Agent
+Observation
+Action
+Reward
+tM
+tM
+x
+x
+Reconstructor
+Reconstructor
+y
+y
+Environment
+
+
+( , )
+( , )
+scores
+scores
+tr
+tr
+ty
+tx
+(a) dense-reward POMDP
+ta
+ta
+Sampler
+
+Sampler
+
+tT
+tT=
+vector
+Agent
+Observation
+Action
+Reward
+tM
+tM
+x
+x
+Reconstructor
+Reconstructor
+y
+y
+( , )
+Environment
+
+
+0tr =
+Tr
+0tr =
+Tr
+0tr =
+Tr
+terminal?
+terminal?
+ty
+Tx (b) sparse-reward POMDP
+Figure 1. Diagram of the dense-reward and sparse-reward POMDP.
+4. Proposed Method
+In this section, we first conduct an analysis of the dense-reward POMDP and identify
+some inherent issues in section 4.1. Based on these insights, we then propose a novel
+sparse-reward POMDP in section 4.2 to address the identified issues. Furthermore,
+we present two novel training frameworks: dynamic sampling training framework in
+section 4.3 and alternate training framework in section 4.4, both of which stem from
+the sparse-reward POMDP.
+4.1. The Issues with Dense-reward POMDP
+Apart from the training mismatch issue arising from tackling the sub-optimization
+problem, our comprehensive analysis of the dense-reward POMDP has revealed issues
+associated with the MDP design. Specifically, the dense-reward POMDP embeds
+reconstructions into the environment, particularly within transitions and rewards.
+This design introduces two main problems: high computational cost and distributional
+mismatch. These findings pave the way for the introduction of our sparse-reward
+POMDP.
+4.1.1. High Computational Cost Since the dense-reward POMDP involves
+reconstructions in the transition, it first performs reconstruction (3.5) and then
+sampling (3.6) at each step in the inference process. However, this approach is
+very time-consuming since it requires performing many reconstructions. The dynamic
+sampling method for CT scanning [21] uses the original sampling signals rather than
+reconstructed images as the input of the sampler, which is more computationally
+efficient. We aim to find a better POMDP that requires only one reconstruction in
+the inference process.
+4.1.2. Distributional Mismatch Since the dense-reward POMDP involves reconstruc-
+tions in the reward calculations (3.8), it requires evaluating the similarity of the ground
+truth and the reconstruction image S( xt, x) at every intermediate state. Therefore,
+the dense-reward POMDP requires a reliable reconstructor for all the intermediate

@@ -1,0 +1,14 @@
+# ROUND52 归档后接续记录（ROUND53 写入）
+
+ROUND52 archive actual118d32 exit0/no session；post-check c0520f exit0/no session。原7857文件SHA/bytes保持，新86，累计7943；index SHA25601b3fd7f6ee41a82bebac198d922b86b25c58bb173a8f29ba8f910d931697e94/28257bytes，proof dc3a4b720188a2988fa1fb125cc8cc7bad89a2799f1037c93bec92e4ba5882d1/2149bytes。归档session3613结束，不再poll。不得修改已冻结或已执行脚本。
+
+full35904/session44317已actual6d016a真实exit0并经5c05c5独立审核；其终态输出已纳入7943链，不重启。唯一live为compact19/session44838，fe231e启动，ROUND52最后eeb219仍带session_id。当前ROUND53 poll64997a仍live：case0/raw_pchip/CPU/step1三view完成，elapsed627.9862979999743s；尚无19series完整资格。case0/native_reference两步CPU/GPU对照binary0，step1参数差7.450580596923828e-9。完整合同GPU76/CPU76更新及各228whole-model forward、152内存capture；未终态输出继续排除冻结。
+
+原patch新FP64graph/FP32parameters+AdamWstate三view两步cfcae8 exit0；step1参数差3.725290298461914e-9，binary0，peak_reserved2304770048bytes，elapsed388.23346360004507s。保留既有数学v1/全patchv1/v2失败。独立ROUND52 audit587024仅重核记录/算术，不重跑原tensor。正式医学效果、强task六gate、合法action收益均尚未确认。GPU/CPU数值对照不是可发表医学claim，goal active。
+
+归档后新建audit_compact19_terminal_v1.py仅AST630b72通过，未运行；终态后须保存真实工具对象带observed_unified_exec_session44838，仅真实exit0/no session和完整receipt后审核。失败原样保留，不重启或降gate。新分支仍需完整FOV、磁盘atomic capture、完整19series生产费用/预算，不继承旧FP32资格或六臂预算。
+
+已恢复7个归档后真实tool对象到POST_ARCHIVE_ACTUAL_TOOL_RETURNS_ROUND52.json。无法恢复的原最终公开回复不重造。当前可见新进度、收到的用户摘要和本接续文本单独落盘；下轮从7943增量。原用户终端进程不枚举/不修改；GPU授权有效；不安装/委派/删除历史；新增只写innovation。
+
+最近fresh guard6d3ab2：free8036139008、guardedfree8000483340bytes；prep6860240/FOV7637441/accepted5676210/adaptive1970441。保留CPU1/interop1/below-normal，RAM/disk8GB，GPU8192MiB admission、allocator<=2.4GB、peak<=2.5GB/runtimefree4GB，strict deterministic/TF32off，numeric3e-6/coordinate3e-12/binary0；六医学gate不降低。11开发患者19series，4已见验证不能新确认，8未见12series/lockedIXI关闭。adaptive和prep接近cap，新增记录放FOV。
+

@@ -1,0 +1,15 @@
+# 本批后续依赖与最小强控制
+
+第一优先仍poll78123。只有整体真正exit0/无session_id，才保存原目录ACTUAL_EVALUATION_TERMINAL_TOOL.json并标observed_unified_exec_session=78123→原capture_evaluation_terminal.py→summarize_matched.py。必须全部四last2992、36production+36functionalFOV、4patient/9series，严格3e-6/3e-12/0binary和原六医学门槛。训练29823已95b0a1完成且df9ebf审计，不再poll/重启。
+
+其次poll90446完整35904。原失败6216不继承，271stress不能代full，真正terminal后按原audit。新普通六臂需统一gamma v2和固定resolution/support处理合同，额外资源/费用准入；当前training_ready仍false，六final仅payload33.73MB超过磁盘8GB储备外约20MB且原评价/full需3+2MB，GPUfresh1394MiB低于8192。未安装、不委派、不删历史腾空间、不迁移CPU/干预其他终端PID。
+
+能力门槛过后：reliability-map任务控制应包含binary原观测和合法几何后的soft map，原2021输入方案就是直接先例；ordinary充分强度/空间/resolution增强先行。不同信息/模型容量/训练预算不能混成采集增量。
+
+对posterior/UQ相关候选，固定compare set包括同信息/同capacity task uncertainty、QC/absolute error、合法action-conditioned posterior/risk差加cost、gain head移除采集特征、metadata-only、static/random/always-action/defer。不要只拿最高baseline risk/最大variance作为弱selector。Papago的cohort训练/注册依赖和未匹配病灶能力意味着没有跑过的外部实现不能写作已执行强基线。
+
+如准备Gaussian或生成式UQ复现：先明确输出是在latent clean信号还是observed noise层；fixed-cluster cov、mixture between-cluster cov和posterior predictive variance分开，保留完整论文/版本/实际代码来源，不从扁平MathML擅自修公式。missing-coordinate选择、noise/profile假设必须适配point抽层或真实A_phi合同；projection保证不代病灶fidelity。
+
+paired收益头训练必须来自真实固定动作baseline-minus-action病灶损害差，ROI/GT只在合法监督和评分时用；部署无missingGT/标注ROI。11开发患者分组cross-fit，任务网/定位/QC/gain/cost/校准全部折内，不能把全11GT parent塞入外折。完整费用包含cohort preparation、注册/mask、训练、部署每步与failed/defer/fallback，保留全部patient分母。
+
+任务能力不足则补普通task，若强普通baseline消掉动作余量，留负结果并调整科学假设。独立确认所需控制/分析/资源全部冻结后才开8patient确认；当前12series与lockedIXI仍关闭。文献和代码阅读不算医学claim，goal保持active。

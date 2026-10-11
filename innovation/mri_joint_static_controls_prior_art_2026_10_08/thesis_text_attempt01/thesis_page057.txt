@@ -1,0 +1,61 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+holds with equality whenPr[ˆωN] = 1 and Pr[ω] = 0 for ω̸=ˆωN and π =ˆπN. This
+in turn happens whenˆπN is supported onˆω. That is, there exists a maximizer of
+Problem 4.9 that is supported on an index set of sizeN. □
+While this observation does not indicate how to find this maximizer, it nonetheless allows
+us to simplify Problem 4.9. More specifically, the observation that a distributionˆπN has
+a compact support of sizeN implies the following:
+Proposition 2.
+Problem 4.9≡ max
+|ω|=N
+1
+m
+m∑
+i=1
+η(xi;ω) (4.10)
+Proof. Proposition 1 tells us hat a solution of Problem 4.9 is supported on a set of
+size at mostn, which implies
+Problem 4.9≡ max
+π∈SP−1:|supp(π)|=N
+ηm(π). (4.11)
+That is, we only need to search over compactly supported distributionsπ. LetSΓ
+denote the standard simplex on a supportΓ⊂ [P ]. It holds that
+Problem 4.11≡ max
+|Γ|=N
+max
+π∈SΓ
+ηm(π)
+= max
+|Γ|=N
+max
+π∈SΓ
+1
+m
+∑m
+i=1η(xi; Γ)· Pr[Γ|π]
+= max
+|Γ|=N
+max
+π∈SΓ
+1
+m
+∑m
+i=1η(xi; Γ)
+= max
+|Γ|=N
+1
+m
+∑m
+i=1η(xi; Γ). (4.12)
+To obtain the second and third equalities, one observes that all masks have a common
+support Γ with N elements, i.e. π∈ SΓ allows only for a single maskω with N
+elements, namelyω = Γ. □
+The framework of Problem 4.9 captures most variable-density based approaches of the
+literature that are defined in a learning-based fashion (Knoll et al., 2011b; Ravishankar
+and Bresler, 2011a; Vellagoundar and Machireddy, 2015; Haldar and Kim, 2019; Bahadir
+et al., 2019; Sherry et al., 2019), and Proposition 2 shows that Problem 4.12, that we
+tackled in Gözcü et al. (2018); Gözcü et al. (2019); Sanchez et al. (2020a) and develop in
+Chapter 5, also aims at solving thesame problem as these probabilistic approaches.
+Note that while the present argument considers samplingpoints in the Fourier space, it is
+readily applicable to the Cartesian case, where full lines are added to the mask at once.
+44

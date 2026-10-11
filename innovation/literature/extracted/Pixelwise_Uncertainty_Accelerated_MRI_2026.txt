@@ -1,0 +1,634 @@
+                                                                                                                                                                                           1
+
+
+
+
+                                           Pixelwise Uncertainty Quantiﬁcation of Accelerated
+                                                          MRI Reconstruction
+                                           Ilias I. Giannakopoulos† , Senior Member, IEEE, Lokesh B Gautham Muthukumar† , Yvonne W. Lui, and Riccardo
+                                                                                  Lattanzi, Senior Member, IEEE
+
+
+
+                                              Abstract—The goal of this work is to introduce an auto-                      is counterbalanced by inherently long acquisition times, which
+                                           mated method to assess the quality of under-sampled MRI                         limit patient throughput, increase susceptibility to motion
+                                           reconstructions. We propose a general framework for pixel-wise                  artifacts, reduce patient comfort, and systemically, raise opera-
+arXiv:2601.13236v3 [eess.IV] 25 Jun 2026
+
+
+
+
+                                           uncertainty quantiﬁcation in accelerated MRI reconstructions,
+                                           enabling automatic identiﬁcation of unreliable regions without                  tional costs and decrease accessibility. Rapid MRI techniques,
+                                           using ground-truth fully-sampled reference images. Our method                   such as parallel imaging (PI) [2]–[4] and compressed sensing
+                                           integrates conformal quantile regression with learning-based                    (CS) [5], [6],can mitigate these limitations by reconstructing
+                                           image reconstruction methods to estimate statistically rigorous                 images from undersampled k-space data. More recently, deep
+                                           pixel-wise uncertainty intervals. We trained and evaluated our                  learningbased unrolled reconstruction networks achieved supe-
+                                           model on Cartesian undersampled brain and knee data obtained
+                                           from the fastMRI dataset using acceleration factors ranging                     rior reconstruction quality compared with traditional methods
+                                           from 2 to 10. An end-to-end Variational Network was used                        [1], [7]–[12]. Clinical evaluation studies demonstrated that
+                                           for image reconstruction. Quantitative experiments demonstrate                  these networks produce diagnostically interchangeable recon-
+                                           strong agreement between predicted uncertainty maps and true                    structions equivalent to fully sampled references at four-fold
+                                           reconstruction error. Using our method, the corresponding Pear-                 acceleration [12]–[15], which led to their recent U.S. Food and
+                                           son correlation coefﬁcient was higher than 90% at acceleration
+                                           levels at and above four-fold; whereas it dropped to less than 70%              Drug Administration (FDA) clearance. Diagnostic quality can
+                                           when the uncertainty was computed using a simpler a heuristic                   be maintained even at higher accelerations in certain cases.
+                                           notion (magnitude of the residual). Qualitative examples further                For example, the study in [16] reported that 100% of 4×,
+                                           show the uncertainty maps based on quantile regression capture                  97% of 6×, 62% of 8×, 17% of 10×, and 3% of 12× ac-
+                                           the magnitude and spatial distribution of reconstruction errors                 celerated T2-weighted images reconstructed using the end-to-
+                                           across acceleration factors, with regions of elevated uncertainty
+                                           aligning with pathologies and artifacts. The proposed framework                 end variational network (E2E VarNet) [1] are appropriate for
+                                           enables evaluation of reconstruction quality without access to                  general-purpose diagnostic imaging. For healthy subjects, 10×
+                                           fully-sampled ground-truth reference images. It represents a step               acceleration factor can result in acceptable images, as these
+                                           toward adaptive MRI acquisition protocols that may be able to                   networks are primarily trained on cases without pathologies
+                                           dynamically balance scan time and diagnostic reliability.                       [17]. This suggests that some fraction of MRI scans performed
+                                             Index Terms—Conformal Prediction, Magnetic Resonance                          today could, in principle, be done faster than what current
+                                           Imaging, Parallel Imaging, Quantile Regression, Uncertainty                     conservative, ﬁxed-acceleration protocols allow.
+                                           Quantiﬁcation                                                                      Despite the potential for faster scans, high acceleration
+                                                                                                                           levels are not routinely implemented in clinical MRI protocols.
+                                                                     I. I NTRODUCTION                                      The primary limiting factor is the absence of an automatic
+                                                                                                                           mechanism to assess the reliability of reconstructed images
+                                                 AGNETIC resonance imaging (MRI) provides unpar-
+                                           M     alleled soft-tissue contrast and plays a central role in
+                                           modern disease diagnostics. However, its high diagnostic value
+                                                                                                                           when no fully sampled reference is available. Without a
+                                                                                                                           quantitative measure of conﬁdence, increasing the acceleration
+                                                                                                                           factor beyond established values is risky, as undersampling
+                                             † indicates equivalent contribution. This work was supported in part by NIH
+                                                                                                                           may lead to network hallucinations [18] or pathological
+                                           K99 EB035163, in part by NIH R01 EB024536, and was performed under              feature suppression [19], ultimately compromising diagnos-
+                                           the Rubric of the Center for Advanced Imaging Innovation and Research           tic accuracy. Consequently, current clinical practice favors
+                                           (CAI2 R, www.cai2r.net), an NIBIB National Center for Biomedical Imaging        conservative, ﬁxed acceleration factors, typically set to two
+                                           and Bioengineering (NIH P41 EB017183).
+                                             Ilias I. Giannakopoulos, Lokesh B Gautham Muthukumar, Yvonne                  for non-learningbased reconstructions [3] and four for learn-
+                                           W. Lui, and Riccardo Lattanzi are with the Bernard and Irene                    ing-based reconstructions [1]. To enable higher accelerations
+                                           Schwartz Center for Biomedical Imaging, Department of Radiology,                while preserving diagnostic validity, there is a critical need
+                                           NYU Grossman School of Medicine, 10016, New York, NY, United
+                                           States     of     America       (e-mail:ilias.giannakopoulos@nyulangone.org,    for methods capable of estimating the reconstruction error
+                                           LokeshGautham.BoominathanMuthukumar@nyulangone.org,                             directly from undersampled data. Uncertainty quantiﬁcation
+                                           yvonne.lui@nyulangone.org, riccardo.lattanzi@nyulangone.org).                   [20]–[22] provides a principled framework toward that goal by
+                                             Lokesh B Gautham Muthukumar is also with the Courant Institute of
+                                           Mathematical Sciences, NYU, 10012, New York, NY, United States of               estimating conﬁdence intervals for reconstructed images and
+                                           America.                                                                        effectively producing an “error map” when the ground-truth
+                                             Yvonne W. Lui and Riccardo Lattanzi are also with the Center for Advanced     reference image is unavailable.
+                                           Imaging Innovation and Research (CAI2 R), Department of Radiology, NYU
+                                           Grossman School of Medicine, 10016, New York, NY, United States of                 Early attempts to quantify uncertainty in MRI reconstruc-
+                                           America.                                                                        tions were based on probabilistic formulations of deep recon-
+                                                                                                                                                        2
+
+
+
+
+Fig. 1. E2E VarNet architecture. The input is the undersampled multi-coil k-space and the output is the reconstructed image. In each cascade, the inverse
+fast Fourier transform (iFFT) is applied to each undersampled k-space, and the resulting images are weighted with the corresponding coil sensitivities and
+are combined into a single image using the reduce operator [1]. The combined image is processed by a U-Net, whose output is then expanded [1] back into
+individual coil images. These coil images are transformed to k-space using the FFT, after which data consistency is enforced. The ﬁnal image is obtained
+using the root sum of squares (RSS) on the individual coil images obtained from the 12th cascade.
+
+
+
+struction networks. For example, [23] proposed a variational                  and can inﬂate the estimated uncertainty range. Moreover, the
+autoencoder framework that learns to predict pixel-wise resid-                residuals learned during training are often smaller than those
+ual magnitudes for a pre-trained reconstruction network. The                  encountered during testing, leading to unreliable uncertainty
+resulting uncertainty maps provide a useful visualization of re-              estimates that correlate poorly with the true reconstruction
+construction reliability, but the approach remains heuristic and              error [22].
+lacks statistical guarantees on the predicted uncertainty levels.                We demonstrate a statistically rigorous uncertainty estima-
+In [24], a Bayesian heteroscedastic uncertainty framework is                  tion framework based on conformalized quantile regression
+used to highlight regions of potential reconstruction failure,                (QR) [22] that can be retrained to work with any learning-
+but does not yield calibrated or distribution-free conﬁdence                  based image reconstruction method. The proposed module
+intervals. The work in [25] introduced a Bayesian variational                 directly estimates the conditional quantiles of the reconstructed
+formulation of the learned variational network, in which the                  image distribution, thereby producing statistically valid and
+parameters of the regularizer are modeled as random vari-                     spatially resolved uncertainty intervals. A similar QR-based
+ables drawn from a learned multivariate Gaussian distribution.                strategy has recently been applied in CUTE-MRI [28], where
+Sampling these parameters enables estimation of pixel-wise                    conformal calibration is used to control uncertainty in down-
+variance maps that reﬂect regions of high uncertainty. While                  stream clinical metrics to enable time-adaptive acquisitions.
+this framework offers a theoretically grounded means of vi-                   In contrast, our work focuses on pixel-wise uncertainty es-
+sualizing uncertainty, it incurs substantial computational over-              timation of the reconstructed image itself, providing spatially
+head and does not ensure calibrated or interpretable conﬁdence                localized conﬁdence maps. A preliminary version of this work
+intervals. PixCUE [26] reformulated MRI reconstruction as a                   was presented at the 2026 Annual Meeting of the International
+pixel-classiﬁcation problem, where uncertainty is derived from                Society for Magnetic Resonance in Medicine [29], [30].
+the variance of the softmax output distribution. While this ap-
+proach enables efﬁcient joint estimation of reconstruction and                                             II. M ETHODS
+uncertainty, it remains heuristic and lacks statistical calibration           A. Dataset
+or formal coverage guarantees.                                                   Data used in this work were obtained from the NYU
+   A major advance toward statistically valid uncertainty esti-               fastMRI Initiative database (fastmri.med.nyu.edu) [31], [32].
+mation came with the work of [22], who introduced a distribu-                 We used both the brain and knee fastMRI datasets. For brain
+tion-free framework for image-to-image regression based on                    experiments, the networks were trained on the fastMRI brain
+conformal prediction. The proposed methods produce pixel-                     training dataset (4469 volumes). The fastMRI brain validation
+wise uncertainty intervals with ﬁnite-sample coverage guaran-                 dataset (1378 volumes) was randomly divided into two equal
+tees by calibrating heuristic uncertainty estimates on a held-                subsets for validation and calibration (689 volumes each; see
+out calibration dataset. [27] applied this approach to MRI                    Section II-D4). The full brain test dataset (558 volumes) was
+reconstruction using the magnitude of the residual (ResM) as                  used for testing. For the knee experiments, networks were
+an uncertainty estimator. Despite encouraging results, ResM                   trained on the fastMRI knee training dataset (973 volumes).
+yields symmetric conﬁdence bounds that limit interpretability                 Since the ground-truth reference images are not available in
+                                                                                                                                                             3
+
+
+
+
+Fig. 2. (Left) Architecture of our proposed uncertainty estimation module. The output (reconstructed MR image) of the E2E VarNet is the input of two
+U-Nets, which learn pixelwise offsets that parameterize the lower and upper quantile bounds of the reconstruction uncertainty. Each U-Net output passes
+through a sigmoid activation, is multiplied by the E2E VarNet reconstruction, and is either added to or subtracted from the E2E VarNet’s reconstruction to
+compute the upper and lower bound, respectively. The output that is added is treated as the upper quantile interval and the one that is subtracted is the lower
+quantile interval. (Right) In Calibration, the predicted offsets are scaled by the calibration factor λ which is computed using conformal prediction in the
+calibration set. The uncertainty map is computed by subtracting the calibrated lower from the calibrated upper bound.
+
+                                                                   TABLE I
+                                             M EAN AND STANDARD DEVIATION OF SSIM AND UNCERTAINTY
+
+ Acceleration              2×                              4×                              6×                      8×                      10×
+
+ Metric           SSIM       QR (%)        SSIM      QR (%)          ResM         SSIM       QR (%)       SSIM       QR (%)        SSIM      QR (%)
+                                                                      (%)
+
+ T1               0.979    2.1 ± 0.82      0.966    3.4 ± 1.85     3.8 ± 1.82     0.960    4.0 ± 2.54     0.954     4.8 ± 3.61     0.950    5.4 ± 4.29
+ T1PRE            0.971    2.6 ± 1.00      0.956    4.0 ± 1.99     4.3 ± 2.36     0.949    4.7 ± 2.73     0.942     5.6 ± 3.88     0.937    6.4 ± 4.74
+ T1POST           0.980    2.2 ± 0.87      0.965    3.7 ± 2.18     3.3 ± 1.94     0.957    4.4 ± 3.06     0.950     5.4 ± 4.35     0.944    6.2 ± 5.34
+ T2               0.974    2.6 ± 1.65      0.959    4.1 ± 2.84     4.0 ± 2.71     0.951    5.0 ± 3.67     0.945     6.1 ± 5.10     0.940    7.0 ± 6.17
+ FLAIR            0.957    3.4 ± 1.46      0.931    5.3 ± 2.75     6.2 ± 3.55     0.919    6.1 ± 3.58     0.909     7.3 ± 4.84     0.902    8.3 ± 5.76
+ Knee               -           -          0.927    4.6 ± 2.15     3.9 ± 2.18     0.911    6.3 ± 3.05       -            -           -           -
+
+
+
+the fastMRI knee test dataset, we divided the knee validation                    of average pooling and transpose convolutions, each with a
+dataset into 49 volumes for validation, 50 for calibration, and                  kernel size, stride, and padding of 2, 2, and 0, respectively. The
+99 for testing.                                                                  convolution layers used a kernel size of 3 with both padding
+                                                                                 and stride set to 1. Leaky ReLU activation functions were used
+B. Undersampling Strategy                                                        with a negative slope of 0.2. The U-Net for the coil sensitivity
+                                                                                 estimation had the same parameters except the number of
+   Cartesian undersampling was used for all experiments. For                     channels which was reduced to 8. The input tensors to all U-
+the brain dataset, we retained 16%, 8%, 5.3%, 4%, or 3% of                       Nets were normalized to ensure that each channel had a mean
+the central k-space as autocalibration signal (ACS) lines and                    of 0 and a standard deviation of 1. We used a batch size of 1
+uniformly sampled the remaining k-space to achieve accelera-                     and trained on a high-performance computing cluster using
+tion factors of 2, 4, 6, 8, and 10, respectively. All models were                four NVIDIA A100 Tensor Core GPUs, each with 80 GB
+trained and tested using ﬁxed undersampling masks, resulting                     of memory. Our loss function was the structural similarity
+in ﬁve separate models for reconstruction. For the knee dataset,                 index measure (SSIM) [34]. Training was performed using the
+8% or 5.3% of the central k-space was retained as ACS lines,                     AdamW optimizer with a learning rate of 0.0003 for 210,000
+and the remaining k-space was uniformly sampled to achieve                       iteration steps. A warm-up ramp was applied during the ﬁrst
+an acceleration factor of 4 or 6, respectively, resulting in two                 7,500 steps, followed by cosine annealing after 140,000 steps.
+separate models for reconstruction.                                              The overall number of trainable parameters was 93.6 million
+                                                                                 and the training times was approximately two and a half days
+C. Baseline Reconstruction Network                                               for all models.
+  We used the E2E VarNet as our image reconstruction
+method [1]. The model’s architecture is shown in the top                         D. Uncertainty Estimation Framework
+panel of Figure 1. We used a total of 12 cascades. In each                         1) Uncertainty Module Architecture: Our uncertainty esti-
+cascade, the U-Net [33] used 32 feature channels, 4 layers                       mation module architecture is shown in Figure 2 (left). The
+                                                                                                                                                  4
+
+
+
+                                                                     TABLE II
+                                            C ORRELATION BETWEEN UNCERTAINTY AND RECONSTRUCTION ERROR
+
+ Acceleration                          2×                            4×                         6×               8×                10×
+ Metric (%)                           QR                   QR                 ResM              QR               QR                QR
+                                                                          Brain
+ Pearson                          0.82 ± 0.12         0.91 ± 0.10          0.69 ± 0.22      0.92 ± 0.09      0.91 ± 0.09      0.90 ± 0.09
+ Region-Pearson                   0.92 ± 0.12         0.96 ± 0.11          0.73 ± 0.27      0.97 ± 0.09      0.97 ± 0.10      0.97 ± 0.09
+ Spearman                         0.70 ± 0.18         0.76 ± 0.18          0.63 ± 0.22      0.76 ± 0.18      0.77 ± 0.18      0.77 ± 0.19
+ Region-Spearman                  0.75 ± 0.20         0.79 ± 0.22          0.54 ± 0.31      0.84 ± 0.20      0.86 ± 0.19      0.87 ± 0.18
+                                                                          Knee
+ Pearson                                -             0.80 ± 0.16          0.24 ± 0.27      0.82 ± 0.15           -                 -
+ Region-Pearson                         -             0.89 ± 0.17          0.16 ± 0.36      0.91 ± 0.17           -                 -
+ Spearman                               -             0.72 ± 0.20          0.26 ± 0.25      0.75 ± 0.20           -                 -
+ Region-Spearman                        -             0.79 ± 0.23          0.12 ± 0.34      0.81 ± 0.23           -                 -
+
+
+
+                                                                                  the reconstructed image. The resulting outputs are used as
+                                                                                  the upper and lower quantile intervals, respectively. When
+                                                                                  symmetric upper and lower quantiles are desired, a single U-
+                                                                                  Net can be used.
+                                                                                     2) Pixelwise Quantile Regression Training: The two U-
+                                                                                  Nets described above directly parameterize the pixelwise lower
+                                                                                  and upper quantile functions ˜l(x) and ũ(x), and are trained
+                                                                                  using QR with the quantile loss. In pixelwise QR [35], [36],
+                                                                                  assuming we target an α-level uncertainty interval of the E2E
+                                                                                  VarNet reconstructed image (x), the upper quantile ũ(x) is
+                                                                                  trained to estimate the (1 − α/2) conditional quantile, and the
+                                                                                  lower quantile ˜l(x) to estimate the (α/2) conditional quantile.
+                                                                                  These pixelwise quantiles can be estimated using the quantile
+                                                                                  (pinball) loss [22], deﬁned as
+                                                                                                       
+                                                                                                       α (y − q̂α (x)),        if y > q̂α (x),
+                                                                                     Lα (q̂α (x), y) =
+                                                                                                       (1 − α) (q̂ (x) − y), otherwise.
+                                                                                                                    α
+                                                                                                                                                (1)
+                                                                                  Here, y denotes the ground-truth reference image and q̂α (x)
+                                                                                  denotes the predicted α-quantile of y conditioned on x.
+                                                                                  Because the upper and lower quantiles correspond to different
+                                                                                  conditional quantiles, they are trained using separate losses.
+                                                                                  The total loss is therefore written as
+                                                                                           L(x, y) = Lα/2 (˜l(x), y) + L1−α/2 (ũ(x), y).       (2)
+                                                                                  After training, the lower and upper quantile estimates are
+                                                                                  expected to converge asymptotically [35], [37]–[41] to the true
+Fig. 3. Distribution of Pearson correlations for the 4× accelerated brain (top)
+                                                                                  conditional (α/2)-and (1 − α/2)-quantiles, respectively.
+and knee (bottom) reconstructions. The histograms compare QR-based (blue)            Training is performed in a supervised manner using (x, y)
+and ResM-based (red) uncertainty estimates with the true reconstruction error     pairs. The uncertainty module is trained separately from the
+for each case in the test datasets. QR-based correlations are systematically      E2E VarNet, using the same optimizer, learning rate, scheduler,
+higher for both anatomies, indicating improved alignment with the true
+reconstruction error.                                                             and hyperparameters. The E2E VarNet is kept frozen. During
+                                                                                  reconstruction, one can either use the E2E VarNet to generate
+                                                                                  reconstructions on the ﬂy, or the reconstructions can be pre-
+output reconstruction of the E2E VarNet is used as the input                      computed for all training and validation data and loaded from
+to this module. The architecture consists of two U-Nets with                      memory. We set α = 90% for all experiments. The number
+the same settings as those used in the E2E VarNet cascades,                       of trainable parameters was 15.5 million and the training time
+except that the number of input and output channels is set                        was approximately one day for all models.
+to 1 (real data) instead of 2 (complex data). Each U-Net                             3) Magnitude of the Residual Training: For the ResM-
+output passes through a sigmoid activation to scale the values                    based approach, we assumed that ũ(x) = ˜l(x). The loss
+between 0 and 1, after which it is multiplied by the E2E                          function used in the case is written as:
+                                                                                                                               2
+VarNet reconstruction to match the same intensity range as                                        L(x, y) = (ũ(x) − |x − y|) .                (3)
+                                                                                                                                     5
+
+
+
+The number of trainable parameters in the ResM case was              The map q̃ quantiﬁes the pixelwise uncertainty width, while ẽ
+7.75 million and the training time was approximately one day         represents the magnitude of the absolute (true) reconstruction
+for both anatomies.                                                  error. Notice that q̃ does not have any knowledge of the
+   4) Conformal Prediction Calibration: The quantile esti-           ground-truth y.
+mates ˜l and ũ must be calibrated to be statistically valid,           1) Correlation Metrics: The correspondence between the
+meaning that the resulting uncertainty intervals should contain      predicted uncertainty q̃ and the true error ẽ is quantiﬁed using
+at least a fraction (1−α) of the ground-truth pixel values with      the Pearson [44] and Spearman [45] correlation coefﬁcients.
+probability not smaller than (1 − α). In practice, neural net-       The Pearson correlation coefﬁcient measures the linear asso-
+works trained to predict quantiles may produce intervals that        ciation between q̃ and ẽ and is deﬁned as
+are miscalibrated, either too narrow or too wide. To guarantee
+                                                                                                  cov(q̃, ẽ)
+valid coverage, we apply conformal prediction calibration [22],                              r=               ,                   (7)
+[42], as in Figure 2 (right).                                                                       σq̃ σẽ
+   In particular, we rescaled the predicted offsets between the      where cov denotes the covariance.
+reconstructed image x and the learned quantiles using a data-           The Spearman rank correlation coefﬁcient quantiﬁes
+driven correction factor λ. In standard conformal QR [22],           whether pixels with higher predicted uncertainty also tend to
+the quantiles themselves are rescaled. However, because our          have higher reconstruction errors, independent of their exact
+architecture 2 scales the U-Net outputs with the images, the         numerical scaling. It is computed by applying the Pearson
+natural quantities to calibrate are the offsets (x−˜l) and (ũ−x).   correlation to the rank-ordered variables, where each pixel
+To perform the calibration, we start by deﬁning the pixelwise        value in q̃ and ẽ is replaced by its position in the sorted
+uncertainty interval for pixel (m, n) of x as:                       list of all pixel values within the image, yielding Rq̃ and Rẽ ,
+                           [          ]                              respectively. The coefﬁcient is then computed as
+             Tλ (x(m,n) ) = ˜lb , ũb
+                                 (                   )                                          cov(Rq̃ , Rẽ )
+            ˜lb = x(m,n) − λ · x(m,n) − ˜l(x(m,n) )                                        ρ=                   .                 (8)
+                                                                                                  σRq̃ σRẽ
+                                  (                   )
+             ũb = x(m,n) + λ · ũ(x(m,n) ) − x(m,n) .         (4)   Here, Rq̃ and Rẽ denote the rank-ordered maps, in which
+Then, we seek the smallest λ such that Tλ achieves the desired       lower pixel values receive smaller ranks and higher pixel
+coverage. This is computed using a held-out calibration dataset      values receive larger ranks.
+of I image pairs {(xi , yi )}Ii=1 , where xi are reconstructions       In addition to global correlations, we also computed region-
+from the E2E VarNet and yi are the corresponding ground-             based Pearson and Spearman correlations to assess whether
+truth images. The value of λ is chosen such that the aver-           uncertainty reﬂects local reconstruction errors. Each image
+age fraction of all pixels (m, n) across the calibration set         was divided into 100 non-overlapping patches of approxi-
+whose ground-truth intensities fall outside their corresponding      mately equal size, and the correlation metrics were computed
+intervals Tλ (xi(m,n) ) does not exceed α. Since this fraction is    within each patch and averaged across all regions.
+estimated from a ﬁnite calibration set, a conservative upper           Before computing correlation metrics, both q̃ and ẽ were
+bound R̂+ (λ) is used following Hoeffding’s inequality [43].         blurred using a Gaussian ﬁlter with a standard deviation of
+The ﬁnal calibrated scaling factor is therefore given by             σ = 2, chosen empirically to suppress pixel-level noise and
+                          {               }                          emphasize spatially coherent patterns.
+                     min λ : R̂+ (λ) ≤ α .                    (5)
+
+The calibration required roughly 6 hours for each brain model                                 III. R ESULTS
+and 3 hours for each knee model. Once computed, λ is ﬁxed            A. Quantitative assessment of uncertainty
+for the corresponding trained model and is directly used during
+inference. The values of λ for the brain and QR-based uncer-            Table I reports the mean and standard deviation of the SSIM
+tainty were 1.31, 1.54, 1.59, 1.74, and 1.87 for 2×, 4×, 6×,         between the reconstruction and the ground-truth, as well as
+8×, and 10× acceleration, respectively. For the ResM-based           the mean and standard deviation of the uncertainty values
+uncertainty, the scaling factor at 4× acceleration was 1.02. For     estimated by our model for acceleration factors of 2×, 4×, 6×,
+the knee, the scaling factors for the QR-based uncertainty were      8×, and 10× for each contrast in the brain test dataset and for
+1.42 and 1.68 for 4× and 6× acceleration, respectively. For the      acceleration factors of 4× and 6× for the knee test dataset. The
+ResM-based uncertainty, the scaling factor at 4× acceleration        reported uncertainty values represent the average width of the
+was 0.82.                                                            calibrated pixelwise uncertainty intervals, normalized by the
+                                                                     maximum reconstruction magnitude, and therefore quantify
+                                                                     the relative scale of the predicted reconstruction error as a
+E. Evaluation of Uncertainty Reliability                             percentage of the image intensity. For the 4× accelerated
+  To assess the correspondence between the predicted un-             reconstructions, we compared QR-based and ResM-based un-
+certainty and the true reconstruction error, we deﬁne the            certainties. Both methods yielded comparable ranges for the
+uncertainty map q̃ and the absolute error map ẽ as                  uncertainty estimates. All uncertainty maps were normalized
+                                                                     by the maximum reconstruction magnitude to express values
+             q̃ = ũb (x) − ˜lb (x),   ẽ = |x − y|,          (6)    as percentages. All values were computed per volumetric case.
+                                                                                                                                                            6
+
+
+
+
+Fig. 4. Comparison between the windowed absolute error (magniﬁed 50 times), the QR-based, and the ResM-based uncertainty for one healthy and three
+abnormal brain cases. All reconstructions were performed with four-fold acceleration. The QR-based uncertainty closely matches the absolute error distribution
+and in the abnormal cases it delineates the lesions, demonstrating superior localization of uncertainty compared to ResM.
+
+
+
+   Table II reports Pearson and Spearman correlation coefﬁ-                     the QR-based and ResM-based uncertainty maps for a healthy
+cients (including region-based) between the predicted uncer-                    and three abnormal brain cases at 4-fold undersampling.
+tainty and the true reconstruction error for the brain (2×,                        Similarly, Figure 5 compares the absolute reconstruction
+4×, 6×, 8×, and 10× acceleration factors) and the knee                          error (windowed and magniﬁed to enhance visualization) with
+test datasets (4× and 6× acceleration factors). For the 4×                      the QR-based and ResM-based uncertainty maps for three
+accelerated reconstructions, we also computed the correlation                   representative knee datasets at 4-fold undersampling.
+coefﬁcients between the ResM-based uncertainty and the true                        Figure 6 overlays the QR-based uncertainty map on the
+reconstruction error.                                                           reconstructed image for an abnormal brain and highlights the
+   Figure 3 shows the distribution of the Pearson correlation                   one-to-one correspondence between the uncertainty and patho-
+for all test data between the predicted uncertainty and the true                logical regions in the reconstruction. The zoomed views of the
+reconstruction error for the 4× undersampled brain (top) and                    lesion provide better visualization of the subtle reconstruction
+knee (bottom) test dataset. Each bar represents the number                      differences across acceleration factors.
+of cases achieving a given correlation level. The QR-based
+estimates (blue) are consistently higher than the ResM-based
+                                                                                C. Uncertainty as an anomaly detection method
+ones (red) for both anatomies.
+                                                                                  Figure 7 presents uncertainty maps for a healthy and three
+                                                                                representative abnormal brains. The uncertainty maps are
+B. Qualitative assessment of uncertainty                                        plotted also using the maximum value from the 4× accelerated
+                                                                                cases as the lower intensity threshold. This was done to
+   Figure 4 qualitatively compares the absolute reconstruction                  show the increase in uncertainty relative to reconstructions for
+error (windowed and magniﬁed to enhance visualization) with                     acceleration factors that were considered clinically valid in
+                                                                                                                                                         7
+
+
+
+
+Fig. 5. Comparison between the windowed absolute error (magniﬁed 50 times), the QR-based, and the ResM-based uncertainty for three knees. All
+reconstructions were performed with four-fold acceleration. The QR-based uncertainty qualitatively matches the absolute error distribution unlike the ResM-
+based approach.
+
+
+
+100% of the studied cases [16]. Similarly, Figure 8 presents                         c) Sensitivity to Sampling Pattern Variations: We per-
+thresholded uncertainty maps for three representative knees. In                formed a mask-perturbation experiment for the 6× undersam-
+the bottom panel, the uncertainty maps were thresholded using                  pled brain setup. The uncertainty module was trained and
+the maximum value from the 4× accelerated reconstructions.                     calibrated using the Cartesian mask with 5.3% ACS lines,
+                                                                               and then tested on perturbed masks with 16% and 3% ACS
+                                                                               lines while keeping the 6× acceleration ﬁxed. As shown in
+D. Additional Robustness Analyses                                              the Supporting Information (Figure S3), using a mask with
+                                                                               5.3% ACS lines as for training yielded the lowest uncertainty,
+     a) Performance with Other Reconstruction Methods: To                      whereas deviations from the training mask increased both the
+assess robustness across reconstruction methods, we repeated                   reconstruction error and the predicted uncertainty.
+the four-fold undersampled brain experiment using the FI                             d) Calibration Stability: We assessed the stability of λ
+VarNet [12] instead of the E2E VarNet. We retrained the                        with respect to the size of the calibration set for the brain
+uncertainty module for FI VarNet reconstructions. The QR-                      QR-based uncertainty model at 6× acceleration. We repeated
+based uncertainty remained strongly correlated with the true                   the calibration procedure using one-half and one-quarter of
+reconstruction error, with Pearson, Region-Pearson, Spearman,                  the original calibration dataset (with data sampled randomly
+and Region-Spearman coefﬁcients of 0.91 ± 0.10, 0.96 ± 0.10,                   from the full dataset), which yielded λ = 1.63 and λ = 1.58,
+0.75 ± 0.18, and 0.79 ± 0.20, respectively. We included a rep-                 respectively. These values differ by less than 3% from the
+resentative qualitative example in the Supporting Information                  value obtained with the full calibration dataset (λ = 1.59).
+(Figure S1), which shows that the results are consistent with                        e) Performance with Disjoint Training Sets: We per-
+those obtained using the E2E VarNet.                                           formed a disjoint training experiment for the 8× undersam-
+     b) Out-of-Distribution Performance: We performed a                        pled brain setup to evaluate whether the uncertainty module
+synthetic out-of-distribution test using the 6× undersampled                   remained stable when trained on data not used to train the
+brain setup by injecting a handcrafted bright lesion into the                  reconstruction network. The training and validation data were
+images. This perturbation was not present in the training data.                split into two non-overlapping subsets using even- and odd-
+As shown in the Supporting Information (Figure S2), the QR-                    numbered cases. E2E VarNet was trained and validated using
+based uncertainty increased markedly near the injected lesion,                 one subset, whereas the QR-based uncertainty module was
+indicating sensitivity to unseen image content and highlighting                trained and validated using the other subset. The experiment
+the perturbed region as potentially unreliable.                                was then repeated with the split reversed. For this experiment
+                                                                                                                                                                8
+
+
+
+
+Fig. 6. Reconstructed images, zoomed lesion views, absolute errors with the ground-truth, and corresponding QR-based uncertainty maps for one abnormal
+brain for ﬁve acceleration factors. Starting at four-fold acceleration, the QR-based uncertainty increases at the location of the lesion and reﬂects the posterior
+susceptibility artifact from a prior craniotomy. The zoomed panels facilitate visualization of the subtle lesion differences across acceleration factors. The
+bottom row overlays the uncertainty heatmaps on the corresponding reconstructed images to better illustrate that regions of high uncertainty spatially coincide
+with the lesion and the susceptibility artifact.
+
+
+
+we used 8 cascades for the E2E VarNet to expedite training.                       models, such as the E2E VarNet, build directly on the princi-
+Both the E2E VarNet and the uncertainty module were trained                       ples of traditional accelerated imaging and have reduced scan
+using 105,000 iteration steps. A warm-up ramp was applied                         times even more. Despite their success, these methods remain
+during the ﬁrst 3,750 steps, followed by cosine annealing                         neural-network-based, and there is currently no mechanism
+after 70,000 steps. The rest of the training sets were kept                       to verify the accuracy of their outputs or detect hallucinated
+the same as in the previous experiments. As shown in the                          structures, particularly at higher acceleration factors where
+Supporting Information (Figure S4), the QR-based uncertainty                      errors are expected [16]. In this work, we introduce an
+maps remained qualitatively similar across the two disjoint-                      uncertainty quantiﬁcation framework designed to estimate the
+training conﬁgurations. The results suggest that the QR-based                     reliability of reconstructed images for any acceleration factor.
+uncertainty estimation is stable even when the reconstruction
+and uncertainty networks are trained on separate subjects.                           Table I shows that QR-based uncertainty spans a similar nu-
+                                                                                  merical range with ResM. However, the qualitative comparison
+                                                                                  in Figures 4 and 5 demonstrates that QR provides uncertainty
+                            IV. D ISCUSSION                                       maps that more faithfully mirror the absolute reconstruction
+   Accelerated image reconstruction is one of the most trans-                     error distribution. For the healthy brain in Figure 4, QR
+formative developments in MRI and perhaps the clearest                            highlights the noisy posterior region where the reconstruction
+example of an academic innovation that has successfully tran-                     error is elevated, whereas ResM produces uniformly high un-
+sitioned into widespread clinical use. Unrolled reconstruction                    certainty around the entire brain, inconsistent with the spatial
+                                                                                                                                                           9
+
+
+
+
+Fig. 7. QR-based uncertainty maps for a healthy brain and three abnormal brain cases across increasing acceleration factors. For each case, uncertainty maps
+are shown for 2, 4, 6, 8, and 10× acceleration to illustrate how uncertainty evolves with undersampling. Top: unthresholded uncertainty maps (lower bound
+set to zero). Bottom: uncertainty maps thresholded using the maximum uncertainty observed at 4× acceleration. Thresholding highlights regions of elevated
+uncertainty at higher accelerations, corresponding to lesions and post-treatment effects. Note that the background color of abnormal case 3 in the top panel,
+appears brighter and noisier compared the other three cases. This is expected as there is a higher level of background noise corrupting the ground-truth, and
+the model is uncertain about its distribution.
+                                                                                                                                   10
+
+
+
+distribution of the error. If we assume that the reconstruction     increases, especially in the area of the pathology and in the
+error is larger in areas with pathologies, since the models         area affected by the posterior susceptibility artifact from the
+were trained with cases representing only a limited number of       prior craniotomy. Notably, the regions of elevated uncertainty
+possible brain lesions, then this suggests that the uncertainty     precisely overlap with the true lesion locations, indicating that
+values should be higher in correspondence of pathologies.           the QR-based uncertainty behaves as a trustworthy indicator of
+However, we found that while both methods capture global            reconstruction reliability. This alignment suggests that the QR-
+reconstruction noise patterns, only QR consistently highlights      based uncertainty can serve as a surrogate for reconstruction
+the lesion location and structure. In the ﬁrst abnormal brain,      error during scan time, when fully sampled data are unavail-
+the ResM-based uncertainty in the lesion is low, where the          able. Note that areas of elevated uncertainty are not expected
+reconstruction error is large and vice-versa. On the other hand,    to always correspond to pathological ﬁndings. If a pathology
+the QR-based uncertainty maps have higher values at the             is sufﬁciently represented in the training data and exhibits
+location of the lesions and follows the spatial pattern of the      relatively simple imaging characteristics, the reconstruction
+reconstruction error. In the second abnormal brain, the lesion is   remains reliable and the corresponding uncertainty stays low,
+highlighted by both methods, though its morphology is slightly      as observed for the meniscal tear example in the ﬁrst row of
+distorted in ResM. In the third abnormal brain, QR captures         Figure 5.
+the boundary of the treated region, which is lost in the ResM          Unrolled network architectures, such as the E2E VarNet,
+estimate. The QR-based uncertainty maps also appear visually        maintain clinical reliability for up to four-fold acceleration
+smoother than the absolute error maps because the network           [16]. For this reason, in Figures 7 and 8, we used the
+learns spatially coherent uncertainty patterns rather than exact    maximum uncertainty value from the four-fold accelerated
+pixelwise residual ﬂuctuations. This also explains why the          reconstructions as a threshold to evaluate higher-acceleration
+QR-based uncertainty looks more structured than the ResM-           factor reconstructions. In Figure 7, the healthy brain example
+based uncertainty, which relies on direct residual magnitude        shows uncertainty below the threshold at 10× acceleration,
+regression that is more sensitive to local noise and small-scale    suggesting that certain slices from healthy studies could be
+variations than quantile regression.                                reconstructed safely using very high acceleration factors agree-
+   Table II further supports these observations by quantifying      ing with the ﬁndings in [16]. In the ﬁrst abnormal case,
+the relationship between the estimated uncertainty and the true     uncertainty at 6× undersampling remains below the threshold
+reconstruction error calculated with fully-sampled ground truth     as well, indicating that some lesions may still be reconstructed
+reconstructions. After conformal calibration, the QR-based un-      accurately with fewer k-space samples than the conventional
+certainty showed high Pearson correlations (roughly 90%) with       four-fold limit. In contrast, abnormal cases 2 and 3 exhibit
+the reconstruction error in brain images for 4-fold acceleration    elevated uncertainty near the lesions or in noisy regions at
+and higher, indicating strong agreement between uncertainty         6× undersampling, implying that these slices should not be
+and error magnitude (note that the Pearson and region-Pearson       acquired with more than 4× undersampling to ensure reliable
+correlations dropped to 39% and 84%, respectively, when             reconstruction. This behavior is consistent with the objective of
+computed on the unblurred maps, due to the strong inﬂuence          the QR-based uncertainty module, which is trained to estimate
+of pixel-level noise in the absolute error map). These high         reconstruction error intervals conditioned on the E2E VarNet
+correlations show that the calibrated QR uncertainty scales         output. Therefore, elevated uncertainty is expected in regions
+proportionally with the underlying reconstruction error across      where reconstruction errors are more likely to occur, includ-
+the image. For the ResM-based uncertainty, the correlation          ing high-frequency structures, artifacts, and underrepresented
+dropped to 69%. According to the histogram in Figure 3,             pathological patterns with variable appearance. Conversely,
+Pearson correlation is higher when QR is used over ResM. For        when a pathology is well represented in the training data
+the reconstructed knee images, the ResM-based uncertainty           and reconstructed reliably, the uncertainty is not expected to
+correlates poorly with the true reconstruction error (Pearson       increase substantially. The results of Figure 7 suggest that
+correlation < 25%) due to the smaller calibration dataset (50       highly accelerated reconstructions could potentially serve as
+volumes comparing to 689 used in the brain) [22].                   a preliminary reliability assessment, helping identify cases or
+   Pearson correlations are consistently higher than Spearman       regions where a lower acceleration factor or additional k-space
+because magnitude alignment is stronger than strict pixelwise       sampling may be needed before relying on the image for
+rank ordering, which is more sensitive to local ﬂuctuations in      diagnostic interpretation.
+low-error regions. The lower correlations observed at 2-fold           Conformal prediction has a few practical limitations. First,
+acceleration are expected, as the reconstruction error in this      the calibration step is inherently ﬁnite-sample, meaning that
+regime is small and spatially homogeneous, yielding insufﬁ-         the estimated scaling factor can vary slightly with the size
+cient dynamic range for a meaningful correlation analysis.          and composition of the held-out calibration dataset, so small
+   The spatial correspondence between the lesions and regions       deviations from the nominal coverage level may occur in
+of high uncertainty is clearly shown by overlaying the QR-          practice if the calibration data are limited or not fully rep-
+based uncertainty heatmap on the reconstructed images (Fig-         resentative of the test distribution. However, our robustness
+ure 6). At two-fold acceleration, the uncertainty is near zero      analysis shows that performing the calibration of the 6× brain
+and therefore uninformative, which is expected given the high       QR-based uncertainty model with reduced calibration sets
+reconstruction accuracy of E2E VarNet at low acceleration           changed the scaling factor by less than 3% relative to the full
+factors [1]. At higher accelerations, however, the uncertainty      set, indicating that the proposed calibration was reasonably
+                                                                                                                                                         11
+
+
+
+stable with respect to calibration-set size. Second, because
+the uncertainty module is conditioned on the reconstructed
+images, its performance is directly tied to the behavior of the
+reconstruction network; if the reconstruction network overﬁts
+or produces conﬁdently wrong reconstructions, the uncertainty
+estimates will be unreliable. Third, conformal prediction pro-
+duces per-pixel uncertainty intervals but does not directly
+provide a mechanism for automatically selecting or controlling
+the acceleration factor. Integrating uncertainty with decision
+rules for adaptive sampling therefore requires additional com-
+ponents beyond conformal prediction alone, which will be
+investigated in future work. Future work will also incorporate
+the predicted uncertainty maps into the reconstruction pipeline
+to selectively reﬁne high-uncertainty areas and potentially
+improve SSIM performance at higher accelerations.
+
+                          V. C ONCLUSION
+   In this work, we introduced conformal QR to quantify the
+uncertainty of accelerated MRI reconstruction methods in the
+absence of ground-truth references. Our results demonstrate
+that QR provides a faithful surrogate for reconstruction error,
+with strong agreement in both magnitude and spatial distri-
+bution across contrasts and acceleration factors. QR-based
+uncertainty consistently highlights pathological regions and
+reconstruction failures that are missed by simpler heuristic
+notions of uncertainty. Since uncertainty increases with under-
+sampling and is higher in regions with pathologies, it could
+be combined with highly accelerated scans for rapid anomaly
+detection. More broadly, real-time access to uncertainty infor-
+mation could enable adaptive sampling strategies in which the
+scanner acquires additional k-space lines only when needed,
+thereby optimizing scan efﬁciency while preserving diagnostic
+quality. To facilitate reproducibility and future comparisons
+with alternative uncertainty quantiﬁcation methods, including
+posterior-sampling-based approaches, we are making our code
+and execution scripts used in this study openly available.                    Fig. 8. QR-based uncertainty maps for three knee cases at increasing
+                                                                              acceleration. For each case, uncertainty maps are shown for 4 and 6×
+                                                                              acceleration to illustrate how uncertainty changes with undersampling in knee
+                      ACKNOWLEDGMENTS                                         MRI. Top: unthresholded uncertainty maps (lower bound set to zero). Bottom:
+   The authors thank Dr. Tsui-Wei (Lily) Weng for valuable                    uncertainty maps thresholded using the maximum uncertainty observed at 4×
+                                                                              acceleration. Thresholding highlights regions where uncertainty exceeds levels
+discussions.                                                                  associated with clinically reliable reconstructions.
+
+               DATA AVAILABILITY S TATEMENT
+   The PyTorch code for our models is available at                             [5] M. Lustig, D. Donoho, and J. M. Pauly, “Sparse MRI: The application
+                                                                                   of compressed sensing for rapid MR imaging,” Magnetic Resonance in
+https://github.com/IliasGiannakopoulosLab/VarNet.                                  Medicine: An Ofﬁcial Journal of the International Society for Magnetic
+                                                                                   Resonance in Medicine, vol. 58, no. 6, pp. 1182–1195, 2007.
+                                                                               [6] M. Uecker, T. Hohage, K. T. Block, and J. Frahm, “Image reconstruction
+                            R EFERENCES                                            by regularized nonlinear inversionjoint estimation of coil sensitivities
+[1] A. Sriram et al., “End-to-end variational networks for accelerated MRI         and image content,” Magnetic Resonance in Medicine, vol. 60, no. 3,
+    reconstruction,” in International conference on medical image computing        pp. 674–682, 2008.
+    and computer-assisted intervention. Springer, 2020, pp. 64–73.             [7] K. Hammernik et al., “Learning a variational network for reconstruction
+[2] D. K. Sodickson and W. J. Manning, “Simultaneous acquisition of spatial        of accelerated MRI data,” Magnetic resonance in medicine, vol. 79,
+    harmonics (SMASH): fast imaging with radiofrequency coil arrays,”              no. 6, pp. 3055–3071, 2018.
+    Magnetic resonance in medicine, vol. 38, no. 4, pp. 591–603, 1997.         [8] H. K. Aggarwal, M. P. Mani, and M. Jacob, “MoDL: Model-based
+[3] K. P. Pruessmann, M. Weiger, M. B. Scheidegger, and P. Boesiger,               deep learning architecture for inverse problems,” IEEE transactions on
+    “SENSE: sensitivity encoding for fast MRI,” Magnetic Resonance in              medical imaging, vol. 38, no. 2, pp. 394–405, 2018.
+    Medicine: An Ofﬁcial Journal of the International Society for Magnetic     [9] T. Eo, Y. Jun, T. Kim, J. Jang, H.-J. Lee, and D. Hwang, “KIKI-net:
+    Resonance in Medicine, vol. 42, no. 5, pp. 952–962, 1999.                      cross-domain convolutional neural networks for reconstructing under-
+[4] M. A. Griswold et al., “Generalized autocalibrating partially parallel         sampled magnetic resonance images,” Magnetic resonance in medicine,
+    acquisitions (GRAPPA),” Magnetic Resonance in Medicine: An Ofﬁ-                vol. 80, no. 5, pp. 2188–2201, 2018.
+    cial Journal of the International Society for Magnetic Resonance in       [10] M. Arvinte, S. Vishwanath, A. H. Tewﬁk, and J. I. Tamir, “Deep J-Sense:
+    Medicine, vol. 47, no. 6, pp. 1202–1210, 2002.                                 Accelerated MRI reconstruction via unrolled alternating optimization,”
+                                                                                                                                                                12
+
+
+
+     in International conference on medical image computing and computer-         [35] R. Koenker and G. Bassett Jr, “Regression quantiles,” Econometrica:
+     assisted intervention. Springer, 2021, pp. 350–360.                               journal of the Econometric Society, pp. 33–50, 1978.
+[11] Y. Jun, H. Shin, T. Eo, and D. Hwang, “Joint deep model-based MR             [36] Y. Romano, E. Patterson, and E. Candes, “Conformalized quantile
+     image and coil sensitivity reconstruction network (joint-ICNet) for fast          regression,” Advances in neural information processing systems, vol. 32,
+     MRI,” in Proceedings of the IEEE/CVF conference on computer vision                2019.
+     and pattern recognition, 2021, pp. 5270–5279.                                [37] P. Chaudhuri, “Global nonparametric estimation of conditional quantile
+[12] I. I. Giannakopoulos et al., “Accelerated MRI reconstructions via varia-          functions and their derivatives,” Journal of multivariate analysis, vol. 39,
+     tional network and feature domain learning,” Scientiﬁc Reports, vol. 14,          no. 2, pp. 246–269, 1991.
+     no. 1, p. 10991, 2024.                                                       [38] K. Q. Zhou and S. L. Portnoy, “Direct use of regression quantiles to
+[13] M. P. Recht et al., “Using deep learning to accelerate knee MRI                   construct conﬁdence sets in linear models,” The Annals of Statistics,
+     at 3 T: results of an interchangeability study,” American Journal of              vol. 24, no. 1, pp. 287–306, 1996.
+     Roentgenology, vol. 215, no. 6, pp. 1421–1429, 2020.                         [39] K. Q. Zhou and S. L. Portnoy, “Statistical inference on heteroscedas-
+[14] D. J. Lin, P. M. Johnson, F. Knoll, and Y. W. Lui, “Artiﬁcial intelligence        tic models based on regression quantiles,” Journal of Nonparametric
+     for MR image reconstruction: an overview for clinicians,” Journal of              Statistics, vol. 9, no. 3, pp. 239–260, 1998.
+     Magnetic Resonance Imaging, vol. 53, no. 4, pp. 1015–1028, 2021.             [40] I. Takeuchi, Q. Le, T. Sears, A. Smola et al., “Nonparametric quantile
+[15] P. M. Johnson et al., “Deep learning reconstruction enables prospectively         estimation,” Journal of Machine Learning Research, vol. 7, pp. 1231–
+     accelerated clinical knee MRI,” Radiology, vol. 307, no. 2, p. e220425,           1264, 2006.
+     2023.                                                                        [41] I. Steinwart and A. Christmann, “Estimating conditional quantiles with
+[16] A. Radmanesh et al., “Exploring the acceleration limits of deep learning          the help of the pinball loss,” Bernoulli, vol. 17, no. 1, pp. 211–225,
+     variational network–based two-dimensional brain MRI,” Radiology:                  2011.
+     Artiﬁcial Intelligence, vol. 4, no. 6, p. e210313, 2022.                     [42] S. Bates, A. Angelopoulos, L. Lei, J. Malik, and M. Jordan,
+[17] P. M. Johnson et al., “Prostate Cancer Risk Stratiﬁcation and Scan                “Distribution-free, risk-controlling prediction sets,” Journal of the ACM
+     Tailoring Using Deep Learning on Abbreviated Prostate MRI,” Journal               (JACM), vol. 68, no. 6, pp. 1–34, 2021.
+     of Magnetic Resonance Imaging, 2025.                                         [43] W. Hoeffding, “Probability inequalities for sums of bounded random
+[18] S. Bhadra, V. A. Kelkar, F. J. Brooks, and M. A. Anastasio, “On                   variables,” Journal of the American statistical association, vol. 58, no.
+     hallucinations in tomographic image reconstruction,” IEEE transactions            301, pp. 13–30, 1963.
+     on medical imaging, vol. 40, no. 11, pp. 3249–3260, 2021.                    [44] K. Pearson, “VII. Note on regression and inheritance in the case of
+[19] S. Kiryu et al., “Clinical impact of deep learning reconstruction in MRI,”        two parents,” proceedings of the royal society of London, vol. 58, no.
+     Radiographics, vol. 43, no. 6, p. e220133, 2023.                                  347-352, pp. 240–242, 1895.
+[20] A. Kendall and Y. Gal, “What uncertainties do we need in bayesian            [45] C. Spearman, ““General Intelligence” Objectively Determined and Mea-
+     deep learning for computer vision?” Advances in neural information                sured.” The American Journal of Psychology, vol. 15, no. 2, pp. 201–
+     processing systems, vol. 30, 2017.                                                293, 1904.
+[21] M. Abdar et al., “A review of uncertainty quantiﬁcation in deep learning:
+     Techniques, applications and challenges,” Information fusion, vol. 76,
+     pp. 243–297, 2021.
+[22] A. N. Angelopoulos et al., “Image-to-image regression with distribution-
+     free uncertainty quantiﬁcation and applications in imaging,” in Interna-
+     tional Conference on Machine Learning. PMLR, 2022, pp. 717–730.
+[23] V. Edupuganti, M. Mardani, S. Vasanawala, and J. Pauly, “Uncertainty
+     quantiﬁcation in deep MRI reconstruction,” IEEE Transactions on Med-
+     ical Imaging, vol. 40, no. 1, pp. 239–250, 2020.
+[24] R. Tanno et al., “Uncertainty quantiﬁcation in deep learning for safer
+     neuroimage enhancement,” arXiv preprint arXiv:1907.13418, 2019.
+[25] D. Narnhofer, A. Efﬂand, E. Kobler, K. Hammernik, F. Knoll, and
+     T. Pock, “Bayesian uncertainty estimation of learned variational MRI
+     reconstruction,” IEEE transactions on medical imaging, vol. 41, no. 2,
+     pp. 279–291, 2021.
+[26] M. Ekanayake, K. Pawar, Z. Chen, G. Egan, and Z. Chen, “PixCUE:
+     joint uncertainty estimation and image reconstruction in MRI using deep
+     pixel classiﬁcation,” Journal of Imaging Informatics in Medicine, vol. 38,
+     no. 4, pp. 2071–2084, 2025.
+[27] K. Wang et al., “Rigorous uncertainty estimation for MRI reconstruc-
+     tion,” in Proc. ISMRM, vol. 749, 2022.
+[28] P. Fischer, J. N. Morshuis, T. Küstner, and C. Baumgartner, “CUTE-
+     MRI: Conformalized Uncertainty-based framework for Time-adaptivE
+     MRI,” arXiv preprint arXiv:2508.14952, 2025.
+[29] I. I. Giannakopoulos, L. B. Gautham, Y. W. Lui, and R. Lattanzi, “Pixel-
+     wise uncertainty estimation of accelerated mr image reconstruction using
+     conformal quan- tile regression,” in ISMRM Workshop on Data Sampling
+     and Image Reconstruction, 2026, p. 00056.
+[30] I. I. Giannakopoulos, L. B. Gautham, Y. W. Lui, and R. Lattanzi, “A
+     trainable uncertainty module for image reconstruction methods using
+     conformal prediction,” in Proc. ISMRM, 2026, p. 01587.
+[31] J. Zbontar et al., “fastMRI: An open dataset and benchmarks for
+     accelerated MRI,” arXiv preprint arXiv:1811.08839, 2018.
+[32] F. Knoll et al., “fastMRI: A publicly available raw k-space and DICOM
+     dataset of knee images for accelerated MR image reconstruction using
+     machine learning,” Radiology: Artiﬁcial Intelligence, vol. 2, no. 1, p.
+     e190007, 2020.
+[33] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional networks
+     for biomedical image segmentation,” in International Conference on
+     Medical image computing and computer-assisted intervention. Springer,
+     2015, pp. 234–241.
+[34] Z. Wang, E. P. Simoncelli, and A. C. Bovik, “Multiscale structural
+     similarity for image quality assessment,” in The thrity-seventh asilomar
+     conference on signals, systems & computers, 2003, vol. 2. Ieee, 2003,
+     pp. 1398–1402.
+

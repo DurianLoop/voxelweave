@@ -1,0 +1,35 @@
+6 Y.Du et al.
+Fig. 3. Classification performance varying sample rates (horizontal axis). More metrics
+are reported in the Supplementary.
+ple rate of 5% with multiple center fraction and samples 64 lines to reach the
+sample rate of 25% as the sampling budget. The parallel acquisition q = 8.
+For all methods, we employ the Adam optimiser with a learning rate of 10 −4
+and a step-based scheduler with a decay gamma of 0.1 for all model training. All
+classification and reconstruction models are trained for 30 epochs, and the policy
+networks of the active sampler are trained for 20 epochs. Our experimental setup
+uses the PyTorch framework, and all computations are conducted on NVIDIA
+A100 Tensor Core GPUs. Our code 4 is available.
+4.3 Results
+Making Diagnostic Decisions with Undersampled Data
+Figure 3 compares the performance at various sample rates for three strategies
+that use undersampled masks, namely the Undersampled, Policy Reconstruction
+and Policy Classifier . The first randomly samples k-space lines progressively;
+the other two start with a randomly initialised mask with a sample rate of 5%
+and optimally decide using their respective rewards and policies (see Section 3).
+Our method, the Policy Classifier , consistently outperforms the Undersampled
+baseline across all metrics, showing that optimal sampling via the policy network
+helps in identifying diagnostically relevant k-space lines. This leads to consider-
+able savings in data sampled (and consequently scan time). Our model approxi-
+mates well the performance of theOracle, which has been trained on high-fidelity
+data, and reaches optimal performance quickly. Taking AUC as an example, our
+approach reaches an AUC of 0.780 with 7% of the sampledk-space. Our method
+closely approximates the performance of the Policy Reconstruction, which we
+highlight has been trained with access to fully sampled k-space.5
+k-space Sampling Behaviour of the Policies
+The results of the previous paragraph are reported over a coarse percentage of
+k-space lines acquired. It is worth looking into how the two different policies
+4 https://anonymous.4open.science/r/KspaceToDiagnosis-CB5E
+5 We observe that the Policy Reconstruction performs better than the Oracle. This
+policy reconstructs an image which is given to the Oracle for classification. Some
+denoising and smoothing are happening at the reconstruction which in turn acts as
+a regulariser for the Oracle classifier explaining this slightly improved performance.

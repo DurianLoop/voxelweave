@@ -1,0 +1,32 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+2
+medical images requires domain expertise and is expensive and time-consuming. At the same time, 
+segmentation accuracy is safety-critical: errors in cardiac structure delineation directly impact treatment 
+planning in radiation oncology and interventional cardiology. The community needs architectures that can 
+achieve high segmentation accuracy with limited training data.
+The Recurrent-Depth Transformer (RDT) architecture, recently reconstructed by Gomez in the 
+OpenMythos project [1], offers a compelling alternative to the standard deep transformer stack. The core 
+idea is simple but powerful: replace L unique transformer blocks with a single shared block looped T times, 
+where each iteration refines the hidden state through a Linear Time-Invariant (LTI) injection mechanism 
+that guarantees convergence. This design has several theoretical advantages for data-limited settings. First, 
+parameter reuse across loop iterations acts as implicit regularization—the model is forced to learn a 
+universal feature transformation applicable at multiple abstraction levels. Second, Adaptive Computation 
+Time (ACT) enables per-token halting, allowing the model to allocate more compute to difficult regions 
+and less to easy ones, implementing a learned curriculum within each image. Third, depth-wise LoRA 
+adapters provide per-loop differentiation without requiring unique full-rank weights.
+We argue that these properties are particularly well-suited to dense prediction tasks in vision, where 
+different spatial regions require fundamentally different amounts of processing. In cardiac segmentation, 
+for instance, large homogeneous background regions need minimal processing, while the thin myocardium 
+and complex right ventricular geometry demand fine-grained feature refinement. An architecture that can 
+adaptively allocate compute—more iterations for boundaries, fewer for interiors—should be both more 
+efficient and more accurate than one that applies the same fixed computation everywhere.
+Figure 1: Comparison of Standard ViT (unique weights per layer), RD-ViT (shared weights with LoRA), and RD-ViT+MoE 
+(shared weights with expert routing). RD-ViT+MoE achieves 99.4% of Standard ViT performance at 53% of the parameter count 
+on 3D ACDC cardiac segmentation.
+In this paper, we introduce RD-ViT, a recurrent-depth vision transformer for semantic segmentation that 
+adapts all key RDT components to dense prediction. Our contributions are as follows:
+(1) A complete 2D/3D segmentation architecture adapting LTI-stable injection, ACT spatial halting, depth￾wise LoRA, and MoE to dense prediction. The architecture is dimension-agnostic: the transformer core 
+operates on patch token sequences regardless of whether the input is a 2D image or 3D volume.
+(2) Empirical validation of the data efficiency hypothesis on real ACDC cardiac MRI in both 2D slice-level 
+and 3D volumetric settings, with comparison against standard ViT baselines using identical total depth and 
+matched compute.

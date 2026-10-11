@@ -1,0 +1,38 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+The work of Wang and Arce (2009) is a first step in this direction, where improved VDS
+functions are proposed by exploiting a priori statistical information of real-world images
+in the wavelets domain. One can notice that this approach chose to tie the sampling
+pattern specifically to a type of regularization, namely sparsity in the wavelet domain,
+and obtains better sampling density for this problem but lose in generality over competing
+approaches.
+The work of Puy et al. (2011) proposes a coherence-driven optimization of the variable
+density sampling procedure. Instead of relying on a heuristic distribution such as
+equation 4.3, the procedure proposes an objective that yields a VDS distribution that
+minimizes the coherence between the measurement and representation bases.
+A large body of subsequent works (Krahmer and Ward, 2013; Roman et al., 2014; Adcock
+et al., 2015, 2017) rely on some additional theoretical tools such aslocal coherence,
+asymptotic sparsity, andmultilevel samplingto give a solid ground to heuristics such as
+VDS that show good performance but lack theoretical justification.
+4.3 Towards learning-based, data-driven approaches
+In parallel to these works, there was a motivation to move towards learning-based
+approaches, due to some weaknesses in the VDS approach of Lustig et al. (2007). One
+of them is that the VDS distribution of Equation 4.3 is a heuristic that requires tuning
+to work well on different types of data, and that heuristically tuned variable density
+distributions generally performed better than the ones solely prescribed by CS theory
+(Chauffert et al., 2013).
+Learning-based, model-driven sampling.A first work of Knoll et al. (2011b) aimed
+at solving this issue by constructing the VDS distribution from data rather than from a
+tuned heuristic. They simply average the spectra of several similar images, normalized it
+and sampled their mask from the resulting distribution, minimizing coherence to select
+the final mask, as in Lustig et al. (2007). This approach was then improved by Zhang
+et al. (2014); Vellagoundar and Machireddy (2015).
+Early learning-based, data-driven approaches.Ravishankar and Bresler (2011a);
+Liu et al. (2012) proposed similar methods where they aimed at designing a sampling
+pattern that minimized thereconstruction errorin Fourier space, rather than coherence.
+Both algorithms partition k-space in blocks, and iteratively design a mask by removing
+samples from low-error regions in order to re-assign them in high-error regions. Liu et al.
+(2012) made the important point that the design of a mask should reconstruction-based
+and not observation-based. Until then, approaches did not include the reconstruction
+algorithm into the design of the mask, but relied on model-based criteria relying on the
+observations, such as coherence. This insight proved to be impactful in the performance
+34

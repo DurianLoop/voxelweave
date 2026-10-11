@@ -1,0 +1,175 @@
+2 Y.Du et al.
+MRI 
+SCANNER
+UNDERSAMPLED
+K-SPACE DATA
+RECONSTRUCTED 
+IMAGE
+IMAGE 
+RECONSTRUCTION
+IMAGE 
+INFERENCE
+PATIENT
+b.
+BIOMARKERSDIAGNOSIS
+MRI 
+SCANNER
+UNDERSAMPLED
+K-SPACE DATA
+RECONSTRUCTED 
+IMAGE
+IMAGE 
+RECONSTRUCTION
+IMAGE 
+INFERENCE
+PATIENT
+b.
+BIOMARKERSDIAGNOSIS
+PATIENT MRI 
+SCANNER
+INFERENCE 
+NETWORK
+BIOMARKERS DIAGNOSIS
+c.
+UNDERSAMPLED
+K-SPACE DATA
+MRI 
+SCANNER
+INFERENCE 
+NETWORK
+BIOMARKERS DIAGNOSIS
+c.
+UNDERSAMPLED
+K-SPACE DATA
+PATIENT MRI 
+SCANNER
+INFERENCE 
+NETWORK
+BIOMARKERS DIAGNOSIS
+c.
+UNDERSAMPLED
+K-SPACE DATA
+a.
+MRI 
+SCANNER
+K-SPACE 
+DATA
+PATIENT BIOMARKERS DIAGNOSIS
+GROUND TRUTH 
+IMAGE
+CLINICIANMRI 
+SCANNER
+K-SPACE 
+DATA
+PATIENT BIOMARKERS DIAGNOSIS
+GROUND TRUTH 
+IMAGE
+CLINICIAN
+a.
+MRI 
+SCANNER
+K-SPACE 
+DATA
+PATIENT BIOMARKERS DIAGNOSIS
+GROUND TRUTH 
+IMAGE
+CLINICIAN
+a.
+MRI 
+SCANNER
+K-SPACE 
+DATA
+PATIENT BIOMARKERS DIAGNOSIS
+GROUND TRUTH 
+IMAGE
+CLINICIAN
+MRI 
+SCANNER
+UNDERSAMPLED
+K-SPACE DATA
+RECONSTRUCTED 
+IMAGE
+IMAGE 
+RECONSTRUCTION
+IMAGE 
+INFERENCE
+PATIENT
+b.
+BIOMARKERSDIAGNOSIS
+PATIENT MRI 
+SCANNER
+INFERENCE 
+NETWORK
+BIOMARKERS DIAGNOSIS
+c.
+UNDERSAMPLED
+K-SPACE DATA
+a.
+MRI 
+SCANNER
+K-SPACE 
+DATA
+PATIENT BIOMARKERS DIAGNOSIS
+GROUND TRUTH 
+IMAGE
+CLINICIAN
+MRI 
+SCANNER
+UNDERSAMPLED
+K-SPACE DATA
+RECONSTRUCTED 
+IMAGE
+IMAGE 
+RECONSTRUCTION
+IMAGE 
+INFERENCE
+PATIENT
+b.
+BIOMARKERSDIAGNOSIS
+PATIENT MRI 
+SCANNER
+INFERENCE 
+NETWORK
+BIOMARKERS DIAGNOSIS
+c.
+UNDERSAMPLED
+K-SPACE DATA
+a.
+MRI 
+SCANNER
+K-SPACE 
+DATA
+PATIENT BIOMARKERS DIAGNOSIS
+GROUND TRUTH 
+IMAGE
+CLINICIAN
+Fig. 1. Conventional vs. ML-based Diagnostic Processes.
+has focused on optimising both reconstruction [3] and k-space sampling strate-
+gies [1]. To find the best k-space sampling pattern, various methods [12, 17, 18]
+optimise the mask given pre-defined sample rates, resulting in population-level
+masks, while reinforcement-learning-based methods [2,11] can optimise an active
+sampling strategy at population or patient-level. A re-interpretation of such con-
+ventional use of MRI can lead to considerable savings, which will largely enable
+a low-field MRI future opening the road to POC and bedside imaging.
+Considering that image reconstruction is a shared stage in both conventional
+(Figure 1a) and ML-based (Figure 1b) diagnostic processes, one ponders Is the
+image necessary for automated, diagnostic, inferences? One option is to perform
+direct inference on undersampled k-space as shown in Figure 1c. In fact, [14]
+have shown that it is possible to obtain biomarkers directly from k-space data.
+However, one then immediately ponders Can AI agents learn effective k-space
+sampling strategies by considering expected diagnostic performance? A recent
+realisation of this concept is presented in [15]. The work formulates the described
+process as a classification task with an optimised sampling strategy. However, the
+sampling strategy is designed at the population-level, resulting in the same mask
+for all patients. All approaches that find optimal patient-level active sampling
+strategies use image reconstruction [2, 11, 20]. To the best of our knowledge,
+active sampling strategies for patient-level disease inference, from undersampled
+k-space, are lacking. Motivated by this, our contributions include:
+• We propose, the first, patient-level active sampling using a reinforcement
+learning framework, aiming for direct disease inference from k-space.
+• We test feasibility to infer Meniscus Tear presence in undersampled MRI.
+• We investigate how different policies make decisions and how different start-
+ing points alter behaviour.
+2 MRI Undersampling Preliminaries
+Instead of directly imaging the human anatomy, MRI captures the electromag-
+netic activity in the body after exposure to magnetic fields and radiofrequency

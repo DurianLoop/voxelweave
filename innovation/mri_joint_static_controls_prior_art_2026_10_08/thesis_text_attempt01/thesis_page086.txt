@@ -1,0 +1,55 @@
+5.5. EXPERIMENTS - LAZY LBCS
+its implementation in the BART toolbox (Uecker et al., 2015) to iteratively solve
+minz ∥yω−PωFS z∥2
+2 +λ∥W z∥1 (5.6)
+whereyω∈ CCP is the coil-wise subsampled Fourier measurements,S =
+[
+S1... SC
+]T
+∈
+RCP×P are the stacked coil sensitivities,PωF is the subsampled Fourier transform
+applied coil-wise to the product of the image with the stacked coil sensitivities andW is
+a sparsifying operator. Recall that the multicoil formulation was discussed in greater
+depth in Equation 2.14. Other compressed sensing multicoil algoritms include (Uecker
+et al., 2014; Chaâri et al., 2011). Recall that ALOHA exploits the duality between sparse
+signals and their transform domain representations cast as a low-rank Hankel matrix,
+and transforms the problem into a low-rank matrix completion.
+5.5.1 2D multicoil setting
+We first compare the performances of lLBCS with various baselines. As it can be seen in
+Figure 5.19 for a range of subsampling rates, the coherence-based VD masks can perform
+better than low-pass (LP) mask. However, they have weaker performance compared to
+the parameter sweep with PSNR as the objective function (LB-VD). This is expected as
+the LB-VD masks exploit the knowledge of the training set, whereas the coherence-based
+VD masks do not. The best performance is provided by our proposed approach, lLBCS
+(LB in the results). Indeed, the greedy LB algorithm is free from the constraint of a
+parametric distribution, which allows the data to decide which mask is best suited to
+a given decoder. Also, the VD-based masks result in artifacts especially visible in the
+ALOHA reconstructions that are suppressed in the LB-case.
+0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5
+subsampling rate
+24
+26
+28
+30
+32
+34
+36
+38
+40
+42
+44PSNR SENSE LP
+ALOHA LP
+SENSE VD
+ALOHA VD
+SENSE LB-VD
+ALOHA LB-VD
+SENSE LB
+ALOHA LB
+Figure 5.19: PSNR perfor-
+mances of various masks av-
+eraged over 100 test im-
+ages: LP (low-pass mask),
+VD (variable density), LB-
+VD and lLBCS (LB).
+Cross-performances of single and multi-coil masks.
+73

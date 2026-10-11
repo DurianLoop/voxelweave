@@ -1,0 +1,41 @@
+5.2. LBCS MOTIVATION: SUBMODULARITY
+Algorithm 1LBCS
+Input: Training datax1,..., xm, decoderfθ,
+sampling subsetsS, cost functionc, maximum costΓ
+Output: Sampling patternω
+1: ω←∅
+2: while c(ω)≤ Γ do
+3: for S∈S such thatc(ω∪S)≤ Γ do
+4: ω′ =ω∪S
+5: For eachj, setyj←Pω′Fxj, ˆxj←fθ(yj,ω′)
+6: η(ω′)← 1
+m
+∑m
+j=1η(xj, ˆxj)
+7: end for
+8: ω←ω∪S∗, S ∗ = arg max
+S :c(ω∪S)≤Γ
+η(ω∪S)−η(ω)
+9: end while
+10: return ω
+practice. It also does not rely on any probability distribution from which candidate
+masks are drawn, which makes it fully learning-based. Finally, the algorithm is not
+tied to a specific reconstruction method or performance metric, which makes it easy to
+integrate in novel approaches.
+5.2 LBCS motivation: Submodularity
+The idea to apply a greedy approach to the problem of mask design was initially motivated
+by techniques used in the field of submodular function maximization (Baldassarre et al.,
+2016; Krause and Golovin, 2014). We discuss in greater depth these concepts here as
+the motivation for scaling up LBCS are also motivated by algorithms proposed in the
+context of submodular function maximization.
+Submodular functions have been studied for a long time (Nemhauser et al., 1978; Minoux,
+1978), and formalize among other things the idea ofdiminishing returns. This is the
+idea that adding an element to a smaller set increases the objective more than when it is
+added to a larger set. Formally
+Definition (Submodularity). A set functionη(ω) mapping subsetsω∈ [P ] to real
+numbers is said to besubmodular if, for allω1,ω 2⊂ [P ] with ω1⊆ ω2 and all
+i∈ [P ], it holds that
+η(ω1∪{i})−η(ω1)≥η(ω2∪{i})−η(ω2). (5.2)
+The function is said to bemodular if the same holds true with equality in place of
+inequality
+49

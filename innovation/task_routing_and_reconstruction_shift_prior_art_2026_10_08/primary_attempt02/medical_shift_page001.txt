@@ -1,0 +1,43 @@
+Proceedings of Machine Learning Research – 37:1–39, 2026 Full Paper – MIDL 2026
+Evaluating the Impact of Medical Image Reconstruction on
+Downstream AI Fairness and Performance
+Matteo Wohlrapp1,2 matteo.wohlrapp@cdtm.de
+Niklas Bubeck2,3 niklas.bubeck@tum.de
+Daniel Rueckert2,3,4 daniel.rueckert@tum.de
+William Lotter1,5 lotterb@ds.dfci.harvard.edu
+1Department of Data Science, Dana-Farber Cancer Institute, Boston, MA, USA
+2AI in Medicine, Technical University of Munich, Munich, Germany
+3Munich Center for Machine Learning (MCML), Munich, Germany
+4Department of Computing, Imperial College London, London, UK
+5Harvard Medical School, Boston, MA, USA
+Editors:Accepted for publication at MIDL 2026
+Abstract
+AI-based image reconstruction models are increasingly deployed in clinical workflows to
+improve image quality from noisy data, such as low-dose X-rays or accelerated MRI scans.
+However, these models are typically evaluated using pixel-level metrics like PSNR, leaving
+their impact on downstream diagnostic performance and fairness unclear. We introduce
+a scalable evaluation framework that applies reconstruction and diagnostic AI models in
+tandem, which we apply to two tasks (classification, segmentation), three reconstruction
+approaches (U-Net, GAN, diffusion), and two data types (X-ray, MRI) to assess the poten-
+tial downstream implications of reconstruction. We find that conventional reconstruction
+metrics poorly track task performance, where diagnostic accuracy remains largely stable
+even as reconstruction PSNR declines with increasing image noise. Fairness metrics exhibit
+greater variability, with reconstruction sometimes amplifying demographic biases, particu-
+larly regarding patient sex. However, the overall magnitude of this additional bias is modest
+compared to the inherent biases already present in diagnostic models. To explore potential
+bias mitigation, we adapt two strategies from classification literature to the reconstruc-
+tion setting, but observe limited efficacy. Overall, our findings emphasize the importance
+of holistic performance and fairness assessments throughout the entire medical imaging
+workflow, especially as generative reconstruction models are increasingly deployed.
+Keywords:Fairness, Image Reconstruction, GANs, Diffusion Models
+1. Introduction
+AI-based image reconstruction is an increasingly integral component of clinical workflows.
+These approaches are designed to enhance the quality of noisy medical images such as low-
+dose X-rays or faster-sampled MRIs, ultimately generating new medical images by imputing
+patterns learned from the training datasets (Ahishakiye et al., 2021). Notably, there are now
+over 80 FDA-cleared devices based on this approach (Singh et al., 2025), whose generated
+images are ultimately interpreted by clinicians.
+Traditionally, reconstruction model performance has been evaluated using pixel-level
+image metrics such as PSNR. However, these metrics provide an incomplete picture, as they
+©2026 CC-BY 4.0, M. Wohlrapp, N. Bubeck, D. Rueckert & W. Lotter.
+arXiv:2604.10904v1  [cs.CV]  13 Apr 2026

@@ -1,0 +1,39 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+greedy mask optimization, and the size of candidate locations to be used. We set these
+to 64 and 256 respectively. We used the negative MSE as the performance metric.
+In this experiment, as we have smaller images in image domain, we performed pixel-wise
+masking rather than line-wise masking like in MRI. This greatly increases the number
+of candidate locations that the policy can sample. We used for training a mixture of
+random masks and masks that sample more frequently locations near the center of the
+image.
+Note also that the approach of Zhang et al. (2019b) isnot applicable here, as it is not
+clear how to train their evaluator in image domain, due to their introduction of spectral
+maps. Also, even if it were adapted, their approach scales very poorly to pixel-wise
+sampling, as this would require the computation of a spectral map for each individual
+pixel, all of which are fed at once as input of the evaluator.
+Results
+Our main results are presented on Table 7.3, which provides the AUC for PSNR, SSIM,
+as well as the downstream classification accuracy. This was computed using a simple
+convolutional network that was pretrained on MNIST without any undersampling. A
+visual assessment of different policies is shown on Figure 7.5.
+Focusing first on Table 7.3, we see a very different picture than on the MRI case (Table
+7.2). Here, our 0-step adaptive GAN policy very largely outperforms the1-step fixed
+LBCS policy across all metrics. This highlights a fundamentally different paradigm
+between image domain and Fourier domain sampling. In image domain, it seems that
+adaptivity matters much more than in Fourier. This makes intuitive sense, and is well
+illustrated in the case of MNIST, where the sampling pattern focuses on areas that are
+ambiguous, which can be very different for different images: this is illustrated more
+clearly on Figure B.2 in Appendix B.2.3. This is also consistent with results on CIFAR10
+shown in Appendix B.2.4.
+It is surprising to see that, although the different generator architectures have roughly
+the same number of parameters, they can lead to very different performance when used as
+policies. The ResUNet performs significantly better with the NC and the cResNet shows
+a much better performance on the WGAN. However, there is not a significant difference
+on the performance with the LBCS policy. Although this is beyond the scope of this
+work, it would be interesting to form a better understanding of why such a discrepancy
+occurs.
+Figure 7.5 features also an impressive ability of conditional GANs: although the model
+was only trained on pairs of data(x,y) from a given mode of the distribution, the
+model successfully produces varied conditional outcomes{xi} that spanmultiple modes
+120

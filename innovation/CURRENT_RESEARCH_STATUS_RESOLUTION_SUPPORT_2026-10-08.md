@@ -1,0 +1,13 @@
+# 最新接续：分辨率先例与真实FOV支持
+
+原session29823继续，最新真实3fe0b7仍含session_id：第一native_reference_intensity完成2992，第二native_reference_spatial660/2992，median2.128976750012953秒、累计7702.772460600012秒。其余两分支没有完成记录；不据时间推断、不挑loss/checkpoint、不提前评价。GPU授权持续有效，59f563实际总24455MiB/free1394MiB，低于已冻结启动门槛；未迁移原训练。
+
+上一批两原文与38开发batch资格归档真实b82e52 exit0，6060旧hash不变，新增51、累计6111，indexSHA230ebb8b8a88044b5274151e5cb46660f6611f6851400d88739a2e27a13a9db2。此数字是归档数量，不是论文数量/医学结果数量。
+
+新完成GOUHFI2025和claustrum2025两篇原文、主XML附录和10表单元格；VINN/lesion ensemble HTTP500原失败保留，未计正文。新的16非医疗synthetic资格7a449b=0，76旧开发patch几何审计02f3f5=0，图baef34=0。没有新的患者影像/GT/model加载、神经forward/updates或医学效应评分。
+
+真实上下文消除人工crop边界损失，但不能恢复插值平滑。60/76plan有正权重source邻居超fullFOV的直接证人；其余16仅没有角点证人，不证明支持充足；保守bbox全部不fit。支持计算和metadata不是医学失败因果证据。后续普通增强必须明确common支持/禁用策略、同parent/schedule/预算/control；当前四臂源不改。
+
+分辨率随机化、synthetic labels-to-image、形状QC已有先例，优先创新问题仍充分任务能力后具体病灶修正的真实损害变化与全费用，未形成独立确认发表claim。11开发19series/已见4验证9series；8未见确认12series和lockedIXI保持关闭。
+
+入口：[本批README](resolution_and_lesion_followup_2026_10_08/README.md)、[原文和创新判断](resolution_and_lesion_followup_2026_10_08/PRIMARY_READING_AND_INNOVATION_DECISIONS.md)、[后续试验](resolution_and_lesion_followup_2026_10_08/NEXT_TRIAL_PREPARATION.md)。新的归档接6111，真实数量以本批APPEND_PROOF为准；滚动训练文件不冻结，唯原frozen_config可纳入。

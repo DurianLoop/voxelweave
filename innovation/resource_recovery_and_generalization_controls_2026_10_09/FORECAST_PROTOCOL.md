@@ -1,0 +1,7 @@
+# 六个普通分辨率增强分支的完整容量预测
+
+六分支明确定义为两输入(native诊断、raw-PCHIP部署输入)×三方案(throughplane/inplane/allaxes)，每支2992更新；这个预测不包含另需资格和成本的reliability-map、VINN、QC/收益头或严格LOPO全流水线。旧文档中泛指的“六普通resolution/support/reliability”不能当作这些模块已有可执行runner的证据。当前仅既有分辨率/强度算子和文字方案已准备，新六分支训练runner尚未验证或运行。
+
+读取已完成四臂的实际terminal/receipt及checkpoint、gzip history的字节和SHA；不加载模型或病例数组。按最大实际checkpoint计六final和一份atomic临时，日志取max(12MB,6×最大完成gzip history)，再留训练metadata3MB、28series×6臂完整评价输出5MB、cache/forward/backward费用资格1MB、终态审计归档1MB。另保留本资源stage2MB、live资格2MB、原医学3MB和开发2.8MB的既有allowance。按未压缩保存预测，不假定新权重或日志自动压缩，不只计final payload。
+
+fresh磁盘/RAM守卫仍各8GB，GPU准入仍8192MiB。即使容量通过，35904全资格实际terminal和独立audit、完整费用实测及新runner资格缺一均training_ready=false。能力诊断沿用既有11开发患者全监督parent，不能叫严格LOPO。未见确认/lockedIXI关闭。不安装、不删历史、不查控其他PID。

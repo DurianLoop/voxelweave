@@ -1,0 +1,9 @@
+# 本批增量冻结
+
+从原6441份不可变来源接续，先验证previous index/proof的固定SHA，再逐份核旧逻辑哈希。新来源包括两篇主文及读流、原表核验、上一轮失败诊断/修复271及本轮真正terminal/审计、新35904 harness和启动记录。原74234已exit1，其原receipt/journal现在可冻结；原maxima不掩盖failed_field。
+
+当前29823训练和90446完整重放均live，rolling receipt/journal/checkpoints排除，只有各自不可变frozen_config可纳入。对live数据的工具观察是固定时点原文副本，不是宣布源文件终止或全范围通过。归档数量不是论文数量或医学结果数。
+
+所有新JSON来源SHA及本地Markdown链接核对。压缩观察receipt采用本目录文件名字段，按文档目录解析、严格拒绝绝对/逃逸路径，核bytes/SHA及gzip解码后原始字节SHA；其他来源条目仍按innovation根解析。gzip保留完整实际返回，包括工具自身截断提示、空stdout、session_id和真实exit。
+
+不覆盖任何旧index、不冻结正在变化的文件、不删除历史。本目录总量4MB、磁盘/RAM8GB，另预留医学评价3MB及新完整重放stage2MB。通过归档也不能宣布goal完成；无新独立医学claim。

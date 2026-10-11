@@ -1,0 +1,915 @@
+                                              Separating Intrinsic Ambiguity from Estimation
+                                             Uncertainty in Deep Generative Models for Linear
+                                                             Inverse Problems
+
+
+                                                                    Yuxin Guo1,2∗, Dongrui Deng1,2 , Pulkit Grover1,3
+                                                                    1
+                                                                     Neuroscience Institute, Carnegie Mellon University
+arXiv:2605.15050v1 [cs.LG] 14 May 2026
+
+
+
+
+                                                               2
+                                                                 Machine Learning Department, Carnegie Mellon University
+                                                     3
+                                                       Department of Electrical and Computer Engineering, Carnegie Mellon University
+
+
+
+                                                                                           Abstract
+                                                     Recently, deep generative models have been used for posterior inference in inverse
+                                                     problems, including high-stakes applications in medical imaging and scientific dis-
+                                                     covery, where the uncertainty of a prediction can matter as much as the prediction
+                                                     itself. However, posterior uncertainty is difficult to interpret because it can mix
+                                                     ambiguity inherent to the forward operator with uncertainty propagated through
+                                                     inference. We introduce a structural decomposition of posterior uncertainty that
+                                                     isolates intrinsic ambiguity. A cascade formulation makes this ambiguity accessible
+                                                     for calibration analysis, enabling qualitative diagnostics and simulation-based cali-
+                                                     bration tests that reveal failure modes that remain hidden when models are selected
+                                                     by reconstruction quality alone. We first validate the approach on a Gaussian
+                                                     example with analytical posterior structure, then illustrate the decomposition on
+                                                     accelerated magnetic resonance imaging (MRI), and finally apply the calibration
+                                                     diagnostics to electroencephalography (EEG) source imaging.
+
+
+                                         1     Introduction
+                                         Inverse problems are common in fields such as natural sciences, medical imaging, and astronomy.
+                                         These problems are often ill-posed, in the sense that the measurement is many-to-one, where distinct
+                                         underlying states can produce the same measurement. Consequently, reconstruction uncertainty is
+                                         not only induced by measurement noise, but also arises from the geometry of the forward operator
+                                         itself. In such settings, the observations identify only a subset of the underlying system, while the
+                                         remaining degrees of freedom are fundamentally unresolvable from the data.
+                                         Classical optimization methods address ill-posed inverse problems by introducing explicit constraints,
+                                         such as regularization that impose sparsity, and are typically evaluated by reconstruction metrics
+                                         such as mean squared error (MSE). More recently, generative models aim to sample plausible
+                                         reconstructions from a learned data prior, and are additionally evaluated by distributional metrics,
+                                         such as Fréchet Inception Distance (FID) [1] and Contrastive Language–Image Pretraining (CLIP)
+                                         score [2]. However, they are limited because they assess either the reconstruction fidelity or the
+                                         distributional similarity between generated samples and real data — without examining whether the
+                                         model faithfully captures the posterior uncertainty over all the possible reconstructions consistent with
+                                         a given measurement. This raises a fundamental question: how should the uncertainty represented
+                                         by these posterior samples be interpreted? In particular, existing uncertainty estimates typically
+                                         conflate two qualitatively distinct sources of variability — ambiguity that is intrinsic to the ill-
+                                         posed problem, and uncertainty that arises from measurement noise. Answering this question is
+                                         especially consequential in high-stakes applications, where a model must not only produce accurate
+                                         reconstructions but also faithfully reflect how much of its uncertainty is irreducible.
+                                             ∗ Corresponding author: yuxinguo@andrew.cmu.edu
+
+
+
+                                         Preprint.
+In this paper, we propose a decomposition of posterior uncertainty in inverse problems that sep-
+arates intrinsic ambiguity from uncertainty propagated by noisy measurements. Building on this
+decomposition, we utilize a cascade generative framework that makes these components directly
+inspectable. This, in turn, provides diagnostic metrics that can complement reconstruction loss in
+model selection and parameter tuning. We validate the framework on a Gaussian example with
+known analytical posterior structure, accelerated MRI for qualitative visualization, and EEG source
+imaging as a realistic large-scale ill-posed inverse problem. Rather than performing an exhaustive
+benchmark, we use representative generative models to illustrate how uncertainty can be distributed
+differently between intrinsic ambiguity and noise-propagated variability, and how these differences
+lead to distinct qualitative and quantitative failure modes. In practice, this distinction helps determine
+whether uncertainty is dominated by irreducible non-identifiability or by factors that could be miti-
+gated through better measurements, modeling, or inference. The factorized formulation also yields a
+modular perspective on posterior modeling: identifiable inference and ambiguity modeling. In this
+paper, we focus on the latter as the central object for uncertainty calibration.
+
+2   Background
+Inverse Problems Inverse problems arise across domains, including medical imaging, astronomy,
+and image restoration [3–5]. Classical methods address ill-posed inverse problems by imposing
+regularization or handcrafted constraints to select plausible reconstructions from an underdetermined
+solution set. More recently, generative methods have been used to learn distributions over possible
+reconstructions, including plug-and-play priors and diffusion posterior samplers [6, 7]. We refer
+to models that directly sample full reconstructions x̂ ∼ pθ (x | y) as monolithic posterior models.
+Several diffusion inverse solvers further exploit the geometry of the forward operator. For example,
+DDRM [8] uses spectral structure to construct restoration samplers, while DDNM [9] uses a range–
+null decomposition to enforce measurement consistency and refine null-space content during reverse
+diffusion. Related null-space generative methods also learn conditional models for the unmeasured
+component in MRI [10]. These works use the geometry of the forward operator to construct posterior
+samples. We use the same geometric view for a different goal. The question is not only whether a
+model can generate plausible null-space components, but whether the induced conditional distribution
+over those components is calibrated. We therefore use the range–null view as a calibration tool rather
+than only as a restoration mechanism.
+Posterior uncertainty and calibration. Recent work [11] systematically evaluates posterior un-
+certainty in plug-and-play diffusion solvers and shows that solvers with comparable reconstruction
+quality can produce qualitatively different posterior variance. This raises a calibration question
+beyond whether posterior variability is large or small, but which component of uncertainty should
+be calibrated, and what distribution should it be calibrated against? A scalar posterior variance
+alone does not answer this question. Simulation-based calibration (SBC) [12] instead tests whether
+posterior samples are statistically consistent with draws from the data-generating distribution. Across
+repeated simulations x∗ ∼ p(x) and y ∼ p(y | x∗ ), a calibrated sampler should assign the true draw
+x∗ a uniform rank among samples from the approximate posterior.
+Our contribution We first ask what posterior uncertainty is composed of in a linear inverse problem.
+Our decomposition identifies intrinsic ambiguity as the principal target of calibration, reflecting
+uncertainty that is irreducible under the forward operator. We then use a cascade formulation to make
+this ambiguity directly accessible for both qualitative and quantitative calibration analysis.
+
+3   Decomposing Posterior Uncertainty
+We consider the standard linear inverse problem
+                                           y = Ax + ε,                                          (1)
+where A ∈ Rn×p denotes the forward operator, x ∈ Rp is the unknown signal, and y ∈ Rn is the
+measurement. Throughout the inverse problems considered here, the measurement dimension is
+typically much smaller than the signal dimension, i.e., n ≪ p, which makes solving for x ill-posed.
+The term ε denotes measurement noise, which is often modeled as Gaussian in practice.
+In the linear setting, this decomposition is naturally induced by the geometry of the forward operator.
+Let A = UΣV⊤ be the singular value decomposition (SVD) of A, with r = rank(A), and partition
+
+
+                                                    2
+the right singular vectors as V = [Vr , Vn ], where Vr ∈ Rp×r and Vn ∈ Rp×(p−r) . The columns
+of Vr span the identifiable subspace associated with nonzero singular values of A, and the columns
+of Vn span Null(A). Then any signal x can be written as
+                                               x = Vr α + Vn β,                                                     (2)
+where α ∈ Rr and β ∈ Rp−r are coefficient vectors with respect to the bases Vr and Vn , respectively.
+This decomposition is deterministic for any fixed x. In the posterior inference problem, however,
+x is treated as a random variable with distribution p(x | y), and therefore the induced coefficients
+α = Vr⊤ x and β = Vn⊤ x are random variables as well. Substituting the decomposition into the
+forward model gives
+                            y = A(Vr α + Vn β) + ε = AVr α + ε.                                  (3)
+Thus, the measurement depends only on α, while β is invisible to the forward operator. In this sense,
+α captures the measurement-identifiable component of x, whereas β is intrinsically ambiguous.
+The posterior inference problem can be equivalently expressed in terms of the coefficient vectors
+(α, β). Moreover, Eq. (3) shows that the likelihood satisfies p(y | α, β) = p(y | α), assuming mea-
+surement noise independent of the signal. Therefore, the decomposed model implies the conditional
+independence relation β ⊥ y | α, under which the posterior factorizes as
+
+               p(x | y) = p(α, β | y) = p(α | y) p(β | α, y) = p(α | y) p(β | α).                                   (4)
+
+This factorization separates two qualitatively distinct forms of uncertainty. Uncertainty in p(α | y)
+reflects noise and inference error, which can in principle be reduced by better measurements or
+stronger inference. By contrast, β is fundamentally unidentifiable from y, and its uncertainty at fixed
+α is the object of our calibration analysis. We define the intrinsic ambiguity at the oracle-identifiable
+state α∗ as:
+                                        A(α∗ ) := V(β | α∗ ),
+where V denotes the covariance matrix. This is the irreducible uncertainty induced by information
+loss in the forward operator. In practice, however, standard monolithic posterior samplers only expose
+V(β | y). By the law of total variance and the conditional independence β ⊥ y | α from Eq. (4),
+this quantity satisfies
+               V(β | y) = Ep(α|y) [V(β | α, y)] + Vp(α|y) (E[β | α, y])
+                         =        Ep(α|y) [V(β | α)]                  +         Vp(α|y) (E[β | α])                  (5)
+                                  |        {z      }                            |       {z       }
+                             posterior-averaged intrinsic ambiguity       propagated uncertainty from inferring α
+
+In the noiseless limit, p(α | y) collapses to a point mass at α∗ , the second term vanishes, and
+V(β | y) = A(α∗ ). This indicates that in the idealized case with a noise-free measurement system
+that perfectly recovers the identifiable component, the remaining uncertainty is exactly the intrinsic
+ambiguity. This remaining uncertainty is not an inference error to be eliminated, but reflects the
+underdetermined nature of the inverse problem, and should therefore be calibrated rather than driven
+to zero. Hence, we identify the relevant calibration target as the conditional ambiguity distribution
+p(β | α∗ ), which monolithic posterior models do not directly expose. In the next section, we show
+how a cascade formulation makes this explicitly accessible.
+
+4     Methods
+4.1   Cascade Model
+
+Motivated by the factorization in Eq. (4), we model the posterior in two stages: a range model for the
+measurement-identifiable component and a null model for the intrinsically ambiguous component.
+The resulting cascade architecture is shown in Figure 1, and the corresponding graphical model
+interpretation is shown in Appendix A.
+Range model The range model approximates the conditional object p(α | y) and is responsible for
+inference of the measurement-identifiable component. In the supervised training setting considered
+here, oracle α∗ is available because the ground-truth x is known and can be projected onto the
+identifiable subspace. During training, α∗ serves as the supervision target for the range model. At
+
+
+                                                            3
+                                                     α∗
+
+
+
+                Range Model                     Null Model
+      y                             α̂                                           β̂      Reconstruction      x̂
+                qθrange (α | y)                pnull
+                                                ϕ (β | α)
+
+
+
+
+                                      Posterior Calibration Diagnostics
+
+
+Figure 1: Cascade architecture. The null model sits at the intersection of two operational paths.
+Inference (blue, horizontal): given y, the range model produces α̂ and the null model produces β̂ | α̂;
+reconstruction combines both to yield x̂. Diagnostic (orange dashed, vertical): the null model is
+queried at oracle α∗ to expose pnull         ∗
+                                 ϕ (β | α ) for posterior calibration. At training time, both modules
+use oracle α : the range model on (y, α ) pairs, the null model on (α∗ , β ∗ ) pairs.
+             ∗                             ∗
+
+
+
+
+inference time, only y is observed, and the model produces an estimate or distribution over α. This
+stage may be implemented either probabilistically or deterministically, with the deterministic case
+viewed as a point-mass approximation at α̂(y).
+Null model The null model approximates p(β | α) and is responsible for the conditional generation
+of the intrinsically ambiguous component. During training, oracle α∗ is used as the conditioning
+input and the corresponding β ∗ as the target output. This gives direct access to the model conditional
+             ∗
+pnull
+  ϕ (β | α ), which is the key object for calibration analysis of intrinsic ambiguity. Expressive
+generative modeling is most critical in this stage, since the intrinsic ambiguity that remains after
+fixing α∗ must be represented here.
+Inference and Evaluation At inference time, posterior samples are generated in cascade form by
+first obtaining α̂ from the range model and then sampling β̂ ∼ pnull
+                                                                 ϕ (β | α̂). The final prediction x̂ is
+reconstructed according to Eq. (2). During evaluation, oracle α∗ from the test set is used only for
+calibration diagnostics, whereas reconstruction quality is assessed on end-to-end cascade predictions
+formed from inferred α̂ and sampled β̂.
+
+4.2   Posterior Calibration Metric
+                                                                                              ∗
+Simulation-based calibration. The decomposition in Section 3 identifies pnull       ϕ (β | α ) as the
+relevant object for assessing whether a model is well calibrated in terms of intrinsic ambiguity. Here
+oracle α∗ is obtained from the test set and is used only for calibration diagnostics. Ideally, one
+                                                                           ∗
+would like to directly compare the full model distribution pnullϕ (β | α ) against the corresponding
+data-distribution p(β | α∗ ). In practice, however, direct calibration in this high-dimensional space is
+intractable. We therefore use simulation-based calibration (SBC), a diagnostic for posterior calibration
+based on repeated simulation from the generative model [12], recently adopted for amortized diffusion
+posteriors in simulation-based inference [13]. Under calibration, a true draw β ∗ ∼ p(β | α∗ ) should
+                                                     (1)                  (L)              ∗
+be statistically indistinguishable from samples β̃         , . . . , β̃         ∼ pnull
+                                                                                   ϕ (β | α ). Accordingly, in SBC,
+                                                                          (ℓ)
+the rank of a chosen scalar summary T (β ∗ ) among {T (β̃ )}L
+                                                            ℓ=1 should be uniformly distributed.
+Deviations from uniformity indicate miscalibration. This provides a necessary but not sufficient
+condition for correct posterior calibration.
+Since SBC requires scalar test statistics, we evaluate calibration through interpretable functionals
+of the ambiguous component β, rather than attempting to diagnose calibration separately in every
+coordinate. We introduce the Euclidean norm ∥β∥2 and the peak-to-total ratio ∥β∥∞ /∥β∥2 as our
+test statistics (see Appendix F for a discussion on the challenges of per-dimensional SBC in high
+dimensions). In particular, the statistic ∥β∥2 captures the overall magnitude of the measurement-
+invisible component, while ∥β∥∞ /∥β∥2 characterizes how that magnitude is distributed across
+dimensions. We use ∥β∥2 rather than ∥β∥22 simply for consistency with the second statistic. For SBC,
+both choices are equivalent since they yield identical ranks. The squared norm nevertheless provides
+
+
+                                                      4
+Figure 2: Left: Per-dimension β variance calibration. Each dot corresponds to one of the q = 64
+                                                                                         ∗
+β dimensions and compares the empirical variance of DDPM samples from pnull    ϕ (β | α ) with the
+corresponding analytical variance from diag(Ση ). The dashed line indicates equality. The mean
+empirical-to-analytical variance ratio across dimensions is 0.985, indicating reasonable calibration.
+Right: SBC diagnostics. Rank histograms for the test statistics ∥β∥2 and ∥β∥∞ /∥β∥2 under the
+learned DDPM null model. Ranks are normalized to [0, 1] and plotted as densities, so the ideal
+calibrated density is 1. The gray band shows the per-bin 99% binomial confidence interval under
+uniform ranks. Histograms are computed with 200 posterior samples for each of the 500 test cases.
+
+                                                      2
+a useful interpretation: E ∥β∥22 | α∗ = ∥E[β | α∗ ]∥2 + tr(V(β | α∗ )). Thus, when E[β | α∗ ] = 0,
+                                    
+     2
+∥β∥2 reduces in expectation to the total conditional variance across dimensions. Together, these two
+                                                                ∗
+statistics probe complementary aspects of whether pnull
+                                                      ϕ (β | α ) is calibrated to the corresponding
+                                     ∗
+data-generating distribution p(β | α ).
+Qualitative diagnostic. SBC provides a quantitative test of calibration but requires repeated simula-
+tion across many values of α∗ . As a complementary qualitative diagnostic, the cascade also exposes
+an intrinsic ambiguity map in the original signal space. Given an oracle identifiable component
+α∗ , we draw K samples β (k) ∼ pnull          ∗
+                                      ϕ (β | α ), reconstruct them in the original coordinates as
+x(k) = Vr α∗ + Vn β (k) , and compute the per-coordinate empirical variance
+                                                                       
+                                      K→∞
+                         Vb k [x(k) ] −−−−→ diag Vn V(β | α∗ ) Vn ⊤ .                             (6)
+
+We refer to this quantity as the intrinsic ambiguity map. In settings where the original-space
+coordinate system is shared across test cases (e.g., a fixed cortical mesh in EEG), these maps may
+also be averaged across α∗ ∼ ptest to obtain a population-level view. When coordinates differ across
+examples (e.g., MRI slices or anatomies), the map is inspected on a per-example basis.
+A calibrated null model should place intrinsic ambiguity in geometrically plausible regions of the
+signal space, providing a useful visual sanity check for domain experts. For example, in accelerated
+MRI one expects higher ambiguity in structures poorly constrained by the retained Fourier coefficients,
+while in EEG one expects larger ambiguity in deep or midline brain sources. This diagnostic is
+complementary to SBC: the spatial map reflects marginal per-coordinate variance, whereas SBC
+                                                                                    ∗
+probes scalar summary statistics of the joint conditional distribution pnull
+                                                                          ϕ (β | α ), such as total
+energy or concentration.
+
+5     Experiments
+5.1   Gaussian Analytical Example
+
+We first study a controlled Gaussian example in which the relevant conditional distributions are
+analytically tractable. This provides a sanity check for both the proposed decomposition and the
+calibration diagnostics. Unlike in realistic inverse problems, the oracle ambiguity distribution
+p(β | α∗ ) is available in closed form in this setting, allowing direct comparison between the learned
+null model and the true conditional target.
+We generate data as a simple linear Gaussian instantiation of the factorization in Eq. (4), where y
+depends only on α by construction, so that β ⊥ y | α holds exactly (see Appendix C for parameter
+
+
+                                                  5
+construction and training details):
+                                           α ∼ N (0, Ir ),                                            (7)
+                                       β | α ∼ N (Cα, Ση ),                                           (8)
+                                      y | α ∼ N (Aα, σy2 In ),                                  (9)
+              r
+where α ∈ R is the identifiable component, β ∈ Rq is the ambiguous component, and y ∈ Rn is
+the measurement. Here A ∈ Rn×r is the forward operator on the identifiable component, C ∈ Rq×r
+controls the dependence of the ambiguous component on α, and Ση ∈ Rq×q specifies the intrinsic
+ambiguity covariance. By construction, the measurement depends only on α, while β remains
+unobserved. In our experiments, we use r = 32, q = 64, and n = 32. The oracle ambiguity
+distribution is therefore β | α∗ ∼ N (Cα∗ , Ση ), with conditional covariance V(β | α∗ ) = Ση .
+To ensure a nontrivial calibration target, Ση is chosen with full off-diagonal structure, requiring the
+null model to match not only marginal variances but also cross-dimensional correlations. We then
+train a conditional DDPM [14] null model as a representative expressive sampler for pnull   ϕ (β | α)
+and evaluate it at oracle α∗ . Figure 2 shows close agreement between the empirical per-dimension
+variance from DDPM samples and the analytical conditional variance, while the SBC histograms
+remain close to uniform for the test statistics ∥β∥2 and ∥β∥∞ /∥β∥2 . This controlled example
+therefore serves as a sanity check: in a setting where the conditional ambiguity distribution is known
+analytically, a DDPM null model is reasonably calibrated against the exact target, and the proposed
+diagnostics correctly reflect this behavior.
+
+5.2   Accelerated MRI
+
+We use accelerated MRI as a visually intuitive setting to illustrate the posterior variance decomposition
+introduced in Section 3. In this setting, a standard monolithic posterior model would expose only
+the total posterior uncertainty, which conflates intrinsic ambiguity with uncertainty propagated from
+noisy inference. Because the identifiable component is available in closed form under Fourier
+undersampling, accelerated MRI allows these two contributions to be separated explicitly and
+visualized in image space.
+The forward operator is A = MF, where F ∈ CNv ×Nv is the two-dimensional discrete Fourier
+transform and M ∈ RNv ×Nv is a diagonal binary mask retaining a subset of Fourier coefficients.
+Measurements are yσ = MFx + εσ , where εσ ∼ N (0, σ 2 I) denotes measurement noise in k-
+space. For a clean image x, we define the oracle identifiable component as x∗α = F−1 MFx and
+the null component as xβ = x − x∗α . This is the identifiable/null decomposition from Section 3,
+expressed directly in image space rather than in singular-vector coordinates. By construction,
+Axβ = MF(x − F−1 MFx) = 0, so xβ lies in the null space of A. In the noise-free case,
+x∗α = F−1 y. Under noisy measurements, however, the available closed-form estimate is x̂α =
+F−1 yσ = xα∗ + F−1 εσ .
+Because x∗α is available in closed form for clean training images, we do not train a separate range
+model and only train a conditional diffusion model pnull ϕ (xβ | xα ) using oracle training pairs
+(x∗α , x∗β ). This gives a clean setting in which propagated uncertainty is controlled directly by
+measurement noise, rather than by details of range-model training. For a unitary Fourier transform F,
+and under a Lipschitz assumption on the conditional null mean (i.e. m(xα ) = Epϕ [xβ | xα ]), the
+propagated uncertainty term in Eq. (5) is bounded by O(σ 2 ); see Appendix E.
+We use single-coil knee images from the NYU fastMRI dataset [15, 16] with an undersampling
+mask retaining 25% of Fourier coefficients. Figure 3 visualizes the model-predicted uncertainty
+decomposition. The noise-level sweep in Fig. 3(a) summarizes this decomposition across held-out
+slices by averaging the per-pixel variance over all pixels and slices. Intrinsic ambiguity remains
+approximately flat as the k-space noise level increases. This is expected because the intrinsic
+ambiguity map defined in Section 4.2 conditions on the oracle identifiable component x∗α , and is
+therefore independent of measurement noise. It reflects ambiguity induced by the forward operator
+and the data distribution. In contrast, total null uncertainty increases as measurement noise corrupts
+the identifiable estimate x̂α = F−1 y and propagates into the conditional null distribution. The
+shaded region visualizes this noise-propagated uncertainty.
+Figures 3(b)–(d) show this decomposition spatially for a representative slice. Panel (b) shows
+the ground-truth image. Panel (c) shows the model-predicted intrinsic ambiguity map described
+
+
+                                                   6
+          (a) Noise-level sweep     (b) Ground truth       (c) Intrinsic ambiguity   (d) Total null uncertainty
+
+
+
+
+Figure 3: Posterior uncertainty decomposition for accelerated MRI. Panel (a) shows a noise-level
+sweep over 50 held-out slices, with each point estimated by Monte Carlo sampling. Intrinsic ambiguity
+remains constant, while total null uncertainty increases with k-space noise. The shaded gap indicates
+noise-propagated uncertainty. Panel (b) shows a representative ground-truth slice. Panel (c) shows
+intrinsic ambiguity, estimated as Vpϕ (xβ | x∗α ) by fixing the oracle identifiable component. Panel (d)
+shows total null uncertainty at σ = 0.2, estimated by marginalizing over noisy identifiable estimates
+x̂α = F −1 yσ . Both maps share the same color scale and report per-pixel variance in image intensity.
+
+
+in Section 4.2, corresponding to Vpϕ (xβ | x∗α ). Panel (d) shows the model-predicted total null
+uncertainty, corresponding to Vpϕ (xβ | y) after marginalizing over noisy identifiable estimates x̂α .
+If only panel (d) were available, as in a monolithic posterior sampler, the source of uncertainty would
+be unclear. The decomposition gives this uncertainty a physical interpretation. Panel (c) reflects
+uncertainty due to information loss from the forward operator and is therefore tied to the k-space
+undersampling protocol. The additional uncertainty in panel (d) reflects noise propagated through
+x̂α , which can in principle be reduced by denoising, repeated acquisition, or better measurement.
+
+5.3   EEG Source Imaging
+
+We next evaluate our calibration analysis and cascade framework on EEG source imaging, a severely
+ill-posed inverse problem that provides a stress test for posterior uncertainty. The task is to recover
+high-resolution voxel-wise brain activity from sparse scalp measurements [17]. Since many distinct
+source configurations can explain the same EEG measurement, classical methods rely heavily on
+regularization, thereby imposing strong inductive biases on the reconstructions. We consider the
+standard linear forward model, y = Ax + ε, where x ∈ RNv denotes voxel-wise source activity,
+y ∈ RNs denotes scalp measurements, and A ∈ RNs ×Nv is the leadfield matrix. Because Ns ≪ Nv
+in practice, the forward operator has a large null space, and the decomposition from Section 3 is
+especially relevant in EEG source imaging: only a low-dimensional component of source activity is
+measurement-identifiable, while a large component remains intrinsically ambiguous.
+We construct a single-subject head model from the MNE sample dataset [18], based on a realistic
+MRI-derived anatomy. The leadfield matrix is computed via a three-layer boundary element method
+(BEM) on a cortical source space with fixed-orientation dipoles along the cortical normal, yielding
+A ∈ R60×4699 (i.e. 60 EEG sensors and 4699 cortical sources). The linear forward model is
+exact in the quasi-static regime of Maxwell’s equations [19]. Source activity is simulated as spatially
+localized Gaussian patches with random central vertices, widths σ ∼ Uniform(5, 20) mm, amplitudes
+∼ Uniform(0.5, 2.0), and signs flipped with probability 0.5. The number of patches is sampled
+uniformly from {1, 2, 3} for each example. Measurements are generated with added Gaussian noise
+calibrated to signal-to-noise ratio (SNR) = 5.
+Following the cascade strategy, we independently train multiple range and null models, then evaluate
+their combinations, as described in Section 4.1. The range model is instantiated as a DDPM,
+variational autoencoder (VAE), or multilayer perceptron (MLP), while the null model is instantiated
+as either a DDPM or VAE. We evaluate all range–null combinations on 450 held-out test cases. The
+main text focuses on two cascades that share the same DDPM range model but differ in the null
+model: cascade A pairs the DDPM range model with a DDPM null model, whereas cascade B pairs
+the DDPM range model with a VAE null model at Kullback–Leibler (KL) weight λKL = 1.0 [20].
+We use the posterior sample mean over 200 samples as the point reconstruction, which is the standard
+Bayes estimator under squared-error loss and reflects the average behavior of the trained model.
+
+
+                                                       7
+              Ground truth               DDPM + DDPM                  DDPM + VAE          0.15
+                                                                                          0.10
+                                                                                          0.05
+                                                                                          0.00
+                                                                                            0.05
+                                                                                            0.10
+                                                                                            0.15
+
+Figure 4: Example source reconstruction for a held-out three-patch test case. Both cascades produce
+visually similar posterior mean reconstructions and recover the dominant spatial pattern of the
+ground truth, motivating our comparison of their intrinsic-ambiguity calibration beyond standard
+reconstruction quality. Color indicates signed source amplitude.
+
+             Top view                                  Top view
+                                Front view                                Front view     0.030
+
+
+
+
+                                                                                                 Posterior variance
+                                                                                         0.025
+
+                                                                                         0.020
+
+                                                                                         0.015
+
+                                                                                         0.010
+
+                                                                                         0.005
+
+                                                                                         0.000
+                   DDPM Null Model                            VAE Null Model
+
+Figure 5: Averaged intrinsic ambiguity map on the cortical surface. Per-voxel intrinsic ambiguity
+map averaged across 450 test cases (M = 200 posterior samples per case). Left: DDPM null model
+produces variance concentrated along the cortical midline and at deep medial regions. Right: VAE
+null model produces variance that is uniformly low across the cortex. Both models share a linear
+color scale capped at the 95th percentile of the DDPM map.
+
+
+Reconstruction quality is measured by Pearson correlation between the posterior mean reconstruction
+and the ground-truth source signal, a measurement of spatial pattern similarity commonly used in
+EEG source-imaging evaluations [21]. The two cascades achieve reasonable reconstructions even
+under the challenging three-patch source configuration, as shown in Fig. 4, and have nearly identical
+Pearson correlation with the ground truth (0.698 vs. 0.693). We therefore ask whether models that are
+nearly indistinguishable under standard reconstruction metrics differ in their calibration of intrinsic
+ambiguity. Remaining range–null combinations and architecture details are deferred to Appendix D.
+Qualitative diagnostic. We plot the averaged intrinsic ambiguity map (calculated according to
+Section 4.2) on the cortical surface as a qualitative calibration check, contrasting the DDPM and
+VAE null models. As shown in Figure 5, the DDPM null produces larger intrinsic ambiguity at
+deeper brain voxels and along the longitudinal fissure, qualitatively consistent with the well-known
+reduced sensitivity of EEG to deep and medial sources [22, 23]. The VAE null, by contrast, produces
+a uniformly low-variance profile across all brain regions, indicating that the model assigns negligible
+intrinsic ambiguity regardless of source location. This visual under-dispersion already signals
+                             ∗
+miscalibration of pnull
+                    ϕ (β | α ), motivating a quantitative test.
+
+SBC Quantitative diagnostic. Figure 6 reports SBC histograms at oracle α∗ for the DDPM and
+VAE null models, using the geometric test statistics ∥β∥2 and ∥β∥∞ /∥β∥2 introduced in Section 4.2.
+Neither null model yields uniform histograms; the deviations exceed the 99% confidence interval
+expected under perfect calibration, revealing two qualitatively distinct failure modes. On total energy
+∥β∥2 , the two models fail in opposite directions: the DDPM null concentrates rank mass near zero,
+indicating that its samples systematically carry more energy than the true data-generating distribution,
+while the VAE null concentrates rank mass near one, indicating collapse toward values smaller than
+the truth. On peak-to-total ∥β∥∞ /∥β∥2 , both null models concentrate rank mass near one, indicating
+samples that are more diffuse than the true patch-structured β. The VAE failure on ∥β∥2 matches
+the dark cortex map in Figure 5: a model that systematically samples small β values produces both
+small ∥β∥2 relative to truth and small per-vertex source-space variance. The DDPM failure, by
+
+
+                                                   8
+                                      Overall energy:           2                                             Peak-to-total:          /        2
+                                                                                              15.0
+                   8                                                                          12.5
+                   6                                                                          10.0
+
+
+
+
+         Density
+
+
+
+
+                                                                                    Density
+                                                                                               7.5
+                   4
+                                                                                               5.0
+                   2
+                                                                                               2.5
+                   0                                                                           0.0
+                    0.0       0.2          0.4            0.6          0.8        1.0             0.0   0.2         0.4         0.6                0.8       1.0
+                                    Posterior quantile of       * 2                                     Posterior quantile of     *        /       * 2
+
+                          Ideal calibrated rank density             99% CI under calibrated uniform ranks         DDPM null               VAE null ( =1.0)
+
+
+Figure 6: Similar reconstruction does not imply similar calibration of intrinsic ambiguity. With
+the DDPM range model fixed, the DDPM null and VAE null models achieve similar posterior-mean
+reconstruction quality, yet their null-space SBC histograms differ substantially. Left: posterior
+quantile of the true null-space energy ∥β ∗ ∥2 . Right: posterior quantile of the true peak-to-total ratio
+∥β ∗ ∥∞ /∥β ∗ ∥2 . The DDPM null has higher null-space energy, while the VAE null is under-energetic.
+Both models are more isotropic than the true data distribution.
+
+
+contrast, is invisible in the cortex map — the spatial pattern is plausible — but clearly visible in
+the SBC histograms, demonstrating that SBC catches calibration failures that qualitative diagnostic
+alone cannot. Crucially, the two null models achieve nearly identical reconstruction quality when
+paired with the same range model. This instantiates the cancellation pathology anticipated by the
+decomposition of Section 3: miscalibration of the intrinsic ambiguity distribution can persist even
+when end-to-end reconstruction is comparable, and the cascade structure is precisely what makes this
+miscalibration visible.
+
+6   Discussion
+Our experiments demonstrate that evaluating models merely by reconstruction quality fails to recog-
+nize important uncertainty miscalibration. In the EEG experiment, cascades with nearly identical
+reconstruction quality exhibited different uncertainty calibration. The cascade formulation addresses
+this by turning intrinsic ambiguity into an evaluable target. Its modular structure further allows each
+stage to be assessed independently: the range model through measurement consistency, and the null
+model through uncertainty calibration. The range–null combination results in Appendix D support
+this separation, showing that reconstruction quality varies primarily with the range model, whereas
+null-model choice primarily changes calibration behavior. Although the cascade imposes a particular
+factorization for evaluation, it does not constrain the model class used in either stage. Architectural
+advances in posterior sampling, diffusion models, or domain-specific networks can be incorporated
+as range or null models.
+We recognize the following limitations in our work. First, direct calibration of the intrinsic ambiguity
+distribution requires paired (x, y) data, so the diagnostic applies most directly to supervised settings
+rather than inference-only plug-and-play settings. Second, SBC provides a necessary but not sufficient
+check of calibration. Its sensitivity depends on the scalar statistics, which should be designed for the
+downstream application. Third, our current decomposition is most direct for known linear forward
+operators, where the geometry of the forward operator A gives an explicit range–null split. Extending
+the diagnostic to nonlinear or operator-uncertain inverse problems would require replacing this
+closed-form split with an approximate or learned notion of identifiable and ambiguous components.
+Beyond these limitations, an interesting direction is to investigate whether the cascade structure can
+be extended to amortized or foundation-model settings, where paired supervision may be partially
+available. Better-calibrated uncertainty estimates also have potential societal relevance in high-stakes
+inverse problems such as medical imaging. Distinguishing irreducible ambiguity from reducible
+inference uncertainty could support more reliable uncertainty reporting and guide data acquisition,
+although clinical or scientific deployment would require task-specific validation and domain oversight.
+
+
+
+
+                                                                                        9
+References
+ [1] Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter. Gans
+     trained by a two time-scale update rule converge to a local nash equilibrium. Advances in neural information
+     processing systems, 30, 2017.
+
+ [2] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish
+     Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from
+     natural language supervision. In International conference on machine learning, pages 8748–8763. PmLR,
+     2021.
+
+ [3] Michael Lustig, David Donoho, and John M Pauly. Sparse mri: The application of compressed sensing for
+     rapid mr imaging. Magnetic Resonance in Medicine: An Official Journal of the International Society for
+     Magnetic Resonance in Medicine, 58(6):1182–1195, 2007.
+
+ [4] Jean-Luc Starck, Eric Pantin, and Fionn Murtagh. Deconvolution in astronomy: A review. Publications of
+     the Astronomical Society of the Pacific, 114(800):1051–1069, 2002.
+
+ [5] Chao Dong, Chen Change Loy, Kaiming He, and Xiaoou Tang. Image super-resolution using deep
+     convolutional networks. IEEE transactions on pattern analysis and machine intelligence, 38(2):295–307,
+     2015.
+
+ [6] Hyungjin Chung, Jeongsol Kim, Michael T Mccann, Marc L Klasky, and Jong Chul Ye. Diffusion posterior
+     sampling for general noisy inverse problems. arXiv preprint arXiv:2209.14687, 2022.
+
+ [7] Giannis Daras, Hyungjin Chung, Chieh-Hsin Lai, Yuki Mitsufuji, Jong Chul Ye, Peyman Milanfar,
+     Alexandros G Dimakis, and Mauricio Delbracio. A survey on diffusion models for inverse problems. arXiv
+     preprint arXiv:2410.00083, 2024.
+
+ [8] Bahjat Kawar, Michael Elad, Stefano Ermon, and Jiaming Song. Denoising diffusion restoration models.
+     Advances in neural information processing systems, 35:23593–23606, 2022.
+
+ [9] Yinhuai Wang, Jiwen Yu, and Jian Zhang. Zero-shot image restoration using denoising diffusion null-space
+     model. arXiv preprint arXiv:2212.00490, 2022.
+
+[10] Jeffrey Wen, Rizwan Ahmad, and Philip Schniter. A conditional normalizing flow for accelerated multi-coil
+     mr imaging. Proceedings of machine learning research, 202:36926, 2023.
+
+[11] Xiaoyu Qiu, Taewon Yang, Zhanhao Liu, Guanyang Wang, and Liyue Shen. Benchmarking uncer-
+     tainty quantification of plug-and-play diffusion priors for inverse problems solving. arXiv preprint
+     arXiv:2602.04189, 2026.
+
+[12] Sean Talts, Michael Betancourt, Daniel Simpson, Aki Vehtari, and Andrew Gelman. Validating bayesian
+     inference algorithms with simulation-based calibration. arXiv preprint arXiv:1804.06788, 2018.
+
+[13] Mayank Nautiyal, Andreas Hellander, and Prashant Singh. Condisim: Conditional diffusion models for
+     simulation based inference. arXiv preprint arXiv:2505.08403, 2025.
+
+[14] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. Advances in neural
+     information processing systems, 33:6840–6851, 2020.
+
+[15] Florian Knoll, Jure Zbontar, Anuroop Sriram, Matthew J Muckley, Mary Bruno, Aaron Defazio, Marc
+     Parente, Krzysztof J Geras, Joe Katsnelson, Hersh Chandarana, et al. fastmri: A publicly available raw
+     k-space and dicom dataset of knee images for accelerated mr image reconstruction using machine learning.
+     Radiology: Artificial Intelligence, 2(1):e190007, 2020.
+
+[16] Jure Zbontar, Florian Knoll, Anuroop Sriram, Tullie Murrell, Zhengnan Huang, Matthew J Muckley, Aaron
+     Defazio, Ruben Stern, Patricia Johnson, Mary Bruno, et al. fastmri: An open dataset and benchmarks for
+     accelerated mri. arXiv preprint arXiv:1811.08839, 2018.
+
+[17] Christoph M Michel and Denis Brunet. Eeg source imaging: a practical review of the analysis steps.
+     Frontiers in neurology, 10:325, 2019.
+
+[18] Alexandre Gramfort, Martin Luessi, Eric Larson, Denis A Engemann, Daniel Strohmeier, Christian
+     Brodbeck, Roman Goj, Mainak Jas, Teon Brooks, Lauri Parkkonen, et al. Meg and eeg data analysis with
+     mne-python. Frontiers in Neuroinformatics, 7:267, 2013.
+
+[19] Matti Hämäläinen, Riitta Hari, Risto J Ilmoniemi, Jukka Knuutila, and Olli V Lounasmaa. Magnetoen-
+     cephalography—theory, instrumentation, and applications to noninvasive studies of the working human
+     brain. Reviews of modern Physics, 65(2):413, 1993.
+                                                      10
+[20] Irina Higgins, Loïc Matthey, Arka Pal, Christopher P. Burgess, Xavier Glorot, Matthew M. Botvinick,
+     Shakir Mohamed, and Alexander Lerchner. beta-vae: Learning basic visual concepts with a constrained
+     variational framework. In International Conference on Learning Representations, 2016.
+[21] Rui Sun, Wenbo Zhang, Anto Bagić, and Bin He. Deep learning based source imaging provides strong
+     sublobar localization of epileptogenic zone from meg interictal spikes. NeuroImage, 281:120366, 2023.
+[22] Olaf Hauk, Matti Stenroos, and Matthias S Treder. Towards an objective evaluation of eeg/meg source
+     estimation methods–the linear approach. Neuroimage, 255:119177, 2022.
+[23] Alireza Chamanzar, Marlene Behrmann, and Pulkit Grover. Neural silences can be localized rapidly using
+     noninvasive scalp eeg. Communications biology, 4(1):429, 2021.
+
+
+A    Graphical Model Interpretation
+We introduce the graphical model to understand how the projection geometry naturally induces the
+decomposition of denoising inference and null space learning tasks, leading to the cascade model.
+Figure 7 illustrates this factorization as a probabilistic graphical model. We assume the data x is
+generated under data distribution pdata (x), and suppose we are under the realizability assumption;
+we can parameterize it as pϕ∗ (x). The data distribution pϕ∗ (x) jointly generates the row-space and
+null-space components via marginals pϕ∗ (α) and pϕ∗ (β). The cascade model we propose, Figure 1,
+factorizes the posterior over x into two sequential stages. First, the row-space component α is inferred
+from the observation y via the posterior qθ (α | y), which approximates the true posterior p(α | y).
+Second, given the fixed row-space component α∗ — obtained directly from the range-space of x
+projected by A — the null-space component β is drawn from the conditional pϕ∗ (β | α∗ ). This
+conditional is learned via a generative model, which captures the statistical dependence between
+the null-space and the fixed row-space component. Since β lies entirely in the null-space of A,
+it receives no direct signal from y; its uncertainty is instead governed purely by the learned prior
+pϕ∗ (β | α∗ ). This cascade structure reflects a fundamental asymmetry: α lives in the row-space of
+A and is therefore constrained by the measurement, while β lives in the null-space of A and remains
+unidentifiable from y alone. The full reconstruction is then given by x = Vr α + Vn β.
+
+
+                                                                  𝝓𝝓∗
+
+                                        𝑝𝑝(𝜶𝜶|𝝓𝝓∗ )                         𝑝𝑝(𝜷𝜷|𝝓𝝓∗ )
+                                                        𝑝𝑝𝜙𝜙 (𝜷𝜷|𝜶𝜶)
+
+
+
+
+                              𝑽𝑽𝒓𝒓 𝜶𝜶                                        𝑽𝑽𝒏𝒏 𝜷𝜷                              𝒙𝒙
+
+                                             𝑞𝑞𝜃𝜃 (𝜶𝜶|𝒚𝒚)               Parameter (data distribution)
+
+                              𝑝𝑝(𝒚𝒚|𝜶𝜶)                                 measurement
+                                                                        row-space (𝜶𝜶)          null-space (𝜷𝜷)
+
+                                                            𝒚𝒚          generation       inference    learning
+
+
+
+
+Figure 7: Probabilistic graphical model for the structured inverse problem under the realizability
+assumption pϕ∗ (x) = pdata (x). The latent variable x decomposes into a row-space component
+α = Vr⊤ x and a null-space component β = Vn⊤ x, reconstructed as x = Vr α + Vn β. The
+observation y informs α via the posterior qθ (α | y), approximating the true posterior p(α | y),
+while β is drawn from the conditional pϕ∗ (β | α).
+
+
+B    Training and Architecture
+We instantiate the cascade with a deterministic range model and a conditional DDPM null model, as
+an example. Other choices (probabilistic range models or VAE null models) are compatible with the
+
+
+                                                                   11
+same framework; Section D reports results for several such combinations. Algorithm 1 summarizes
+training and inference for this instantiation, and Figure 8 illustrates the conditional DDPM denoiser
+architecture for the EEG experiment.
+
+Algorithm 1 Training and inference for the deterministic-range, DDPM-null cascade
+Require: Training set {(xi , yi )}N
+                                  i=1 , forward operator A
+ 1: Setup: Compute SVD A = UΣV⊤ ; partition V = [Vr , Vn ]
+                              ∗
+ 2: Project: α∗      ⊤                ⊤
+              i ← Vr xi , β i ← Vn xi for all i
+ 3:
+ 4: // Train deterministic range model fθ : y 7→ α̂
+ 5: for epoch = 1, . . . , Erange do
+ 6:     for minibatch {(yi , α∗i )} do
+ 7:       Update θ to minimize ∥α∗i − fθ (yi )∥22
+ 8:     end for
+ 9: end for
+10:
+11: // Train null model with DDPM denoising loss
+12: for epoch = 1, . . . , Enull do
+13:     for minibatch {(α∗i , β ∗i )} do
+14:       Sample√t ∼ Uniform{1,
+                             √         . . . , T }, ϵ ∼ N (0, I)
+15:       β t ← ᾱt β ∗i + 1 − ᾱt ϵ
+16:       Update ϕ to minimize ∥ϵ − ϵϕ (β t , α∗i , t)∥22
+17:     end for
+18: end for
+19:
+20: // Inference: sample x̂ ∼ p(x | y)
+21: Compute α̂ = fθ (y)
+22: Sample β̂ ∼ pnull
+                 ϕ (β | α̂) via reverse DDPM diffusion
+23: return x̂ = Vr α̂ + Vn β̂
+
+
+
+
+                                                       12
+Figure 8: Denoiser architecture used in the conditional diffusion posterior. The network takes the
+noisy source representation xt , EEG measurement y, and diffusion timestep t as input, and predicts
+the diffusion noise ϵ̂ϕ (xt , y, t). The EEG measurement is also encoded into a conditioning vector
+used for feature-wise linear modulation (FiLM) in each residual block. A linear skip connection from
+xt is added to the final output.
+
+
+
+
+                                                13
+C    Gaussian Analytical Example: Data Generation and Model Details
+Generative model. Data are generated as a Gaussian instantiation of the factorization in Eq. (4),
+where y depends only on α by construction, so that β ⊥ y | α holds exactly:
+                                          α ∼ N (0, Ir ),                                        (10)
+                                      β | α ∼ N (Cα, Ση ),                                       (11)
+                                      y | α ∼ N (Aα, σy2 In ).                                   (12)
+We use dimensions r = 32, q = 64, n = 32, and measurement noise σy = 0.3.
+
+Parameter construction. The forward operator A ∈ Rn×r is drawn as a random Gaussian matrix
+and orthogonalized via QR decomposition, so that A⊤ A = Ir and the identifiable subspace is
+isotropically covered. The cross-covariance matrix C ∈ Rq×r is drawn i.i.d. from N (0, r−1 ), so that
+∥Cα∥2 ≈ ∥α∥2 in expectation.
+The intrinsic ambiguity covariance Ση ∈ Rq×q is constructed as Ση = QΛQ⊤ , where Q ∈ O(q)
+is a random orthogonal matrix obtained by QR decomposition of a Gaussian matrix, and Λ =
+diag(λ1 , . . . , λq ) has eigenvalues spaced geometrically from λmax = 8.0 to λmin = 0.1 (condition
+number ≈ 80). This construction yields a fully correlated covariance with off-diagonal structure,
+ensuring that calibration requires matching not only marginal scales but also the geometry of the
+ambiguous subspace. Samples η ∼ N (0, Ση ) are drawn via the Cholesky factor L as η = Lz,
+z ∼ N (0, Iq ).
+
+Analytical posteriors.     The Gaussian structure admits closed-form posteriors used as ground truth
+for calibration:
+                                                      −1
+                          Σα|y = Ir + σy−2 A⊤ A             ,   µα|y = σy−2 Σα|y A⊤ y,           (13)
+                                             ⊤
+                  Cov(β | y) = C Σα|y C + Ση ,                                                   (14)
+                              ∗          ∗
+                         β | α ∼ N (Cα , Ση ) .                                                  (15)
+                                                 ∗
+The oracle ambiguity distribution p(β | α ) is thus available in closed form, enabling direct
+comparison against the learned null model.
+
+Null model training and evaluation. A conditional DDPM is trained on N = 100,000 i.i.d.
+samples of (α∗ , β ∗ ) pairs using a linear noise schedule with T = 1000 diffusion steps (β1 = 10−4 ,
+βT = 0.02), a two-block MLP denoiser with hidden dimension 256, the Adam optimizer at learning
+rate 3 × 10−4 , and batch size 256, for 105 gradient steps. SBC diagnostics are computed using
+Msbc = 200 posterior samples per test point over Nsbc = 500 held-out values of α∗ , using the scalar
+test statistics T1 = ∥β∥2 and T2 = ∥β∥∞ /∥β∥2 .
+
+D    EEG cascade results
+Figure 9 reports posterior mean reconstruction quality for all trained range–null combinations. The
+dominant pattern is that Pearson correlation varies primarily across range models, while differences
+across null models are comparatively small within each row. This is expected because the posterior
+mean reconstruction is strongly influenced by the measurement-identifiable component, which is
+determined by the range model. In contrast, the null model primarily controls the distribution of
+intrinsically ambiguous components.
+This grid supports the model-selection motivation of the main text. A practitioner selecting a cascade
+using reconstruction correlation alone would find several near-equivalent combinations. However,
+as shown in Section 5.3, models with similar reconstruction quality can differ substantially in their
+calibration of intrinsic ambiguity. Thus, the range–null grid illustrates why reconstruction metrics
+alone are insufficient for selecting posterior models in ill-posed inverse problems.
+
+
+
+
+                                                     14
+                                   Cascade assembly grid: 5 range models × 4 null models (N=450, M=200)
+                                                  Pearson correlation                                          Measurement residual
+                   DDPM       0.693              0.641                0.658                0.698                       0.398
+                             ± 0.011            ± 0.011              ± 0.011              ± 0.011                     ± 0.002
+                                                                                                                                 0.60
+                                                                                                        0.65
+              VAE kl=0.01     0.475              0.470                0.479                0.477                       0.643
+                             ± 0.011            ± 0.011              ± 0.011              ± 0.011                     ± 0.006
+                                                                                                                                 0.55
+Range model
+
+                                                                                                        0.60
+               VAE kl=0.1     0.510              0.501                0.509                0.515                       0.505
+                             ± 0.011            ± 0.011              ± 0.011              ± 0.011                     ± 0.003
+                                                                                                                                 0.50
+                              0.582              0.556                0.571                0.590        0.55           0.419
+               VAE kl=1.0    ± 0.012            ± 0.012              ± 0.012              ± 0.012                     ± 0.003
+                                                                                                                                 0.45
+
+                     MLP      0.666              0.627                0.642                0.658        0.50           0.392
+                             ± 0.012            ± 0.011              ± 0.011              ± 0.011                     ± 0.002
+                                                                                                                                 0.40
+                            DDPM                  01              kl=0.
+                                                                        1
+                                                                                       kl=1.
+                                                                                             0
+                                       VAE   kl=0.          VAE                  VAE
+                                                        Null model
+
+
+ Figure 9: Pearson correlation between the posterior mean reconstruction and the ground-truth source
+ signal across range–null model assemblies, averaged over 450 held-out test cases. Cells report mean
+ ± s.e.m. across test cases. The right column reports the measurement residual, ∥y − Ax̂∥2 /∥y∥2 ,
+ which depends only on the range-stage reconstruction.
+
+
+ E              Noise propagation bound for accelerated MRI
+ We provide a short argument for why the propagated uncertainty term in Eq. 5 is controlled by
+ measurement noise in the accelerated MRI setting.
+ The propagated uncertainty term in Eq. 5 is Vα|y (E[β | α]). In the MRI notation, this corresponds to
+ Vx̂α (m(x̂α )), where m(xα ) = Epnull
+                                     ϕ
+                                        [xβ | xα ] is the conditional null mean. The forward operator
+ is A = MF, where F is the two-dimensional Fourier transform and M is a binary k-space mask. For
+ a clean image x, the oracle identifiable component is x∗α = F−1 MFx. Under noisy measurements
+ yσ = MFx + εσ , the closed-form identifiable estimate is
+                                                       x̂α = F−1 yσ = x∗α + F−1 εσ .
+
+ Thus x̂α − x∗α = F−1 εσ . For a unitary normalization of the Fourier transform, ∥F−1 εσ ∥22 = ∥εσ ∥22 ,
+ and therefore E∥x̂α − x∗α ∥22 = O(σ 2 ).
+ Under the assumption that m is L-Lipschitz, then
+                                                                                                    2
+                                        tr(Vx̂α )(m(x̂α )) ≤ E ∥m(x̂α ) − m(x∗α )∥2
+                                                                   ≤ L2 E∥x̂α − x∗α ∥22 = O(σ 2 ).                              (16)
+ Hence, the propagated uncertainty term vanishes as σ → 0, supporting the interpretation of Fig. 3(a):
+ intrinsic ambiguity is fixed when conditioning on x∗α , while additional null uncertainty under noisy
+ conditioning is controlled by perturbations in x̂α .
+
+
+
+
+                                                                            15
+F    Simulation-Based Calibration for High-Dimensional Parameters
+Simulation-Based Calibration (SBC) [12] provides a principled diagnostic for posterior inference by
+exploiting a self-consistency property of Bayes’ rule. If θsim ∼ p(θ) and y sim ∼ p(y | θsim ), then
+θsim is itself a draw from the posterior p(θ | y sim ), and its rank among approximate posterior draws
+{θ(m) }Mm=1 must be uniformly distributed on {0, . . . , M }. Concretely, the rank statistic is
+                                            M  h          i
+                                                 (m)
+                                            X
+                                     rk =     1 θk < θksim ,                                       (17)
+                                            m=1
+
+and any systematic deviation from uniformity in {rk } signals that the approximate posterior is
+miscalibrated. This diagnostic is sensitive to three distinct failure modes: model misspecification,
+sampler pathology, and implementation errors.
+
+Challenges in High Dimensions. For θ ∈ RD , the standard procedure yields D separate rank
+sequences, one per coordinate. This raises two difficulties. First, simultaneous uniformity tests across
+D parameters require multiple-testing correction, which reduces statistical power. Second, and more
+fundamentally, passing D marginal tests does not imply joint calibration: a posterior can have correct
+marginals while being badly wrong about inter-coordinate correlations.
+
+Scalar Aggregates for Exchangeable Parameters. When the coordinates of θ are semantically
+homogeneous and exchangeable under the prior — for instance, when each θ k represents the posterior
+mean of the k-th data dimension — scalar aggregates of θ provide computationally efficient and
+interpretable SBC diagnostics. We propose two complementary statistics.
+The first is the ℓ2 norm ∥θ∥2 , which aggregates total energy across dimensions. Its rank probes
+whether the posterior captures the correct overall scale: systematic shrinkage or overdispersion
+manifests as a rank distribution skewed toward 0 or M , respectively.
+The second is the peakedness ratio ∥θ∥∞ /∥θ∥2 , which measures the degree of concentration of
+θ across its coordinates. This ratio lies in [D−1/2 , 1], with values near D−1/2 indicating diffuse,
+roughly uniform energy and values near 1 indicating near-sparse concentration in a single coordinate.
+A posterior that over-smooths a sparse signal will produce a ratio systematically smaller than the
+truth, and SBC will detect this as a rank distribution biased toward 0.
+
+Complementarity.       These two statistics probe orthogonal aspects of the posterior geometry, as
+summarized below:
+
+                  Statistic       Sensitive to                 Blind to
+                  ∥θ∥2            Overall scale / shrinkage    Sparsity structure
+                  ∥θ∥∞ /∥θ∥2      Sparsity / concentration     Overall energy level
+
+Running SBC on both simultaneously provides a two-dimensional diagnostic well-suited to structured,
+high-dimensional posteriors where sparsity is a meaningful property of the signal.
+
+
+
+
+                                                  16
+

@@ -1,0 +1,57 @@
+Learning to Sample and Reconstruct for Accelerated MRI 27
+Appendix B.4. Alternate Training for Dense-reward POMDP Fails
+We now demonstrate that the proposed alternate training framework is not suitable
+for the dense-reward POMDP. We start by calculating the derivative of Jdense w.r.t
+the θR.
+Proposition 2 The derivative of J dense w.r.t. θR is
+∇θRJ dense
+T (x) =
+T−1∑
+t=0
+E{as}t−1
+s=0∼π
+[∑
+at
+∇θRπ(at|R (yt;θR))·qt
+]
++ E{at}T−1
+t=0∼π [∇θRS(R(yT ;θR), x)],
+(B.1)
+where {as}t−1
+s=0 ∼ π means a sequential acquisition according to (3.1), yt =
+yt(M0,{as}t−1
+s=0) = (M0 +∑t−1
+s=0 Mas)⊙ y, and qt =q(x, Mt,at) is the Q-function of
+the dense-reward POMDP for t = 1,··· ,T .
+Proof Here we consider the dense-reward POMDP. Letv(x, Mt) be the value function
+and q(xt,at) be the Q function at timestep t, defined as
+v(x, Mt) = E{as}T−1
+s=t∼π
+T∑
+s=t+1
+rs, where yt = Mt⊙F (x),
+q(x, Mt,at) =rt+1 +v(x, Mt+1), where Mt+1 = 1 (Mt + Mat).
+Indeed,
+J dense
+T (x) =v(x, M0) + S(R(y0), x).
+Fort = 0, 1,··· ,T − 1, we have
+∇θRv(x, Mt)
+=∇θR
+[∑
+at
+π(at| xt)·q(x, Mt,at)
+]
+=
+∑
+at
+[∇θRπ·qt +π·∇θRqt]
+=
+∑
+at
+[∇θRπ·qt +π·∇θR(rt+1 +v(x, Mt+1))]
+=
+∑
+at
+[∇θRπ·qt +π·∇θR(S(R(yt+1), x) +v(x, Mt+1))]−∇θRS(R(yt), x),
+and
+∇θRv(x, MT ) = 0.

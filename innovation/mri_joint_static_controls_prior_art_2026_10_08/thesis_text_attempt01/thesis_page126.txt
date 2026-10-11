@@ -1,0 +1,44 @@
+7.4. EXPERIMENTS
+The intuition is simple, the evaluator tries to match the prediction of the kernelt. The
+evaluator is also added to the objective of the reconstruction method, contributing as
+ℓR
+E(θ) = 1
+m
+m∑
+i=1
+P∑
+k=1
+|eϕ(ˆxθ,i,ω )k− 1|2 (7.14)
+where we see that it acts as an adversary: the evaluator is trained to predict how
+closely a reconstructed ˆx matches a reference imagex, while the reconstructor aims
+at reconstructing images that look realistic to the evaluator. The updated objective of
+Equation 7.8 then becomes
+min
+θ
+ℓR(θ) = min
+θ
+ℓNLL(θ) +βℓR
+E(θ) (7.15)
+The model is then trained by alternating updates between Equation 7.13 and Equation
+7.15. Although the model is inspired by the adversarial training employed in GANs,
+significant differences remains, especially regarding the learning of a distribution in a
+GAN against point estimates in Zhang et al. (2019b), and the construction of an evaluator
+that matches a kernel rather than some more general distance such as a KL-divergence
+(Goodfellow et al., 2014) or a Wasserstein distance (Arjovsky et al., 2017).
+7.4 Experiments
+We first consider MRI adaptive sampling, and the move to image domain sampling on
+MNIST.
+7.4.1 MRI adaptive sampling
+Experimental setting
+We carried out experiments on Fourier sampling with the same conditions as outlined in
+Section 6.3
+Dataset. We used again the fastMRI (Zbontar et al., 2019) single-coil knee dataset for
+the experiments, using complex data and the same data normalization as previously. We
+cropped the data to256× 256 before resizing them to128× 128. We used horizontal
+sampling masks, and experimented among other things with the mask distribution of
+Zhang et al. (2019b). This corresponds to thec+rhz setting in the previous chapter.
+Recall that for the mask distribution, the setting of Zhang et al. (2019b) meaning the
+model was trained with 10 center frequencies always selected and between 3 and 37
+randomly selected elements. The data were postprocessed to have the magnitude of the
+ground truth in the range[0, 1].
+113

@@ -1,0 +1,5 @@
+# 完整终态auditor的session字段修正（未执行医学比较）
+
+原已备audit_full_real_terminal.py第21行期待启动文件actual_unified_exec_session，但本次正式静态启动记录使用observed_unified_exec_session（44317），并保留raw session_id。原启动文件和已冻结auditor均不编辑。
+
+新独立audit_full_real_terminal_v2.py仅替换这一字段名，核actual terminal的observed_unified_exec_session与真实启动记录一致；其余35904journal/源码/gate检查保持。旧auditor尚未执行，不能声称本问题导致了实际医学失败或已经通过终态audit。full session44317仍live，只有实际整体exit0且terminal无session_id，才运行新v2 auditor。

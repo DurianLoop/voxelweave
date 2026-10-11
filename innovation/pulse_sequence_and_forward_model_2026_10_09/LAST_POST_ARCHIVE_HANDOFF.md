@@ -1,0 +1,13 @@
+# 6580归档后的实际运行状态
+
+本批真实归档e3cb4c exit0，旧6515全部哈希核对、新增65、累计6580。index SHA cf8b0189ccfae0d3162e9035d0e1c744b95381efc9cf0a02ce12a11deb179834；proof SHA 6d50040627f559a73f6d0e80c204d7c306f0d6bfb1c2ea6d64de9bd0fbc36695。不要重跑/覆盖本批index，不改已冻结源。本批已完成2新主文、8非公式表、1080+384 toy、四臂actual训练终态与11968审计，是实质进展，goal仍active。
+
+下一第一优先poll医学session78123。最新实际6ec8fe仍含session_id，native_reference_intensity完成2/9series，两者严格数值gate通过；总36FOV尚未完成，不预判医学。四臂训练29823已真正95b0a1 exit0，原capture df9ebf通过，不再poll已结束旧句柄。评价整体真正exit0/无session_id后：保存原目录ACTUAL_EVALUATION_TERMINAL_TOOL.json，加observed_unified_exec_session=78123→capture_evaluation_terminal.py→summarize_matched.py。36production+36functional全FOV、全部4患者9series和原六医学门槛，不挑分支/部分结果。
+
+第二poll完整强度资格session90446。最新实际c75d96仍live，4512/35904，elapsed2698.0113899999997s；fullchain最大1.9073486328125e-6，isolated0，coordinate1.1368683772161603e-13。新起跑从0，不继承旧6216。完整真实成功terminal后保存ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json（observed_unified_exec_session=90446），执行原audit_full_real_terminal.py。rolling maxima不是全分母成功；保持原3e-6/3e-12/二值零差。
+
+训练journal/checkpoints在actual terminal及原capture后纳入6580；评价与full rolling outputs继续排除。8未见确认患者/12series及lockedIXI关闭，原见全11GT的19998parent不合法LOPO初始化。全文新先例说明mask/采集参数/厚层模拟不独立创新；核心候选仍需充分任务能力后的具体paired损害差与全费用、强QC/error-cost/defer/static/random和reliability-map对照。
+
+GPU授权保持，本批fresh1394MiB<8192MiB；最后state后磁盘约8.02GB，储备外约20MB，还须原医学3MB/full2MB，六final仅payload33.73MB，不能假设六臂/11fold可起跑，不删历史腾空间。CPU任务不迁GPU、不安装、不委派、不查/控其他PID。
+
+本文件、POST_ARCHIVE_TOOL_OBSERVATIONS.json、FINAL_PUBLIC_RESPONSE.json及最终保存工具记录是6580后的未冻结增量，下一新index纳入。公开最终回复已按原文保存；不宣称独立医学确认或goal完成。

@@ -1,0 +1,620 @@
+{
+  "created_utc": "2026-10-08T00:41:08.583351+00:00",
+  "complete": true,
+  "errors": [],
+  "records": [
+    {
+      "key": "mri_compute_stopping",
+      "query": "(all:MRI OR all:\"magnetic resonance\") AND (all:\"early exit\" OR all:\"adaptive computation\" OR all:\"learn to stop\") AND submittedDate:[199101010000 TO 202610082359]",
+      "requested_url": "https://export.arxiv.org/api/query?search_query=%28all%3AMRI+OR+all%3A%22magnetic+resonance%22%29+AND+%28all%3A%22early+exit%22+OR+all%3A%22adaptive+computation%22+OR+all%3A%22learn+to+stop%22%29+AND+submittedDate%3A%5B199101010000+TO+202610082359%5D&start=0&max_results=8&sortBy=submittedDate&sortOrder=descending",
+      "complete": true,
+      "errors": [],
+      "HTTP_status": 200,
+      "effective_url": "https://export.arxiv.org/api/query?search_query=%28all%3AMRI+OR+all%3A%22magnetic+resonance%22%29+AND+%28all%3A%22early+exit%22+OR+all%3A%22adaptive+computation%22+OR+all%3A%22learn+to+stop%22%29+AND+submittedDate%3A%5B199101010000+TO+202610082359%5D&start=0&max_results=8&sortBy=submittedDate&sortOrder=descending",
+      "total_results": "2",
+      "entries": [
+        {
+          "id": "http://arxiv.org/abs/2605.03999v1",
+          "title": "RD-ViT: Recurrent-Depth Vision Transformer for Semantic Segmentation with Reduced Data Dependence Extending the Recurrent-Depth Transformer Architecture to Dense Prediction",
+          "published": "2026-05-05T17:21:18Z",
+          "updated": "2026-05-05T17:21:18Z",
+          "authors": [
+            "Renjie He"
+          ],
+          "summary": "Vision Transformers (ViTs) achieve state-of-the-art segmentation accuracy but require large training datasets because each layer has unique parameters that must be learned independently. We present RD-ViT, a Recurrent-Depth Vision Transformer that adapts the Recurrent-Depth Transformer (RDT) architecture to dense prediction tasks, supporting both 2D and 3D inputs. RD-ViT replaces the deep stack of unique transformer blocks with a single shared block looped T times, augmented with LTI-stable state injection for guaranteed convergence, Adaptive Computation Time (ACT) for spatial compute allocation, depth-wise LoRA adaptation, and optional Mixture-of-Experts (MoE) feed-forward networks for category-specific specialization. We evaluate on the ACDC cardiac MRI segmentation benchmark in both 2D slice-level and 3D volumetric settings with exclusively real experiments executed in Google Colab. In 2D, RD-ViT outperforms standard ViT at 10% training data (Dice 0.774 vs 0.762) and at full data (0.882 vs 0.872). In 3D, RD-ViT with MoE achieves Dice 0.812 with 3.0M parameters, reaching 99.4% of standard ViT performance (0.817) at 53% of the parameter count. MoE expert utilization analysis reveals that different experts spontaneously specialize for different cardiac structures (RV, MYO, LV) without explicit routing supervision. ACT halting maps show higher compute allocation at cardiac boundaries, and the mean ponder time decreases from 2.6 to 1.4 iterations during training, demonstrating learned computational efficiency. Depth extrapolation enables inference with more loops than training without degradation. All code, notebooks, and results are publicly released.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2605.03999v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2605.03999v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2511.18534v1",
+          "title": "HiFi-MambaV2: Hierarchical Shared-Routed MoE for High-Fidelity MRI Reconstruction",
+          "published": "2025-11-23T16:58:15Z",
+          "updated": "2025-11-23T16:58:15Z",
+          "authors": [
+            "Pengcheng Fang",
+            "Hongli Chen",
+            "Guangzhen Yao",
+            "Jian Shi",
+            "Fangfang Tang",
+            "Xiaohao Cai",
+            "Shanshan Shan",
+            "Feng Liu"
+          ],
+          "summary": "Reconstructing high-fidelity MR images from undersampled k-space data requires recovering high-frequency details while maintaining anatomical coherence. We present HiFi-MambaV2, a hierarchical shared-routed Mixture-of-Experts (MoE) Mamba architecture that couples frequency decomposition with content-adaptive computation. The model comprises two core components: (i) a separable frequency-consistent Laplacian pyramid (SF-Lap) that delivers alias-resistant, stable low- and high-frequency streams; and (ii) a hierarchical shared-routed MoE that performs per-pixel top-1 sparse dispatch to shared experts and local routers, enabling effective specialization with stable cross-depth behavior. A lightweight global context path is fused into an unrolled, data-consistency-regularized backbone to reinforce long-range reasoning and preserve anatomical coherence. Evaluated on fastMRI, CC359, ACDC, M4Raw, and Prostate158, HiFi-MambaV2 consistently outperforms CNN-, Transformer-, and prior Mamba-based baselines in PSNR, SSIM, and NMSE across single- and multi-coil settings and multiple acceleration factors, consistently surpassing consistent improvements in high-frequency detail and overall structural fidelity. These results demonstrate that HiFi-MambaV2 enables reliable and robust MRI reconstruction.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2511.18534v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2511.18534v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        }
+      ],
+      "response_binding": {
+        "path": "adaptive_compute_task_budget_prior_art_2026_10_08/index_attempt01/mri_compute_stopping.xml",
+        "bytes": 5787,
+        "sha256": "8dad8f86e28b28607965419ea6e2dc5ce70420d24419341296390bf944139a72"
+      },
+      "elapsed_seconds": 0.8361180000938475
+    },
+    {
+      "key": "mri_value",
+      "query": "(all:MRI OR all:\"magnetic resonance\") AND (all:\"value of information\" OR all:\"value of computation\" OR all:\"task utility\") AND submittedDate:[199101010000 TO 202610082359]",
+      "requested_url": "https://export.arxiv.org/api/query?search_query=%28all%3AMRI+OR+all%3A%22magnetic+resonance%22%29+AND+%28all%3A%22value+of+information%22+OR+all%3A%22value+of+computation%22+OR+all%3A%22task+utility%22%29+AND+submittedDate%3A%5B199101010000+TO+202610082359%5D&start=0&max_results=8&sortBy=submittedDate&sortOrder=descending",
+      "complete": true,
+      "errors": [],
+      "HTTP_status": 200,
+      "effective_url": "https://export.arxiv.org/api/query?search_query=%28all%3AMRI+OR+all%3A%22magnetic+resonance%22%29+AND+%28all%3A%22value+of+information%22+OR+all%3A%22value+of+computation%22+OR+all%3A%22task+utility%22%29+AND+submittedDate%3A%5B199101010000+TO+202610082359%5D&start=0&max_results=8&sortBy=submittedDate&sortOrder=descending",
+      "total_results": "10",
+      "entries": [
+        {
+          "id": "http://arxiv.org/abs/2609.28508v1",
+          "title": "Does DCGAN-Based Synthetic Augmentation Improve Brain Tumor MRI Classification? An Empirical Study",
+          "published": "2026-09-20T11:42:02Z",
+          "updated": "2026-09-20T11:42:02Z",
+          "authors": [
+            "Irhum Jawad Khan",
+            "Talha bin Aslam"
+          ],
+          "summary": "Generative adversarial networks (GANs) are increasingly used to augment medical imaging datasets, but synthetic images do not necessarily provide downstream classification benefits. This study investigates whether class-specific Deep Convolutional Generative Adversarial Network (DCGAN) augmentation improves brain tumor classification when the classifier and evaluation set are held constant. Experiments were conducted on 7,200 brain magnetic resonance imaging (MRI) scans across four classes: glioma, meningioma, pituitary tumor, and no tumor. For each class, 1,400 real images were used for training and 400 were reserved for testing. A baseline Swin Transformer classifier was trained using only the real training images and compared with a second model trained using the same real images augmented with 500 DCGAN-generated images per class. Both conditions were evaluated on the identical held-out test set. The two models achieved the same overall accuracy of 96%, while macro F1 remained effectively unchanged and ROC-AUC decreased slightly from 0.987 to 0.982 after augmentation. Class-level analysis showed small redistributions in errors rather than a consistent performance gain. FID values between real and synthetic images ranged from 209.15 to 314.27, indicating substantial distributional differences under the adopted evaluation setup. These results suggest that synthetic augmentation should not be assumed to improve medical image classification and should instead be evaluated for both distributional fidelity and downstream task utility.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.28508v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.28508v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2404.06253v1",
+          "title": "From Barlow Twins to Triplet Training: Differentiating Dementia with Limited Data",
+          "published": "2024-04-09T12:25:06Z",
+          "updated": "2024-04-09T12:25:06Z",
+          "authors": [
+            "Yitong Li",
+            "Tom Nuno Wolf",
+            "Sebastian Pölsterl",
+            "Igor Yakushev",
+            "Dennis M. Hedderich",
+            "Christian Wachinger"
+          ],
+          "summary": "Differential diagnosis of dementia is challenging due to overlapping symptoms, with structural magnetic resonance imaging (MRI) being the primary method for diagnosis. Despite the clinical value of computer-aided differential diagnosis, research has been limited, mainly due to the absence of public datasets that contain diverse types of dementia. This leaves researchers with small in-house datasets that are insufficient for training deep neural networks (DNNs). Self-supervised learning shows promise for utilizing unlabeled MRI scans in training, but small batch sizes for volumetric brain scans make its application challenging. To address these issues, we propose Triplet Training for differential diagnosis with limited target data. It consists of three key stages: (i) self-supervised pre-training on unlabeled data with Barlow Twins, (ii) self-distillation on task-related data, and (iii) fine-tuning on the target dataset. Our approach significantly outperforms traditional training strategies, achieving a balanced accuracy of 75.6%. We further provide insights into the training process by visualizing changes in the latent space after each step. Finally, we validate the robustness of Triplet Training in terms of its individual components in a comprehensive ablation study. Our code is available at https://github.com/ai-med/TripletTraining.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2404.06253v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2404.06253v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2404.01082v2",
+          "title": "The state-of-the-art in Cardiac MRI Reconstruction: Results of the CMRxRecon Challenge in MICCAI 2023",
+          "published": "2024-04-01T12:22:01Z",
+          "updated": "2024-04-16T18:21:54Z",
+          "authors": [
+            "Jun Lyu",
+            "Chen Qin",
+            "Shuo Wang",
+            "Fanwen Wang",
+            "Yan Li",
+            "Zi Wang",
+            "Kunyuan Guo",
+            "Cheng Ouyang",
+            "Michael Tänzer",
+            "Meng Liu",
+            "Longyu Sun",
+            "Mengting Sun",
+            "Qin Li",
+            "Zhang Shi",
+            "Sha Hua",
+            "Hao Li",
+            "Zhensen Chen",
+            "Zhenlin Zhang",
+            "Bingyu Xin",
+            "Dimitris N. Metaxas",
+            "George Yiasemis",
+            "Jonas Teuwen",
+            "Liping Zhang",
+            "Weitian Chen",
+            "Yidong Zhao",
+            "Qian Tao",
+            "Yanwei Pang",
+            "Xiaohan Liu",
+            "Artem Razumov",
+            "Dmitry V. Dylov",
+            "Quan Dou",
+            "Kang Yan",
+            "Yuyang Xue",
+            "Yuning Du",
+            "Julia Dietlmeier",
+            "Carles Garcia-Cabrera",
+            "Ziad Al-Haj Hemidi",
+            "Nora Vogt",
+            "Ziqiang Xu",
+            "Yajing Zhang",
+            "Ying-Hua Chu",
+            "Weibo Chen",
+            "Wenjia Bai",
+            "Xiahai Zhuang",
+            "Jing Qin",
+            "Lianmin Wu",
+            "Guang Yang",
+            "Xiaobo Qu",
+            "He Wang",
+            "Chengyan Wang"
+          ],
+          "summary": "Cardiac MRI, crucial for evaluating heart structure and function, faces limitations like slow imaging and motion artifacts. Undersampling reconstruction, especially data-driven algorithms, has emerged as a promising solution to accelerate scans and enhance imaging performance using highly under-sampled data. Nevertheless, the scarcity of publicly available cardiac k-space datasets and evaluation platform hinder the development of data-driven reconstruction algorithms. To address this issue, we organized the Cardiac MRI Reconstruction Challenge (CMRxRecon) in 2023, in collaboration with the 26th International Conference on MICCAI. CMRxRecon presented an extensive k-space dataset comprising cine and mapping raw data, accompanied by detailed annotations of cardiac anatomical structures. With overwhelming participation, the challenge attracted more than 285 teams and over 600 participants. Among them, 22 teams successfully submitted Docker containers for the testing phase, with 7 teams submitted for both cine and mapping tasks. All teams use deep learning based approaches, indicating that deep learning has predominately become a promising solution for the problem. The first-place winner of both tasks utilizes the E2E-VarNet architecture as backbones. In contrast, U-Net is still the most popular backbone for both multi-coil and single-coil reconstructions. This paper provides a comprehensive overview of the challenge design, presents a summary of the submitted results, reviews the employed methods, and offers an in-depth discussion that aims to inspire future advancements in cardiac MRI reconstruction models. The summary emphasizes the effective strategies observed in Cardiac MRI reconstruction, including backbone architecture, loss function, pre-processing techniques, physical modeling, and model complexity, thereby providing valuable insights for further developments in this field.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2404.01082v2",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2404.01082v2",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2311.09737v1",
+          "title": "Gradient-Map-Guided Adaptive Domain Generalization for Cross Modality MRI Segmentation",
+          "published": "2023-11-16T10:07:27Z",
+          "updated": "2023-11-16T10:07:27Z",
+          "authors": [
+            "Bingnan Li",
+            "Zhitong Gao",
+            "Xuming He"
+          ],
+          "summary": "Cross-modal MRI segmentation is of great value for computer-aided medical diagnosis, enabling flexible data acquisition and model generalization. However, most existing methods have difficulty in handling local variations in domain shift and typically require a significant amount of data for training, which hinders their usage in practice. To address these problems, we propose a novel adaptive domain generalization framework, which integrates a learning-free cross-domain representation based on image gradient maps and a class prior-informed test-time adaptation strategy for mitigating local domain shift. We validate our approach on two multi-modal MRI datasets with six cross-modal segmentation tasks. Across all the task settings, our method consistently outperforms competing approaches and shows a stable performance even with limited training data.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2311.09737v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2311.09737v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2310.06737v3",
+          "title": "Multi-domain improves out-of-distribution and data-limited scenarios for medical image analysis",
+          "published": "2023-10-10T16:07:23Z",
+          "updated": "2024-07-04T14:20:59Z",
+          "authors": [
+            "Ece Ozkan",
+            "Xavier Boix"
+          ],
+          "summary": "Current machine learning methods for medical image analysis primarily focus on developing models tailored for their specific tasks, utilizing data within their target domain. These specialized models tend to be data-hungry and often exhibit limitations in generalizing to out-of-distribution samples. In this work, we show that employing models that incorporate multiple domains instead of specialized ones significantly alleviates the limitations observed in specialized models. We refer to this approach as multi-domain model and compare its performance to that of specialized models. For this, we introduce the incorporation of diverse medical image domains, including different imaging modalities like X-ray, MRI, CT, and ultrasound images, as well as various viewpoints such as axial, coronal, and sagittal views. Our findings underscore the superior generalization capabilities of multi-domain models, particularly in scenarios characterized by limited data availability and out-of-distribution, frequently encountered in healthcare applications. The integration of diverse data allows multi-domain models to utilize information across domains, enhancing the overall outcomes substantially. To illustrate, for organ recognition, multi-domain model can enhance accuracy by up to 8% compared to conventional specialized models.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2310.06737v3",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2310.06737v3",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2306.12217v3",
+          "title": "Lumbar spine segmentation in MR images: a dataset and a public benchmark",
+          "published": "2023-06-21T12:19:17Z",
+          "updated": "2024-03-05T08:56:06Z",
+          "authors": [
+            "Jasper W. van der Graaf",
+            "Miranda L. van Hooff",
+            "Constantinus F. M. Buckens",
+            "Matthieu Rutten",
+            "Job L. C. van Susante",
+            "Robert Jan Kroeze",
+            "Marinus de Kleuver",
+            "Bram van Ginneken",
+            "Nikolas Lessmann"
+          ],
+          "summary": "This paper presents a large publicly available multi-center lumbar spine magnetic resonance imaging (MRI) dataset with reference segmentations of vertebrae, intervertebral discs (IVDs), and spinal canal. The dataset includes 447 sagittal T1 and T2 MRI series from 218 patients with a history of low back pain and was collected from four different hospitals. An iterative data annotation approach was used by training a segmentation algorithm on a small part of the dataset, enabling semi-automatic segmentation of the remaining images. The algorithm provided an initial segmentation, which was subsequently reviewed, manually corrected, and added to the training data. We provide reference performance values for this baseline algorithm and nnU-Net, which performed comparably. Performance values were computed on a sequestered set of 39 studies with 97 series, which were additionally used to set up a continuous segmentation challenge that allows for a fair comparison of different segmentation algorithms. This study may encourage wider collaboration in the field of spine segmentation and improve the diagnostic value of lumbar spine MRI.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2306.12217v3",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2306.12217v3",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            },
+            {
+              "rel": "related",
+              "href": "https://doi.org/10.1038/s41597-024-03090-w",
+              "title": "doi"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2112.05761v2",
+          "title": "Self-Supervised Transformers for fMRI representation",
+          "published": "2021-12-10T18:04:26Z",
+          "updated": "2022-08-13T10:21:37Z",
+          "authors": [
+            "Itzik Malkiel",
+            "Gony Rosenman",
+            "Lior Wolf",
+            "Talma Hendler"
+          ],
+          "summary": "We present TFF, which is a Transformer framework for the analysis of functional Magnetic Resonance Imaging (fMRI) data. TFF employs a two-phase training approach. First, self-supervised training is applied to a collection of fMRI scans, where the model is trained to reconstruct 3D volume data. Second, the pre-trained model is fine-tuned on specific tasks, utilizing ground truth labels. Our results show state-of-the-art performance on a variety of fMRI tasks, including age and gender prediction, as well as schizophrenia recognition. Our code for the training, network architecture, and results is attached as supplementary material.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2112.05761v2",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2112.05761v2",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/1910.02420v2",
+          "title": "Deep learning-based development of personalized human head model with non-uniform conductivity for brain stimulation",
+          "published": "2019-10-06T11:33:13Z",
+          "updated": "2020-01-23T06:00:57Z",
+          "authors": [
+            "Essam A. Rashed",
+            "Jose Gomez-Tames",
+            "Akimasa Hirata"
+          ],
+          "summary": "Electromagnetic stimulation of the human brain is a key tool for the neurophysiological characterization and diagnosis of several neurological disorders. Transcranial magnetic stimulation (TMS) is one procedure that is commonly used clinically. However, personalized TMS requires a pipeline for accurate head model generation to provide target-specific stimulation. This process includes intensive segmentation of several head tissues based on magnetic resonance imaging (MRI), which has significant potential for segmentation error, especially for low-contrast tissues. Additionally, a uniform electrical conductivity is assigned to each tissue in the model, which is an unrealistic assumption based on conventional volume conductor modeling. This paper proposes a novel approach to the automatic estimation of electric conductivity in the human head for volume conductor models without anatomical segmentation. A convolutional neural network is designed to estimate personalized electrical conductivity values based on anatomical information obtained from T1- and T2-weighted MRI scans. This approach can avoid the time-consuming process of tissue segmentation and maximize the advantages of position-dependent conductivity assignment based on water content values estimated from MRI intensity values. The computational results of the proposed approach provide similar but smoother electric field results for the brain when compared to conventional approaches.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/1910.02420v2",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/1910.02420v2",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            },
+            {
+              "rel": "related",
+              "href": "https://doi.org/10.1109/TMI.2020.2969682",
+              "title": "doi"
+            }
+          ]
+        }
+      ],
+      "response_binding": {
+        "path": "adaptive_compute_task_budget_prior_art_2026_10_08/index_attempt01/mri_value.xml",
+        "bytes": 22015,
+        "sha256": "a368110b1ffcf8f49a38f46fdf2f32159343762da819272f2bb1191f84840c31"
+      },
+      "elapsed_seconds": 1.1401298000710085
+    },
+    {
+      "key": "mri_budget",
+      "query": "(ti:MRI OR ti:\"magnetic resonance\") AND (all:budget OR all:compute OR all:\"adaptive stopping\") AND submittedDate:[199101010000 TO 202610082359]",
+      "requested_url": "https://export.arxiv.org/api/query?search_query=%28ti%3AMRI+OR+ti%3A%22magnetic+resonance%22%29+AND+%28all%3Abudget+OR+all%3Acompute+OR+all%3A%22adaptive+stopping%22%29+AND+submittedDate%3A%5B199101010000+TO+202610082359%5D&start=0&max_results=8&sortBy=submittedDate&sortOrder=descending",
+      "complete": true,
+      "errors": [],
+      "HTTP_status": 200,
+      "effective_url": "https://export.arxiv.org/api/query?search_query=%28ti%3AMRI+OR+ti%3A%22magnetic+resonance%22%29+AND+%28all%3Abudget+OR+all%3Acompute+OR+all%3A%22adaptive+stopping%22%29+AND+submittedDate%3A%5B199101010000+TO+202610082359%5D&start=0&max_results=8&sortBy=submittedDate&sortOrder=descending",
+      "total_results": "840",
+      "entries": [
+        {
+          "id": "http://arxiv.org/abs/2610.06494v1",
+          "title": "Topology-Informed Prompt-Conditioned Universal Segmentation of Uterine Structures from Ultrasound and MRI",
+          "published": "2026-10-05T15:15:21Z",
+          "updated": "2026-10-05T15:15:21Z",
+          "authors": [
+            "Yongheng Sun",
+            "Yuexi Gu",
+            "Jingwen Sun",
+            "Maureen Kohi",
+            "Mingxia Liu"
+          ],
+          "summary": "Multi-structure segmentation of the uterus is important for computer-assisted screening, diagnosis, and treatment planning of uterine diseases, where ultrasound and MRI provide complementary clinical information. However, developing a unified model across these modalities is challenging due to their substantially different image appearances, anatomical contexts, spatial resolutions, and label spaces. Moreover, existing datasets often define different segmentation targets, making joint learning challenging and potentially leading to negative transfer across heterogeneous tasks. To this end, we propose a Topology-informed Prompt-conditioned Universal Segmentation (TPUS) framework for segmenting multiple uterine structures across ultrasound and MRI. TPUS introduces a graph-based multi-dataset backbone comprising modality-specific stems and a modality-shared graph-based encoder-decoder to support modality-sensitive input adaptation, structural feature reasoning, and joint representation learning across heterogeneous uterine segmentation tasks. In addition, TPUS uses task-aware class prompts to condition the segmentation process for different datasets and label spaces, a dynamic convolutional adaptation module to generate task-specific output responses, and a topology-informed loss to encourage anatomically consistent predictions. Experiments on a uterine ultrasound dataset and a T2-weighted uterine myoma MRI dataset demonstrate that TPUS achieves Dice scores of 0.898 and 0.693 on the two held-out test sets, respectively, outperforming several generic and universal segmentation baselines. Source code can be accessed at https://github.com/YonghengSun1997/TPUS.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2610.06494v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2610.06494v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2610.02136v1",
+          "title": "MIRTO: a registration-gated, multiverse-tested evaluation protocol for unsupervised anomaly segmentation in brain MRI",
+          "published": "2026-10-01T17:44:22Z",
+          "updated": "2026-10-01T17:44:22Z",
+          "authors": [
+            "Negin Kafee Hernashki",
+            "Soumick Chatterjee"
+          ],
+          "summary": "Unsupervised anomaly detection (UAD) methods for brain MRI are ranked by a single score, yet that score rests on choices that are rarely reported: how each anomaly map is aligned with the reference, how and on which data the threshold is set, and which false-positive budget, metric, aggregation and lesion definition are used. We present MIRTO, an evaluation protocol that makes these choices explicit and measures their effect. It gates the geometry of every comparison with a registration check and label-free diagnostics of known power, sets thresholds on validation data alone and reports the false-positive volume actually realised on test, repeats each comparison over 15,552 defensible evaluation pipelines, and attaches paired subject-bootstrap intervals with multiplicity control. Applied to four UAD methods trained on the same healthy data and tested on 312 BraTS 2020 subjects, MIRTO showed that an axis-order mismatch between stored maps and the reference lowered a diffusion model's voxel AUROC from 0.873 to 0.583 whilst barely moving its slice-level AUROC. Within each metric, the method explained at least 0.95 of the variance in voxel AUROC and AUPRC and 0.77 in Dice, but only 0.14 in lesion sensitivity, where the lesion definition and hit criterion dominated. A Dice advantage that was significant at validation thresholds vanished at equal realised false-positive burden, and an exact identity attributes it to threshold transfer. A training-free change to REFLECT's latent aggregation raised Dice at equal burden by 0.052. Nine hypotheses were tested against explicit criteria; because the same cohort served to develop the protocol, all inference is exploratory.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2610.02136v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2610.02136v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2609.31573v1",
+          "title": "How Far Can INRs Go? Cross-Domain Parameter-efficient INR-Based Semantic Segmentation for Brain MRI",
+          "published": "2026-09-25T17:35:07Z",
+          "updated": "2026-09-25T17:35:07Z",
+          "authors": [
+            "Ziyao Shang",
+            "Pouya Sadeghi",
+            "Letian Jiang",
+            "Alexander Wong",
+            "Sirisha Rambhatla"
+          ],
+          "summary": "Biomedical image segmentation is central to medical image analysis, but practical deployment often faces limited annotations, memory constraints, and cross-site distribution shifts. Implicit Neural Representations (INRs) have recently emerged as a lightweight alternative for semantic segmentation, achieving competitive performance with substantially fewer parameters than conventional architectures. However, the mechanisms, scaling behavior, and domain generalization abilities of INR-based segmentation remain insufficiently understood. In this work, we study these questions in the context of cross-domain brain MRI segmentation. We analyze INR-based segmentation across low-parameter regimes, comparing it with conventional pipelines in both in-domain and out-of-domain settings. Surprisingly, we find that INR-based models do not simply improve with increasing parameter budget. Their advantage is most pronounced under low-parameter and limited-augmentation settings, while U-Net-based models benefit more from larger capacity and standard augmentation. We also investigate how INRs encode semantic information in their hidden features and show that complementary segmentation-relevant structure is distributed across multiple INR layers. Building on this insight, we introduce HierINRSeg, a hierarchical INR-based architecture that aggregates multi-layer representations for improved robustness and generalization. Extensive experiments show that HierINRSeg consistently outperforms MetaSeg, a strong recent INR-based segmentation baseline, with an average improvement of 5.6 percentage points in Dice for the in-domain test set and 8.2 percentage points out-of-domain. Overall, our analysis identifies the conditions under which INR-based segmentation is most effective, providing concrete guidance for model selection and future research.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.31573v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.31573v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2609.31461v1",
+          "title": "KneePreM: Towards 3D Knee MRI Foundation Models via Large-Scale Unlabeled Pretraining and Label-Efficient Fine-Tuning",
+          "published": "2026-09-25T16:11:45Z",
+          "updated": "2026-09-25T16:11:45Z",
+          "authors": [
+            "Xinxin Wang",
+            "Liam Hazan",
+            "Jing Li",
+            "Simona Rabinovici-Cohen",
+            "Xiaojuan Li",
+            "Mingrui Yang"
+          ],
+          "summary": "Background: Large volumes of unlabeled knee MRI scans are available across repositories but remain insufficiently leveraged. We developed KneePreM, a knee-specific 3D self-supervised model, and evaluated transfer and label efficiency for classification and segmentation. Methods: A 3D U-Net masked autoencoder was pretrained on 19,011 unlabeled Osteoarthritis Initiative (OAI) MRI series from 4,791 participants. Downstream fine-tuning used full and reduced training sets for fastMRI+ two-label classification (1,172 examinations), Arthroscopic Partial Meniscectomy (APM) eight-target classification (1,716 examinations), SKM-TEA segmentation (155 examinations), and APM segmentation (25 examinations). Baselines were random initialization and SuPreM. Deployment workflow was implemented with a Model Context Protocol interface. Evaluation metrics included balanced accuracy, F1 score, ROC AUC, PR AUC, and Dice score. Statistical analysis used bootstrap confidence intervals and paired bootstrap tests for classification and Wilcoxon signed-rank tests for segmentation. Results: KneePreM achieved higher full-data macro ROC AUC than both baselines for fastMRI+ and APM (all p < .001). For fastMRI+ classification, KneePreM achieved a ROC AUC of 0.722 using 50% of the training data, exceeding both full-data baselines. In APM classification, KneePreM reached a ROC AUC of 0.740 with 70% of the data, matching the full-data random baseline and outperforming SuPreM. For SKM-TEA segmentation, its 70%-data Dice of 0.838 exceeded the full-data random baseline (0.835) and both same-budget comparators. In APM segmentation, its 75%-data Dice of 0.746 exceeded the full-data random baseline (0.731) and both same-budget comparators. Conclusion: KneePreM improves transfer performance and label efficiency across knee MRI classification and segmentation tasks, particularly when labeled training data are limited.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.31461v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.31461v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2609.31813v1",
+          "title": "Awaken, Then Scale: Tiny Adaptation for MRI Reconstruction",
+          "published": "2026-09-25T13:54:34Z",
+          "updated": "2026-09-25T13:54:34Z",
+          "authors": [
+            "Mohammed Wattad",
+            "Tamir Shor",
+            "Alexander M. Bronstein"
+          ],
+          "summary": "Dormant Awakening (DA) specializes a magnetic resonance imaging (MRI) reconstruction model by fitting a small set of zero weights to one labeled slice. Across fourteen U-shaped convolutional network (U-Net) and vision transformer (ViT) sources, fitting 1,004 or 10,560 weights gives mean peak signal-to-noise ratio (PSNR) gains of .430 and .509 dB. We analyze how scaling the fitted output correction changes evaluation PSNR, then use the calibration correction size to cap changes on new images. The cap bounds changes in root mean squared error (RMSE) relative to the source without an evaluation reference. At 10\\% adaptation budget, we compare fixed halving and dynamic capping for DA, unrestricted sparse adaptation and low-rank adaptation (LoRA). The controls increase both measured calibration-evaluation correlations across all six tested architecture-adapter settings. Experiments concern one constructed fastMRI-to-M4Raw shift with fixed source checkpoints and participant panels.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.31813v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.31813v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2609.31812v1",
+          "title": "Beyond Sparsity: Weight Location and Network Context in Pruned MRI Reconstruction",
+          "published": "2026-09-25T13:46:27Z",
+          "updated": "2026-09-25T13:46:27Z",
+          "authors": [
+            "Mohammed Wattad",
+            "Tamir Shor",
+            "Alexander M. Bronstein"
+          ],
+          "summary": "Pruning reduces the number of weights in magnetic resonance imaging (MRI) reconstruction networks. Equal sparsity, however, can retain weights with different computational roles and different compatibility with the trained network. We study these effects across 120 convolutional U-Net and vision transformer models using controlled edits evaluated before retraining. In U-Net, preserving high-resolution computation improves reconstruction at equal deletion counts across all tested sparsity levels. Equal-operation controls reveal additional sensitivity of the first convolution, which operation count alone cannot explain. In transformers, retained pretrained weight energy correlates with quality within sparsity levels, yet the same masks reverse their reconstruction ranking when the surrounding trained weights change. At 90\\% sparsity, matching intermediate output scales largely removes a high-energy-mask penalty while retaining an advantage for the network's original mask. Thus sparsity alone does not characterize reconstruction quality: architecture-specific descriptors are informative, but mask quality can still depend on the surrounding trained network.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.31812v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.31812v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2609.29785v1",
+          "title": "Lightweight Vision Transformer-Based U-Net for Brain Tumor Segmentation from MRI",
+          "published": "2026-09-24T13:26:08Z",
+          "updated": "2026-09-24T13:26:08Z",
+          "authors": [
+            "Sheekar Banerjee",
+            "Md. Srabon Chowdhury",
+            "Md. Mahbub Hasan Akash",
+            "Ishtiak Al Mamoon"
+          ],
+          "summary": "Accurate brain tumor segmentation from Magnetic Resonance Imaging is essential for diagnosis, treatment planning, and surgical guidance. Although Convolutional Neural Networks, particularly UNet, have achieved significant success in medical image segmentation, they often struggle to capture the long-range spatial dependencies required to model tumors with irregular shapes and complex boundaries. This paper proposes a lightweight Vision Transformer UNet that combines the hierarchical feature extraction capability of UNet with the global context modeling of Vision Transformers. The proposed architecture incorporates a compact ViT bottleneck within a U-Net encoder-decoder framework, enabling effective learning of both local and global features while maintaining computational efficiency with only 2.6 million trainable parameters. The model was evaluated on the TCGA LGG MRI Segmentation dataset, achieving a mean Intersection over Union of 0.8100 and a Dice score of 0.8446, outperforming the baseline UNet by 3.75% and 3.15%, respectively. Extensive quantitative and qualitative analyses, including confusion matrix evaluation, precision recall curves, per-image performance distribution, and tumor size dependency analysis, demonstrate the effectiveness and robustness of the proposed method for brain tumor segmentation.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.29785v1",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.29785v1",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        },
+        {
+          "id": "http://arxiv.org/abs/2609.24468v2",
+          "title": "SGAM: Shared Gaussian Geometry with Implicit Amplitude Modeling for Scan-Specific 3D Multi-Contrast MRI Reconstruction",
+          "published": "2026-09-21T12:10:01Z",
+          "updated": "2026-09-30T03:21:45Z",
+          "authors": [
+            "Jingran Xu",
+            "Dong Liang",
+            "Hairong Zheng",
+            "Yuanyuan Liu",
+            "Yanjie Zhu"
+          ],
+          "summary": "Three-dimensional (3D) multi-contrast magnetic resonance imaging (MCMRI) provides rich anatomical and quantitative information but requires long acquisition times, motivating k-space undersampling. However, reconstruction of large volumetric datasets imposes substantial computational and memory demands. To address this challenge, we propose SGAM, a memory-efficient, scan-specific framework for joint full-volume 3D MCMRI reconstruction. SGAM is based on a shared-geometry Gaussian representation in which amplitudes are modeled by a multi-output implicit neural representation (INR) and contrast-specific phases by explicit variables. This design exploits common anatomical structure across contrasts while preserving contrast-specific signal variations. The representation is jointly optimized using only the acquired multi-coil k-space without external training data. Experiments showed that SGAM consistently outperformed the comparison methods across imaging tasks and acceleration factors, with greater improvements under stronger undersampling. SGAM also achieved a favorable balance between reconstruction quality and computational cost, demonstrating its effectiveness for 3D multi-contrast MRI reconstruction.",
+          "links": [
+            {
+              "href": "https://arxiv.org/abs/2609.24468v2",
+              "rel": "alternate",
+              "type": "text/html"
+            },
+            {
+              "href": "https://arxiv.org/pdf/2609.24468v2",
+              "rel": "related",
+              "type": "application/pdf",
+              "title": "pdf"
+            }
+          ]
+        }
+      ],
+      "response_binding": {
+        "path": "adaptive_compute_task_budget_prior_art_2026_10_08/index_attempt01/mri_budget.xml",
+        "bytes": 20407,
+        "sha256": "8d9290932c8901a808a2bced99a3b9a6dec768421cb9e4deb588fcce62379b55"
+      },
+      "elapsed_seconds": 0.7648182000266388
+    }
+  ],
+  "source_bindings": [
+    {
+      "path": "adaptive_compute_task_budget_prior_art_2026_10_08/query_compute_prior_art.py",
+      "bytes": 4207,
+      "sha256": "a0664ef1b2bbdfedfaeb5b8151102d10566fa646f43c1b96eae5314687c02f10"
+    },
+    {
+      "path": "adaptive_compute_task_budget_prior_art_2026_10_08/PROTOCOL.md",
+      "bytes": 2094,
+      "sha256": "d2d3a2111f676ac184e4ed35dd6ca36cf44dd662165a39aafeaf23df429dc2ce"
+    }
+  ],
+  "sort_by": "submittedDate",
+  "sort_order": "descending",
+  "maximum_results_per_query": 8,
+  "cutoff": "2026-10-08",
+  "resource_snapshot": {
+    "workspace_free_bytes": 8140423168,
+    "available_ram_bytes": 99231719424,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false
+  },
+  "public_GET_only": true,
+  "TLS_verification_disabled": false,
+  "medical_arrays_loaded": 0,
+  "neural_forwards": 0,
+  "GPU_forwards": 0,
+  "new_agents_delegated": 0
+}

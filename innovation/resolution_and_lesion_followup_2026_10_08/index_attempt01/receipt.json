@@ -1,0 +1,252 @@
+{
+  "complete": true,
+  "errors": [],
+  "queries": [
+    [
+      "resolution",
+      "TITLE_ABS:segmentation AND TITLE_ABS:MRI AND (TITLE_ABS:\"resolution-agnostic\" OR TITLE_ABS:\"resolution robust\" OR TITLE_ABS:\"resolution robustness\" OR TITLE_ABS:\"resolution-independent\") AND FIRST_PDATE:[2022-01-01 TO 2026-10-08]"
+    ],
+    [
+      "small_lesion",
+      "TITLE_ABS:segmentation AND (TITLE_ABS:MRI OR TITLE_ABS:\"magnetic resonance\") AND (TITLE_ABS:\"small lesions\" OR TITLE_ABS:\"lesion-wise loss\" OR TITLE_ABS:\"lesion-wise\") AND FIRST_PDATE:[2024-01-01 TO 2026-10-08]"
+    ],
+    [
+      "sampling",
+      "TITLE_ABS:segmentation AND (TITLE_ABS:\"anti-aliasing\" OR TITLE_ABS:\"label-preserving\" OR TITLE_ABS:\"interpolation artifacts\") AND FIRST_PDATE:[2022-01-01 TO 2026-10-08]"
+    ]
+  ],
+  "records": [
+    {
+      "key": "resolution",
+      "requested_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=TITLE_ABS%3Asegmentation+AND+TITLE_ABS%3AMRI+AND+%28TITLE_ABS%3A%22resolution-agnostic%22+OR+TITLE_ABS%3A%22resolution+robust%22+OR+TITLE_ABS%3A%22resolution+robustness%22+OR+TITLE_ABS%3A%22resolution-independent%22%29+AND+FIRST_PDATE%3A%5B2022-01-01+TO+2026-10-08%5D&format=json&pageSize=6&resultType=core",
+      "complete": true,
+      "errors": [],
+      "actual_reading_completed": false,
+      "HTTP_status": 200,
+      "effective_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=TITLE_ABS%3Asegmentation+AND+TITLE_ABS%3AMRI+AND+%28TITLE_ABS%3A%22resolution-agnostic%22+OR+TITLE_ABS%3A%22resolution+robust%22+OR+TITLE_ABS%3A%22resolution+robustness%22+OR+TITLE_ABS%3A%22resolution-independent%22%29+AND+FIRST_PDATE%3A%5B2022-01-01+TO+2026-10-08%5D&format=json&pageSize=6&resultType=core",
+      "file": "resolution_and_lesion_followup_2026_10_08/index_attempt01/resolution.json",
+      "sha256": "2cf781784c4b0cdacf3baa9ae69839490cb2ceee8ab7706c6a2749a3c4a094c5",
+      "bytes": 26373,
+      "elapsed_seconds": 2.7426833999343216,
+      "hit_count": 3,
+      "entries": [
+        {
+          "id": "41158555",
+          "source": "MED",
+          "title": "GOUHFI: A novel contrast- and resolution-agnostic segmentation tool for ultra-high-field MRI.",
+          "authorString": "Fortin MA, Kristoffersen AL, Larsen MS, Lamalle L, Stirnberg R, Goa PE.",
+          "doi": "10.1162/imag.a.960",
+          "pmcid": "PMC12556684",
+          "firstPublicationDate": "2025-10-24",
+          "isOpenAccess": "Y",
+          "abstractText": "Recently, ultra-high-field MRI (UHF-MRI) has become more available and one of the best tools to study the brain for neuroscientists. One common step in quantitative neuroimaging is to segment the brain into several regions, which has been done using software packages such as <i>FreeSurfer</i>, <i>FastSurferVINN,</i> or SynthSeg. However, the differences between UHF-MRI and 1.5T or 3T images are such that the automatic segmentation techniques optimized at these field strengths usually produce unsatisfactory segmentation results for UHF images. Thus, it has been particularly challenging to perform region-based quantitative analyses as typically done with 1.5-3T data, considerably limiting the potential of UHF-MRI until now. Ultimately, this underscores the crucial need for developing new automatic segmentation techniques designed to handle UHF images. Hence, we propose a novel Deep Learning (DL)-based segmentation technique called GOUHFI: Generalized and Optimized segmentation tool for ultra-high-field images, designed to segment UHF images of various contrasts and resolutions. For training, we used a total of 206 label maps from four datasets acquired at 3T, 7T, and 9.4T. In contrast to most DL strategies, we used a previously proposed domain randomization approach, where synthetic images generated from the 206 label maps were used for training a 3D U-Net. This approach enables the DL model to become contrast agnostic. GOUHFI was tested on seven different datasets and compared with existing techniques such as <i>FastSurferVINN</i>, SynthSeg, and <i>CEREBRUM-7T</i>. GOUHFI was able to segment the six contrasts and seven resolutions tested at 3T, 7T, and 9.4T. Average Dice-Sørensen Similarity Coefficient (DSC) scores of 0.90, 0.90, and 0.93 were computed against the ground truth segmentations at 3T, 7T, and 9.4T, respectively. These results demonstrated GOUHFI's superior performance to competing approaches at each resolution and contrast level tested. Moreover, GOUHFI demonstrated impressive resistance to the typical inhomogeneities observed at UHF-MRI, making it a new powerful segmentation tool allowing the usual quantitative analysis pipelines performed at lower fields to be applied also at UHF. Ultimately, GOUHFI is a promising new segmentation tool, being the first of its kind proposing a contrast- and resolution-agnostic alternative for UHF-MRI without requiring fine tuning or retraining, making it the forthcoming alternative for neuroscientists working with UHF-MRI or even lower field strengths."
+        },
+        {
+          "id": "40838426",
+          "source": "MED",
+          "title": "A Contrast-Agnostic Method for Ultra-High Resolution Claustrum Segmentation.",
+          "authorString": "Mauri C, Fritz R, Mora J, Billot B, Iglesias JE, Van Leemput K, Augustinack J, Greve DN.",
+          "doi": "10.1002/hbm.70303",
+          "pmcid": "PMC12368599",
+          "firstPublicationDate": "2025-08-01",
+          "isOpenAccess": "Y",
+          "abstractText": "The claustrum is a band-like gray matter structure located between putamen and insula whose exact functions are still actively researched. Its sheet-like structure makes it barely visible in in vivo magnetic resonance imaging (MRI) scans at typical resolutions, and neuroimaging tools for its study, including methods for automatic segmentation, are currently very limited. In this paper, we propose a contrast- and resolution-agnostic method for claustrum segmentation at ultra-high resolution (0.35 mm isotropic); the method is based on the SynthSeg segmentation framework, which leverages the use of synthetic training intensity images to achieve excellent generalization. In particular, SynthSeg requires only label maps to be trained, since corresponding intensity images are synthesized on the fly with random contrast and resolution. We trained a deep learning network for automatic claustrum segmentation, using claustrum manual labels obtained from 18 ultra-high resolution MRI scans (mostly ex vivo). We demonstrated the method to work on these 18 high resolution cases (Dice score = 0.632, mean surface distance = 0.458 mm, and volumetric similarity = 0.867 using 6-fold cross validation (CV)), and also on in vivo T1-weighted MRI scans at typical resolutions (≈1 mm isotropic). We also demonstrated that the method is robust in a test-retest setting and when applied to multimodal imaging (T2-weighted, proton density, and quantitative T1 scans). To the best of our knowledge this is the first accurate method for automatic ultra-high resolution claustrum segmentation, which is robust against changes in contrast and resolution. The method is released at https://github.com/chiara-mauri/claustrum_segmentation and as part of the neuroimaging package FreeSurfer."
+        },
+        {
+          "id": "35122967",
+          "source": "MED",
+          "title": "FastSurferVINN: Building resolution-independence into deep learning segmentation methods-A solution for HighRes brain MRI.",
+          "authorString": "Henschel L, Kügler D, Reuter M.",
+          "doi": "10.1016/j.neuroimage.2022.118933",
+          "pmcid": "PMC9801435",
+          "firstPublicationDate": "2022-02-03",
+          "isOpenAccess": "Y",
+          "abstractText": "Leading neuroimaging studies have pushed 3T MRI acquisition resolutions below 1.0 mm for improved structure definition and morphometry. Yet, only few, time-intensive automated image analysis pipelines have been validated for high-resolution (HiRes) settings. Efficient deep learning approaches, on the other hand, rarely support more than one fixed resolution (usually 1.0 mm). Furthermore, the lack of a standard submillimeter resolution as well as limited availability of diverse HiRes data with sufficient coverage of scanner, age, diseases, or genetic variance poses additional, unsolved challenges for training HiRes networks. Incorporating resolution-independence into deep learning-based segmentation, i.e., the ability to segment images at their native resolution across a range of different voxel sizes, promises to overcome these challenges, yet no such approach currently exists. We now fill this gap by introducing a Voxel-size Independent Neural Network (VINN) for resolution-independent segmentation tasks and present FastSurferVINN, which (i) establishes and implements resolution-independence for deep learning as the first method simultaneously supporting 0.7-1.0 mm whole brain segmentation, (ii) significantly outperforms state-of-the-art methods across resolutions, and (iii) mitigates the data imbalance problem present in HiRes datasets. Overall, internal resolution-independence mutually benefits both HiRes and 1.0 mm MRI segmentation. With our rigorously validated FastSurferVINN we distribute a rapid tool for morphometric neuroimage analysis. The VINN architecture, furthermore, represents an efficient resolution-independent segmentation method for wider application."
+        }
+      ]
+    },
+    {
+      "key": "small_lesion",
+      "requested_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=TITLE_ABS%3Asegmentation+AND+%28TITLE_ABS%3AMRI+OR+TITLE_ABS%3A%22magnetic+resonance%22%29+AND+%28TITLE_ABS%3A%22small+lesions%22+OR+TITLE_ABS%3A%22lesion-wise+loss%22+OR+TITLE_ABS%3A%22lesion-wise%22%29+AND+FIRST_PDATE%3A%5B2024-01-01+TO+2026-10-08%5D&format=json&pageSize=6&resultType=core",
+      "complete": true,
+      "errors": [],
+      "actual_reading_completed": false,
+      "HTTP_status": 200,
+      "effective_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=TITLE_ABS%3Asegmentation+AND+%28TITLE_ABS%3AMRI+OR+TITLE_ABS%3A%22magnetic+resonance%22%29+AND+%28TITLE_ABS%3A%22small+lesions%22+OR+TITLE_ABS%3A%22lesion-wise+loss%22+OR+TITLE_ABS%3A%22lesion-wise%22%29+AND+FIRST_PDATE%3A%5B2024-01-01+TO+2026-10-08%5D&format=json&pageSize=6&resultType=core",
+      "file": "resolution_and_lesion_followup_2026_10_08/index_attempt01/small_lesion.json",
+      "sha256": "db6ebe1ad5867302654056e72fe9693d496e3bdbf1c8b96f64b3e11bb0ac08dd",
+      "bytes": 38153,
+      "elapsed_seconds": 2.780540500069037,
+      "hit_count": 42,
+      "entries": [
+        {
+          "id": "42099437",
+          "source": "MED",
+          "title": "Adaptable Segmentation Pipeline for Diverse Brain Tumors with Radiomic-guided Subtyping and Lesion-Wise Model Ensemble.",
+          "authorString": "Capellán-Martín D, Parida A, Jiang Z, Kulkarni N, Iyer K, Tapp A, Anwar SM, Ledesma-Carbayo MJ, Linguraru MG.",
+          "doi": "10.1007/978-3-032-16365-3_41",
+          "pmcid": "PMC13148016",
+          "firstPublicationDate": "2026-04-01",
+          "isOpenAccess": "N",
+          "abstractText": "Robust and generalizable segmentation of brain tumors on multi-parametric magnetic resonance imaging (MRI) remains difficult because tumor types differ widely. The BraTS 2025 Lighthouse Challenge benchmarks segmentation methods on diverse high-quality datasets of adult and pediatric tumors: multi-consortium international pediatric brain tumor segmentation (PED), preoperative meningioma tumor segmentation (MEN), meningioma radiotherapy segmentation (MEN-RT), and segmentation of pre- and post-treatment brain metastases (MET). We present a flexible, modular, and adaptable pipeline that improves segmentation performance by selecting and combining state-of-the-art models and applying tumor- and lesion-specific processing before and after training. Radiomic features extracted from MRI help detect tumor subtype, ensuring a more balanced training. Custom lesion-level performance metrics determine the influence of each model in the ensemble and optimize post-processing that further refines the predictions, enabling the workflow to tailor every step to each case. On the BraTS testing sets, our pipeline achieved performance comparable to top-ranked algorithms across multiple challenges. These findings confirm that custom lesion-aware processing and model selection yield robust segmentations yet without locking the method to a specific network architecture. Our method has the potential for quantitative tumor measurement in clinical practice, supporting diagnosis and prognosis."
+        },
+        {
+          "id": "PPR1314971",
+          "source": "PPR",
+          "title": "Bridging field strengths: fine-tuned deep learning models for 7T MRI white matter lesion segmentation in multiple sclerosis",
+          "authorString": "De Rosa AP, Assemlal H, Fetco D, Araujo D, Schindler MK, Beck ES, Bakshi R, Reich DS, Harrison DM, Esposito F, Rudko DA, Arnold DL, Narayanan S.",
+          "doi": "10.64898/2026.09.03.26362180",
+          "pmcid": null,
+          "firstPublicationDate": "2026-09-07",
+          "isOpenAccess": "N",
+          "abstractText": "Multiple sclerosis (MS) white matter lesion (WML) automated segmentation on ultra-high-field 7T MRI remains challenging due to the domain shift from lower-field acquisitions, limited annotated data, and specific imaging artifacts. Fine-tuning is an effective and practical strategy for adapting deep learning WML segmentation algorithms to 7T MRI, even with limited annotated data. This study evaluates fine-tuning as a domain adaptation strategy to leverage a pre-trained deep learning model for automated WML segmentation on 7T MRI. We fine-tuned a U-Net-based model, originally trained on approximately 35,000 heterogeneous lower-field (1T, 1.5T, 3T) multi-contrast MRI scans of people with MS for T2-hyperintense WML (T2-WML) segmentation, using a 7T dataset. Multiple approaches were evaluated, including standard fine-tuning on 3D FLAIR images, low-rank adaptation (LoRA) and training from scratch (nnU-Net). Models were evaluated on an external multi-center 7T test dataset. Additionally, a separate model was fine-tuned for T1-hypointense WML (T1-WML) segmentation on 7T MP2RAGE images. The original model showed substantial performance degradation on 7T data compared to 3T (Dice score decreased from 0.69 to 0.31), confirming the need for domain adaptation. Fine-tuning markedly improved T2-WML segmentation, with the fine-tuned model achieving a median Dice score of 0.57. Lesion-wise sensitivity and F1-score were 0.78 and 0.75, respectively, and the lesion volume agreement with manual segmentation was 0.93. For T1-hypointense WML, fine-tuning showed lower lesion detection performance compared to the T2-hyperintense WML segmentation (sensitivity and F1 of 0.58 and 0.50, respectively); however, incorporating multi-center data into the training set substantially reduced false positives by 23% and improved lesion detection by 14%. Multi-center fine-tuning further improved performance, particularly for the more challenging task of T1-WML segmentation. The models presented here may be included in MS research workflows to facilitate multi-center collaborations with 7T MRI."
+        },
+        {
+          "id": "42084803",
+          "source": "MED",
+          "title": "A deep-learning framework for brain tumor segmentation via three-dimensional mass-preserving geometric transformation.",
+          "authorString": "Huang TM, Zheng KQ, Lin WW, Li T, Yau ST.",
+          "doi": "10.1186/s40708-026-00307-z",
+          "pmcid": "PMC13158315",
+          "firstPublicationDate": "2026-05-05",
+          "isOpenAccess": "Y",
+          "abstractText": "This article presents a robust and efficient framework for brain tumor segmentation based on deep learning. We introduce a novel three-dimensional (3D) mass-preserving geometric transformation (MPGT) that employs a homotopy method to transform irregular brain magnetic resonance (MR) images into standardized solid cubes. This transformation preserves local mass ratios while maintaining global structural integrity, providing a structured input for deep learning models. Furthermore, we propose a modified two-phase segmentation strategy to minimize inference time and a postprocessing technique to enhance lesion-wise performance. Extensive validation on the Brain Tumor Segmentation (BraTS) Challenge 2023 dataset demonstrates that our method, when integrated with nnU-Net, achieves competitive Dice scores of 0.9282 (Whole Tumor), 0.8812 (Tumor Core), and 0.8527 (Enhanced Tumor). These results are superior to or comparable with top-ranking competition entries."
+        },
+        {
+          "id": "42151660",
+          "source": "MED",
+          "title": "A Landmark-Guided Dual-Stream Synergistic Framework for Automated Intracranial Aneurysm Detection in Magnetic Resonance Angiography.",
+          "authorString": "Kim D, Park J, Yang H, Kim GY, Lee J, Kim D, Han HJ, Park KY, Lee M.",
+          "doi": "10.1007/s10278-026-01890-7",
+          "pmcid": null,
+          "firstPublicationDate": "2026-05-18",
+          "isOpenAccess": "N",
+          "abstractText": "Early and accurate detection of intracranial aneurysms (IAs) is critical for preventing rupture; however, manual interpretation of time-of-flight magnetic resonance angiography (TOF-MRA) scans requires time-intensive review, increasing clinician workload. Although deep-learning methods offer promising solutions, existing approaches often rely on impractical vessel segmentation or inefficient patch sampling. Herein, we propose a dual-stream synergistic framework for IA detection and segmentation that balances diagnostic accuracy with clinical feasibility. The first stage performs landmark-guided candidate detection, beginning with a U-Net-based model trained using a novel adaptive loss function to predict the locations of 18 vascular landmarks. These landmarks guide the extraction of coordinate-aware patches, which are then analyzed using a hybrid UNETR-FPN model to identify potential aneurysm candidates. The second stream employs a fine-grained segmentation model (nnU-Net with a residual encoder) operating on the full MRA volume to delineate lesion boundaries. Final predictions are generated through conditional fusion of both streams, prioritizing candidate detection and refining shapes with segmentation information. The framework was trained and evaluated on 1055 TOF-MRA scans, including two distinct internal test sets. The landmark localization model achieved > 0.97 sensitivity in capturing the ground-truth aneurysms within generated patches. On the two test sets, the framework achieved lesion-wise sensitivities of 0.87 and 0.82 with corresponding false-positive rates of 1.23 and 1.17 per case. Performance was robust across anatomical locations but declined for aneurysms ≤ 3 mm. This landmark-guided dual-stream framework provides strong performance for IA detection while reducing annotation demands, offering a clinically practical tool for cerebrovascular diagnostics."
+        },
+        {
+          "id": "42173050",
+          "source": "MED",
+          "title": "Automatic multiple sclerosis lesion segmentation in the spinal cord using 3 T and 7 T MP2RAGE images.",
+          "authorString": "Laines-Medina N, Mchinda S, Testud B, Demortière S, Pravatà E, Nair G, Reich DS, Granziera C, Tsagkas C, Callot V, Cohen-Adad J.",
+          "doi": "10.1016/j.msard.2026.107250",
+          "pmcid": null,
+          "firstPublicationDate": "2026-05-13",
+          "isOpenAccess": "N",
+          "abstractText": "<h4>Purpose</h4>To develop a deep learning-based fully automated framework for segmenting multiple sclerosis (MS) lesions in the spinal cord (SC) using images derived from MP2RAGE acquisitions.<h4>Materials and methods</h4>This retrospective multicenter study included 472 MRI volumes from 422 subjects (mean age 52±12.5 years), comprising 402 patients with MS and 20 healthy controls, acquired at three centers using 3 T and 7 T MRI systems. MP2RAGE-UNI images were preprocessed and analyzed using the Spinal Cord Toolbox (SCT). The multicenter 3 T dataset was divided into training (60%), validation (20%), and testing (20%) subsets, while the 7 T dataset was reserved for testing. The proposed method (UNIseg), based on the nnU-Net v2 architecture, was trained on the multicenter dataset and compared with the current benchmark (seg_ms_lesion_mp2rage, available in SCT v6.3 and earlier versions), which was trained on single-center MP2RAGE-UNI data. Segmentation performance was evaluated using Dice coefficient and lesion-wise metrics by comparing both UNIseg and the benchmark against reference standard. Statistical comparisons were performed using the Wilcoxon signed-rank test.<h4>Results</h4>On the 3 T dataset, UNIseg achieved a mean Dice score of 0.67, significantly outperforming the benchmark (p ≤ 0.01). Lesion-wise sensitivity and precision were 0.81 and 0.92, respectively, with fewer false-positive segmentations. On the 7 T dataset, UNIseg also demonstrated significantly higher performance (p ≤ 0.001), although segmentation performance was lower than that observed at 3 T CONCLUSION: UNIseg provides a robust and efficient approach for segmentation of lesions, improving accuracy compared with existing methods, especially for 3 T data. The trained model and code are publicly available in SCT v6.4 and later."
+        },
+        {
+          "id": "PPR1331355",
+          "source": "PPR",
+          "title": "Brain Tumor Segmentation in the Foundation-Model",
+          "authorString": "Kalejahi BK.",
+          "doi": "10.21203/rs.3.rs-11205837/v1",
+          "pmcid": null,
+          "firstPublicationDate": "2026-09-30",
+          "isOpenAccess": "N",
+          "abstractText": "<title>Abstract</title>  <p>Automated brain tumor segmentation has progressed from handcrafted pipelines and U-Net variants to self-configuring 3D CNNs, transformer hybrids, state-space models, diffusion based segmenters, promptable models and brain-specific foundation models. Yet the field’s central scientific problem has changed: another fractional gain in Dice on a familiar BraTS split provides limited evidence that a system will remain reliable when MRI sequences are missing, scanners and institutions change, lesions are small or multifocal, postoperative anatomy is distorted, or uncertainty is high. This structured critical review synthesizes 150 references with emphasis on 2025–2026 and compares architectures, multimodal fusion strategies, preprocessing, missing-modality learning, self-supervision, foundation-model adaptation, federated learning, domain adaptation, uncertainty quantification and clinical translation. We organize evidence around adult glioma, pediatric tumors, brain metastases, meningioma and longitudinal/postoperative applications; distinguish region overlap from lesion detection and volumetric clinical endpoints; and critically examine leakage, site confounding, hidden test reuse, pretraining contamination, annotation uncertainty and challenge-overfitting. Recent evidence is especially informative: brain MRI foundation models such as BrainIAC and BrainFound improve label efficiency and cross-task transfer, while task specific systems such as nnU-Net and carefully engineered 2.5D/3D networks remain formidable full-data baselines. Missing-modality studies increasingly favor adaptive fusion, distillation and modality dropout over naive zero-filling; uncertainty work is moving toward conformal and evidential approaches that can identify cases requiring expert review; and external studies of metastases and meningiomas demonstrate why lesion-wise, site-stratified and human-in-the-loop evaluation is essential. We propose DATA-SEG, Dataset, Annotation, Train/test integrity, Architecture, Statistics, External robustness and Governance, as a reporting and evaluation framework. The review concludes that the next high-impact phase of brain tumor segmentation should prioritize post-cutoff hidden benchmarks, cross-site robustness, missing-sequence stress tests, calibrated selective segmentation, multi-rater probabilistic ground truth and longitudinal clinical readouts rather than leaderboard optimization alone.</p>"
+        }
+      ]
+    },
+    {
+      "key": "sampling",
+      "requested_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=TITLE_ABS%3Asegmentation+AND+%28TITLE_ABS%3A%22anti-aliasing%22+OR+TITLE_ABS%3A%22label-preserving%22+OR+TITLE_ABS%3A%22interpolation+artifacts%22%29+AND+FIRST_PDATE%3A%5B2022-01-01+TO+2026-10-08%5D&format=json&pageSize=6&resultType=core",
+      "complete": true,
+      "errors": [],
+      "actual_reading_completed": false,
+      "HTTP_status": 200,
+      "effective_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=TITLE_ABS%3Asegmentation+AND+%28TITLE_ABS%3A%22anti-aliasing%22+OR+TITLE_ABS%3A%22label-preserving%22+OR+TITLE_ABS%3A%22interpolation+artifacts%22%29+AND+FIRST_PDATE%3A%5B2022-01-01+TO+2026-10-08%5D&format=json&pageSize=6&resultType=core",
+      "file": "resolution_and_lesion_followup_2026_10_08/index_attempt01/sampling.json",
+      "sha256": "97f056faf3749e69fe10e29ed7818e194323cbe79f2bdf27a540a79d1ec52741",
+      "bytes": 40629,
+      "elapsed_seconds": 2.0139031000435352,
+      "hit_count": 7,
+      "entries": [
+        {
+          "id": "41821500",
+          "source": "MED",
+          "title": "Deep Learning-Based Inner Ear Subregion Segmentation in 3D T2-Weighted MRI Using Label-Preserving Data Augmentation.",
+          "authorString": "Kim W, Kang Y, Lee S, Lee HJ, Nam Y.",
+          "doi": "10.1002/nbm.70266",
+          "pmcid": "PMC12983123",
+          "firstPublicationDate": "2026-04-01",
+          "isOpenAccess": "Y",
+          "abstractText": "Inner ear segmentation supports the diagnosis and treatment planning of auditory-related disorders such as Meniere's disease. However, manual annotation of inner ear structures on MR images is both time-consuming and labor-intensive. To address this limitation, we developed a deep learning method that takes T2-weighted MR images as input and segments the inner ear into three subregions: the cochlear basal turn, the cochlear mid-to-apical turn, and the vestibule including the semicircular canals. A total of 74 three-dimensional (3D) T2-weighted MR images were retrospectively collected and divided into 50 training cases and 24 internal test cases. In addition, eight MR images from the publicly available Vestibular-Schwannoma-SEG dataset were used as an independent external test set. Ground-truth segmentations for both the internal and external datasets were manually annotated by an experienced radiologist. A 3D transformer-based deep learning model was trained using these annotated data. To further improve segmentation performance, particularly for the thin and intricate semicircular canals, a label-preserving data augmentation strategy was introduced and compared with a conventional data augmentation approach. Segmentation performance was evaluated using quantitative and qualitative assessments. Quantitative evaluation included the Dice similarity coefficient (DSC), Intersection over union (IoU), and Hausdorff distance (HD). On the internal test set, the proposed method achieved a mean DSC of 0.905 (vs. 0.904), a mean IoU of 0.828 (vs. 0.824), and a mean HD of 2.75 (vs. 3.04) compared with the conventional augmentation approach. On the external dataset, the proposed method demonstrated larger improvements, achieving a mean DSC of 0.919 (vs. 0.847), a mean IoU of 0.852 (vs. 0.738), and a mean HD of 3.92 (vs. 4.45). These results demonstrate that the proposed label-preserving data augmentation method improves the robustness and accuracy of inner ear subregion segmentation, particularly for thin and intricate structures."
+        },
+        {
+          "id": "42581058",
+          "source": "MED",
+          "title": "Dual branch negotiation model for robust water resource monitoring with spectral ambiguity and boundary degradation.",
+          "authorString": "Kong L, Zhou Y, Ding W, Nam KW.",
+          "doi": "10.1038/s41598-026-55061-3",
+          "pmcid": "PMC13462108",
+          "firstPublicationDate": "2026-08-11",
+          "isOpenAccess": "Y",
+          "abstractText": "Despite the remarkable progress in remote sensing water-body segmentation, existing methods still struggle to jointly preserve fine boundary fidelity and achieve robust semantic disambiguation under cross-domain shifts, undermining applications like flood risk assessment and urban water monitoring. This limitation largely stems from purely data-driven fitting with little explicit control over aliasing artifacts and spectrally induced physical ambiguities. To address this issue, we propose an Enhanced Anti-aliasing dual-branch Segmentation network (EAAS-Net) that integrates sampling theory and spectral physics. At the signal level, an Edge-Adaptive Anti-aliasing Gate (EAAG) is inserted before downsampling to explicitly suppress boundary aliasing, improving sub-pixel geometric fidelity along narrow rivers and complex shorelines. At the semantic level, a physical-guided branch and a multiscale Adaptive Spectral-Spatial Enhancement Fusion (ASEF) module extract domain-invariant spectral representations, enabling reliable separation of water bodies from spectrally similar shadows. At the decision level, a Dynamic Mutual Fusion Decoder (DMF-Decoder) employs a two-round negotiation scheme to progressively reconcile conflicts between visual features and physical priors across scales. Experiments on the GLW dataset and the challenging cross-domain GLH-water dataset show that EAAS-Net achieves highly stable mean Intersection over Union (mIoU) scores of 0.926 and 0.849, respectively, while maintaining sharp boundaries. Furthermore, with 60.2 M parameters, the model maintains a highly efficient inference speed of 18.1 ms per image, demonstrating an optimal balance between sub-pixel accuracy and computational cost, indicating strong potential for near-real-time, large-scale operational deployment."
+        },
+        {
+          "id": "PPR1247530",
+          "source": "PPR",
+          "title": "Top Model Decision Tree: Selecting Segmentation Models for Reliable Quantitative Analysis in Low- and Ultralow-Dose CryoEM",
+          "authorString": "Massenburg LN, Madugula SS, Brown SR, Bible AN, Harris CR, Zhang LX, Parker K, Retterer ST, Morrell-Falvey JL, Vasudevan RK, Williams AN.",
+          "doi": "10.64898/2026.06.05.730486",
+          "pmcid": null,
+          "firstPublicationDate": "2026-06-06",
+          "isOpenAccess": "N",
+          "abstractText": "Deep learning neural networks provide a powerful approach for segmenting low-contrast cryogenic electron microscopy (cryoEM) images. However, model performance can vary significantly across imaging conditions and may hinder downstream quantitative analyses. Here, we present a structured evaluation workflow to systematically screen segmentation models based on performance, inference speed, robustness across imaging conditions, and reliability of downstream quantitative measurements. Using the Bacterial Cell Envelope Thickness Tool (BCET) as a test case, we evaluate multiple architectures (YOLOv11, YOLO26, U-Net, Detectron2, and SAM3) under low-dose and ultralow-dose cryoEM conditions. While several models achieve high metrics, model choice strongly influences downstream measurements of envelope thickness. Models optimized for high F1-scores may produce unreliable segmentation masks from object crowding, interpolation artifacts or imaging conditions. Our results reveal distinct trade-offs between performance, speed, and robustness amongst models. YOLOv11 provides the highest fidelity membrane segmentation for quantitative measurements and the Meta-based model SAM3 offers improved robustness under ultralow-dose conditions with competitive inference performance. This work provides practical guidance for model selection in cryoEM workflows, emphasizing that optimal choice depends on experimental priorities and downstream analysis requirements rather than metrics alone. These findings are broadly relevant to cryoEM workflows as AI-based analysis expands beyond the biological sciences. <h4>Graphical Abstract</h4>"
+        },
+        {
+          "id": "41389065",
+          "source": "MED",
+          "title": "Detection of phase-binning and interpolation artifacts in 4-dimensional computed tomography imaging using deep learning and rule-based approaches.",
+          "authorString": "Cisneros J, Feldt NH, Vinogradskiy Y, Castillo R, Castillo E.",
+          "doi": "10.1002/mp.70191",
+          "pmcid": "PMC12701711",
+          "firstPublicationDate": "2025-12-01",
+          "isOpenAccess": "Y",
+          "abstractText": "<h4>Background</h4>Four-dimensional computed tomography (4DCT) imaging is a crucial component to lung cancer radiotherapy planning and enables CT-ventilation-based functional avoidance planning to mitigate radiation toxicity. However, 4DCT scans are frequently impaired by acquisition artifacts that corrupt downstream analyses that depend on lung segmentation and deformable image registration, such as CT-ventilation and dose accumulation.<h4>Purpose</h4>This study develops 3D deep learning models to identify phase-binning artifacts at the voxel level and a heuristic, rule-based method to identify interpolation slices within 4DCT images.<h4>Methods</h4>We introduce a generator that systematically inserts synthetic phase-binning and interpolation artifacts into any artifact-free breathing phase obtained from nine different clinical 4DCT datasets to produce ground-truth data for (1) training modified nnUNet and SwinUNETR models to detect phase-binning artifacts, and (2) to determine thresholds in the rule-based detection method for interpolation artifacts. The use of multiple datasets incorporates robustness across artifact severities, lung geometries, and cancer progressions.<h4>Results</h4>After training on generated synthetic data and several configurations (region-based learning masks, left-right lung separation), the nnUNet and SwinUNETR models demonstrated state-of-the-art artifact detection accuracy, averaging 0.957 ±$\\pm$ 0.024 (95% CI: [0.956, 0.958]), with an nnUNet configuration achieving the highest averaged accuracy of 0.965, sensitivity of 0.805, and specificity of 0.998 when inferring artifact-affected axial slices from voxel-level predictions. By interpolating and comparing groups of slices, the accuracy, sensitivity, and specificity of the proposed interpolation detection method is 0.97, 0.97, and 0.97 on manually labeled true artifact cases. We propose a localized artifact correction method that simply replaces the predicted artifact-affected voxels with the average surrounding lung intensity value, resulting in 65% of lung segmentation masks with Dice scores greater than 0.95 (opposed to 11% of cases before correction) when applying an automatic segmentation tool and within a tight artifact-bound region. When applied to 1989 cases with true artifacts, SwinUNETR configurations tend to be more generalizable despite marginally lower performance on synthetic artifacts. We quantify this performance without ground-truth artifact masks by statistically comparing artifact properties of detected synthetic and true cases.<h4>Conclusions</h4>We demonstrate state-of-the-art artifact detection accuracy using 3D deep learning models trained on synthetic data and a rule-based approach configured on true data, providing interpretability by highlighting which voxel locations indicate a slice is artifact-affected. The SwinUNETR model accuracy and fast run-time have the potential to enable more targeted artifact correction methods or signal an imaging technologist when to re-scan a patient in real-time."
+        },
+        {
+          "id": "37189563",
+          "source": "MED",
+          "title": "Anti-Aliasing Attention U-net Model for Skin Lesion Segmentation.",
+          "authorString": "Le PT, Pham BT, Chang CC, Hsu YC, Tai TC, Li YH, Wang JC.",
+          "doi": "10.3390/diagnostics13081460",
+          "pmcid": "PMC10137492",
+          "firstPublicationDate": "2023-04-18",
+          "isOpenAccess": "Y",
+          "abstractText": "The need for a lightweight and reliable segmentation algorithm is critical in various biomedical image-prediction applications. However, the limited quantity of data presents a significant challenge for image segmentation. Additionally, low image quality negatively impacts the efficiency of segmentation, and previous deep learning models for image segmentation require large parameters with hundreds of millions of computations, resulting in high costs and processing times. In this study, we introduce a new lightweight segmentation model, the mobile anti-aliasing attention u-net model (MAAU), which features both encoder and decoder paths. The encoder incorporates an anti-aliasing layer and convolutional blocks to reduce the spatial resolution of input images while avoiding shift equivariance. The decoder uses an attention block and decoder module to capture prominent features in each channel. To address data-related problems, we implemented data augmentation methods such as flip, rotation, shear, translate, and color distortions, which enhanced segmentation efficiency in the international Skin Image Collaboration (ISIC) 2018 and PH2 datasets. Our experimental results demonstrated that our approach had fewer parameters, only 4.2 million, while it outperformed various state-of-the-art segmentation methods."
+        },
+        {
+          "id": "40868320",
+          "source": "MED",
+          "title": "A Fully Automated Analysis Pipeline for 4D Flow MRI in the Aorta.",
+          "authorString": "Johnson EMI, Berhane H, Weiss E, Jarvis K, Sodhi A, Yang K, Robinson JD, Rigsby CK, Allen BD, Markl M.",
+          "doi": "10.3390/bioengineering12080807",
+          "pmcid": "PMC12383084",
+          "firstPublicationDate": "2025-07-27",
+          "isOpenAccess": "Y",
+          "abstractText": "Four-dimensional (4D) flow MRI has shown promise for the assessment of aortic hemodynamics. However, data analysis traditionally requires manual and time-consuming human input at several stages. This limits reproducibility and affects analysis workflows, such that large-cohort 4D flow studies are lacking. Here, a fully automated artificial intelligence (AI) 4D flow analysis pipeline was developed and evaluated in a cohort of over 350 subjects. The 4D flow MRI analysis pipeline integrated a series of previously developed and validated deep learning networks, which replaced traditionally manual processing tasks (background-phase correction, noise masking, velocity anti-aliasing, aorta 3D segmentation). Hemodynamic parameters (global aortic pulse wave velocity (PWV), peak velocity, flow energetics) were automatically quantified. The pipeline was evaluated in a heterogeneous single-center cohort of 379 subjects (age = 43.5 ± 18.6 years, 118 female) who underwent 4D flow MRI of the thoracic aorta (<i>n</i> = 147 healthy controls, <i>n</i> = 147 patients with a bicuspid aortic valve [BAV], <i>n</i> = 10 with mechanical valve prostheses, <i>n</i> = 75 pediatric patients with hereditary aortic disease). Pipeline performance with BAV and control data was evaluated by comparing to manual analysis performed by two human observers. A fully automated 4D flow pipeline analysis was successfully performed in 365 of 379 patients (96%). Pipeline-based quantification of aortic hemodynamics was closely correlated with manual analysis results (peak velocity: <i>r</i> = 1.00, <i>p</i> < 0.001; PWV: <i>r</i> = 0.99, <i>p</i> < 0.001; flow energetics: <i>r</i> = 0.99, <i>p</i> < 0.001; overall <i>r</i> ≥ 0.99, <i>p</i> < 0.001). Bland-Altman analysis showed close agreement for all hemodynamic parameters (bias 1-3%, limits of agreement 6-22%). Notably, limits of agreement between different human observers' quantifications were moderate (4-20%). In addition, the pipeline 4D flow analysis closely reproduced hemodynamic differences between age-matched adult BAV patients and controls (median peak velocity: 1.74 m/s [automated] or 1.76 m/s [manual] BAV vs. 1.31 [auto.] vs. 1.29 [manu.] controls, <i>p</i> < 0.005; PWV: 6.4-6.6 m/s all groups, any processing [no significant differences]; kinetic energy: 4.9 μJ [auto.] or 5.0 μJ [manu.] BAV vs. 3.1 μJ [both] control, <i>p</i> < 0.005). This study presents a framework for the complete automation of quantitative 4D flow MRI data processing with a failure rate of less than 5%, offering improved measurement reliability in quantitative 4D flow MRI. Future studies are warranted to reduced failure rates and evaluate pipeline performance across multiple centers."
+        }
+      ]
+    }
+  ],
+  "fulltexts_read": 0,
+  "systematic_review_claimed": false,
+  "medical_arrays_loaded": 0,
+  "neural_forwards": 0,
+  "CUDA_initialized": false,
+  "source_bindings": [
+    {
+      "path": "resolution_and_lesion_followup_2026_10_08/fetch_fixed_index.py",
+      "sha256": "ed7243490d5179a279eaf0e24e368fd4190923033eab75db1b32956c8852f714"
+    },
+    {
+      "path": "resolution_and_lesion_followup_2026_10_08/PROTOCOL.md",
+      "sha256": "c6558dd47c7139749df6301c8680c4a55170b6b30c4ab1868c58e2b469d24f8e"
+    },
+    {
+      "path": "final_training_medical_execution_2026_10_08/retrieve_stronger_adaptation_primary.py",
+      "sha256": "300dae25f038aca4b9d94012c677a091372b6053fbc18fb4d2a668f8ab5723b0"
+    }
+  ]
+}

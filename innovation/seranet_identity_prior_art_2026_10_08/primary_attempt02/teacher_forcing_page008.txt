@@ -1,0 +1,59 @@
+For simulated Brainweb data, 20 cases were em￾ployed with known tissue annotation, 17 for training
+and 3 for testing. 12 tissue types were given, in which
+3 of them (CSF, WM, and GM) were used to calcu￾late the segmentation quantitative metrics. All the
+3D images were resized and cropped to the size of
+362×416×352. The batch size was set to 4, and the
+initial learning rate was set to 1e − 4. Random flip,
+rotation and affine transformation are used as data
+augmentation methods. The model was trained for
+3000 epochs using Adam optimizer.
+For in vivo in-house dataset, the MR data were col￾lected by Guizhou Provincial People’s Hospital. Data
+from 40 cases were obtained with FLAIR sequence
+and the stroke lesions were annotated by experienced
+clinicians using ITK snap, with 20 cases as the train￾ing set and the rest 20 cases as the test set. All
+images were obtained with a Siemens 1.5T scanner.
+The FOV phase amplitude is 70% −87.5%. The slice
+thickness ranges from 6.0 mm to 7.0 mm and the slice
+interval ranges from 7.8 mm to 9.1 mm. All the data
+were resized to 224 × 224 with intensity normalized.
+The batch size was set to 16, and the initial learning
+rate was set to 1e − 4. The model was trained for 50
+epochs using Adam optimizer.
+3.2 Quantitative Evaluation Metrics
+For the ATLAS dataset and in vivo in-house dataset,
+five metrics are used to measure the performance
+of the segmentation and reconstruction results, in￾cluding the Dice score, precision, recall, peak signal￾to-noise ratio (PSNR) and structural similarity in￾dex matrix (SSIM). The former three metrics were
+employed to evaluate the segmentation performance
+and the latter two were used to evaluate the recon￾struction performance. For the Brainweb dataset,
+five metrics are used to measure the performance
+of the segmentation and reconstruction results, in￾cluding the Dice score on CSF, GM, WM, PSNR
+and SSIM. All the metrics referred to the 3D pre￾dicting results. Average metric scores on the testing
+dataset were listed for the comparison between dif￾ferent methods.
+3.3 Ablation Study
+3.3.1 Effectiveness of ITFS and DRLC
+In this section, we focus on evaluating the effective￾ness of the proposed modules of ITFS and DRLC.
+First, we trained a joint framework of reconstruc￾tion and segmentation modules from scratch without
+the iterative teacher forcing scheme and dynamic re￾weighted loss constraint. Second, we alternatively in￾troduced the iterative teacher forcing scheme and dy￾namic re-weighted loss constraint to the joint frame￾work. The related quantitative comparison results
+are shown in Table 1. We could see both the iterative
+teacher forcing scheme and dynamic re-weighted loss
+constraint improved the performance of the proposed
+network. On the basis of it, we leveraged the iterative
+teacher forcing scheme and dynamic re-weighted loss
+constraint simultaneously. It is clearly observed that
+the network equipped with both the iterative teacher￾forcing scheme and the dynamic re-weighted loss con￾straint achieved better performance than other net￾works. They were beneficial for producing high￾quality reconstruction and segmentation results si￾multaneously. Furthermore, the results shown in Ta￾ble 1 demonstrated that the dynamic re-weighted loss
+constraint contributed more to the performance gain
+than the iterative teacher-forcing does. However,
+ITFS has a more important capability of stabilizing
+the training process. As shown in Fig. 5, the in￾troduction of ITFS improved the convergence of the
+proposed network. It stabilized the training process
+of the dual-task network to reduce the training diffi￾culty.
+3.3.2 Ablation Analysis of Different Kinds of
+DRLC
+As the results showed above, the dynamic re-weighted
+loss constraint helped the network produce promising
+results. In this section, we compared the performance
+of different re-weighted loss constraints to validate
+the effectiveness of our proposed exponential-like dy￾namic re-weighed loss constraint. As shown in Table
+2, we have evaluated three kinds of weight setting
+schemes, namely the fixed weight, dynamic weight
+with linear settings and our proposed scheme. Com￾8

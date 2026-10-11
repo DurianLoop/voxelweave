@@ -1,0 +1,9 @@
+# 保持逐位数值合同的局部依赖计算准备
+
+228次GPU实测中candidate resolution786.79秒，而GPU forward/backward约53.44秒。原certified.interpolate先计算全母域的coarse grid，之后只查询一个patch。新选择性实现从patch查询所需的coarse两个邻点反推fine两个邻点，先gather这些笛卡尔邻点，再以原轴顺序、原mix_axis及外向区间运算计算。同坐标分母、同浮点运算顺序、同exact Fraction fallback/round32；没有新profile、padding、GT、动作或模型。
+
+理由：每轴线性插值只依赖该轴两个索引；gather其他轴尚未混合的数据不会改变已混合轴的算术。两阶段先全grid再索引与先取两阶段所需索引再执行相同axis mix应具有相同区间和输出。n=m的第一阶段沿原实现跳过。仍对原完整source作有限性检查；exact fallback使用原完整source索引，不能错误地用裁剪坐标。必须实测核验，文字论证不当资格通过。
+
+资格只用11开发患者19series、两合法既有输入及原coverage所选两step/三模式/两patch，共456patch，最终228完整batch逐位SHA对实际已完成GPU input_sha256。原失败FOV的case2第一step另外逐mode/kind/patch与原完整certified.apply比较raw、support逐位及fallback数量，报告实测成本。没有GT/model数组、GPU更新、验证/确认输入。
+
+所有新增文件计原coverage2MB，其他allowance40.8MB及磁盘/RAM8GB保持，CPU1/interop1/below-normal、wall3600秒；只存小metadata，不存患者数组、不改已运行/冻结源码。456字段只是所选开发输入覆盖，不替代原35904真实全schedule资格，也不是医学创新/效益。完成后若有实测加速，需另版本训练入口/完整新schedule数值绑定和重新费用准入，原25.2h估计保留为原实现结果。

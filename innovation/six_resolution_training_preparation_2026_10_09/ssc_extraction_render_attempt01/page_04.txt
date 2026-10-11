@@ -1,0 +1,31 @@
+190 M.P. Heinrich et al.
+MIND SSC 
+Fig. 1. Concept of self-similarity context (SSC) compared to MIND with six￾neighbourhood (6-NH). The patch around the voxel of interest is shown in red, all
+patches within its immediate 6-NH are shown in grey. Left: All patch distances (shown
+with blue lines) used for MIND within the 6-NH take the centre patch into account.
+Right: Geometrical and structural context can be better described by SSC using all
+patch-to-patch distances, none of which is dependent on the central patch.
+quantise the descriptor to a single integer value with 64 bits, without significant
+loss of accuracy. The exact similarity evaluation of Eq. 2 can then be obtained
+using the Hamming distance between two descriptors using only one operation
+per voxel. A descriptor using self-similarity context consists of 12 elements, for
+which we use 5 bits per element, which translates into 6 different possible values
+(note that we cannot use a quantisation of 25 because the Hamming weight only
+counts the number of bits, which differ). Figure 2 illustrates the concept, which
+could also be employed for other multi-feature based registration techniques.
+3.2 Discrete Optimisation
+Discrete optimisation is used in this work, because it is computationally efficient,
+no derivative of the similarity cost is needed, local minima are avoided and large
+deformations can be covered by defining an appropriate range of displacements
+u. Here, we adopt our recent approach [5,6], which uses a block-wise parametric
+transformation model with belief propagation on a tree graph (BP-T) [3]. The
+regularisation term penalises squared differences of displacements for neighbour￾ing control points and is weighted with a constant λ. Not all similarity terms
+within the influence region of each control point, but only a randomly chosen
+subset of them are taken into account. This concept, which has also been used
+in stochastic gradient descent optimisation [8] and in [2], greatly reduces the
+computation of the similarity term without loss of accuracy (as shown in [6]).
+Inverse Consistent Transformations: We introduce a simple scheme to ob￾tain inverse consistent mappings, given the forward and backward displacement
+fields un and vn respectively (which are independently calculated), by iteratively
+updating the following equations:
+un+1 =0.5(un − vn(x + un)) (3)
+vn+1 =0.5(vn − un(x + vn))

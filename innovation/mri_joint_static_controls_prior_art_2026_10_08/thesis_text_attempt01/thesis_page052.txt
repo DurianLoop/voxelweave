@@ -1,0 +1,37 @@
+4.6. FORMALIZING LEARNING-BASED, DATA-DRIVEN MASK
+DESIGN
+performing method was found to be the hybrid learning approach of Chaithya et al.
+(2022).
+4.6 Formalizing learning-based, data-driven mask design
+Recall the observation setting described in Section 2.2.1. We consider the problem of
+accelerated MRI, where we obtain partial informationyω∈ CP about a ground truth
+signalx∈ CP
+yω =Aωx +ϵ =PωFx +ϵ
+where ϵ a complex Gaussian noise vector.F is the Fourier transform operator, and
+Pω is our masking operator, implemented as a diagonal matrix with diagonal entries
+Pω,ii = 1 if i∈ω and 0 otherwise. ω denotes the sampling mask and|ω| =N denotes is
+cardinality.
+As described in Chapter 3, we construct an estimateˆx of the ground truthx using a
+reconstruction algorithmfθ such that ˆx =fθ(y,ω ), whereθ denote the parameters of
+the reconstruction algorithm. This can correspond to the regularization parameter of a
+compressed sensing method, or denote all the parameters of a neural network.
+A learning-based approach requires access to a data distributionp(x) that can give us
+access to reference images, while a data-driven approach requires a way to quantify how
+close an estimationˆx is from the ground truthx. This is done by using a performance
+metric η(·,·) : CP× CP→ R, which we will aim to maximize2. The process is illustrated
+on Figure 4.1.
+An ideal sampling algorithm would tailor the mask to each instance ofx∼p(x), solving
+max
+ω:|ω|≤N
+η(x, ˆxθ(yω = PωAx)), (4.4)
+However, it is evident that such an approach is infeasible in practice, because solving
+Equation 4.4 would require access to the ground truth imagex at the time of evaluation.
+This is not the case in reality, where we only have access to fully sampled training signals
+for training. We turn now to two main approaches to this problem that have been
+discussed before. They rely on eitheri) using non-adaptive masks, designed on a training
+set offline and deployed at testing time orii) using adaptive masks, where a sampling
+policy or heuristic πϕ is trained offline and then takes patient-adaptive decision during
+the acquisition at evaluation time.
+2A similar reasoning would hold if one would consider a lossℓ(·,·) : CP× Cp→ R instead of a
+performance metric. In this case, one would then need to find the sampling mask that minimizes it.
+39

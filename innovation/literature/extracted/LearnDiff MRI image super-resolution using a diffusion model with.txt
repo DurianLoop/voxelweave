@@ -1,0 +1,884 @@
+
+=== PDF PAGE 1 ===
+                                                      Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+
+                                                                  Contents lists available at ScienceDirect
+
+                                           Computerized Medical Imaging and Graphics
+
+                                                   journal homepage: www.elsevier.com/locate/compmedimag
+
+
+LearnDiff: MRI image super-resolution using a diffusion model with
+learnable noise
+Sagnik Goswami∗,1, Akriti Gupta1, Angshuman Paul1
+
+Indian Institute of Technology Jodhpur,  NH 62, Karwar,  Jodhpur,  342037,  Rajasthan,  India
+
+
+A R T I C L E   I N F O                                  A B S T R A C T
+
+Keywords:                                                MRI images with a superior spatial resolution may facilitate an accurate and faster diagnosis. We present
+Diffusion model                                          LearnDiff, a diffusion probabilistic model with learnable noise for the super-resolution of MRI images. Unlike
+Learnable noise                                          the standard diffusion models that rely on a fixed, standard normal distribution, LearnDiff utilizes a learnable
+Gaussian distribution                                    Gaussian distribution in the diffusion bottleneck, enabling both forward and reverse processes to adapt
+MRI super-resolution                                     dynamically. This flexibility addresses a critical limitation.
+                                                             A standard normal distribution for noise may not be adequate in the context of MRI super-resolution using a
+                                                         residual approach. By allowing the noise distribution to be learnable, our model achieves SOTA performance on
+                                                         publicly available MRI images, showing a 3.8% improvement in PSNR compared to previous SOTA methods,
+                                                         significantly outperforming traditional diffusion models. Across multiple MRI datasets, our approach yields
+                                                         superior image quality and enhanced quantitative metrics, highlighting its effectiveness in capturing finer
+                                                         image details and achieving more accurate super-resolution. Link           to the codebase.
+
+
+1. Introduction                                                                              Instead, we show that learning a general Gaussian distribution for
+                                                                                             noise, rather than relying on a fixed standard normal variate, leads
+    High-resolution MRI images may facilitate accurate diagnosis by                          to significantly better super-resolution results both quantitatively and
+radiologists. Image super-resolution (SR) techniques may be helpful in                       qualitatively. A standard normal distribution for noise may be insuffi-
+enhancing the spatial resolution of MRI images. Recent advancements                          cient for MRI super-resolution using a residual approach, as real-world
+in deep learning (DL)-based SR methods have demonstrated significant                         noise distributions often exhibit complex, structured variations. Con-
+improvements in reconstructing high-resolution (HR) images from their                        ventional diffusion probabilistic models (DPMs) struggle to accurately
+low-resolution (LR) counterparts (Wang et al., 2021; Li et al., 2024;
+Guerreiro  et  al.,   2023; Andrew  et  al., 2021).  However,  challenges                    capture these nuances, limiting their ability to model noise effectively.
+remain in applying these techniques to MRI images, particularly in                           Consequently, this can hinder high-resolution image reconstruction,
+balancing image fidelity and computational efficiency (Abdusalomov                           resulting in suboptimal super-resolution performance.
+et al., 2024).                                                                                    LearnDiff approximates noise as a learnable normal distribution,
+    Diffusion models have recently emerged as a powerful framework                           allowing the model to adaptively learn parameters of the noise distri-
+for super-resolution tasks. Implementations such as SR3 (Saharia et al.,                     bution (mean and variance). By generalizing the diffusion process to
+2023) and SRDiff (Li et al., 2022) have demonstrated substantial im-                         incorporate a flexible normal noise model, LearnDiff effectively cap-
+provements over traditional methods (Bashir et al., 2021). These mod-                        tures MRI-specific noise characteristics, leading to more accurate and
+els  iteratively  refine  low-resolution  inputs  using  a  learned  reverse                 high-fidelity super-resolution results. Fig.  1 illustrates the core idea of
+diffusion process, effectively denoising the latent representation while
+preserving fine structural details and textures (Song and Ermon, 2020).                      our approach, where the proposed model reconstructs high-resolution
+By leveraging iterative refinement, diffusion models, such as SR3 and                        (HR) MRI images from low-resolution (LR) inputs. By leveraging the
+SRDiff, improve resolution while maintaining the integrity of the orig-                      diffusion probabilistic design, we derive mathematical formulations
+inal data (Bashir et al., 2021; Ho et al., 2020).                                            for both forward and reverse diffusion processes with learnable noise,
+    In this paper, we introduce LearnDiff, a novel diffusion probabilistic                   facilitating enhanced high-resolution image reconstruction.
+model  for  single-image  super-resolution  (SISR).  Conventional  diffu-                         Our key contributions in this paper can be summarized as follows:
+sion models approximate noise using a standard normal distribution.
+
+
+
+  ∗  Corresponding author.
+     E-mail addresses:   goswami.5@iitj.ac.in (S. Goswami), gupta.97@iitj.ac.in (A. Gupta), apaul@iitj.ac.in (A. Paul).
+  1  Equal contribution.
+
+https://doi.org/10.1016/j.compmedimag.2025.102641
+Received 19 May 2025; Received in revised form 4 August 2025; Accepted 26 August 2025
+Available online 1 September 2025
+0895-6111/© 2025 Published by Elsevier Ltd.
+
+=== PDF PAGE 2 ===
+S. Goswami et al.                                                                                                      Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 1. Sample results: Super-resolution of MRI images using the proposed LearnDiff model (LR: Low-resolution input image, GT: Ground truth high-resolution
+image).
+
+    • Learnable Noise Distribution: LearnDiff employs a learnable nor-                           Despite these advancements, most existing methods — including
+      mal noise distribution, enhancing adaptability to diverse data                         both CNNs and transformer-based models — are inherently determinis-
+      distributions and improving performance in MRI super-resolution.                       tic in nature. They generate a single high-resolution output, which may
+    • Mathematical Formulation: We present a mathematical formu-                             either oversmooth anatomical boundaries or hallucinate non-existent
+      lation for diffusion models under a general normal distribution                        structures—both of which are problematic in diagnostic contexts. Addi-
+      assumption instead of a standard normal variate.                                       tionally, many of these models are trained with perceptual or adversar-
+    • Performance  Improvements:  LearnDiff  demonstrates  superior                          ial losses that optimize for visual realism over structural fidelity, which
+      qualitative  and  quantitative  results,  showing  notable  gains  in                  is not always appropriate in clinical imaging where accuracy outweighs
+      PSNR, SSIM, and overall predicted image quality compared to                            aesthetics.
+      existing methods constrained to a standard normal noise distri-                            In contrast, LearnDiff leverages diffusion models to combine the
+      bution.                                                                                perceptual strength of generative methods with a focus on structural
+                                                                                             preservation. By explicitly modeling the noise distribution and itera-
+    The remainder of this paper is organized as follows: Section 2 re-                       tively refining the image, LearnDiff achieves a balance between high
+views related work, contextualizing our approach in existing literature.                     perceptual quality and faithful reconstruction of anatomical structures.
+Section 3 details the LearnDiff framework, including its architecture
+and design principles. Experimental results, including qualitative and                       2.2. Diffusion models for image super-resolution
+quantitative evaluations, are presented in Section 4. Finally, Section 5
+concludes the paper and discusses future research directions.                                    Recent  studies  have  explored  the  potential  of  diffusion  models
+                                                                                             for  super-resolution  tasks. Ho  et  al.  (2020)  introduced  a  diffusion
+2. Related work                                                                              probabilistic  model  that  progressively  refines  a  simple  distribution
+                                                                                             into  a  complex  data  distribution  through  a  Markov  chain  process.
+2.1. Deep learning-based super-resolution in medical imaging                                 This approach has demonstrated significant improvements in gener-
+                                                                                             ating high-quality images and addressing ‘‘one-to-many’’ generation
+    Single image super-resolution (SISR) has become a key focus in                           problems.
+medical imaging, particularly for improving MRI resolution. Traditional                          Following this, Li et al. (2022) proposed a diffusion-based method
+interpolation-based methods, such as bicubic interpolation, often pro-                       for super-resolution, effectively overcoming limitations of traditional
+duce overly smooth images with diminished structural details. Deep                           SR  approaches.  Their  study  highlighted  how  diffusion  models  can
+learning methods have significantly advanced the field by learning                           capture intricate details necessary for high-fidelity image reconstruc-
+complex mappings from low- to high-resolution images.                                        tion, presenting a compelling alternative to GANs and CNNs for SISR
+    More  recently,  transformer-based  and  attention-driven  architec-                     tasks. Building upon this foundation, LearnDiff leverages the strengths
+tures have significantly advanced the state-of-the-art in image super-                       of diffusion models while introducing a learnable Gaussian process
+resolution. SwinIR (Liang et al., 2021), built on Swin Transformers,                         to enhance flexibility in image distribution mapping. This approach
+demonstrated the power of hierarchical attention windows in capturing                        effectively addresses issues such as oversmoothing and mode collapse,
+both local and global image features. Its strong performance on natural                      which are prevalent in conventional SISR methods, particularly in MRI
+images has made it a benchmark in restoration tasks, including medical                       image reconstruction.
+imaging. Swin2SR (Conde et al., 2022) further improves upon this by
+incorporating residual Swin Transformer blocks and training enhance-                         3. Method
+ments that allow it to handle compressed and degraded inputs more
+effectively, which is valuable for real-world medical data.                                  3.1. Overview
+    On the other hand, NAFNet (Chen et al., 2022) proposes a simplified
+architecture by removing nonlinear activation layers, thus achieving                             We introduce a novel approach for MRI image super-resolution
+faster inference with competitive performance. Its lightweight design                        utilizing diffusion probabilistic models. Unlike conventional diffusion
+is  particularly  suited  for  deployment  in  resource-constrained  medi-                   models that map noise to a fixed standard Gaussian distribution, our
+cal environments. HAT (Hierarchical Aggregation Transformer) (Zhang                          method enhances image quality by mapping noise to a learnable Gaus-
+et al., 2021) introduces a multi-scale attention aggregation mechanism,                      sian distribution  (𝜇, 𝜎2), allowing adaptive optimization of both mean
+allowing the model to reconstruct complex textures and details across                        and  variance  throughout  the  diffusion  process.  The  forward  diffu-
+varying spatial resolutions. This is especially beneficial in handling                       sion process progressively transforms complex data distributions into
+multi-modal or multi-resolution medical data, such as MRI slices with                        a general Gaussian form, characterized by a learnable mean 𝜇 and
+anisotropic resolution.                                                                      variance 𝜎2, rather than being constrained to a fixed standard normal
+
+
+                                                                                         2
+
+=== PDF PAGE 3 ===
+S. Goswami et al.                                                                                                            Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+distribution, unlike existing methods (Li et al., 2022; Saharia et al.,                           3.3. Reverse process
+2023). This flexibility potentially enables the model to better capture
+the diverse patterns in MRI data.                                                                     The reverse diffusion process is fundamental to reconstructing the
+    The process begins by encoding the low-resolution (LR) image 𝑥𝐿                               original data from noisy samples, effectively retracing the steps of the
+and generating an upsampled version using a bicubic kernel (Keys,                                 forward diffusion process that adds noise. Starting from an initial noisy
+1981; Parker et al., 1983; Li et al., 2022), denoted as up(𝑥𝐿). We employ                         sample 𝐱𝑇 , typically drawn from a Gaussian distribution 𝐱𝑇  ∼  (𝜇, 𝜎2),
+residual learning, where the model predicts the residual image 𝑥𝑡, given                          the goal is to iteratively refine this noisy sample back to the clean data
+the high-resolution (HR) image 𝑥𝐻𝑅 and the upsampled LR image as                                  distribution.
+𝑥𝑡 = 𝑥𝐻𝑅 − up(𝑥𝐿).                                                                                (1) To  achieve  this,  we  utilize  a  generative  model  𝑝𝜃  designed  to
+                                                                                                  approximate the reverse transitions of the diffusion process. Let 𝑝(𝐱𝑇 )
+Both the forward and reverse diffusion processes incorporate this gen-                            represent the prior distribution of the noisy sample at the final time step
+eral Gaussian distribution, facilitating accurate parameter learning and                          𝑇 , and let 𝑝𝜃(𝐱𝑡−1|𝐱𝑡) denote the model’s estimated distribution for the
+reconstruction.                                                                                   previous time step 𝑡 − 1, given the current noisy sample 𝐱𝑡. The overall
+    A key aspect of our approach is that the forward diffusion process                            probability of the data trajectory can then be expressed as
+is also learnable, unlike standard diffusion models (Li et al., 2022;                                                   𝑇∏
+Saharia et al., 2023; Ho et al., 2020). The model learns the noise                                𝑝𝜃(𝐱0∶𝑇 ) = 𝑝(𝐱𝑇 )       𝑝𝜃(𝐱𝑡−1|𝐱𝑡).                                                              (5)
+parameters, specifically the mean and variance, during training. In the                                                𝑡=1
+reverse diffusion process, the model progressively denoises the residual                              To  refine  our  estimation  of  𝑝𝜃(𝐱𝑡−1|𝐱𝑡),  we  assume  it  follows  a
+image over multiple time steps. Once the residual image is fully refined                          Gaussian distribution characterized by a mean 𝜇𝜃(𝐱𝑡, 𝑡) and a variance
+at the final step, it is combined with the upsampled LR image up(𝑥𝐿)                              𝛴𝜃(𝐱𝑡, 𝑡):
+to reconstruct the high-resolution output 𝑥𝐻𝑅. The subsequent sections                            𝑝𝜃(𝐱𝑡−1|𝐱𝑡) =  (𝐱𝑡−1; 𝜇𝜃(𝐱𝑡, 𝑡), 𝛴𝜃(𝐱𝑡, 𝑡)).                                                 (6)
+discuss the forward and reverse processes in detail.
+                                                                                                      This Gaussian assumption allows for a tractable estimation of the
+3.2. Forward process                                                                              reverse process, relying heavily on the accurate estimation of the mean
+                                                                                                  and variance parameters.
+    The forward process in a diffusion model gradually adds Gaussian                                  To better approximate the posterior distribution 𝑞(𝐱𝑡−1|𝐱𝑡, 𝐱0) — the
+noise to an initial input 𝑥0 over discrete time steps. At each step 𝑡, a                          true posterior conditioned on both the current noisy sample 𝐱𝑡 and the
+new sample 𝑥𝑡 is generated by combining the previous state 𝑥𝑡−1 with                              original data 𝐱0 — we utilize Bayes’ rule:
+Gaussian noise. This transformation is governed by a noise parameter                              𝑞(𝐱𝑡−1|𝐱𝑡, 𝐱0) =  𝑞(𝐱𝑡|𝐱𝑡−1, 𝐱0)𝑞(𝐱𝑡−1|𝐱0)
+𝛽, which controls the level of noise introduced at each step, and a noise                                                     𝑞(𝐱𝑡|𝐱0)            .                                                  (7)
+term 𝜖, drawn from a normal distribution 𝑁(𝜇′, 𝜎′2).                                                  This equation illustrates the dependence of the posterior on both the
+    In the context of direct transitions, we can express the distribution                         transition from 𝐱𝑡−1 to 𝐱𝑡 and prior knowledge of the original data.
+of 𝑥𝑡 conditioned on the previous state 𝑥𝑡−1 as                                                       We model the conditional distributions of 𝑞(𝑥𝑡|𝑥𝑡−1, 𝑥0), 𝑞(𝑥𝑡−1|𝑥0),
+                   (√                                            )
+𝑞(𝑥𝑡 ∣ 𝑥𝑡−1) = 𝑁        1 − 𝛽𝑡 𝑥𝑡−1 + 𝜇(1 − √1 − 𝛽𝑡), 𝜎2𝛽𝑡        .                         (2)   and 𝑞(𝑥𝑡|𝑥0) as Gaussian distributions characterized by their respective
+                                                                                                  means and variances. This assumption simplifies the analysis of the
+    The derivation of Eq.  (2) is provided in the Appendix section. This                          forward diffusion process and the posterior distribution 𝑞(𝑥𝑡−1|𝑥𝑡, 𝑥0):
+distribution represents the expected value of 𝑥𝑡 conditioned on the
+previous state. We define ̄𝛼𝑡 as the cumulative product of (1−𝛽𝑖) values                                                 (       [( 𝐱𝑡 − 𝜇1   )2
+up to time 𝑡, such that ̄𝛼𝑡 = ∏𝑡𝑖=1(1−𝛽𝑖). By substituting 𝑥𝑡−1 recursively                       𝑞(𝐱𝑡−1|𝐱𝑡, 𝐱0) ∝ exp      − 1                   +
+back to the original input 𝑥0, we can derive a direct expression for 𝑥𝑡                                                       2         𝜎1
+                                                                                                                        ( 𝐱𝑡−1 − 𝜇2)2        ( 𝐱𝑡 − 𝜇3  )2])                              (8)
+𝑥𝑡 = √̄𝛼𝑡 𝑥0 + 𝜇(1 − √̄𝛼𝑡) + 𝜎√1 − ̄𝛼𝑡 𝜖.                                                 (3)                        +                    −                      .
+                                                                                                                               𝜎2                 𝜎3
+The overall distribution 𝑞(𝑥𝑡|𝑥0) then becomes                                                        This indicates that the posterior 𝑞(𝐱𝑡−1|𝐱𝑡, 𝐱0) remains Gaussian. Let
+                (√                                      )
+𝑞(𝑥𝑡|𝑥0) = 𝑁         ̄𝛼𝑡 𝑥0 + 𝜇(1 − √̄𝛼𝑡), 𝜎2(1 − ̄𝛼𝑡)    .                                   (4) 𝛼𝑡 be a noise-related parameter for time step 𝑡, and let 𝛼𝑡 represent the
+This approach facilitates the transformation of the input 𝑥0 into a                               cumulative product of 𝛼 values up to 𝑡. We define 𝑓(𝑡), which captures
+progressively noisier representation, ultimately leading to a distribu-                           additional contributions influenced by the diffusion process parameters:
+
+tion closely resembling the target normal distribution 𝑁(𝜇, 𝜎2). As the                                                              √
+forward process adds noise, we also learn to adapt this noise to the                                                        𝛼𝑡−1)       𝛼𝑡(1 − √𝛼𝑡)(1 −     𝛼𝑡−1)                        𝛼𝑡)
+data, enabling the model to effectively simulate the noise distribution                           𝑓(𝑡) =  (1 − 𝛼𝑡)(1 − √1 −𝛼𝑡      −            1 −𝛼𝑡              + (1 − 𝛼𝑡)(−1 + √√𝛼𝑡(1 −𝛼𝑡)      .
+at each timestep.                                                                                                                                                                         (9)
+
+3.2.1. Learning the noise distribution                                                                We can then express the mean of this posterior as
+    In our approach, the mean (𝜇𝑡) and variance (𝜎2𝑡 ) of the noise                                                       (    (1 − 𝛼𝑡)      )
+distribution are learned during training. This is crucial as it allows                            𝜇𝜃(𝐱𝑡, 𝑡) =    1√  𝐱𝑡 −    √                  𝜖 + 𝑓(𝑡).                                     (10)
+the model to introduce noise in a manner that best represents the                                                 𝛼𝑡            𝛼𝑡(1 −  𝛼𝑡) 𝜎
+underlying data distribution.                                                                         The variance of the posterior is expressed as
+    At each timestep 𝑡, instead of using a fixed noise distribution (such                                        ( 1 −   𝛼𝑡−1 )
+as standard Gaussian noise), the model learns the parameters 𝜇𝑡 and 𝜎2𝑡                           𝜎𝜃(𝑡) = 𝜎2𝐵𝑡       1 −  𝛼𝑡     .                                                                    (11)
+based on the current state of the image 𝑥𝑡−1. These parameters are op-
+timized via backpropagation during the forward diffusion process. This                            These formulations enable us to fully characterize the mean and vari-
+formulation establishes a foundation for an effective reverse process,                            ance of the estimated posterior distribution 𝑞(𝐱𝑡−1|𝐱𝑡, 𝐱0). By iteratively
+enabling  high-quality  image  reconstruction  from  the  noisy  samples                          sampling  from  this  distribution,  we  can  effectively  reconstruct  the
+generated during diffusion.                                                                       original data from its noisy representation.
+
+
+                                                                                              3
+
+=== PDF PAGE 4 ===
+S. Goswami et al.                                                                                                         Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 2. Architecture of noise predictor in LearnDiff. Top left: Conditional noise predictor overview. Top right: Convolutional Block architecture. Bottom left: UNet
+architecture for noise prediction. Bottom right: Residual Block within the UNet for feature refinement.
+
+    The reverse diffusion process leverages learned Gaussian distribu-                         connections. Unlike transformer-based encoders that emphasize long-
+tions to estimate the posterior, facilitating the recovery of the original                     range self-attention, RRDB focuses on local receptive fields, making
+data from noise. This approach not only provides a robust framework                            it more suitable for modeling textures and edges in low-level vision
+for data reconstruction but also enhances our understanding of the                             tasks (Li et al., 2022). Its batch-normalization-free structure improves
+underlying generative mechanisms in diffusion probabilistic models.                            training stability and reduces memory overhead—beneficial for diffu-
+To optimize this reconstruction process, we define a loss function that                        sion models with numerous denoising steps. These convolutional induc-
+measures the accuracy of our estimated transitions at each time step.                          tive biases (e.g., translation equivariance and spatial locality) align well
+                                                                                               with the stochastic one-to-many nature of super-resolution, allowing for
+3.4. Loss function                                                                             strong detail preservation without relying on the complexity of global
+                                                                                               attention.
+    To train our model effectively, we define a loss function that quan-
+tifies the difference between the true noise 𝜖 and the predicted noise ̂𝜖                      Algorithm 1 Training
+during the reverse diffusion process. The ground truth for the transition                        1:  Input:  Low-resolution  (LR)  image  and  its  corresponding  high-
+from the current noisy sample 𝑥𝑡 to the next sample 𝑥𝑡+1 is given by                                resolution (HR) image pairs 𝑃  = {(𝑥𝑘
+                    (       (  1 − 𝛼𝑡      )            )                                           𝑇                                            𝐿, 𝑥𝑘𝐻)}𝐾𝑘=1, total diffusion steps
+
+𝑞(𝑥𝑡+1|𝑥𝑡) =    1√𝛼𝑡   𝑥𝑡 −    √1 − ̄𝛼𝑡  𝜎   𝜖 + 𝜇𝑓(𝑡)     .                               (12)  2:  Initialize: Randomly initialized conditional noise predictor 𝜖𝜃, LR
+                                                                                                    encoder , 𝜇′ (initial mean), and 𝜎′ (initial standard deviation)
+    The predicted output from our model is                                                       3:  repeat
+                      (       (  1 − 𝛼𝑡     )                   )                                4:      Sample (𝑥𝐿, 𝑥𝐻) ∼ 𝑃 , Upsample 𝑥𝐿 as up(𝑥𝐿)
+𝑝𝜃(𝑥𝑡+1|𝑥𝑡) =    1√     𝑥𝑡 −    √         𝜎    ̂𝜖(𝑥𝑡, 𝑡) + 𝜇𝑓(𝑡)  .                     (13)     5:      Compute 𝑥𝑟 = 𝑥𝐻 − up(𝑥𝐿)
+                   𝛼𝑡              1 − ̄𝛼𝑡                                                       6:      Encode LR image 𝑥𝐿 as 𝑥𝑒 = (𝑥𝐿)
+    To measure the performance of our model, we use the 𝐿2 loss                                  7:      Sample 𝜖 ∼  (0, 𝐼) and 𝑡 ∼ Uniform({1, … , 𝑇 })
+function:                                                                                        8:      Transform 𝜇 = sigmoid(𝜇′) and 𝜎 = sigmoid(𝜎′)
+                                                                                                 9:      Take gradient step on
+(𝜃) = E[‖𝜖 − ̂𝜖(𝑥𝑡, 𝑡)‖2]                                                                      (14)
+                                                                                                    ∇𝜃,𝜇′,𝜎′‖𝜖 − 𝜖𝜃(𝑥𝑡, 𝑥𝑒, 𝑡)‖
+    This loss function focuses on minimizing the average squared dif-
+ference between the predicted noise ̂𝜖 and the true noise 𝜖, facilitating                           𝑥𝑡 = √̄𝛼𝑡 𝑥𝑟 + 𝜇(1 − √̄𝛼𝑡) + 𝜎√1 − ̄𝛼𝑡 𝜖
+the reconstruction of the original data from its noisy representation.                         10:  until converged
+
+3.5. Noise predictor architecture
+                                                                                                    To estimate the noise at each timestep during the reverse diffusion
+    In our super-resolution diffusion framework, we adopt a hybrid                             process, we employ a U-Net-based denoiser that integrates information
+convolutional architecture composed of a Residual-in-Residual Dense                            from both the RRDB-encoded LR features and sinusoidal timestep em-
+Block (RRDB) encoder for low-resolution (LR) feature representation                            beddings. This hierarchical structure enables the network to predict
+and a U-Net-based denoising network for conditional noise predic-                              noise  with  spatial  and  temporal  awareness  at  multiple  scales.  The
+tion. This architectural choice is motivated by the need to balance                            architecture draws inspiration from SRDiff (Li et al., 2022), leveraging
+model expressiveness, training stability, and computational efficiency—                        U-Net’s encoder–decoder symmetry and skip connections for effective
+particularly crucial under the iterative sampling constraints of diffusion                     feature fusion and high-fidelity reconstruction.
+models.                                                                                             The noise prediction process unfolds in the following key stages (see
+    The RRDB encoder, originally introduced in ESRGAN (Wang et al.,                            Fig.  2):
+2018), effectively captures rich, high-frequency representations from                               (1) Inputs and Initial Feature Extraction: The noise predictor
+LR inputs through deep residual-in-residual pathways and dense skip                            takes as input a noisy image representation, denoted as 𝑥𝑡 ∈ R𝐻×𝑊 ×3,
+
+
+                                                                                            4
+
+=== PDF PAGE 5 ===
+S. Goswami et al.                                                                                                      Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+and the corresponding timestep 𝑡. The first processing step applies a                        Algorithm 2 Inference
+2D convolutional block, comprising a Conv2d layer followed by a Mish                          1:  Input: LR (low-resolution) image 𝑥𝐿, total diffusion step 𝑇 , learnt
+activation function (Misra, 2019). This block transforms the input 𝑥𝑡                            𝜇 (mean), and 𝜎 (standard deviation)
+into an intermediate feature map, 𝑥′𝑡 ∈ R𝐻′×𝑊 ′×ℎ𝑑 , capturing key local                      2:  Load: conditional noise predictor 𝜖𝜃 and LR encoder 
+features for subsequent layers.                                                               3:  Sample 𝑥𝑇  ∼  (𝜇, 𝜎2)
+    (2) Low-Resolution Image Encoder: The Low-Resolution (LR) En-                             4:  Upsample 𝑥𝐿 to up(𝑥𝐿)
+coder, following the RRDB architecture (Lugmayr et al., 2020), encodes                        5:  Encode LR image 𝑥𝐿 as 𝑥𝑒 = (𝑥𝐿)
+additional information from the low-resolution image 𝑥𝐿, generating la-                       6:  for 𝑡 = 3𝑇 ∕4, 3𝑇 ∕4 − 1, … , 1 do
+tent features 𝑥𝑒. These features are fused with the intermediate feature                      7:      Sample 𝑧 ∼  (0, 𝐼) if 𝑡 > 1, else 𝑧 = 0
+map from the 2D convolution block, combining both low-resolution                              8:      Define 𝜖′ = 𝜖𝜃(𝑥𝑡, 𝑥𝑒, 𝑡)
+global context and local noisy input features.                                                9:      Compute 𝑥𝑡−1 using the equation:
+    (3) Timestep Embedding: The diffusion timestep 𝑡 is embedded                                                (      (  1 − 𝛼𝑡     )    )
+using sinusoidal positional encodings (Vaswani et al., 2017), producing
+a timestep embedding 𝑡𝑒. This embedding is added to the encoded                                  𝑥𝑡−1 =    1√𝛼𝑡   𝑥𝑡 −    √1 − ̄𝛼𝑡𝜎     𝜖′   + 𝜎𝜃(𝑡)𝑧 + 𝜇𝑓(𝑡)
+features, ensuring that the model is conditioned on the temporal step
+of the diffusion process.                                                                        where 𝜎𝜃(𝑡) and 𝑓(𝑡) are defined in equations (14) and (15).
+    (4) U-Net Structure: Our noise predictor uses a modified U-Net                           10:  end for
+architecture, inspired by the SRDiff model (Li et al., 2022), which                          11:  Return 𝑥0 + up(𝑥𝐿) as SR (super-resolution) prediction
+processes and refines features through a series of downsample and
+upsample blocks, with a bottleneck layer facilitating information flow
+during the noise prediction process.                                                         3.7. Inference
+    (5) Final Noise Estimation: The final layer of the U-Net is a 2D-
+convolution block that produces the predicted noise  ̂𝜖𝜃 at timestep                             In the inference phase, as outlined in Algorithm A2, we start by
+𝑡 − 1. This noise estimate is then used to reverse the diffusion process                     taking a low-resolution (LR) image 𝑥𝐿 and defining the total diffusion
+and recover the image at timestep 𝑥𝑡−1, guiding the generation of                            steps 𝑇 , along with the learned mean 𝜇 and standard deviation 𝜎 from
+high-resolution images while gradually reducing noise.                                       the training phase (A2.1). First, we load the conditional noise predictor
+
+3.6. Training                                                                                𝜖𝜃 and the LR encoder  (A2.2).
+                                                                                                 Next, we sample an initial image 𝑥𝑇 from a normal distribution
+    During  the  training  phase,  depicted  in  Algorithm  A1,  we  uti-                    defined by the learned mean and variance (A2.3). We then upsample
+lize low-resolution (LR) and high-resolution (HR) image pairs 𝑃   =                          the LR image 𝑥𝐿 to ensure it matches the dimensions required for
+{(𝑥𝑘                                                                                         high-resolution reconstruction (A2.4).
+   𝐿, 𝑥𝑘𝐻)}𝐾𝑘=1 from the training set, with a total of 𝑇 diffusion steps                         After that, we encode the LR image 𝑥𝐿 into a latent representation 𝑥𝑒
+(A1.1).
+    We begin by randomly initializing the conditional noise predictor                        using the LR encoder  (A2.5). This encoded representation is essential
+𝜖𝜃 and the LR encoder , along with the initial mean 𝜇′ and standard                         for accurately predicting the noise in the images. The inference loop
+deviation 𝜎′ (A1.2). The noise predictor 𝜖𝜃 is responsible for estimating                    begins with a reverse process, iterating from 𝑡  =   3𝑇4  down to 𝑡  =  1
+the  noise  in  the  LR  images,  while  the  LR  encoder  aids  in  feature                 (A2.6). This choice of starting point is based on empirical findings that
+extraction.                                                                                  indicate it yields better results, as sufficient noise has already formed by
+    The training loop then commences. In each iteration, we sample                           this stage, allowing effective backtracking to refine the image. During
+a mini-batch of LR-HR image pairs (𝑥𝐿, 𝑥𝐻) from the dataset 𝑃 and                            each iteration, we sample noise 𝑧 from a normal distribution if 𝑡 is
+upsample the LR image to match the dimensions of the HR image                                greater than 1 (A2.7).
+(A1.3). Next, we compute the residual image 𝑥𝑟 by subtracting the                                Next, we define the predicted noise 𝜖′ using the conditional noise
+upsampled LR image from the corresponding HR image (A1.4). This                              predictor (A2.8). Using the predicted noise, we compute the previous
+residual captures the specific details that the model needs to learn.                        timestep image 𝑥𝑡−1 (A2.9) by leveraging the learned parameters and
+    The LR image 𝑥𝐿 is then encoded into a latent representation 𝑥𝑒                          the noise. This iterative refinement continues until we reach the final
+using the LR encoder  (A1.5). We then sample noise 𝜖 from a standard                        image.
+Gaussian distribution and a timestep 𝑡 uniformly from the set {1, … , 𝑇 }                        Finally, the super-resolution (SR) prediction is obtained by combin-
+(A1.6).                                                                                      ing the reconstructed high-resolution output 𝑥0 with the upsampled LR
+    Subsequently, we transform the initial mean and standard deviation                       image (A2.10). This output provides the enhanced high-resolution im-
+using the sigmoid function: 𝜇 = sigmoid(𝜇′) and 𝜎 = sigmoid(𝜎′) (A1.7).                      age, demonstrating the effectiveness of the trained model in generating
+The choice of 𝜎 significantly impacts convergence. Higher values of 𝜎                        high-quality results from low-resolution inputs.
+(e.g., 𝜎  = 50) lead to large fluctuations in 𝜇(𝑡), hindering the model’s
+ability to effectively learn the image distribution. Conversely, lower                       3.8. Implementation details
+values (e.g., 𝜎 = 0.8) promote faster and more stable convergence. Fur-
+ther detailed discussion and analysis, including corresponding graphs,                           We evaluate our proposed super-resolution model, LearnDiff, on two
+is provided in the Appendix section. By controlling 𝜎 through the sig-                       publicly available MRI datasets: OASIS (Marcus et al., 2007) and BraTS
+moid function, we manage noise levels, enhancing learning efficiency                         2020 (Menze et al., 2015). The experiments are designed to assess the
+and stability.                                                                               model’s ability to enhance low-resolution MRI images by factors of 8×
+    Next, we take a gradient step based on the difference between the                        and 4×. For the OASIS (Marcus et al., 2007) dataset, we perform 8×
+sampled noise 𝜖 and the predicted noise 𝜖𝜃(𝑥𝑡, 𝑥𝑒, 𝑡) (A1.8). Finally,                       super-resolution, scaling images from 31 × 62 pixels to 248 × 496
+the transformed 𝑥𝑡 is computed using the current residual 𝑥𝑟 along                           pixels.  This  significant  upscaling  assesses  the  model’s  capability  to
+with the normalized mean 𝜇 and standard deviation 𝜎 (A1.9). This                             reconstruct high-resolution details from highly downsampled inputs.
+formulation ensures that the model learns to reconstruct the original                        The BraTS (Menze et al., 2015) dataset experiments involve 4× super-
+high-resolution  image  from  its  noisy  low-resolution  counterpart  by                    resolution, enhancing images from 60 × 60 pixels to 240 × 240 pixels,
+effectively leveraging the learned parameters.                                               a scaling factor commonly used in super-resolution studies (Shi et al.,
+                                                                                             2016).
+
+
+                                                                                         5
+
+=== PDF PAGE 6 ===
+S. Goswami et al.                                                                                                        Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+                           Table 1
+                           Performance comparison of super-resolution models on the BraTS dataset.
+                            Method              PSNR                     SSIM                  LPIPS                  RMSE                   MS-SSIM
+                            SRDiff              34.08 ± 0.32             0.87 ± 0.45           0.09 ± 0.17            5.04 ± 0.19            0.95 ± 0.61
+                            SR3                 31.28 ± 0.66             0.83 ± 0.68           0.11 ± 0.03            6.96 ± 0.55            0.91 ± 0.39
+                            ESRGAN              32.56 ± 0.37             0.87 ± 0.62           0.11 ± 0.32            6.01 ± 0.26            0.93 ± 0.25
+                            VDSR                31.72 ± 0.49             0.86 ± 0.74           0.13 ± 0.52            6.62 ± 0.37            0.92 ± 0.21
+                            Swin2SR             33.90 ± 0.40             0.87 ± 0.51           0.08 ± 0.16            5.15 ± 0.24            0.95 ± 0.01
+                            Proposed            35.39 ± 0.42             0.88 ± 0.02           0.07 ± 0.01            4.34 ± 0.22            0.96 ± 0.81
+
+
+                           Table 2
+                           Performance comparison of super-resolution models on the OASIS dataset.
+                            Method              PSNR                    SSIM                   LPIPS                 RMSE                    MS-SSIM
+                            SRDiff              30.04 ± 0.26            0.86 ± 0.36            0.14 ± 0.12           8.04 ± 0.76             0.92 ± 0.02
+                            SR3                 27.85 ± 0.43            0.84 ± 0.28            0.17 ± 0.43           10.36 ± 0.32            0.89 ± 0.48
+                            ESRGAN              29.90 ± 0.68            0.85 ± 0.49            0.15 ± 0.02           8.15 ± 0.18             0.91 ± 0.92
+                            VDSR                28.65 ± 0.16            0.82 ± 0.57            0.16 ± 0.78           9.39 ± 0.25             0.90 ± 0.02
+                            Swin2SR             30.20 ± 0.37            0.86 ± 0.42            0.13 ± 0.01           7.82 ± 0.24             0.93 ± 0.19
+                            Proposed            30.40 ± 0.67            0.85 ± 0.04            0.12 ± 0.01           7.69 ± 0.23             0.94 ± 0.55
+
+
+Table 3                                                                                       Table 4
+Performance comparison of super-resolution models on the Prostrate dataset.                   Summary of the three datasets used in our experiments.
+ Method                         PSNR (Prostrate)                      SSIM (Prostrate)         Datasets            BraTS (Menze            OASIS (Marcus           Prostate MRI
+ SRDiff                         31.08 ± 0.21                          0.84 ± 0.03                                  et al., 2015)           et al., 2007)           (Choyke et al.,
+ Proposed                       32.96 ± 0.78                          0.85 ± 0.22                                                                                  2016)
+                                                                                               Region              Brain                   Brain                   Prostate
+                                                                                               Plane               Axial                   Sagittal                Axial
+                                                                                               Sequence            FLAIR                   T1-MPRAGE               T2-TSE
+    The diffusion process is implemented with a linear beta sched-                             #train              48,615                  68,000                  18,730
+ule, with 𝛽start   =   0.008 and 𝛽end   =   0.02 over 1000 timesteps, fol-                     #test               8,579                   12,000                  3,305
+lowing the methodology of Denoising Diffusion Probabilistic Models
+(DDPM) (Ho et al., 2020). The model is optimized using the Adam
+optimizer (Kingma and Ba, 2015) with an initial learning rate of 1 ×                          images. Both datasets are split into 70% training, 20% validation, and
+10−4. A learning rate scheduler, StepLR, reduces the learning rate by a                       10% testing subsets, ensuring a well-distributed data division for model
+factor of 0.5 every 100,000 steps to improve convergence. The batch                           training and evaluation.
+size is set to 4 for both datasets. Training is conducted over 30 epochs                          Data Augmentation: To improve the model’s generalization capa-
+for the OASIS dataset and 30 epochs for the BraTS dataset on GPUs. The                        bilities, we apply several data augmentation techniques across both
+training process takes approximately four days for the OASIS dataset                          datasets. These include random rotations and flips, as well as con-
+and three days for the BraTS dataset.                                                         trast and brightness adjustments, which help simulate diverse imag-
+    Further implementation details, including model setup, loss func-                         ing conditions and enhance the model’s robustness. Additionally, the
+tions, and training procedures, are provided in the Appendix section.                         preprocessing pipeline involves resizing the images using bicubic inter-
+4. Experiments                                                                                polation, followed by rotations and normalization to ensure consistent
+                                                                                              data inputs.
+
+4.1. Datasets                                                                                 4.2. Comparative performance
+
+    For our experiments, we utilize three medical imaging datasets:                               We compare the performance of our proposed model with several
+the OASIS (Open Access Series of Imaging Studies) dataset (Marcus                             state-of-the-art  super-resolution  models,  including  SRDiff  (Li  et  al.,
+et al., 2007), the BraTS 2020 dataset (Menze et al., 2015) and Pros-                          2022),  SR3  (Saharia  et  al., 2023),  ESRGAN  (Wang  et  al., 2018),
+trate Cancer MRI dataset (Choyke et al., 2016). The BraTS and OASIS                           VDSR  (Kim  et  al., 2016),  and  the  more  recent  transformer-based
+datasets contain MRI scans of the brain and the Prostrate Cancer MRI                          Swin2SR (Conde et al., 2022). These models have been selected due
+dataset contains MRI scans of prostrate, which are crucial for testing                        to their widespread use in image super-resolution tasks, particularly
+the effectiveness of our super-resolution model. We extract 2D slices                         in medical imaging and other high-fidelity domains. Swin2SR, based
+from  3D  MRI  volumes,  selecting  slices  with  significant  anatomical
+details to ensure the relevance of the task. For the OASIS dataset, the                       on Swin Transformers, leverages hierarchical self-attention and has
+images are downsampled to 31 × 62 pixels to simulate low-resolution                           recently shown strong performance in natural image SR benchmarks,
+inputs, mimicking real-world scenarios where high-quality scans may                           making it a relevant and competitive baseline.
+be unavailable due to hardware limitations or time constraints. In the                            The evaluation is conducted on the OASIS, BraTS, and Prostate MRI
+case of the BraTS dataset, which focuses on brain tumor analysis, we                          datasets using standard super-resolution metrics: Peak Signal-to-Noise
+utilize the FLAIR modality, known for its ability to highlight tumor                          Ratio  (PSNR),  Structural  Similarity  Index  Measure  (SSIM),  Learned
+regions. The low-resolution images are resized to 60 × 60 pixels, which                       Perceptual Image Patch Similarity (LPIPS), Root Mean Squared Error
+is a common resolution in super-resolution tasks aimed at enhancing                           (RMSE), and Multi-Scale Structural Similarity Index (MS-SSIM).
+medical images. In the case of the Prostate Cancer dataset, we utilize                            Tables    1, 2,  and 3  present  the  average  PSNR  and  SSIM  scores
+the T2-TSE modality, which is well-suited for prostate imaging. The                           for each model on the test sets of the BraTS, OASIS, and Prostate
+high-resolution images have a size of 256 × 256 pixels, while the                             MRI datasets, respectively. Additionally, Tables  1            and  2 include LPIPS,
+low-resolution images are resized to 64 × 64 pixels (see Tables  4).                          RMSE, and MS-SSIM scores to provide a more comprehensive evalu-
+    Dataset  Statistics:  The  OASIS  dataset  consists  of  80,000  high-                    ation. Our model consistently outperforms the baseline models across
+resolution  images,  while  the  BraTS  dataset  contains  about  50,000                      all reported metrics. In particular, the diffusion-based approach used
+
+
+                                                                                           6
+
+=== PDF PAGE 7 ===
+S. Goswami et al.                                                                                                       Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 3. Visual comparison of super-resolution outputs on the BraTS dataset: the first column shows the Ground Truth (GT) HR Image, the second column is the
+LR Image, subsequent columns display outputs from various methods, and the last column represents the output of our proposed model, LearnDiff.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 4. Visual comparison of super-resolution outputs on the Prostate MRI dataset: the first column shows the LR image, followed by outputs from SRDiff, and
+our proposed model LearnDiff. The last column shows the Ground Truth (GT) HR image. LearnDiff provides sharper, more structurally faithful reconstructions
+than SRDiff.
+
+in LearnDiff shows superior capability in preserving fine details and                        with the use of residual dense blocks (RRDB) and the Gaussian diffusion
+anatomical consistency, as reflected in the higher SSIM scores and                           process, this design enables the model to capture intricate structural
+improved visual outputs.                                                                     information and progressively refine the image with greater precision.
+    Furthermore,  the  proposed  method  achieves  the  lowest  LPIPS                             In addition to the quantitative results, Fig.  3 provides a visual
+(Learned Perceptual Image Patch Similarity) scores, indicating superior                      comparison of the reconstructed images from each model on the BraTS
+perceptual  similarity  to  ground  truth  images  from  a  deep  feature                    and OASIS datasets. Our model produces images with sharper edges and
+perspective. It also achieves reduced RMSE (Root Mean Squared Er-                            better structural fidelity, particularly in challenging regions such as tu-
+ror), suggesting more accurate voxel-level intensity reconstructions.                        mor boundaries. Similarly, Fig.  4 highlights how LearnDiff outperforms
+The higher MS-SSIM (Multi-Scale Structural Similarity Index) values                          SRDiff on the Prostate MRI dataset, generating reconstructions with
+further confirm the model’s ability to preserve structural information                       clearer tissue boundaries and more accurate structural representation.
+across multiple spatial resolutions. Together, these results underline                            Overall, LearnDiff demonstrates superior performance in terms of
+the effectiveness of our model in delivering both quantitatively and                         both PSNR and SSIM, outperforming established and modern meth-
+perceptually superior reconstructions across diverse MRI datasets.                           ods alike, including SRDiff, SR3, ESRGAN, VDSR, and Swin2SR. The
+    The main reason for this improvement is making the mean (𝜇) and                          integration of residual dense blocks with a diffusion-based genera-
+standard deviation (𝜎) of the noise distribution learnable parameters.                       tive framework — alongside learnable noise parameters — enables
+This allows the model to adapt more flexibly to varying noise levels                         LearnDiff to reconstruct high-fidelity medical images with enhanced
+during training, leading to more accurate reconstructions. Combined                          perceptual quality and structural precision.
+
+
+                                                                                          7
+
+=== PDF PAGE 8 ===
+S. Goswami et al.                                                                                                          Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. 5. Qualitative comparison of brain tumor segmentation results. The first column shows the original MRI images, the second column presents the ground
+truth tumor masks, while the third and fourth columns display the predicted segmentation masks using LearnDiff and SRDiff, respectively. LearnDiff produces
+more accurate and detailed tumor segmentations compared to SRDiff.
+
+
+                           Table 5
+                           Cross-modality performance of LearnDiff (trained on FLAIR) across different MRI sequences in BraTS.
+                            Modality              PSNR                    SSIM                   LPIPS                  RMSE                  MS-SSIM
+                            T1 (Native)           34.80 ± 0.30            0.870 ± 0.01           0.080 ± 0.34           4.40 ± 0.92           0.940 ± 0.07
+                            T1Gd                  34.65 ± 0.28            0.860 ± 0.01           0.082 ± 0.04           4.50 ± 0.08           0.935 ± 0.12
+                            T2                    34.90 ± 0.31            0.875 ± 0.01           0.078 ± 0.89           4.38 ± 0.35           0.945 ± 0.72
+                            T2-FLAIR              35.39 ± 0.42            0.88 ± 0.02            0.07 ± 0.01            4.34 ± 0.22           0.96 ± 0.81
+
+
+4.3. Cross-modality generalization evaluation                                                   Table 6
+                                                                                                Quantitative evaluation of brain tumor segmentation performance following
+    To  assess  the  robustness  and  clinical  adaptability  of  LearnDiff,                    super-resolution using the proposed LearnDiff method compared to SRDiff.
+we conducted a cross-modality generalization study using the BraTS                              Models trained on super-resolved images from  LearnDiff consistently out-
+dataset, which includes multiple MRI sequences acquired under differ-                           perform those using SRDiff across all key metrics — IoU, DICE coefficient,
+ent protocols. Although the model was trained solely on the T2-FLAIR                            accuracy, precision, and recall — indicating that LearnDiff enhances structural
+modality (fluid-attenuated inversion recovery scans), its performance                           fidelity and preserves tumor-relevant features more effectively, leading to
+                                                                                                improved segmentation quality.
+was evaluated across other modalities to test its generalization capacity.                       Evaluation metrics                           Proposed                            SRDiff
+These  include  T1  (Native),  referring  to  native  T1-weighted  scans;                        IoU                                          0.632                               0.578
+T1Gd, post-contrast T1-weigh-ted scans; and T2, standard T2-weighted                             DICE Coeff                                   0.774                               0.722
+scans.                                                                                           Accuracy                                     0.988                               0.982
+    As shown in Table  5, the model demonstrated consistent perfor-                              Precision                                    0.846                               0.842
+mance  across  all  modalities,  indicating  its  capability  to  generalize                     Recall                                       0.689                               0.626
+effectively despite being trained on a single sequence. This supports
+the model’s applicability in real-world clinical scenarios where MRI
+sequences may vary. The consistency in PSNR, SSIM, LPIPS, RMSE, and                                  • dim_mults:  Multiplicative  factor  for  the  number  of  channels
+MS-SSIM across modalities indicates that LearnDiff maintains both per-                                 across U-Net levels, which affects model capacity.
+ceptual and structural fidelity, regardless of input modality. This prop-                            • baseline_dim: Base number of channels in the first convolution
+erty is particularly advantageous in clinical practice, where acquiring                                layer of the U-Net.
+multiple modality-specific models is often impractical.                                              • T: Number of diffusion timesteps, controlling the granularity of
+                                                                                                       the noise schedule.
+4.4. Hyperparameter sensitivity and robustness analysis                                              • learning_rate: Step size for gradient updates.
+
+    While the learnable noise parameters 𝜇 and 𝜎 play a critical role                               The model was trained on the T2-FLAIR modality of the BRATS
+in guiding the reverse denoising process in diffusion models, under-                            dataset and evaluated using PSNR on a held-out validation set. All
+standing their interaction with architectural and optimization hyper-                           experiments were conducted with learnable 𝜇 and 𝜎 in the reverse
+parameters is equally important for model stability and generalization.                         process.  This  isolates  the  impact  of  the  architectural  and  training
+Although Appendix  B highlights their role in improving convergence,                            parameters on the learned noise dynamics.
+
+this section provides a more systematic evaluation of how sensitive the                         4.4.2. Results
+model performance is to different hyperparameter configurations.                                    Table  7 reports PSNR scores for different combinations of hyperpa-
+                                                                                                rameters. Across a range of values for each setting, the model maintains
+4.4.1. Experimental setup                                                                       relatively stable performance, indicating robustness to moderate pertur-
+    We investigate the sensitivity of LearnDiff to several key hyperpa-                         bations. Notably, the best performance was achieved with dim_mults =
+rameters, namely:                                                                               (1, 2, 2, 4), baseline_dim = 32, 𝑇  = 1000, and a learning rate of 1 × 10−4.
+
+
+                                                                                            8
+
+=== PDF PAGE 9 ===
+S. Goswami et al.                                                                                                      Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+Table 7                                                                                      Applications such as tumor classification, anomaly detection, and organ
+PSNR  scores  across  different  hyperparameter  configurations,  showing  the               volume estimation can all benefit from the enhanced image quality,
+sensitivity of LearnDiff with learnable 𝜇 and 𝜎.                                             leading  to  improved  patient  outcomes.  By  reducing  uncertainty  in
+ dim_mults          baseline_dim         T            learning_rate       PSNR (dB)          medical imaging, our approach has the potential to assist radiologists
+ (1, 2, 2, 4)       32                   1000         1e−4                35.39              and healthcare professionals in delivering more accurate and timely
+ (1, 2, 2, 4)       64                   1000         2e−4                34.21              diagnoses, ultimately contributing to better treatment planning and
+ (1, 2, 2, 4)       64                   750          1e−4                35.11
+ (1, 2, 4, 8)       64                   750          2e−4                34.72              prognosis assessment.
+ (1, 2, 4, 8)       96                   750          1e−4                34.58                  Thus, the superior performance of LearnDiff in both qualitative and
+ (1, 2, 4, 8)       96                   500          2e−4                33.22
+                                                                                             quantitative evaluation underscores its broader applicability in medi-
+                                                                                             cal imaging, reinforcing the necessity of high-quality super-resolution
+4.4.3. Discussion                                                                            models in critical healthcare applications.
+
+    The results indicate that LearnDiff is relatively insensitive to small
+variations  in  baseline  dimensionality  and  diffusion  timesteps,  with                   5. Conclusions
+performance variations within approximately 1 dB across the tested
+range. However, extremely low or high learning rates led to slight per-
+formance degradation, highlighting the importance of tuning optimizer                            This paper introduces LearnDiff, a novel MRI super-resolution ap-
+settings carefully.                                                                          proach using diffusion probabilistic models to enhance image quality
+    Importantly, the use of learnable noise parameters 𝜇 and 𝜎 con-                          by mapping complex MRI distributions to a learnable Gaussian distri-
+tributes to this stability. Unlike fixed Gaussian assumptions, the learn-                    bution. Through iterative refinement and targeted noise scheduling,
+able parameters allow the model to adaptively capture the noise dis-                         LearnDiff achieves significant improvements in super-resolution per-
+tribution during training, making it more resilient to changes in ar-                        formance, as validated on the BRATS, OASIS and Prostrate Cancer
+chitectural depth or timestep resolution. These findings validate that                       datasets. The model’s ability to accurately learn parameters in the
+the proposed formulation not only improves convergence (Appendix                             forward  and  reverse  diffusion  processes  has  demonstrated  superior
+B) but also enables stable and robust performance across a range of                          PSNR and SSIM metrics, supporting its effectiveness for clinical imaging
+hyperparameter settings.                                                                     applications. This approach opens new avenues for applying diffusion
+
+                                                                                             models to medical imaging and may pave the way for further advance-
+4.5. Brain tumor segmentation                                                                ments in MRI quality enhancement through deep learning techniques.
+                                                                                             Future work may explore LearnDiff’s adaptability to other imaging
+    In addition to super-resolution, we also evaluate our model on                           modalities and integration with hybrid super-resolution techniques.
+a downstream task—brain tumor segmentation. Specifically, we train
+a segmentation model using high-resolution images from the BraTS
+dataset. To further assess the impact of super-resolution quality on seg-                    CRediT authorship contribution statement
+mentation performance, we generate high-resolution predictions from
+low-resolution inputs using both LearnDiff and SRDiff, employing the
+same architecture for fair comparison. Our results demonstrate that                              Sagnik Goswami: Writing – review & editing, Writing – original
+images reconstructed by LearnDiff yield superior segmentation perfor-                        draft,  Visualization,  Validation,  Methodology,  Investigation,  Formal
+mance, highlighting the importance of high-quality super-resolution                          analysis, Conceptualization. Akriti Gupta: Writing – review & editing,
+outputs.                                                                                     Writing – original draft, Visualization, Validation, Methodology, Inves-
+    Fig.  5 clearly illustrates that the high-resolution predictions gen-                    tigation, Formal analysis, Conceptualization. Angshuman Paul: Writ-
+erated by LearnDiff are of significantly superior quality compared to                        ing – review & editing, Supervision, Resources, Project administration,
+those of SRDiff. This enhanced image quality enables more precise                            Funding acquisition.
+tumor segmentation, effectively capturing finer structural details and
+improving overall segmentation performance.
+    Table  6 strongly demonstrates the superiority of our proposed model                     Declaration of competing interest
+over SRDiff across all key metrics. The higher IoU and Dice Coefficient
+values signify enhanced segmentation accuracy, ensuring better struc-
+tural integrity of the predicted tumor regions. Moreover, the notable                            The authors declare the following financial interests/personal rela-
+improvement in recall highlights the model’s effectiveness in captur-                        tionships which may be considered as potential competing interests:
+ing tumor regions more comprehensively, thereby minimizing false                             Angshuman Paul reports financial support was provided by Meta. This
+negatives and improving overall diagnostic reliability.                                      work has been done under Srijan financially supported by IndiaAI and
+    Beyond tumor segmentation, the improved super-resolution quality                         Meta. In the drop-down menu of the support list, we only mentioned
+provided by LearnDiff has significant implications for various medical                       meta as the option for IndiaAI was not available. [Angshuman Paul]
+applications. In clinical settings, accurate and high-resolution recon-                      If  there  are  other  authors,  they  declare  that  they  have  no  known
+structions can enhance the effectiveness of diagnostic imaging tools,                        competing financial interests or personal relationships that could have
+enabling more precise detection and analysis of pathological regions.                        appeared to influence the work reported in this paper.
+For example, in radiology, sharper images can aid in detecting subtle
+abnormalities in MRI and CT scans, improving early disease diagnosis.
+Similarly, in surgical planning, high-fidelity reconstructions can pro-                      Acknowledgment
+vide clearer anatomical details, assisting surgeons in making informed
+decisions.
+    Furthermore, our findings suggest that the benefits of LearnDiff ex-                         This research work is partially supported through Srijan: Center for
+tend   to   a   range   of   downstream   tasks   beyond   segmentation.                     Generative AI by Meta and IndiaAI mission.
+
+
+                                                                                         9
+
+=== PDF PAGE 10 ===
+S. Goswami et al.                                                                                                          Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fig. B.1. Convergence of the forward process for different standard deviation values. For 𝜎 = 50, the noise mean does not stabilize until 10,000 timesteps, while
+for 𝜎 = 0.8, convergence is achieved by 𝑇  = 1000.
+
+Appendix A. Forward process                                                                     Appendix B. Convergence analysis for standard deviation values
+
+                                                                                                    The convergence behavior of the forward process is heavily influ-
+A.1. Progressive noise addition                                                                 enced by the choice of 𝜎, as shown in Fig.  B.1. When 𝜎 is set to
+                                                                                                higher values (e.g., 𝜎  =  50), large fluctuations in 𝜇(𝑡) are observed,
+                                                                                                significantly delaying the convergence of the noise mean to the target
+    The forward process in diffusion models is designed to progressively                        distribution. This instability hinders the model’s ability to approximate
+transform the input data 𝑥0 into a target normal distribution through                           the image distribution effectively. On the other hand, for smaller values
+the iterative addition of Gaussian noise. At each discrete time step 𝑡,                         of 𝜎 (e.g., 𝜎  =  0.8), the process converges more rapidly and stably,
+the transformation from 𝑥𝑡−1 to 𝑥𝑡 is defined as:                                               typically by timestep 𝑇  = 1000.
+𝑥𝑡 = √1 − 𝛽 𝑥𝑡−1 + √𝛽 𝜖,                                                                    (A.1)   This relationship underscores the importance of regulating 𝜎 during
+                                                                                                training. To achieve stable and bounded values, the sigmoid function
+where 𝛽 is a noise parameter controlling the level of noise, and 𝜖 is a                         is applied to transform the initial mean and standard deviation as 𝜇 =
+random noise term drawn from 𝑁(𝜇′, 𝜎′2). As the process continues over                          sigmoid(𝜇′) and 𝜎  =  sigmoid(𝜎′). This transformation enhances both
+𝑇 time steps, the initial input 𝑥0 is gradually overwhelmed by noise,                           learning efficiency and stability by managing noise levels effectively.
+leading to the final state 𝑥𝑇 , which can be expressed as:
+                                                                                                Appendix C. Implementation details
+𝑥𝑇  = (√1 − 𝛽)𝑇 𝑥0 + 𝑁𝑇 ,                                                                    (A.2)
+where 𝑁𝑇 represents the accumulated weighted noise terms, summing                                   We evaluate our proposed super-resolution model, LearnDiff, on two
+up the scaled contributions from each time step. The cumulative noise                           publicly available MRI datasets: OASIS (Marcus et al., 2007) and BraTS
+term 𝑁𝑇 ensures that as 𝑇 → ∞, 𝑥𝑇 converges to pure noise, with the                             2020 (Menze et al., 2015). The experiments are designed to assess the
+influence of the original input 𝑥0 vanishing.                                                   model’s ability to enhance low-resolution MRI images by factors of 8×
+    The final mean and variance of 𝑥𝑇 are given by:                                             and 4×, respectively, reflecting common challenges in medical imaging
+                                                                                                where high-resolution scans are often desirable but not always available
+                 1 − 𝛽)                                                                         due to hardware limitations or acquisition time constraints.
+𝑚𝑇  =  𝜇(1 − √√                                                                                     LearnDiff integrates a Gaussian diffusion process with a UNet ar-
+                𝛽         ,                                                                          (A.3)chitecture  (Ronneberger  et  al., 2015)  for  denoising  and  an  RRDB-
+and                                                                                             Net (Wang et al., 2018) as the low-resolution encoder. Specifically,
+𝑣2                                                                                              the RRDBNet is composed of eight Residual-in-Residual Dense Blocks
+ 𝑇  = 𝜎′2,                                                                                             (A.4)(RRDB), each with 32 feature maps, enabling deep feature extraction
+ensuring convergence to the target distribution 𝑁(𝜇, 𝜎2).                                       while mitigating vanishing gradients through residual learning. The
+                                                                                                UNet utilizes sinusoidal position embeddings (Vaswani et al., 2017) to
+A.2. Direct transition                                                                          incorporate temporal information across diffusion steps and includes
+                                                                                                attention mechanisms (Zhang et al., 2018) to capture long-range depen-
+    To generalize the cumulative effect of noise addition, we can express                       dencies, which are crucial for preserving anatomical details in medical
+                                                                                                images.
+the distribution of 𝑥𝑡 conditioned on 𝑥𝑡−1 as:                                                      For the OASIS (Marcus et al., 2007) dataset, we perform 8× super-
+                   (√                                          )                                resolution, scaling images from 31 × 62 pixels to 248 × 496 pixels. This
+𝑞(𝑥𝑡 ∣ 𝑥𝑡−1) = 𝑁       1 − 𝛽𝑡 𝑥𝑡−1 + 𝜇(1 − √1 − 𝛽𝑡), 𝜎2𝛽𝑡        .                      (A.5)   significant upscaling assesses the model’s capability to reconstruct high-
+
+    Furthermore, the direct transition from 𝑥0 to 𝑥𝑡, encapsulating the                         resolution details from highly downsampled inputs. The BraTS (Menze
+effect of noise addition over multiple steps, can be derived using the                          et al., 2015) dataset experiments involve 4× super-resolution, enhanc-
+properties of Gaussian distributions. This is represented as:                                   ing images from 60 × 60 pixels to 240 × 240 pixels, a scaling factor
+                 (√                   √                   )                                     commonly used in super-resolution studies (Shi et al., 2016).
+𝑞(𝑥𝑡 ∣ 𝑥0) = 𝑁       𝛼𝑡 𝑥0 + 𝜇(1 −       𝛼𝑡), 𝜎2(1 −𝛼𝑡)    ,                             (A.6)      The diffusion process is implemented with a linear beta sched-
+                                                                                                ule, with 𝛽start   =   0.008 and 𝛽end   =   0.02 over 1000 timesteps, fol-
+where 𝛼𝑡 = ∏𝑡𝑠=1(1−𝛽𝑠) is a cumulative weighting factor that determines                         lowing the methodology of Denoising Diffusion Probabilistic Models
+the influence of the original input 𝑥0 at time 𝑡. As 𝑡 →  𝑇 , 𝛼𝑇  →  0,                         (DDPM) (Ho et al., 2020). This schedule allows for gradual noise ad-
+ensuring the convergence to the noise distribution 𝑁(𝜇, 𝜎2).                                    dition and removal, facilitating stable training and high-quality image
+    By understanding the stepwise and direct transitions in the for-                            reconstruction.
+ward process, the framework highlights how data progressively trans-                                We employ an L1 loss function between the predicted noise and the
+forms into noise, paving the way for the reverse process to reconstruct                         true noise added during the diffusion process. The L1 loss is chosen for
+high-quality samples.                                                                           its robustness in preserving edge information and fine details, which is
+
+
+                                                                                            10
+
+=== PDF PAGE 11 ===
+S. Goswami et al.                                                                                                                         Computerized Medical Imaging and Graphics 125 (2025) 102641
+
+critical in medical imaging applications where subtle structures can be                                     Kim, J., Lee, K.M., Lee, J.K., 2016. Accurate image super-resolution using very deep
+diagnostically significant (Zhao et al., 2017).                                                                 convolutional networks. IEEE Trans. Pattern Anal. Mach. Intell. 38 (2), 394–405.
+    The model is optimized using the Adam optimizer (Kingma and                                             Kingma,  D.P.,  Ba,  J.,  2015.  Adam:  A  method  for  stochastic  optimization.  In:
+Ba, 2015) with an initial learning rate of 1 × 10−4. A learning rate                                            International Conference on Learning Representations. ICLR.
+                                                                                                            Li, Y., Yang, M., Bian, T., Wu, H., 2024. MRI super-resolution analysis via MRISR: Deep
+scheduler, StepLR, reduces the learning rate by a factor of 0.5 every                                           learning for low-field imaging. Information 15 (10), 655.
+100,000 steps to improve convergence. The batch size is set to 4 for                                        Li, Y., Yang, F., Zhang, L., Yang, Y., 2022. SRDiff: Single image super-resolution with
+both datasets, balancing computational efficiency with the limitations                                          diffusion probabilistic models. In: Proceedings of the IEEE/CVF Conference on
+of GPU memory.                                                                                                  Computer Vision and Pattern Recognition. CVPR, pp. 7071–7080.
+                                                                                                            Liang, J., Cao, J., Sun, G., Zhang, K., Gool, L.V., Timofte, R., 2021. SwinIR: Image
+    Training is conducted over 30 epochs for the OASIS dataset and                                              restoration using swin transformer. arXiv:2108.10257 URL https://arxiv.org/abs/
+30 epochs for the BraTS dataset on GPUs. The training process takes                                             2108.10257.
+approximately four days for the OASIS dataset and three days for the                                        Lugmayr, A., Danelljan, M., Gool, L.V., Timofte, R., 2020. SRFlow: Learning the super-
+BraTS dataset.                                                                                                  resolution space with normalizing flow. In: European Conference on Computer
+    To simulate low-resolution inputs, images are downscaled using                                              Vision. ECCV, Springer, pp. 715–732.
+                                                                                                            Marcus, D.S., Wang, T.H., Parker, J., Csernansky, J.G., Morris, J.C., Buckner, R.L., 2007.
+bicubic interpolation, a standard method in image processing that pre-                                          Open access series of imaging studies (OASIS): Cross-sectional MRI data in young,
+serves smooth gradients while reducing aliasing artifacts (Keys, 1981).                                         middle-aged, nondemented, and demented older adults. J. Cogn. Neurosci. 19 (9),
+This approach ensures that the low-resolution images used during train-                                         1498–1507.
+ing closely resemble those encountered in real-world scenarios where                                        Menze, B., Jakab, A., Bauer, S., Kalpathy-Cramer, J., Farahani, K., Kirby, J., 2015.
+images are acquired at lower resolutions due to hardware constraints.                                           The multimodal brain tumor image segmentation benchmark (BRATS). IEEE Trans.
+                                                                                                                Med. Imaging 34 (10), 1993–2024.
+                                                                                                            Misra, D., 2019. Mish: A self regularized non-monotonic neural activation function.
+Data availability                                                                                               arXiv preprint arXiv:1908.08681.
+                                                                                                            Parker, J.A., Kenyon, R.V., Troxel, D.E., 1983. Comparison of interpolating methods
+    All the datasets are publicly available.                                                                    for image resampling. IEEE Trans. Med. Imaging 2 (1), 31–39. http://dx.doi.org/
+                                                                                                                10.1109/TMI.1983.4307498.
+                                                                                                            Ronneberger,  O.,  Fischer,  P.,  Brox,  T.,  2015.  U-net:  Convolutional  networks  for
+                                                                                                                biomedical image segmentation. In: Proceedings of the International Conference
+References                                                                                                      on Medical Image Computing and Computer-Assisted Intervention. MICCAI, pp.
+                                                                                                                234–241.
+Abdusalomov, A., Mirzakhalilov, S., Dilnoza, Z., Zohirov, K., Nasimov, R., Umirza-                          Saharia, C., Ho, J., Chan, W., Salimans, T., Fleet, D.J., Norouzi, M., 2023. Image Super-
+    kova, S., Cho, Y.-I., 2024. Lightweight Super-Resolution techniques in medical                              Resolution via iterative refinement. IEEE Trans. Pattern Anal. Mach. Intell. 45 (4),
+    imaging: Bridging quality and computational efficiency. Bioengineering 11 (12),                             4713–4726. http://dx.doi.org/10.1109/TPAMI.2022.3204461.
+    1179. http://dx.doi.org/10.3390/bioengineering11121179.                                                 Shi, W., Caballero, J., Huszár, F., Totz, J., Aitken, A.P., Bishop, R., Rueckert, D.,
+Andrew, J., Mhatesh, T., Sebastin, R., Sagayam, K., Eunice, J., Pomplun, M., Dang, H.,                          Wang,  Z.,  2016.  Real-Time  single  image  and  video  super-resolution  using  an
+    2021. Super-resolution reconstruction of brain magnetic resonance images via                                efficient  Sub-Pixel  convolutional  neural  network.  In:  Proceedings  of  the  IEEE
+    lightweight autoencoder. Inform. Med. Unlocked.                                                             Conference on Computer Vision and Pattern Recognition. CVPR, pp. 1874–1883.
+Bashir, S.M.A., Wang, Y., Khan, M., Niu, Y., 2021. A comprehensive review of deep                           Song, Y., Ermon, S., 2020. Generative modeling by estimating gradients of the data
+    learning-based single image super-resolution. PeerJ Comput. Sci. 7, e621. http:                             distribution. In: Proceedings of the 37th International Conference on Machine
+    //dx.doi.org/10.7717/peerj-cs.621.                                                                          Learning.
+Chen, L., Chu, X., Zhang, X., Sun, J., 2022. Simple baselines for image restoration.                        Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L.,
+    arXiv:2204.04676 URL https://arxiv.org/abs/2204.04676.                                                      Polosukhin, I., 2017. Attention is all you need. In: Advances in Neural Information
+Choyke, P.L., Turkbey, B., Pinto, P.A., Merino, M., Wood, B.J., 2016. Data From                                 Processing Systems (NeurIPS). pp. 5998–6008.
+    PROSTATE-MRI. Cancer Imaging Arch. (TCIA) http://dx.doi.org/10.7937/K9TCIA.                             Wang, Z., Chen, J., Hoi, S.C., 2021. Deep learning for image super-resolution: A survey.
+    2016.MRPS8LVI, Dataset.                                                                                     IEEE Trans. Pattern Anal. Mach. Intell..
+Conde, M.V., Choi, U.-J., Burchi, M., Timofte, R., 2022. Swin2SR: SwinV2 transformer                        Wang,  X.,  Yu,  K.,  Wu,  S.,  Gu,  J.,  Liu,  Y.,  Dong,  C.,  Qiao,  Y.,  Loy,  C.C.,  2018.
+    for  compressed  image  super-resolution  and  restoration.  Comput.  Vis.  Pattern                         ESRGAN: Enhanced super-resolution generative adversarial networks. Proc. Eur.
+    Recognit. arXiv:2209.11345 URL https://arxiv.org/abs/2209.11345.                                            Conf. Comput. Vis. Work..
+Guerreiro, J., Tomás, P., Garcia, N., Aidos, H., 2023. Super-resolution of magnetic                         Zhang, Y., Tian, Y., Kong, Y., Zhong, B., Fu, Y., 2018. Residual dense network for image
+    resonance images using generative adversarial networks. Comput. Med. Imaging                                super-resolution. In: Proceedings of the IEEE Conference on Computer Vision and
+    Graph. 108, 102280. http://dx.doi.org/10.1016/j.compmedimag.2023.102280.                                    Pattern Recognition. CVPR, pp. 2472–2481.
+Ho, J., Jain, A., Abbeel, P., 2020. Denoising diffusion probabilistic models. In: Advances                  Zhang, G., Zhang, P., Qi, J., Lu, H., 2021. HAT: Hierarchical aggregation transformers
+    in Neural Information Processing Systems.                                                                   for person re-identification. Comput. Vis. Pattern Recognit. arXiv:2107.05946 URL
+Keys, R.G., 1981. Cubic convolution interpolation for digital image processing. IEEE                            https://arxiv.org/abs/2107.05946.
+    Trans. Acoust. Speech Signal Process. 29 (6), 1153–1160. http://dx.doi.org/10.                          Zhao, H., Gallo, O., Frosio, I., Kautz, J., 2017. Loss functions for image restoration with
+    1109/TASSP.1981.1163711.                                                                                    neural networks. IEEE Trans. Comput. Imaging 3 (1), 47–57.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                       11

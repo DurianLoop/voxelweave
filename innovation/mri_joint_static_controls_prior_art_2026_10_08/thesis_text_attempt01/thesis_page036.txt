@@ -1,0 +1,26 @@
+3 Reconstruction methods
+In this chapter, we consider the solutions that have been explored to the problem of
+accelerated MRIin the literature. We have defined this problem formally in Section 2.2.1:
+we consider partial measurementsyω obtained through the forward model of Equation
+2.12, and aim at constructing an estimateˆx of the underlying, unknown ground truthx.
+The difficulty of this problem resides in its ill-posedness: there exist infinitely many
+solutions consistent with the observations that are not physically meaningful. To counter
+it, it is necessary to impart additional information to the problem in order to reach a
+sensible solution. This was the approach taken in Compressed Sensing (CS) applied to
+MRI (Lustig et al., 2008). The ill-posedness of the problem is alleviated by imposing
+additional structure on it. All subsequent approaches rely on imposing some form of
+structure to estimatex fromy, but have relied on increasingly complex, data-driven
+approaches.
+We will trace back the evolution from CS approaches, that used simple mathematical
+models to obtain structure, to recent deep learning-based approaches that construct
+their models from training data: we moved from model-driven approaches to data-
+driven approaches. A more exhaustive presentation of these approaches can be found in
+Ravishankar et al. (2019); Doneva (2020).
+3.1 Model-driven approaches
+3.1.1 Compressed Sensing
+It has been long known that a band-limited signal can be exactly reconstructed from a set
+of uniformly sampled frequencies, provided that their density if at least twice the highest
+frequency of the original signal. This result is famously known as the Nyquist-Shannon
+sampling theorem. However, sampling at the Nyquist rate can remain expensive, and
+there has been extensive research to achieve sub-Nyquist rate sampling and reconstruction.
+23

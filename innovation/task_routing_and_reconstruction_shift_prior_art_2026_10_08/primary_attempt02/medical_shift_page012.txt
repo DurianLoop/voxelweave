@@ -1,0 +1,79 @@
+Wohlrapp Bubeck Rueckert Lotter
+U-Net Pix2Pix SDE Reconstruction Reweighted EODD Loss Significance: * p < 0.05
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+Bias Change [SER]
+Sex Age
+Segmentation
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+Bias Change [EODD]
+Sex Age
+Tumor Grade
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+Bias Change [EODD]
+Sex Age
+Tumor Type
+Figure 5: EODD and SER bias change pre- and post-mitigation compared to predictions
+on original images for UCSF-PDGM tasks. No consistent trends emerge for the
+classification tasks. Error bars represent standard deviation.
+correspond to a ˜5% difference in sensitivity/specificity between subgroups. Thus, recon-
+struction can contribute to bias in downstream tasks, but the overall bias appears to be
+largely driven by the downstream models themselves.
+Effectiveness of Mitigation Techniques:Mitigation strategies reduced sex-related bi-
+ases on CheXpert without measurable performance trade-offs in AUROC or PSNR (Fig-
+ure 13 in the Appendix). However, similar mitigation strategies yielded inconsistent results
+on UCSF-PDGM, highlighting that their effectiveness is dataset-specific and dependent on
+the underlying task complexity and dataset characteristics.
+Sensitivity of Model Choice:The SDE and GAN-based reconstruction approaches
+introduced lower additional bias overall compared to the standard U-Net, which may be
+counterintuitive given the generative nature of the SDE and GAN models. The U-Net
+also exhibited larger degradations in downstream performance when fine-tuned with the
+fairness mitigation strategies (Figure 13 in the Appendix). This sensitivity may arise from
+its inherently lower capacity than other methods, limiting simultaneous optimization of
+image fidelity and fairness constraints.
+Summary of Clinical Implications:The robustness of downstream performance to AI-
+based image reconstruction is encouraging, particularly as these technologies are increas-
+ingly integrated into clinical practice. However, some performance drops were observed,
+especially for more subtle pathologies, highlighting the importance of rigorous evaluation
+and real-world monitoring. The potential for fairness shifts also necessitates active moni-
+toring and reporting. This is especially important because model behavior can change as
+data distributions shift.
+Summary of Model Development Implications:Developers of reconstruction mod-
+els should prioritize downstream task and fairness evaluations alongside traditional pixel-
+level metrics, recognizing that reconstruction-induced biases, though subtle, can propagate
+through diagnostic workflows. This is especially the case for patient sex, where anatomi-
+cal differences can be more prominent and may explain the larger effects observed for this
+attribute in our results. Bias mitigation strategies applied at the reconstruction stage may
+help improve fairness, but our results suggest that direct intervention at the classifier stage
+should be prioritized. Future research should explore multi-stage bias mitigation, integrat-
+12

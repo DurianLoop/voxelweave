@@ -1,0 +1,46 @@
+2 Kim et al.
+Conditional
+Model
+Hallucination!
+Phase I: Conditional Model Prediction Data Consistency Aware Time
+Selection
+Phase II: Diffusion Model
+Wolfe's Line Search
+Data Consistency
+Forward
+Model
+Dynamic Acceptable step size
+ step size
+Memory bank of
+reference data
+likelihood
+No 
+Hallucination!
+Final
+Prediction
+Fig.1: The overview of our proposed framework. The framework first predicts a
+high-quality image using a conditional model. Then, it calculates optimal start-
+ing time point in the reverse process via Data Consistency Aware Time Selection
+(DCATS). At last, the prediction is refined using DynamicDPS that adaptively
+adjusts step size in each time step using Wolfe’s line search.
+1 Introduction
+A key impediment to the adoption of generative models for Magnetic Resonance
+Imaging (MRI) reconstruction and enhancement is the possibility ofhallucina-
+tions, spurious yet realistic-looking structures not present in the imaging target.
+Such errors can distort downstream analyses, limiting clinical applicability in
+critical settings. Hence, we present a novel framework for addressing hallucina-
+tions from conditional models while minimizing additional training and inference
+costs. While broadly applicable to inverse problems, we focus on low-field MRI
+enhancement via Image Quality Transfer (IQT), using the term “reconstruction”
+in the broader sense throughout the paper.
+IQT[2]isamachinelearningframeworkcombiningaspectsofsuper-resolution,
+de-noising and contrast enhancement, enhancing visible tissue properties in low-
+quality images to the equivalent high-quality counterpart. IQT has been applied
+using various approaches, ranging from classical regression and random forests to
+deep learning architectures [16,21], contrast-agnostic models [10,12], attention-
+based CNNs [15], and 3D conditional diffusion-based methods [14] that work
+robustly under heavily under-sampled MRI. This contrasts to super-resolution
+work [9,24,30,8,4,23] which focus more directly on the resolution problem only.
+Recent work [13,31,1,29] has shown that hallucinations typically arise in im-
+age regions that areout-of-distribution (OOD) for the conditional model being
+applied. To date relatively little work has appeared on quantifying hallucinations

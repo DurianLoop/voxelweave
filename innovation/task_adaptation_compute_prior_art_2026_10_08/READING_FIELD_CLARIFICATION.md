@@ -1,0 +1,5 @@
+# 阅读provenance中的来源快照字段
+
+READING_PROVENANCE.json的complete_text_pages_actually_read和visual_pages_actually_reviewed才是本轮实际阅读声明：Task adapted 21文字/5视觉，Tuning-free8文字/4视觉。page_text_bindings和visual_page_bindings内的text_read=false/visual_reviewed=false来自原提取/渲染receipt的原样来源快照，表示当时的产生动作不等于阅读；不是当前review结果。保留这些原始字段避免覆盖已执行receipt，原来源SHA完整不变。provenance.notes已说明九张图后来由view_image实际核看。
+
+本轮完整文字总29页、实际视觉9页；未读完整页明确列出，首次截断p5后来完整复读且只计一次。复制的来源快照flags不应用来覆盖当前review声明，也不用于虚增新论文或阅读页数。

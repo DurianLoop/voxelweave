@@ -1,0 +1,41 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+0.1 0.2 0.3 0.4 0.5
+26
+28
+30
+PSNR
+LB-VD
+SGv2-TV
+Figure 5.18: PSNR as a function of the
+sampling rate for TV, averaged on the
+13 most central slices of the fastMRI
+validation set (Zbontar et al., 2019)
+(2587 slices). SGv2 outperforms LB-
+VD over all sampling rates.
+5.5 Experiments - Lazy LBCS
+Dataset. Our experiments were carried out on two datasets.
+• Brain data. The data were acquired on a 3T MRI system (Siemens), and the
+protocols were approved by the local ethics committee. The dataset consists of
+2D T1-weighted brain scans of seven healthy subjects, which were scanned with a
+FLASH pulse sequence and a 12-channel receive-only head coil. In our experiments,
+we use 4 different slices of sizes 256×256 from two subjects as training data and 100
+slices from 5 subjects as test data. To speed up the computations, we compressed
+our 12-channel data into4-channel data.
+• Knee data.The data were acquired by a 3T system (GE Healthcare) using FSE
+CUBE sequence with the proton density weighting. The number of channels is
+8 and the matrix size is 320× 320. We used the data of 8 subjects as training
+data and remaining 12 subjects as test data. This dataset is publicly available at
+http://mridata.org.
+We used PSNR as the image quality metricη, but also reported the results evaluated on
+SSIM (Wang et al., 2004).
+Reconstruction algorithms. We consider the following decoders: Basis Pursuit (BP)
+(Donoho, 2006), Total Variation (TV), SENSE (Pruessmann et al., 1999), and ALOHA
+(Jin et al., 2016). For BP, we let the sparsifying transform to be the Shearlet transform
+(Kutyniok et al., 2016). For SENSE, we used ESPIRiT (Uecker et al., 2014) method to
+estimate coil sensitivities.
+Basis pursuit is a method that directly minimizes theℓ1 norm of the image in a sparse
+domain. A similar type of convex optimization formulation is total variation (TV)
+minimization. SENSE is a method that requires the knowledge of coil sensitivities to
+retrieve an unaliased image from parallel acquisitions (Pruessmann et al., 1999). We use
+72

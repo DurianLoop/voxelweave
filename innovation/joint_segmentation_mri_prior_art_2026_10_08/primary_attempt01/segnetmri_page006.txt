@@ -1,0 +1,70 @@
+GBRWT MRN5 [Liu et al., 2017] SegNetMRI5
+PSNR 31.80 33.94 33.47 34.27
+NMSE 0.0584 0.0361 0.0388 0.0333
+Table 2: The averaged PSNR (dB) and NMSE on 37 test MRI data.
+GM B1 B2 B3 B4 B5 Merged
+DC 75.15 80.31 83.64 81.02 85.66 86.38
+HD 2.15 1.95 1.77 1.90 1.68 1.66
+AVD 4.35 3.58 2.90 3.43 2.60 2.52
+Table 3: We compare the segmentation performance of the outputs
+from each block in SegNetMRI5 model without the 1 × 1 convolu￾tion and the segmentation output produced by the SegNetMRI5 via
+merging.
+ure 5, along with their corresponding residuals. (We set the
+error ranges from [0 0.1] on a [0 1] pre-scaled image.) We
+find that SegNetMRI achieves the minimal reconstruction er￾ror, especially in the meaningful tissue regions. We also give
+averaged reconstruction performance measures in Table 2 us￾ing peak signal-to-noise ratio (PSNR) and the corresponding
+normalized mean squared error (NMSE) on all 37 test MRI.
+Discussion It is worth noting that the the model in [Liu et
+al., 2017] achieves better segmentation performance than the
+MRN5 model, but the reconstruction quality is worse than
+MRN5 both qualitatively and quantitatively. The original
+work in [Liu et al., 2017] is devote to joint natural image
+denoising and segmentation, while for medical image analy￾sis, the absolute reconstruction and segmentation accuracy is
+equally important. Usually, segmented MRI will also be pro￾vided by radiologists for diagnosis. A reconstruction error
+can thus cause the loss of valuable diagnostic information. In
+contrast, the SegNetMRI model achieves better performance
+on both reconstruction and segmentation.
+In SegNetMRIN , the output of N MSN decoders are con￾catenated and merged into the final segmentation using a 1×1
+convolution. The ensemble learning can make full use of the
+information from different depth of the SegNetMRI and pro￾duce better segmentation accuracy. We take the SegNetMRI5
+on the gray matter tissue of all the test MRI data for exam￾ple. In Table 3, we show the segmentation performance of the
+outputs from each block in SegNetMRI5 model without the
+1 × 1 convolution, and we compare them with the segmenta￾tion output produced after merging the SegNetMRI5 outputs
+with 1 × 1 convolution. The output of SegNetMRI5 achieves
+better segmentation performance, showing the effectiveness
+of this ensemble structure.
+In Figure 6, we show the segmentation accuracy (in Dice
+Coefficient metric) as a function of blocks, N. The recon￾struction quality (in PSNR metric) improves as the number
+of the blocks increases in the SegNetMRI model, but at the
+expense of longer training time.
+5 Conclusion
+Automatic segmentation of MRI is an important problem in
+medical imaging, and with the recent adoption of CS-MRI by
+Figure 6: The model performance of SegNetMRIN architecture as a
+function of the number of blocks.
+industry, segmentation techniques that take CS-MRI recon￾struction into account are needed. After verifying that the two
+tasks suffer when done independently, we proposed a deep
+neural network architecture called SegNetMRI to merge the
+MRI reconstruction and segmentation problems into a joint
+framework. Our experiments show that doing simultaneous
+reconstruction and segmentation can positively reinforce each
+other, improving both tasks significantly.
+Acknowledgement
+This work was supported in part by the National Natu￾ral Science Foundation of China under Grants 61571382,
+81671766, 61571005, 81671674, U1605252, 61671309 in
+part by the Guangdong Natural Science Foundation un￾der Grant 2015A030313007, in part by the Fundamental
+Research Funds for the Central Universities under Grant
+20720160075, 20720180059, in part by the National Natural
+Science Foundation of Fujian Province, China under Grant
+2017J01126. (Corresponding author: Xinghao Ding)
+References
+[Aljabar et al., 2009] Paul Aljabar, Rolf A Heckemann,
+Alexander Hammers, Joseph V Hajnal, and Daniel Rueck￾ert. Multi-atlas based segmentation of brain images: at￾las selection and its effect on accuracy. Neuroimage,
+46(3):726–738, 2009.
+[Artaechevarria et al., 2009] Xabier Artaechevarria, Arrate
+Munoz-Barrutia, and Carlos Ortiz-de Solorzano. Combi- ´
+nation strategies in multi-atlas image segmentation: Appli￾cation to brain MR data. IEEE Trans. on Medical Imaging,
+28(8):1266–1277, 2009.
+[Atkinson et al., 1999] David Atkinson, Derek LG Hill, Pe￾ter NR Stoyle, Paul E Summers, Stuart Clare, Richard
+Bowtell, and Stephen F Keevil. Automatic compensa￾tion of motion artifacts in MRI. Magnetic Resonance in
+Medicine, 41(1):163–170, 1999.

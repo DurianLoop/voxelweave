@@ -1,0 +1,5 @@
+# 保持历史观察的时间语义
+
+V2 session12980真实exit1，chunk14c1c2；前5535原文件哈希核验通过，随后闭包重解析旧阶段记录时碰到曾在运行中的invocation02.json历史hash。当前invocation02 SHA4a72df4b3c4f729b07b17505fa4794ac1f88d9039ebe1b83dc0c55c302a33da8，与真正结束后的训练退出/主评价/V4一致；当前四分支训练从其它文件分支，未改原文件。
+
+V3不回改历史快照、不用当前训练文件替换历史观察。前5535文件仍逐一核对原SHA与bytes；这些已经冻结的历史文档不再次解释为对当前文件的来源承诺。新证据和新来源绑定仍严格核验SHA/bytes，原训练现在真正结束的rolling文件纳入新delta。索引明确标记历史观察处理范围。V1/V2源码和失败tool证据都保留；输出另存APPEND_INDEX_V3/APPEND_PROOF_V3。

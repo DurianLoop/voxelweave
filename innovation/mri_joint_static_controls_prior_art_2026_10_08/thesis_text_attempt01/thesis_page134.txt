@@ -1,0 +1,41 @@
+7.5. RELATED WORKS
+Policy Model Architecture PSNR SSIM Accuracy
+Random NC ResUNet 17.10 0 .76 0 .67
+WGAN c-ResNet 16.41 0 .76 0 .67
+LBCS
+NC ResUNet 21.39 0 .90 0 .92
+NC cResNet 20.33 0 .88 0 .93
+WGAN ResUNet 20.29 0 .89 0 .90
+WGAN cResNet 20.48 0 .89 0 .92
+GAN
+(Ours)
+NC ResUNet 40.15 0 .94 0.91
+NC cResNet 31.47 0 .93 0.93
+WGAN ResUNet 31.73 0 .92 0 .88
+WGAN cResNet 35.81 0 .96 0 .95
+Table 7.3: Average test set AUC (one AUC per image) on MNIST, in image domain.
+of the conditional distribution. Figure 7.5 also shows an issue that our GAN policy can
+encounter: sometimes, the model can be confidently wrong: at0.5% percent, the model
+thinks the digit should be a seven, which is incorrect3. However, adding more samples
+allows it to converge to the correct digit. Note that in this case, it shows a level of
+uncertainty that is generally low, as opposed to the random policy (VDS) and LBCS,
+which feature a higher level of uncertainty.
+7.5 Related works
+In this work, we have investigated how GANs can be used for inverse problems to perform
+reconstruction, uncertainty quantification and adaptive sampling. A flurry of different
+approaches have been proposed to tackle these problems in the literature, and we briefly
+discuss a few particularly relevant works now.
+Although we have used GANs as the generative model in this work, many other approaches
+have been explored in the context of inverse problems. Variational Autoencoders (VAEs)
+(Rezende et al., 2014; Kingma and Welling, 2013) have been applied to inverse problems
+(Tonolini et al., 2019; Zhang et al., 2021) as well as the task of learning conditional
+distributions (Ivanov et al., 2019). But other approaches such as autoregressive models
+(Oord et al., 2016; Van Oord et al., 2016) or conditional normalizing flows (Papamakarios
+et al., 2019; Sun and Bouman, 2020; Denker et al., 2021) have also been explored. Lately,
+score-based approaches, based on the idea of learning to sample by learning the score of
+the distribution, have gained popularity (Ramzi et al., 2020; Song et al., 2021).
+Although all of these methods can provide reconstruction and uncertainty quantification,
+3For other generative models such as variational autoencoders, it has been shown that these models
+can frequently be overconfident (Nalisnick et al., 2018). Although evaluating the likelihood in GANs is
+an open problem, it is not unlikely that a similar behavior should be found in GANs.
+121

@@ -1,0 +1,74 @@
+Learning to Sample and Reconstruct for Accelerated MRI 19
+0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0
+number of alternations L
+0.75
+0.76
+0.77
+0.78
+0.79
+0.80
+0.81SSIM
+×4, Base-horizon
+×4, Long-horizon
+(a)×4-acceleration.
+0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0
+number of alternations L
+0.63
+0.64
+0.65
+0.66
+0.67SSIM
+×8, Base-horizon
+×8, Long-horizon (b)×8-acceleration.
+Figure 5. The choice of the number of alternation. We show SSIM values of
+L2SR with respect to different rounds of alternating training on the knee test
+dataset. Specifically, ”L =l.5” means the (l + 1)th round of training the sampler
+with the learned reconstructor, i.e. solving (4.14).
+Random Uni o m
+0.600
+0.625
+0.650
+0.675
+0.700
+0.725
+0.750
+0.775
+0.800SSIM Value
+SSIM Values for ×4-acceleration
+Heuristic
+L2S
+L2SR
+(a)×4-acceleration.
+Random Uniform
+0.500
+0.525
+0.550
+0.575
+0.600
+0.625
+0.650
+0.675
+0.700SSIM Value
+SSIM Values for ×8-acceleration
+Heuristic
+L2S
+L2SR (b)×8-acceleration.
+Figure 6. Comparison of SSIM values using the radial sampling pattern on the
+knee test dataset. The bars show the mean SSIM values, while the error bars
+indicate variances. We evaluate our L2S and L2SR methods against a pre-trained
+reconstructor baseline, comparing under two distinct initial heuristic sampling
+policies: Random and Uniform.
+5.4.4. Adaptability Across Sampling Schemes A significant benefit of our framework
+lies in its extensibility across different sampling schemes. While the core of our analysis
+and experiments employs 1D vertical Cartesian sampling, the proposed framework
+could be applied to a wider range of applications in more realistic pulse sequence
+design. To demonstrate its adaptability, we have extended our method to radial
+sampling [2], where the selection changes from choosing a column to picking an angle
+in k-space. The core training process remains unchanged. The result in figure 6
+confirms our method’s superiority over baselines within radial sampling schemes, which
+highlights the extensibility of our framework across various acquisition patterns.
+5.5. Visualization
+In figure 7, we present a sampling and reconstruction example of the knee dataset
+under ×4-acceleration, while in figure 8, we demonstrate the same for the brain
+dataset under ×8-acceleration. A comparison of these examples reveals that the
+proposed L2SR method produces images of superior visual quality. Notably, the

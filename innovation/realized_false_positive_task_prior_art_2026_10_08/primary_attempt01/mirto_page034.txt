@@ -1,0 +1,56 @@
+34 N. K. Hernashki and S. Chatterjee
+Table 34. Paired voxel AUROC and AUPRC contrasts, Holm-adjusted within the voxel-pair families (mean and median, 24
+contrasts; pooled, 12).
+Contrast Metric Subject mean Subject median Pooled
+REFLECT − UCCD voxel AUROC +0.067 [0.060, 0.074], p_H < 0.005 +0.072 [0.064, 0.080], p_H < 0.005 +0.083 [0.076, 0.088], p_H < 0.005
+REFLECT − cDDPM voxel AUROC +0.059 [0.051, 0.066], p_H < 0.005 +0.062 [0.053, 0.073], p_H < 0.005 +0.078 [0.071, 0.084], p_H < 0.005
+UCCD − cDDPM voxel AUROC −0.008 [−0.011, −0.006], p_H < 0.005 −0.010 [−0.015, −0.003], p_H 0.018 −0.005 [−0.008, −0.002], p_H 0.016
+REFLECT − AnomalyDINO voxel AUROC +0.100 [0.093, 0.108], p_H < 0.005 +0.104 [0.092, 0.112], p_H < 0.005 +0.119 [0.108, 0.130], p_H < 0.005
+UCCD − AnomalyDINO voxel AUROC +0.033 [0.023, 0.043], p_H < 0.005 +0.032 [0.018, 0.042], p_H < 0.005 +0.036 [0.024, 0.049], p_H < 0.005
+cDDPM − AnomalyDINO voxel AUROC +0.041 [0.031, 0.052], p_H < 0.005 +0.041 [0.026, 0.052], p_H < 0.005 +0.041 [0.029, 0.053], p_H < 0.005
+REFLECT − UCCD voxel AUPRC +0.003 [−0.015, 0.022], p_H 1.00 +0.034 [0.001, 0.064], p_H 0.14 +0.062 [0.021, 0.101], p_H 0.016
+REFLECT − cDDPM voxel AUPRC −0.020 [−0.038, −0.001], p_H 0.14 +0.003 [−0.032, 0.029], p_H 1.00 +0.048 [0.007, 0.089], p_H 0.050
+UCCD − cDDPM voxel AUPRC −0.023 [−0.031, −0.014], p_H < 0.005 −0.031 [−0.052, −0.018], p_H < 0.005 −0.013 [−0.026, −0.001], p_H 0.050
+REFLECT − AnomalyDINO voxel AUPRC +0.300 [0.280, 0.321], p_H < 0.005 +0.386 [0.349, 0.413], p_H < 0.005 +0.355 [0.307, 0.401], p_H < 0.005
+UCCD − AnomalyDINO voxel AUPRC +0.297 [0.277, 0.317], p_H < 0.005 +0.352 [0.321, 0.378], p_H < 0.005 +0.294 [0.269, 0.318], p_H < 0.005
+cDDPM − AnomalyDINO voxel AUPRC +0.319 [0.300, 0.339], p_H < 0.005 +0.384 [0.357, 0.410], p_H < 0.005 +0.307 [0.282, 0.331], p_H < 0.005
+Table 35. Holm family summary: number of contrasts per declared family with raw and Holm-adjusted p < 0.05.
+Family Contrasts raw p < 0.05 Holm p < 0.05
+Dice, model vs baseline, equal FP, mean 32 31 31
+Dice, model vs baseline, equal FP, median 32 32 32
+Dice, model vs baseline, equal FP, pooled 32 30 29
+Dice, model vs baseline, test-matched, mean 32 31 31
+Dice, model vs baseline, test-matched, median 32 32 32
+Dice, model vs baseline, test-matched, pooled 32 30 29
+Dice, model vs baseline, validation, mean 32 31 31
+Dice, model vs baseline, validation, median 32 32 32
+Dice, model vs baseline, validation, pooled 32 31 31
+Dice, model pairs, equal FP, mean 24 18 16
+Dice, model pairs, equal FP, median 24 15 12
+Dice, model pairs, equal FP, pooled 24 16 14
+Dice, model pairs, test-matched, mean 24 18 16
+Dice, model pairs, test-matched, median 24 15 12
+Dice, model pairs, test-matched, pooled 24 15 14
+Dice, model pairs, validation, mean 24 23 22
+Dice, model pairs, validation, median 24 22 21
+Dice, model pairs, validation, pooled 24 23 20
+voxel, model vs baseline, mean 16 15 15
+voxel, model vs baseline, median 16 15 15
+voxel, model vs baseline, pooled 16 13 13
+voxel, model pairs, mean and median 24 22 20
+voxel, model pairs, pooled 12 12 12
+Table 36. Marginal slice-level AUROC (subject mean, 95% interval) under three slice summaries of the normalised map.
+Method slice max slice 99th pct. slice mean
+REFLECT 0.887 [0.873, 0.899] 0.874 [0.860, 0.888] 0.646 [0.622, 0.671]
+UCCD 0.907 [0.896, 0.918] 0.900 [0.887, 0.912] 0.869 [0.852, 0.885]
+cDDPM 0.905 [0.894, 0.916] 0.893 [0.880, 0.905] 0.843 [0.825, 0.861]
+AnomalyDINO 0.598 [0.579, 0.618] 0.580 [0.559, 0.600] 0.425 [0.403, 0.448]
+D.5 Post-processing
+The decomposition of Identity 5 at every budget (Table 37) shows the same pattern as at 20 cm3
+: the relaxation
+term is positive with an interval excluding zero for every method and budget, whereas the post-processing step at
+fixed threshold has an interval excluding zero on the positive side in only one case, UCCD at 40 cm3
+(+0.022). For
+AnomalyDINO the step at fixed threshold costs up to 0.075 Dice. Table 38 gives lesion sensitivity for plain thresh￾olding, hysteresis, and hysteresis with pruning, at three hit criteria. Hysteresis alone lowers above-floor sensitivity
+by at most 0.015; most of the loss comes with the persistence pruning. The purity rule was evaluated on 52,399
+(REFLECT), 43,873 (UCCD), 48,525 (cDDPM) and 92,296 (AnomalyDINO) predicted components.

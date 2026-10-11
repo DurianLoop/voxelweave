@@ -1,0 +1,92 @@
+12 N. K. Hernashki and S. Chatterjee
+REFLECT UCCD cDDPM AnomalyDINO
+0.850
+0.875
+0.900
+0.925
+0.950
+0.975
+Dice, own vs canonical reference
+(inside field of view)
+gate floor
+−0.4 −0.2 0.0
+change in Dice
+left-right flip
+antero-posterior flip
+in-plane transpose
+2-slice shift
+5-slice shift
+10-slice shift
+10% slice stretch
+−0.3 −0.2 −0.1 0.0
+change in voxel AUROC
+0.00 0.05 0.10 0.15
+change in slice-level AUROC
+UCCD AnomalyDINO
+Fig. 4. Registration. (a) Per-subject overlap of each method’s own reference, mapped to the canonical grid, with the canonical
+reference inside the field of view; the dashed line is the gate’s floor (0.85). (b) Change in Dice, voxel AUROC and slice-level
+AUROC under injected corruptions of two verified pipelines: in-plane errors devastate the voxel metrics and leave slice-level
+AUROC unchanged or improved.
+Flip shares and the size of differences. Over all de￾fensible universes the largest flip share was ϕmax =
+0.472 [0.414, 0.499], for REFLECT versus UCCD, which
+meets the decision criterion of H1; REFLECT versus cD￾DPM had the same point value and UCCD versus cD￾DPM 0.393 [0.250, 0.493]. AnomalyDINO almost never
+changed places with anyone (ϕ ≤ 0.011). Because a flip
+share near 1
+2
+is also what two indistinguishable methods
+produce, we read each one against the size of the differ￾ence (Section 2.7). Within Dice, UCCD led REFLECT in
+59.7% of universes by a median of 0.054 and REFLECT
+led in 40.3% by a median of 0.030; the median abso￾lute difference was 0.043, and the two were within 0.02
+of each other in only 26.9% of Dice universes. At valida￾tion thresholds, seven of the twelve REFLECT − UCCD
+Dice contrasts (four budgets, three aggregations) favoured
+UCCD and one favoured REFLECT with Holm-adjusted
+p < 0.05; for REFLECT − cDDPM (median absolute dif￾ference 0.055) four favoured REFLECT and five cDDPM.
+The flips of these pairs therefore reflect the evaluation
+rather than closeness: each method leads by several Dice
+points in a large share of defensible evaluations, signifi￾cantly so at some operating points, and which one leads is
+decided by the evaluation. UCCD versus cDDPM is dif￾ferent. Their median absolute Dice difference was 0.029,
+and although ten of the twelve contrasts favoured UCCD
+significantly at validation thresholds, none did at equal re￾alised burden (Section 3.3); this pair is better described
+as close, with an apparent advantage that comes from
+threshold transfer. Only 24.3% [9.9, 32.4] of universes re￾produced the four-method order of the reference universe
+(mean Kendall τb = 0.486).
+Pooled over metrics. Pooling all six metrics, the evalu￾ation axes and their interactions with method explained
+0.614 [0.595, 0.634] of the total sum of squares and the
+method 0.162 [0.147, 0.177], which meets the decision cri￾terion of H2. We do not read this as evidence that eval￾uation outweighs the method: 0.539 [0.516, 0.561] is the
+main effect of the metric axis, which reflects the different
+scales of the metrics. Lesion definition (0.014) and hit cri￾terion (0.011) followed, and every other main effect was
+Table 3. Sum-of-squares shares across defensible universes
+within each metric and, last, pooled over metrics, where
+the metric main effect mostly reflects the scales of the met￾rics. Within-metric shares test the exploratory hypothesis and
+carry no decision criterion. †Axis main effects plus method ×
+axis interactions.
+Method share Axis share†
+voxel AUROC 0.954 [0.933, 0.966] 0.046 [0.033, 0.067]
+voxel AUPRC 0.960 [0.941, 0.972] 0.040 [0.028, 0.059]
+slice AUROC, marginal 0.974 [0.964, 0.980] 0.025 [0.019, 0.036]
+Dice 0.770 [0.738, 0.787] 0.207 [0.190, 0.234]
+slice AROC, adjusted 0.718 [0.627, 0.783] 0.267 [0.207, 0.355]
+lesion sensitivity 0.139 [0.127, 0.152] 0.657 [0.648, 0.666]
+pooled over metrics 0.162 [0.147, 0.177] 0.614 [0.595, 0.634]
+of which metric main effect – 0.539 [0.516, 0.561]
+at most 0.004. The pattern held with every set of training
+data we examined (axis share 0.60 to 0.61, method share
+0.16 to 0.18). All flip shares, the full decomposition and
+the distinct orders per metric are given in Appendix D.2.
+Verdict. H1 is supported, and the size of the differences
+shows that the flips of REFLECT against the two condi￾tioned diffusion models reflect the evaluation, not close￾ness. H2 is supported by its criterion, but the support
+comes from the scales of the metrics. The exploratory hy￾pothesis holds for voxel AUROC, holds for voxel AUPRC
+except for the aggregation, and fails for Dice amongst the
+residual models and for lesion sensitivity.
+3.3 Validation thresholds and realised
+false-positive burden
+Hypotheses. A common view holds that tuning a thresh￾old on the test cohort simply inflates Dice. H6 (test-tuning
+optimism): the test-matched threshold overstates Dice by
+at least 0.02 at 20 cm3
+(lower bound of the transfer gap
+at least 0.02). Identity 1 suggests a competing account,
+in which the gap is a burden mismatch multiplied by a
+local slope, so that its sign follows that of b − βˆ and dif￾fers between methods; a secondary hypothesis predicted a
+positive gap for UCCD at 5 cm3
+. For the per-scan burden,
+H8 (conformal control): CRC keeps the test exceedance

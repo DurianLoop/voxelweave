@@ -1,0 +1,529 @@
+
+=== PDF PAGE 1 ===
+Uncertainty-Aware 3D Residual Wavelet Diffusion
+for Ultra Low-Field MRI Super-Resolution
+Rui W. Yeow, Millie Beament, Fred Dick, Raha Razin, Martina Bocchetta,
+David L. Thomas, Henry F. J. Tregidgo, Daniel C. Alexander, and James H.
+Cole
+University College London, London, UK
+rui.yeow.24@ucl.ac.uk
+Abstract. Ultra low-field MRI expands global access to neuroimaging
+but produces scans with low signal-to-noise ratio, reduced contrast, and
+thick slices. While regression-based super-resolution can recover anatom-
+ical detail for segmentation, it returns a single deterministic estimate that
+gives no indication of regions where the low-field input leaves anatomy
+underdetermined. Generative diffusion models offer an alternative by
+sampling the posterior distribution of plausible high-field images, quan-
+tifying this anatomical ambiguity. However, applying them to 3D whole-
+brain MRI is restricted by memory bottlenecks, slow sampling, and scan-
+ner domain shifts. We propose a 3D residual wavelet diffusion model that
+combines three ideas to overcome these hurdles. A lossless wavelet repa-
+rameterisation shrinks the spatial grid to fit a whole brain on a single
+GPU, residual shifting accelerates sampling by starting from the low-
+field input, and domain randomisation promotes scanner generalisation
+without paired training data. As the high-field reference is not a voxel-
+aligned ground truth, we evaluate downstream volumetric agreement.
+On a healthy cohort (n = 19) imaged at 0.064 T and 3 T, our method
+matches a leading general-purpose regression approach in volumetric ac-
+curacy while additionally generating per-voxel uncertainty maps high-
+lighting underdetermined regions. Furthermore, on a pilot dataset (n =
+11) of participants with cognitive impairment, disease-relevant atrophy
+is preserved rather than normalised towards a healthy prior. Our frame-
+work brings whole-brain posterior sampling to low-field super-resolution
+without sacrificing volumetric accuracy.
+Keywords: Super-resolution · Low-field MRI · Diffusion models · Do-
+main randomisation · Uncertainty estimation
+1
+Introduction
+Magnetic resonance imaging (MRI) remains out of reach for much of the world,
+with Japan operating around 50 scanners per million people and West Africa
+fewer than one [22]. This disparity reflects more than the purchase price of high-
+field scanners, as they also demand reliable power, radiofrequency (RF) shielding,
+arXiv:2609.25319v1  [cs.CV]  21 Sep 2026
+
+
+=== PDF PAGE 2 ===
+2
+R. W. Yeow et al.
+and continual maintenance, with donated systems often ending up in MRI grave-
+yards in low-resource settings [13]. Ultra low-field scanners (e.g., 0.064 T) offer a
+promising alternative, requiring no RF shielding and minimal power. However,
+the low field strength limits image quality, with low signal-to-noise ratios (SNR),
+reduced tissue contrast, and thick slices [20]. Consequently, the fine anatomical
+detail required for quantitative measurement is often unavailable and must be
+recovered [10].
+Super-resolution can recover this detail, synthesising high-field images that
+enable downstream tasks such as morphometry and volumetric segmentation [10,
+27]. One common approach uses regression-based models trained with domain
+randomisation on synthetic data (e.g., SuperSynth [16] and LF-SynthSR [27]).
+On real 0.064 T scans, these models recover volumes correlating with high-field
+references [10] and can separate Alzheimer’s disease (AD) and mild cognitive
+impairment (MCI) individuals from controls [27].
+Yet because super-resolution is an ill-posed inverse problem, a single low-
+field scan is consistent with many different high-field images. A regression model
+trained to minimise reconstruction error returns the posterior mean. While this
+achieves the lowest average error, the averaging process produces a smooth out-
+put less detailed than real high-field brains [3]. More importantly, a deterministic
+estimate provides no information about the spread of plausible anatomies, failing
+to distinguish between areas dictated by the low-field signal and where details
+are underdetermined. Conversely, a conditional diffusion model approximates the
+whole posterior. It learns a score function to sample high-field volumes consistent
+with the low-field input [26]. Drawing multiple samples gives a set of plausible
+reconstructions, from which we can compute a posterior mean and a per-voxel
+map of sample disagreement that deterministic regression cannot provide [19].
+Extending this posterior distribution to a full 3D low-field brain presents
+three challenges: computational constraints limit 3D diffusion to 2D slices or
+downsampled volumes [7]; traditional sampling is slow [24]; and models trained
+on one scanner often fail to generalise to others, made worse by the scarcity of
+paired training data [11]. We propose a 3D residual wavelet diffusion model to
+overcome these challenges. A lossless wavelet decomposition shrinks the spatial
+grid eightfold to fit whole brains on a single GPU without discarding fine de-
+tail [7]. Residual diffusion begins sampling from the low-field input, reaching a
+reconstruction in tens of steps [30]. Domain randomisation trains on synthetic
+data spanning broader contrast and resolution ranges than any single scanner,
+enabling unpaired generalisation [2]. To our knowledge, no prior work has com-
+bined these approaches for 3D super-resolution. Doing so makes whole-brain pos-
+terior sampling feasible without sacrificing volumetric accuracy, exposing where
+the low-field input underdetermines the anatomy rather than returning a sin-
+gle, uniformly confident estimate. Evaluated on cohorts imaged at 0.064 T and
+3 T, our method achieves volumetric agreement competitive with the regression
+benchmark and preserves disease-relevant signal.
+
+
+=== PDF PAGE 3 ===
+3D Residual Wavelet Diffusion for Low-Field MRI SR
+3
+1. TRAINING PAIR GENERATION
+Synthetic Low-Field Input
+Anatomical 
+Augmentation
+High-Field with Anatomical 
+Augmentation
+Degradation
+High-Field/Low-Field Pair
+Real High-Field Scan
+2. WAVELET RESIDUAL DIFFUSION (INFERENCE)
+16 diffusion steps
+DWT (3D Haar, x8)
+8 wavelet subbands
+24 segmentation logits
+Input
+Wavelet Subbands
+Output
+Swin-transformer
+Reverse Sampling (LR -  HR)
+3. POSTERIOR
+Standard Deviation 
+Uncertainty Map
+K samples
+Mean Reconstruction
+Fig. 1. Proposed pipeline. (1) Synthetic training pairs are formed by augmenting and
+degrading high-field scans. (2) A Swin transformer U-Net converts the low-field input
+to Haar subbands and super-resolves them via a residual-shift reverse process. (3)
+Drawing K samples produces a mean reconstruction and per-voxel standard-deviation
+map.
+2
+Method
+We frame super-resolution as a conditional diffusion process that samples the
+posterior distribution of high-field volumes consistent with a low-field input,
+rather than regressing a single output (Fig. 1). The model pairs a forward pro-
+cess, which interpolates a high-field volume towards its low-field counterpart
+while adding noise, with a reverse diffusion process that inverts it, both defined
+on the volumes’ wavelet coefficients. A trained U-Net transformer conditioned on
+the low-field input drives the reverse process, and running it repeatedly produces
+a set of reconstructions whose per-voxel mean and standard deviation form the
+output.
+2.1
+Wavelet-domain reparameterisation
+The memory used by a 3D diffusion network scales with the number of voxels it
+processes. A whole-brain volume has too many voxels to fit a 3D diffusion model
+on a single GPU, so we must reduce the number of spatial positions without
+discarding the fine anatomical detail that super-resolution has to recover. A 3D
+Haar wavelet transform does this losslessly, as in 3D wavelet diffusion [7]. It
+replaces every 2 × 2 × 2 block of voxels with eight coefficients, one local average
+and seven differences. The averages across the volume form a half-resolution copy
+
+
+=== PDF PAGE 4 ===
+4
+R. W. Yeow et al.
+of the brain, and the differences hold its high-frequency detail. Stacking these
+eight subbands as channels leaves one-eighth the spatial positions to process, and
+roughly one-eighth the memory footprint. Because the transform is orthonormal,
+its inverse is the transpose and recovers the original volume exactly.
+2.2
+Residual-shift diffusion
+Let xHR and xLR be the Haar coefficients of the high-field target and the low-field
+input on the half-resolution grid. The forward process follows the residual-shift
+construction [30], interpolating from the high-field target towards the low-field
+input as the noise grows. Its marginal at time t is
+q(xt | xHR, xLR) = N
+ xHR + (xLR −xHR)βt, γ2βtI
+
+,
+(1)
+where βt increases monotonically with t from near zero to near one and γ scales
+the isotropic noise. At t = 0 the distribution is concentrated on the high-field
+target, and at t = 1 centred on the low-field input with maximum variance. The
+endpoint is a noisy low-field volume rather than pure noise [24].
+To invert this process, a network fθ predicts the clean target ˆx0 from the
+current state xt, the low-field conditioning xLR, and the time t. We adopt x0
+parameterisation rather than predicting noise because it keeps the regression
+target on the scale of the data and is equivalent to learning the score of the
+diffusion process [26]. Sampling begins from a noisy version of the low-field input
+rather than pure Gaussian noise. Specifically, we draw the initial state x1 ∼
+N(xLR, γ2βmaxI) at t = 1, which relies solely on the low-field input. At each
+step, the network predicts the target and re-noises it to the next earlier time t′
+following the same noise schedule [30].
+ˆx0 = fθ(xt, xLR, t),
+xt′ = ˆx0 + (xLR −ˆx0)βt′ + γ
+p
+βt′ z,
+z ∼N(0, I), (2)
+where xLR conditions the network at every step and z is fresh noise. Iterating
+from t = 1 to t = 0 over a few steps draws one sample from the posterior of
+high-field volumes consistent with the input.
+2.3
+Network and conditioning
+Each reverse step is computed by a 3D Swin transformer U-Net [17], whose win-
+dowed self-attention scales linearly with the number of voxels rather than the
+quadratic cost of global attention. We encode relative position with 3D rotary
+embeddings [28] and condition the network on the low-field input by concatenat-
+ing its eight subbands with the eight noisy-state subbands into a sixteen-channel
+input. The final U-Net layer uses a shared head to predict both the wavelet sub-
+bands and an auxiliary segmentation map. The segmentation branch avoids a
+separate high-resolution decoder by predicting the eight voxels of each 2 × 2 × 2
+block at half-resolution, which a pixel shuffle operation reassembles to full res-
+olution. During training, this segmentation is supervised against FreeSurfer’s
+
+
+=== PDF PAGE 5 ===
+3D Residual Wavelet Diffusion for Low-Field MRI SR
+5
+automatic subcortical segmentation (aseg) [6] (October 2025 build). This aux-
+iliary task forces the shared feature map to encode morphology, anchoring the
+reconstruction to anatomical structure. We discard the segmentation output at
+inference [14].
+2.4
+Domain-randomised training pairs
+Each training pair is synthesised on the fly from a real high-field volume to
+share identical anatomy but differ purely in acquisition. First, we augment the
+high-field scan anatomy (random affine transforms, elastic deformations, flips)
+to broaden the training set without simulating atrophy. Second, we degrade
+this volume into a simulated low-field input. We randomise tissue contrast by
+softly grouping voxels into three intensity-based classes — grey matter, white
+matter, and cerebrospinal fluid (CSF) — then remapping each tissue to a target
+value sampled from a wide range. Each voxel keeps its original deviation from the
+tissue mean, preserving real intra-tissue variation. We then apply a multiplicative
+bias field to model RF coil inhomogeneity, generated by sampling a coarse 4 ×
+4 × 4 Gaussian grid, upsampling it smoothly, and exponentiating it. We then
+apply motion blur. To model resolution loss, we operate in k-space [15], retaining
+central Fourier coefficients up to a random resolution, injecting Rician noise
+for low SNR, and resampling via nearest-neighbour interpolation. Randomising
+contrast and resolution far beyond any single device trains the model to be
+robust across acquisitions rather than tuned to one scanner [2].
+2.5
+Training objective
+The objective is a sum of four terms,
+L = Limg + Lwav + LLPIPS + λ Lseg.
+(3)
+Limg is an L1 loss between the reconstructed image and target volumes, after
+the inverse transform [5]. Lwav is an L1 loss on the wavelet coefficients after
+normalising each subband to unit variance to prevent low-frequency dominance
+and push high-frequency recovery [8]. LLPIPS applies Learned Perceptual Image
+Patch Similarity to the central slice along each axis, which sharpens detail the
+L1 terms tend to smooth [31], and Lseg supervises the segmentation output of
+the shared head using Dice and cross-entropy [21].
+2.6
+Inference
+At inference we draw K independent reconstructions. Each starts from a terminal
+sample, is refined over the reverse process, and is mapped to voxel space by the
+inverse Haar transform, producing x(k). The super-resolution estimate is the
+per-voxel mean ¯x (the minimum mean-squared-error reconstruction), and the
+uncertainty map u is their per-voxel standard deviation,
+¯x = 1
+K
+K
+X
+k=1
+x(k),
+u =
+v
+u
+u
+t
+1
+K −1
+K
+X
+k=1
+ x(k) −¯x
+2.
+(4)
+
+
+=== PDF PAGE 6 ===
+6
+R. W. Yeow et al.
+2.7
+Implementation
+The Swin U-Net uses an embedding width of 48, four resolution levels with
+depths (2, 2, 6, 2) and heads (3, 6, 12, 24), and window size 8. The shared head
+produces 24 bilateral-merged FreeSurfer classes. We use a geometric schedule βt
+from 4 × 10−4 to 0.9999, discretising the interval t ∈[0, 1] into 1000 steps for
+training (exponent 0.3, noise scale γ = 2), sampling with 16 steps and K = 32
+posterior draws. Augmentation draws rotations ±10◦, scaling [0.9, 1.1], shear
+[−0.1, 0.1], elastic deformation, and flips, degrading to resolutions as coarse as
+6 mm with Rician noise. We optimise with AdamW [18] (lr 5 × 10−5, warmup-
+cosine, bf16, batch size 1) and weight the segmentation loss by λ = 0.1. We train
+on 682 T1-weighted volumes from the Human Connectome Project [29] and 369
+from the Alzheimer’s Disease Neuroimaging Initiative [12], all affine-registered to
+the MNI305 template at 1 mm, head-masked, intensity-normalised, and cropped
+to 216 × 208 × 232.
+3
+Experiments and Results
+Evaluating this framework requires departing from traditional image-restoration
+metrics. The model maps inputs to a high-field domain defined by its training
+data, so the paired 3 T evaluation scan is not guaranteed to match that distribu-
+tion. Under this expected distribution shift, no voxel-level ground truth exists.
+Our objective is accurate anatomical recovery, not a match to a specific scanner’s
+contrast. Consequently, full-reference metrics such as PSNR and SSIM are inap-
+propriate, as they would conflate scanner mismatch with reconstruction error.
+We therefore measure anatomical fidelity downstream, comparing the volume of
+each brain structure against the paired 3 T reference.
+We evaluated two cohorts, both imaged at 0.064 T and 3 T. The low-field
+scans were acquired at 1.6 × 1.6 mm in-plane with 5 mm slices, and the 3 T
+references at approximately 1 mm. The first comprises 19 healthy volunteers
+(HV; 7 men, 12 women; aged 24–49), while the second includes 11 MCI/AD
+subjects from the cognitive disorders clinic (CDC) study (7 men, 4 women; aged
+58–77; Mini-Mental State Examination scores 3–28) [23].
+Measuring volumes requires an evaluator independent of the compared meth-
+ods. We apply a single external tool, SynthSeg [2], to every output and the 3 T
+reference. We choose SynthSeg because it is contrast-agnostic. This ensures it
+treats our synthesised high-field images and the actual 3 T reference identically,
+preventing inter-scanner contrast differences from biasing the volumetric com-
+parison. It also avoids biases from method-specific segmentations (e.g., Super-
+Synth’s built-in tool). Prior to segmentation, all volumes are affinely registered
+to the MNI305 template with SynthMorph [9]. Holding this pipeline fixed, the
+volumetric comparison reflects how well the low-field resolution is recovered.
+To ensure a fair comparison, all methods are evaluated through this identical
+pipeline. Both regression baselines, like our method, are trained by domain ran-
+domisation on synthetic data rather than on paired scans. Agreement is sum-
+marised by Pearson’s r, the consistency ICC(3,1) and the absolute-agreement
+
+
+=== PDF PAGE 7 ===
+3D Residual Wavelet Diffusion for Low-Field MRI SR
+7
+Table 1. Volumetric agreement with 3 T on the healthy volunteers (n = 19) across 18
+bilateral-summed structures; medians with 95% cluster-bootstrap confidence intervals
+in brackets. ∗significant vs. Ours (clustered permutation, Holm-corrected, p < 0.05).
+Cubic interpolation
+LF-SynthSR
+SuperSynth
+Ours
+Pearson r
+0.15 [−0.08, 0.47]
+0.73 [0.66, 0.82]
+0.73 [0.69, 0.87]
+0.71 [0.64, 0.81]
+ICC(3,1)
+0.08∗[−0.04, 0.30]
+0.72 [0.61, 0.77]
+0.72 [0.66, 0.84]
+0.70 [0.61, 0.79]
+ICC(2,1)
+0.04∗[−0.01, 0.10]
+0.51 [0.33, 0.59]
+0.60 [0.49, 0.68]
+0.47 [0.36, 0.60]
+|bias| %
+43.1∗[32.2, 58.9]
+6.8∗[4.8, 9.1]
+3.6 [2.7, 4.9]
+4.7 [4.1, 6.2]
+Dice
+0.42∗[0.32, 0.50]
+0.74∗[0.72, 0.75]
+0.80 [0.76, 0.82]
+0.81 [0.81, 0.82]
+Fig. 2. Super-resolution of a 0.064 T subject. Left to right: cubic interpolation of the
+low-field input, LF-SynthSR, SuperSynth, our posterior mean, and the 3 T reference.
+ICC(2,1) [25], the magnitude of the percentage volume difference from the refer-
+ence, and Dice overlap. Differences are tested with a subject-level clustered per-
+mutation (Holm-corrected) with 95% cluster-bootstrap confidence intervals [4].
+Volumetric agreement on the healthy cohort. We evaluate volumetric agreement
+on the HV cohort (n = 19) across 18 bilateral-summed brain structures spanning
+grey matter, white matter, ventricles, CSF, and the brainstem (Table 1). Cubic
+interpolation is a weak floor, agreeing poorly with the reference on every metric.
+Our diffusion posterior mean instead matches the regression benchmark, showing
+no significant difference from SuperSynth [16] on any metric, but achieving sig-
+nificantly higher Dice overlap and lower volumetric bias than LF-SynthSR [27].
+Because the method matches the regression benchmark on these point esti-
+mates, the posterior is an addition to the reconstruction rather than a trade-off.
+The posterior mean recovers high-field-like contrast and anatomy (Fig. 2), and
+although smoother than any single draw, remains the most accurate reconstruc-
+tion on average. The samples behind it, each sharp and plausible, reveal where
+that reconstruction is underdetermined, disagreeing across the cortical folds,
+where the 0.064 T input lacks the signal to resolve the anatomy and where corti-
+cal folding itself varies most between individuals (Fig. 3). The per-voxel standard
+deviation across the draws gives an uncertainty map that marks these underde-
+termined regions. Together the samples and the standard-deviation map carry
+information about where the reconstruction is underdetermined that a single
+deterministic output cannot provide [19]. Importantly, the sharpness of these in-
+dividual draws demonstrates that the smoothness of the posterior mean reflects
+
+
+=== PDF PAGE 8 ===
+8
+R. W. Yeow et al.
+Fig. 3. Posterior for a subject imaged at 0.064 T, on an axial slice. Samples A and B
+are sharp, plausible reconstructions, while the mean over thirty-two draws is smoother.
+anatomical ambiguity rather than a failure to generate high-frequency detail. By
+exposing multiple explanations for the same low-field input, the samples convey
+this ambiguity more intuitively than the uncertainty map alone.
+Preservation of disease pathology. In the CDC dataset (n = 11) of partici-
+pants with MCI/AD, we tested whether super-resolution preserves hippocampal
+shrinkage and ventricular enlargement [1]. For each structure, we measured the
+correlation of volumes between the super-resolved scan and the paired reference
+across the cohort. The super-resolved lateral ventricle volumes track the refer-
+ence at a Pearson r of 0.81 [0.69, 0.97], and the hippocampus at 0.73 [0.25, 0.96].
+While preliminary given the small sample, this indicates disease-related atrophy
+is preserved.
+4
+Discussion and Conclusion
+We presented a 3D residual wavelet diffusion model that makes whole-brain
+posterior sampling feasible on a single GPU. By combining wavelet reparame-
+terisation, residual diffusion, and domain randomisation, the model generalises
+to unseen low-field scanners in healthy and patient cohorts without paired data.
+On the healthy cohort, it is statistically indistinguishable from a leading general-
+purpose regression approach and is closer to the reference than the low-field-
+specialised baseline in segmentation overlap.
+The uncertainty map accompanying each reconstruction is the method’s prin-
+cipal advantage, though interpretable in only one direction. High standard devi-
+ations identify poorly constrained regions, but low values do not guarantee re-
+solved anatomy, as low-variance structures produce similar samples regardless.
+Distinguishing these requires evaluating against natural population variance.
+Furthermore, although the small CDC dataset (n = 11) limits definitive clin-
+ical conclusions, our preliminary results indicate that disease-related atrophy
+is preserved, motivating a properly powered future study to establish clinical
+utility. Even so, the method brings whole-brain posterior sampling to low-field
+super-resolution, matching the volumetric accuracy of the regression benchmark.
+
+
+=== PDF PAGE 9 ===
+3D Residual Wavelet Diffusion for Low-Field MRI SR
+9
+Acknowledgments. This research was funded by the Alzheimer’s Society Heather
+Corrie Impact Fund (grant number 577 [AS-PG-21-045]), Biogen Idec UK, the National
+Institute for Health and Care Research University College London Hospitals Biomedical
+Research Centre (NIHR UCLH BRC), and the Rosetrees Trust (CF-2022-2\128).
+References
+1. Barnes, J., Bartlett, J.W., van de Pol, L.A., Loy, C.T., Scahill, R.I., Frost,
+C., Thompson, P., Fox, N.C.: A meta-analysis of hippocampal atrophy rates in
+Alzheimer’s disease. Neurobiology of aging 30(11), 1711–1723 (2009)
+2. Billot, B., Magdamo, C., Cheng, Y., Arnold, S.E., Das, S., Iglesias, J.E.: Robust
+machine learning segmentation for large-scale analysis of heterogeneous clinical
+brain MRI datasets. Proceedings of the National Academy of Sciences 120(9),
+e2216399120 (2023)
+3. Blau, Y., Michaeli, T.: The perception-distortion tradeoff. In: Proceedings of the
+IEEE conference on computer vision and pattern recognition. pp. 6228–6237 (2018)
+4. Demšar, J.: Statistical comparisons of classifiers over multiple data sets. Journal
+of Machine learning research 7(Jan), 1–30 (2006)
+5. Durrer, A., Bieder, F., Friedrich, P., Menze, B., Cattin, P.C., Kofler, F.: fast-
+WDM3D: Fast and accurate 3d healthy tissue inpainting. In: MICCAI Workshop
+on Deep Generative Models. pp. 171–181. Springer (2025)
+6. Fischl, B., Salat, D.H., Busa, E., Albert, M., Dieterich, M., Haselgrove, C., Van
+Der Kouwe, A., Killiany, R., Kennedy, D., Klaveness, S., et al.: Whole brain seg-
+mentation: automated labeling of neuroanatomical structures in the human brain.
+Neuron 33(3), 341–355 (2002)
+7. Friedrich, P., Wolleb, J., Bieder, F., Durrer, A., Cattin, P.C.: WDM: 3d wavelet
+diffusion models for high-resolution medical image synthesis. In: MICCAI workshop
+on deep generative models. pp. 11–21. Springer (2024)
+8. Guth, F., Coste, S., De Bortoli, V., Mallat, S.: Wavelet score-based generative
+modeling. Advances in neural information processing systems 35, 478–491 (2022)
+9. Hoffmann, M., Billot, B., Greve, D.N., Iglesias, J.E., Fischl, B., Dalca, A.V.: Syn-
+thMorph: learning contrast-invariant registration without acquired images. IEEE
+transactions on medical imaging 41(3), 543–558 (2021)
+10. Iglesias, J.E., Schleicher, R., Laguna, S., Billot, B., Schaefer, P., McKaig, B.,
+Goldstein, J.N., Sheth, K.N., Rosen, M.S., Kimberly, W.T.: Quantitative brain
+morphometry of portable low-field-strength MRI using super-resolution machine
+learning. Radiology 306(3), e220522 (2022)
+11. Islam, K.T., Zhong, S., Zakavi, P., Chen, Z., Kavnoudias, H., Farquharson, S.,
+Durbridge, G., Barth, M., McMahon, K.L., Parizel, P.M., et al.: Improving portable
+low-field MRI image quality through image-to-image translation using paired low-
+and high-field images. Scientific Reports 13(1), 21183 (2023)
+12. Jack Jr, C.R., Bernstein, M.A., Fox, N.C., Thompson, P., Alexander, G., Harvey,
+D., Borowski, B., Britson, P.J., L. Whitwell, J., Ward, C., et al.: The Alzheimer’s
+disease neuroimaging initiative (ADNI): MRI methods. Journal of Magnetic Res-
+onance Imaging: An Official Journal of the International Society for Magnetic
+Resonance in Medicine 27(4), 685–691 (2008)
+13. Jones, D.K., Alexander, D.C., Chetcuti, K., Cercignani, M., Donald, K.A., Gris-
+wold, M.A., Kopanoglu, E., Lagunju, I., Obungoloch, J., Ogbole, G., et al.: Low
+field, high impact: democratizing MRI for clinical and research innovation. BJR|
+Open 7(1), tzaf022 (2025)
+
+
+=== PDF PAGE 10 ===
+10
+R. W. Yeow et al.
+14. Laso, P., Cerri, S., Sorby-Adams, A., Guo, J., Mateen, F., Goebl, P., Wu, J.,
+Liu, P., Li, H.B., Young, S.I., et al.: Quantifying white matter hyperintensity and
+brain volumes in heterogeneous clinical and low-field portable MRI. In: 2024 IEEE
+International Symposium on Biomedical Imaging (ISBI). pp. 1–5. IEEE (2024)
+15. Lin, H., Figini, M., D’Arco, F., Ogbole, G., Tanno, R., Blumberg, S.B., Ronan, L.,
+Brown, B.J., Carmichael, D.W., Lagunju, I., et al.: Low-field magnetic resonance
+image enhancement via stochastic image quality transfer. Medical Image Analysis
+87, 102807 (2023)
+16. Liu, P., Puonti, O., Hu, X., Gopinath, K., Sorby-Adams, A., Alexander, D.C.,
+Kimberly, W.T., Iglesias, J.E.: A modality-agnostic multi-task foundation model
+for human brain imaging. arXiv preprint arXiv:2509.00549 (2025)
+17. Liu, Z., Lin, Y., Cao, Y., Hu, H., Wei, Y., Zhang, Z., Lin, S., Guo, B.: Swin
+transformer: Hierarchical vision transformer using shifted windows. In: Proceedings
+of the IEEE/CVF international conference on computer vision. pp. 10012–10022
+(2021)
+18. Loshchilov, I., Hutter, F.: Decoupled weight decay regularization. arXiv preprint
+arXiv:1711.05101 (2017)
+19. Luo, G., Blumenthal, M., Heide, M., Uecker, M.: Bayesian MRI reconstruction
+with joint uncertainty estimation using diffusion models. Magnetic Resonance in
+Medicine 90(1), 295–311 (2023)
+20. Marques, J.P., Simonis, F.F., Webb, A.G.: Low-field MRI: an MR physics perspec-
+tive. Journal of magnetic resonance imaging 49(6), 1528–1542 (2019)
+21. Milletari, F., Navab, N., Ahmadi, S.A.: V-net: Fully convolutional neural networks
+for volumetric medical image segmentation. In: 2016 fourth international confer-
+ence on 3D vision (3DV). pp. 565–571. Ieee (2016)
+22. Ogbole, G.I., Adeyomoye, A.O., Badu-Peprah, A., Mensah, Y., Nzeh, D.A.: Survey
+of magnetic resonance imaging availability in West Africa. The Pan African Medical
+Journal 30, 240 (2018)
+23. Rosa-Grilo, M., Chughtai, H.R., Thomas, D.L., Alexander, D.C., Beament, M.,
+Belder, C.R., Jäger, H.R., Lim, E.A., Magill, N., Mallon, D., et al.: Ultra-fast mri
+for dementia diagnosis and treatment eligibility: A prospective study. Alzheimer’s
+& Dementia 21(6), e70341 (2025)
+24. Safari, M., Wang, S., Eidex, Z., Li, Q., Qiu, R.L., Middlebrooks, E.H., Yu, D.S.,
+Yang, X.: MRI super-resolution reconstruction using efficient diffusion probabilistic
+model with residual shifting. Physics in Medicine & Biology 70(12), 125008 (2025)
+25. Shrout, P.E., Fleiss, J.L.: Intraclass correlations: uses in assessing rater reliability.
+Psychological bulletin 86(2), 420 (1979)
+26. Song, Y., Sohl-Dickstein, J., Kingma, D.P., Kumar, A., Ermon, S., Poole, B.: Score-
+based generative modeling through stochastic differential equations. arXiv preprint
+arXiv:2011.13456 (2020)
+27. Sorby-Adams, A.J., Guo, J., Laso, P., Kirsch, J.E., Zabinska, J., Garcia Guarniz,
+A.L., Schaefer, P.W., Payabvash, S., de Havenon, A., Rosen, M.S., et al.: Portable,
+low-field magnetic resonance imaging for evaluation of Alzheimer’s disease. Nature
+Communications 15(1), 10488 (2024)
+28. Su, J., Ahmed, M., Lu, Y., Pan, S., Bo, W., Liu, Y.: Roformer: Enhanced trans-
+former with rotary position embedding. Neurocomputing 568, 127063 (2024)
+29. Van Essen, D.C., Smith, S.M., Barch, D.M., Behrens, T.E., Yacoub, E., Ugurbil,
+K., Consortium, W.M.H., et al.: The WU-Minn human connectome project: an
+overview. Neuroimage 80, 62–79 (2013)
+
+
+=== PDF PAGE 11 ===
+3D Residual Wavelet Diffusion for Low-Field MRI SR
+11
+30. Yue, Z., Wang, J., Loy, C.C.: Resshift: Efficient diffusion model for image super-
+resolution by residual shifting. Advances in neural information processing systems
+36, 13294–13307 (2023)
+31. Zhang, R., Isola, P., Efros, A.A., Shechtman, E., Wang, O.: The unreasonable
+effectiveness of deep features as a perceptual metric. In: Proceedings of the IEEE
+conference on computer vision and pattern recognition. pp. 586–595 (2018)

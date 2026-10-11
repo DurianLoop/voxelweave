@@ -1,0 +1,2008 @@
+[
+  {
+    "index": 0,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Medical Image Imputation from Image Collections"
+  },
+  {
+    "index": 1,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Adrian V Dalca"
+  },
+  {
+    "index": 2,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Katherine L Bouman"
+  },
+  {
+    "index": 3,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "William T Freeman"
+  },
+  {
+    "index": 4,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Natalia S Rost"
+  },
+  {
+    "index": 5,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Mert R Sabuncu"
+  },
+  {
+    "index": 6,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Polina Golland"
+  },
+  {
+    "index": 7,
+    "kind": "p",
+    "id": "P1",
+    "scope": [
+      "article",
+      null,
+      null
+    ],
+    "text": "Data used in preparation of this article were obtained from the Alzheimers Disease Neuroimaging Initiative (ADNI) database ( adni.loni.usc.edu ). As such, the investigators within the ADNI contributed to the design and implementation of ADNI and/or provided data but did not participate in analysis or writing of this report. A complete listing of ADNI investigators can be found at: http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf"
+  },
+  {
+    "index": 8,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1"
+    ],
+    "text": "Abstract"
+  },
+  {
+    "index": 9,
+    "kind": "p",
+    "id": "P2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1"
+    ],
+    "text": "We present an algorithm for creating high resolution anatomically plausible images consistent with acquired clinical brain MRI scans with large inter-slice spacing. Although large data sets of clinical images contain a wealth of information, time constraints during acquisition result in sparse scans that fail to capture much of the anatomy. These characteristics often render computational analysis impractical as many image analysis algorithms tend to fail when applied to such images. Highly specialized algorithms that explicitly handle sparse slice spacing do not generalize well across problem domains. In contrast, we aim to enable application of existing algorithms that were originally developed for high resolution research scans to significantly undersampled scans. We introduce a generative model that captures fine-scale anatomical structure across subjects in clinical image collections and derive an algorithm for filling in the missing data in scans with large inter-slice spacing. Our experimental results demonstrate that the resulting method outperforms state-of-the-art upsampling super-resolution techniques, and promises to facilitate subsequent analysis not previously possible with scans of this quality. Our implementation is freely available at https://github.com/adalca/papago ."
+  },
+  {
+    "index": 10,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ABS1",
+      "kwd-group1"
+    ],
+    "text": "Keywords: Imputation, super-resolution, clinical scans, MRI, sparse slices, thick slices, brain scans"
+  },
+  {
+    "index": 11,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "I. Introduction"
+  },
+  {
+    "index": 12,
+    "kind": "p",
+    "id": "P3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "Increasingly open image acquisition efforts in clinical practice are driving dramatic increases in the number and size of patient cohorts in clinical archives. Unfortunately, clinical scans are typically of dramatically lower resolution than the research scans that motivate most methodological development. Specifically, while slice thickness can vary depending on the clinical study or scan, inter-slice spacing is often significantly larger than the in-plane resolution of individual slices. This results in missing voxels that are typically filled via interpolation."
+  },
+  {
+    "index": 13,
+    "kind": "p",
+    "id": "P4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "Our work is motivated by a study that includes brain MRI scans of thousands of stroke patients acquired within 48 hours of stroke onset. The study aims to quantify white matter disease burden [ 23 ], necessitating skull stripping and deformable registration into a common coordinate frame [ 27 ], [ 31 ], [ 32 ]. The volumes are severely undersampled (0.85mm × 0.85mm × 6mm) due to constraints of acute stroke care ( Fig. 1 ). Such undersampling is typical of modalities, such as T2-FLAIR, that aim to characterize tissue properties, even in research studies like ADNI [ 15 ]."
+  },
+  {
+    "index": 14,
+    "kind": "figure",
+    "id": "F1",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "Fig. 1: An example scan from our clinical dataset. Fig. 1: Open in a new tab The three panels display axial, sagittal and coronal slices, respectively. While axial in-plane resolution can be similar to that of a research scan, slice spacing is significantly larger. We visualize the saggital and coronal views using nearest neighbor interpolation."
+  },
+  {
+    "index": 15,
+    "kind": "p",
+    "id": "P5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "In undersampled scans, the image is no longer smooth, and the anatomical structure may change substantially between consecutive slices ( Fig. 1 ). Since such clinically acquired scans violate underlying assumptions of many algorithms, even basic tasks such as skull stripping and deformable registration present significant challenges, yet are often necessary for downstream analysis [ 4 ], [ 7 ], [ 12 ], [ 15 ], [ 23 ], [ 30 ], [ 31 ]."
+  },
+  {
+    "index": 16,
+    "kind": "p",
+    "id": "P6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1"
+    ],
+    "text": "We present a novel method for constructing high resolution anatomically plausible volumetric images consistent with the available slices in sparsely sampled clinical scans. Importantly, our method does not require any high resolution scans or expert annotations for training. It instead imputes the missing structure by learning solely from the available collection of sparsely sampled clinical scans. The restored images represent plausible anatomy. They promise to act as a medium for enabling computational analysis of clinical scans with existing techniques originally developed for high resolution, isotropic research scans. For example, although imputed data should not be used in clinical evaluation, the brain mask obtained through skull stripping of the restored scan can be applied to the original clinical scan to improve subsequent analyses."
+  },
+  {
+    "index": 17,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "A. Prior Work"
+  },
+  {
+    "index": 18,
+    "kind": "p",
+    "id": "P7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Many image restoration techniques depend on having enough information in a single image to synthesize data. Traditional interpolation methods, such as linear, cubic or spline [ 28 ], assume a functional representation of the image. They treat the low resolution voxels as samples, or observations, and estimate function parameters to infer missing voxel values. Patch-based superresolution algorithms use fine-scale redundancy within a single scan [ 10 ], [ 11 ], [ 19 ], [ 20 ], [ 22 ]. The key idea is to fill in the missing details by identifying similar image patches in the same image that might contain relevant detail [ 19 ], [ 22 ]. This approach depends on having enough repetitive detail in a scan to capture and re-synthesize high frequency information. Unfortunately, clinical images are often characterized by sampling that is too sparse to adequately fit functional representations or provide enough fine-scale information to recover the lost detail. For example, 6mm slice spacing, typical of many clinical scans including our motivating example, is far too high to accurately estimate approximating functions without prior knowledge. In such cases, a single image is unlikely to contain enough fine-scale information to provide anatomically plausible reconstructions in the direction of slice acquisition, as we demonstrate later in the paper."
+  },
+  {
+    "index": 19,
+    "kind": "p",
+    "id": "P8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Alternatively, one can use additional data to synthesize better images. Many superresolution algorithms use multiple scans of the same subject, such as multiple low resolution acquisitions with small shift differences to synthesize a single volume [ 2 ], [ 16 ], [ 22 ]. However, such acquisitions are not commonly available in the clinical setting."
+  },
+  {
+    "index": 20,
+    "kind": "p",
+    "id": "P9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Nonparametric and convolutional neural-network (CNN) based upsampling methods that tackle the problem of superresolution often rely on an external dataset of high resolution data or cannot handle extreme undersampling present in clinical scans. For example, some methods fill in missing data by matching a low resolution image patch from the input scan with a high resolution image patch from the training dataset [ 3 ], [ 13 ], [ 16 ], [ 17 ], [ 25 ], [ 24 ]. Similarly, CNN-based upsampling methods approximate completion functions, but require high resolution scans for training [ 8 ], [ 21 ]. A recent approach to improve resolution from a collection of scans with sparse slices jointly upsamples all images using non-local means [ 26 ]. However this method has only been demonstrated on slice spacing of roughly three times the in-plane resolution, and in our experience similar non-parametric methods fail to upsample clinical scans with more significant undersampling."
+  },
+  {
+    "index": 21,
+    "kind": "p",
+    "id": "P10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Our work relies on a low dimensional embedding of image patches with missing voxels. Parametric patch methods and low dimensional embeddings have been used to model the common structure of image patches from full resolution images, but are typically not designed to handle missing data. Specifically, priors [ 33 ] and Gaussian Mixture Models [ 35 ], [ 36 ] have been used in both medical and natural images for classification [ 1 ] and denoising [ 9 ], [ 36 ]. The procedures used for training of these models rely on having full resolution patches with no missing data in the training phase."
+  },
+  {
+    "index": 22,
+    "kind": "p",
+    "id": "P11",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S2"
+    ],
+    "text": "Unfortunately, high (full) resolution training datasets are not readily available for many image contrasts and scanners, and may not adequately represent pathology or other properties of clinical populations. Acquiring the appropriate high resolution training image data is often infeasible, and here we explicitly focus on the realistic clinical scenario where only sparsely sampled images are available."
+  },
+  {
+    "index": 23,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "B. Method Overview"
+  },
+  {
+    "index": 24,
+    "kind": "p",
+    "id": "P12",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "We take advantage of the fact that local fine scale structure is shared in a population of medical images, and each scan with sparse slices captures some partial aspect of this structure. We borrow ideas from Gaussian Mixture Model (GMM) for image patch priors [ 36 ], low dimensional Gaussian embeddings [ 14 ], [ 34 ], and missing data models [ 14 ], [ 18 ] to develop a probabilistic generative model for sparse 3D image patches around a particular location using a low-dimensional GMM with partial observations. We derive the EM algorithm for maximum likelihood estimation of the model parameters and discuss related modeling choices. Given a new sparsely sampled scan, the maximum a posteriori estimate of the latent structure yields the imputed high resolution image. We evaluate our algorithm using scans from the ADNI cohort, and demonstrate its utility in the context of the motivating stroke study. We investigate the behaviour of our model under different parameter settings, and illustrate an example of potential improvements in the downstream analysis using an example task of skull stripping."
+  },
+  {
+    "index": 25,
+    "kind": "p",
+    "id": "P13",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S1",
+      "S3"
+    ],
+    "text": "This paper extends the preliminary version of the method presented at the 2017 Conference on Information Processing in Medical Imaging [ 5 ]. Here, we improve model inference by removing parameter co-dependency between iterations and providing new parameter initialization. We provide detailed derivations and discuss an alternative related model. Finally, we provide an analysis of important model parameters, present results for more subjects, and illustrate more example reconstructions. The paper is organized as follows. Section II introduces the model and learning algorithm. Section III discusses implementation details. We present experiments and analysis of the algorithm’s behavior in Section IV . We discuss important modeling aspects and related models in Section V . We include an Appendix and Supplementary Material with detailed derivations of the EM algorithm for the proposed models."
+  },
+  {
+    "index": 26,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4"
+    ],
+    "text": "II. Method"
+  },
+  {
+    "index": 27,
+    "kind": "p",
+    "id": "P14",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4"
+    ],
+    "text": "In this section, we construct a generative model for sparse image patches, present the resulting learning algorithm, and describe our image restoration procedure."
+  },
+  {
+    "index": 28,
+    "kind": "p",
+    "id": "P15",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4"
+    ],
+    "text": "Let { Y 1 , …, Y N } be a collection of scans with large inter-slice spaces, roughly aligned into a common atlas space (we use affine transformations in our experiments). For each image Y i in the collection, only a few slices are observed. We seek to restore an anatomically plausible high resolution volume by imputing the missing voxel values."
+  },
+  {
+    "index": 29,
+    "kind": "p",
+    "id": "P16",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4"
+    ],
+    "text": "We capture local structure using image patches. We assume a constant patch shape, and in our experiments use a 3D 11×11×11 shape. We use y i to denote a D -length vector that contains voxels of the image patch centered at a certain location in image Y i . We perform inference at each location independently and stitch the results into the final image as described later in this section. Fig. 2 provides an overview of the method."
+  },
+  {
+    "index": 30,
+    "kind": "figure",
+    "id": "F2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4"
+    ],
+    "text": "Fig. 2: Image imputation for a subvolume. Fig. 2: Open in a new tab (a) Full resolution images, shown for illustration only. These are unobserved by the algorithm. (b) Sparse planes acquired in clinical scans. (c) During learning, we train a GMM that captures the low dimensional nature of patch variability in a region around a particular location (white dot). (d) Given a sparsely sampled scan, we infer the most likely cluster for each 3D patch, and restore the missing data using the learned model and the observed voxels. We form the final volume from overlapping restored patches. 2D images are shown for illustration only, the algorithms operate fully in 3D."
+  },
+  {
+    "index": 31,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "A. Generative Model"
+  },
+  {
+    "index": 32,
+    "kind": "p",
+    "id": "P17",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "We treat an image patch as a high dimensional manifestation of a low dimensional representation, with the intuition that the covariation within image patches has small intrinsic dimensionality relative to the number of voxels in the patch. To capture the anatomical variability across subjects, we employ a Gaussian Mixture Model (GMM) to represent local structure of 3D patches in the vicinity of a particular location across the entire collection. We then explicitly model the observed and missing information. Fig 3 presents the corresponding graphical model."
+  },
+  {
+    "index": 33,
+    "kind": "figure",
+    "id": "F3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "Fig. 3: Graphical representation of our model. Fig. 3: Open in a new tab Circles indicate random variables and rounded squares represent parameters. Shading represents observed quantities and the plate indicates replication. The observed patch voxels y i O i form a subset of patch y i extracted by the mask O i and are generated from a multivariate Gaussian distribution conditioned on the latent cluster k i and the latent patch representation x i . Parameters μ and W define the mean and the variance of the Gaussian components of the mixture, and σ 2 is the image noise variance."
+  },
+  {
+    "index": 34,
+    "kind": "p",
+    "id": "P18",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "We model the latent low dimensional patch representation x i of length d < D as a normal random variable"
+  },
+  {
+    "index": 35,
+    "kind": "table",
+    "id": "FD1",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "x i ∼ N ( 0 , I d × d ) , (1)"
+  },
+  {
+    "index": 36,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "where N ( μ , Σ ) denotes the multivariate Gaussian distribution with mean μ and covariance Σ. We draw latent cluster assignment k from a categorical distribution defined by a length- K vector π of cluster probabilities, and treat image patch y i as a high dimensional observation of x i drawn from a K -component multivariate GMM. Specifically, conditioned on the drawn cluster k ,"
+  },
+  {
+    "index": 37,
+    "kind": "table",
+    "id": "FD2",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "y i = μ k + W k x i + ϵ i , Where ϵ i ∼ N ( 0 , σ k 2 I D × D ) , and ϵ i ⫫ x i . (2)"
+  },
+  {
+    "index": 38,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "Vector μ k , is the patch mean of cluster k , matrix W k shapes the covariance structure of y i , and σ k 2 is the variance of image noise. This model implies E [ y i ∣ k ] = μ k and C k ≜ E [ ( y i − μ k ) ( y j − μ k ) T ∣ k ] = W k W k T + σ k 2 I D × D ."
+  },
+  {
+    "index": 39,
+    "kind": "p",
+    "id": "P19",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "Defining θ = { μ k , W k , σ k 2 , π k } k = 1 K , the likelihood of all patches Y = { y i } at this location under the mixture model is"
+  },
+  {
+    "index": 40,
+    "kind": "table",
+    "id": "FD3",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "p ( Y ; θ ) = ∏ i ∑ k π k N ( y i ; μ k , C k ) . (3)"
+  },
+  {
+    "index": 41,
+    "kind": "p",
+    "id": "P20",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "In our clinical images, only a few slices are known. To model sparse observations, we let O i be the set of observed voxels in patch y i , and y i O i be the corresponding vector of their intensity values:"
+  },
+  {
+    "index": 42,
+    "kind": "table",
+    "id": "FD4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "y i O i = μ k O i + W k O i x i + ϵ i O i , (4)"
+  },
+  {
+    "index": 43,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "where W k O i comprises rows of W k mat correspond to the observed voxel set O i . The likelihood of the observed data Y O = { y i O i } is therefore"
+  },
+  {
+    "index": 44,
+    "kind": "table",
+    "id": "FD5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "p ( Y O ; θ ) = ∏ i ∑ k π k N ( y i O i ; μ k O i , C k O i O i ) , (5)"
+  },
+  {
+    "index": 45,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "where matrix C k O i O i extracts the rows and columns of C k that correspond to the observed voxel subset O i ."
+  },
+  {
+    "index": 46,
+    "kind": "p",
+    "id": "P21",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "We do not explicitly model slice thickness, as in many clinical datasets this thickness is unknown or varies by site, scanner or acquisition. Instead, we simply treat the original data as high resolution thin planes and analyze the effects of varying slice thickness on the results in the experimental evaluation of the method."
+  },
+  {
+    "index": 47,
+    "kind": "p",
+    "id": "P22",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S5"
+    ],
+    "text": "We also investigated an alternative modeling choice where each missing voxel of patch y i is modelled as a latent variable. This assumption can optionally be combined with the latent low-dimensional patch representation. We discuss this alternative choice in Section V , and provide parameter updates in the Supplementary Material , in the supplementary files/multimedia tab. Unfortunately, the resulting algorithm is prohibitively slow."
+  },
+  {
+    "index": 48,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "B. Learning"
+  },
+  {
+    "index": 49,
+    "kind": "p",
+    "id": "P23",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Given a collection of observed patches Y O , we seek the maximum likelihood estimates of the model parameters { μ k , W k , σ k 2 } and π under the likelihood (5) . We derive the Expectation Maximization algorithm [ 6 ] in Appendix A , and present the update equations and their interpretations below."
+  },
+  {
+    "index": 50,
+    "kind": "p",
+    "id": "P24",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "The expectation step updates the class memberships:"
+  },
+  {
+    "index": 51,
+    "kind": "table",
+    "id": "FD6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "γ i k ≜ p ( k ∣ y i O i ; θ ) = π k N ( y i O i ; μ k O i , C k O i O i ) ∑ k ′ π k ′ N ( y i O i ; μ k ′ O i , C k ′ O i O i ) , (6)"
+  },
+  {
+    "index": 52,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "and the statistics of the low dimensional representation x i for each image patch y i O i as “explained” by cluster k :"
+  },
+  {
+    "index": 53,
+    "kind": "table",
+    "id": "FD7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "x ^ i k ≜ E [ x i ∣ k ] = ( ( W k O i ) T ( W k O i ) + σ k 2 I d × d ) − 1 ( W k O i ) T ( y i O i − μ k O i ) , (7)"
+  },
+  {
+    "index": 54,
+    "kind": "table",
+    "id": "FD8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "S i k ≜ E [ x i x i T ∣ k ] − x ^ i k x ^ i k T = σ k 2 ( ( W k O i ) T ( W k O i ) + σ k 2 I d × d ) − 1 . (8)"
+  },
+  {
+    "index": 55,
+    "kind": "p",
+    "id": "P25",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "We let P j be the set of patches in which voxel j is observed, and form the following normalized mean statistics:"
+  },
+  {
+    "index": 56,
+    "kind": "table",
+    "id": "FD9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "δ i k = γ i k ∑ i ′ ∈ P j γ i ′ k (9)"
+  },
+  {
+    "index": 57,
+    "kind": "table",
+    "id": "FD10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "b j = ∑ i ∈ P j δ i k E [ x i ∣ k ] = ∑ i ∈ P j δ i k x ^ i k (10)"
+  },
+  {
+    "index": 58,
+    "kind": "table",
+    "id": "FD11",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "A j = ∑ i ∈ P j δ i k E [ x i x i T ∣ k ] = ∑ i ∈ P j δ i k ( x ^ i k x ^ i k T + S i k ) . (11)"
+  },
+  {
+    "index": 59,
+    "kind": "p",
+    "id": "P26",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "The maximization step uses the observed voxels to update the model parameters. We let y i j be the j th element of vector y i , and update the cluster mean as a convex combination of observed voxels:"
+  },
+  {
+    "index": 60,
+    "kind": "table",
+    "id": "FD12",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "μ k j ← ∑ i ∈ P j γ i k ( 1 − x ^ i T A j − 1 b j ) y i j ∑ i ′ ∈ P j γ i ′ k ( 1 − x ^ i ′ T A j − 1 b j ) . (12)"
+  },
+  {
+    "index": 61,
+    "kind": "p",
+    "id": "P27",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "The covariance factors and image noise variance are updated based on the statistics of the low dimensional representation from (10) and (11) :"
+  },
+  {
+    "index": 62,
+    "kind": "table",
+    "id": "FD13",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "W k j ← ∑ i ∈ P j δ i k ( y i j − μ k j ) x ^ i k T A j − 1 , (13)"
+  },
+  {
+    "index": 63,
+    "kind": "table",
+    "id": "FD14",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "σ k 2 ← ∑ j ∑ i ∈ P j γ i k [ ( y i j − μ k j − W k j x ^ i k ) 2 + W k j S i k ( W k j ) T ] ∑ j ∑ i ′ ∈ P j γ i ′ k . (14)"
+  },
+  {
+    "index": 64,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "where W k j is the j th row of matrix W k . Finally, we update the cluster proportions:"
+  },
+  {
+    "index": 65,
+    "kind": "table",
+    "id": "FD15",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "π k = 1 N ∑ i γ i k . (15)"
+  },
+  {
+    "index": 66,
+    "kind": "p",
+    "id": "P28",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Intuitively, learning our model with sparse data is possible because each image patch provides a slightly different subset of voxel observations that contribute to the parameter estimation ( Fig. 2 ). In our experiments, all subject scans have the same acquisition direction. Despite different affine transformations to the atlas space for each subject, some voxel pairs are still never observed in the same patch, resulting in missing entries of the covariance matrix. Using a low-rank approximation for the covariance matrix regularized the estimates."
+  },
+  {
+    "index": 67,
+    "kind": "p",
+    "id": "P29",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S6"
+    ],
+    "text": "Upon convergence of the EM updates, we compute the cluster covariance C k = W k W k T + σ k 2 I D × D for each k ."
+  },
+  {
+    "index": 68,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "C. Imputation"
+  },
+  {
+    "index": 69,
+    "kind": "p",
+    "id": "P30",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "To restore an individual patch y i , we compute the maximum-a-posteriori (MAP) estimate of the image patch:"
+  },
+  {
+    "index": 70,
+    "kind": "table",
+    "id": "FD16",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "y ^ i = arg max y i p ( y i ∣ y i O i ; θ ) = arg max y i ∑ k p ( k ∣ y i O i ) ∫ x i p ( y i ∣ x i ) p ( x i ∣ k , y i O i ) d x i = arg max y i ∑ k γ i k ∫ x i p ( y i ∣ x i ) p ( x i ∣ k , y i O i ) d x i = arg max y i ∑ k γ i k N ( y i ; μ k + W k x ^ i k , Σ i k ) ,"
+  },
+  {
+    "index": 71,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "where Σ ik = σ k 2 I D × D + W k ( S ik + x ^ ik x ^ ik T ) W k T . Due to the high-dimensional nature of the data, most cluster membership estimates are very close to 0 or 1. We therefore first estimate the most likely cluster k ^ for patch y i by selecting the cluster with the highest membership γ ik . We estimate the low dimensional representation x ^ i k ^ given the observed voxels y i O i using (7) , which yields the high resolution imputed patch:"
+  },
+  {
+    "index": 72,
+    "kind": "table",
+    "id": "FD17",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "y ^ i = μ k ^ + W k ^ x ^ i k ^ . (16)"
+  },
+  {
+    "index": 73,
+    "kind": "p",
+    "id": "P31",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "By restoring the scans using this MAP solution, we perform conditional mean imputation (c.f. 17, Sec.4.2.2), and demonstrate the reconstructions in our experiments. In addition, our model enables imputation of each patch by sampling the posterior p ( ⋅ ∣ y i O i ; θ ) ≈ N ( ⋅ ; μ k ^ + W k ^ x ^ i k ^ , Σ i k ^ ) , providing a better estimation of the residual noise. Depending on the desired downstream application, sampling-based imputation may be desired."
+  },
+  {
+    "index": 74,
+    "kind": "p",
+    "id": "P32",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S4",
+      "S7"
+    ],
+    "text": "We average overlapping restored patches using standard techniques [ 18 ] to form the restored volume."
+  },
+  {
+    "index": 75,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S8"
+    ],
+    "text": "III. Implementation"
+  },
+  {
+    "index": 76,
+    "kind": "p",
+    "id": "P33",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S8"
+    ],
+    "text": "We work in the atlas space, and approximate voxels as either observed or missing in this space by thresholding interpolation weights. To limit interpolation effects due to affine alignment on the results, we set a higher threshold for regions with high image gradients than in regions with low gradients. Parameter estimation could be implemented to include transformation of the model parameters into the subject-specific space in order to optimally use the observed voxels, but this leads to computationally prohibitive updates."
+  },
+  {
+    "index": 77,
+    "kind": "p",
+    "id": "P34",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S8"
+    ],
+    "text": "We stack together the affinely registered sparse images from the entire collection. We learn a single set of mixture model parameters within overlapping subvolumes of 21 × 21 × 21 voxels in the isotropically sampled common atlas space. Subvolumes are centered 11 voxels apart in each direction. We use a cubic patch of size 11 × 11 × 11 voxels, and instead of selecting just one patch from each volume at a given location, we collect all overlapping patches within the subvolume centered at that location. This aggregation provides more data for each model, which is crucial when working with severely undersampled volumes. Moreover, including nearby voxels offers robustness in the face of image misalignment. Given the learned parameters at each location, we restore all overlapping patches within a subvolume."
+  },
+  {
+    "index": 78,
+    "kind": "p",
+    "id": "P35",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S8"
+    ],
+    "text": "While learning is performed in the common atlas space, we restore each volume in its original image space to limit the effects of interpolation. Specifically, we apply the inverse of the estimated subject-specific affine transformation to the cluster statistics prior to performing subject-specific inference."
+  },
+  {
+    "index": 79,
+    "kind": "p",
+    "id": "P36",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S8"
+    ],
+    "text": "Our implementation is freely available at https://github.com/adalca/papago ."
+  },
+  {
+    "index": 80,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9"
+    ],
+    "text": "IV. Experiments"
+  },
+  {
+    "index": 81,
+    "kind": "p",
+    "id": "P37",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9"
+    ],
+    "text": "We demonstrate the proposed imputation algorithm on two datasets and evaluate the results both visually and quantitatively. We also include an example of how imputation can aid in a skull stripping task."
+  },
+  {
+    "index": 82,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S10"
+    ],
+    "text": "A. Data: ADNI dataset"
+  },
+  {
+    "index": 83,
+    "kind": "p",
+    "id": "P38",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S10"
+    ],
+    "text": "We evaluate our algorithm using 826 T1-weighted brain MR images from ADNI [ 15 ] 1 . We downsample the isotropic 1mm 3 images to slice separation of 6mm (1mm × 1mm inplane) in the axial direction to be of comparable quality with the clinical dataset. We use these low resolution images as input. All downsampled scans are affinely registered to a T1 atlas. The original images serve as the ground truth for quantitative comparisons. After learning model parameters using the data set, we evaluate the quality of the resulting imputations."
+  },
+  {
+    "index": 84,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S11"
+    ],
+    "text": "B. Evaluation"
+  },
+  {
+    "index": 85,
+    "kind": "p",
+    "id": "P39",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S11"
+    ],
+    "text": "We compare our algorithm to three upsampling methods: nearest neighbour (NN) interpolation, non-local means (NLM) upsampling, and linear interpolation [ 19 ]. We compare the reconstructed images to the original isotropic volumes both visually and quantitatively. We use the mean squared error,"
+  },
+  {
+    "index": 86,
+    "kind": "table",
+    "id": "FD18",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S11"
+    ],
+    "text": "MSE ( Z , Z o ) = 1 N ∑ ‖ Z − Z o ‖ 2 , (17)"
+  },
+  {
+    "index": 87,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S11"
+    ],
+    "text": "of the reconstructed image Z relative to the original high resolution scan Z o . We also compute the related peak signal to noise ratio,"
+  },
+  {
+    "index": 88,
+    "kind": "table",
+    "id": "FD19",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S11"
+    ],
+    "text": "PSNR = log 10 max ( Z o ) M S E ( Z , Z o ) . (18)"
+  },
+  {
+    "index": 89,
+    "kind": "p",
+    "id": "P40",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S11"
+    ],
+    "text": "Both metrics are commonly used in measuring the quality of reconstruction of compressed or noisy signals."
+  },
+  {
+    "index": 90,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S12"
+    ],
+    "text": "C. Results"
+  },
+  {
+    "index": 91,
+    "kind": "p",
+    "id": "P41",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S12"
+    ],
+    "text": "Fig. 4 illustrates representative restored images for subjects in the ADNI dataset. Our method produces more plausible structure. The method restores anatomical structures that are almost entirely missing in the other reconstructions, such as the dura or the sulci of the temporal lobe by learning about these structures from the image collection. We provide additional example results in the Supplementary Materials in the supplementary files / multimedia tab."
+  },
+  {
+    "index": 92,
+    "kind": "figure",
+    "id": "F4",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S12"
+    ],
+    "text": "Fig. 4: Representative restorations in the ADNI dataset. Fig. 4: Open in a new tab Reconstruction by NLM, linear interpolation, and our method, and the original high resolution images for two representative subjects in the study. Our method reconstructs more anatomically plausible substructures as can be especially seen in the close-up panels of the skull, ventricles, and temporal lobe. Additional examples are available in the Supplementary Materials (supplementary files / multimedia tab)."
+  },
+  {
+    "index": 93,
+    "kind": "p",
+    "id": "P42",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S12"
+    ],
+    "text": "Fig. 5 reports the error statistics in the ADNI data. Due to high variability of MSE among subject scans, we report improvements of each method over the nearest neighbor interpolation baseline in the same scan. Our algorithm offers significant improvement compared to nearest neighbor, NLM, and linear interpolation ( p ⩽ 10 −5 , 10 −42 , 10 −27 , respectively). Our method performs significantly better on all subjects. The improvement in MSE is observed in every single scan. Similarly, our method performs consistently better using the PSNR metric (not shown), with mean improvements of up to 1.4 ± 0.44 compared to the next best restored scan."
+  },
+  {
+    "index": 94,
+    "kind": "figure",
+    "id": "F5",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S12"
+    ],
+    "text": "Fig. 5: Reconstruction accuracy statistics. Fig. 5: Open in a new tab Accuracy for different image restoration methods (top), and improvement over nearest neighbor interpolation using MSE (bottom). All statistics were computed over 50 scans randomly chosen from the ADNI dataset. Image intensities are scaled to a [0, 1 ] range."
+  },
+  {
+    "index": 95,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13"
+    ],
+    "text": "D. Parameter Setting"
+  },
+  {
+    "index": 96,
+    "kind": "p",
+    "id": "P43",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13"
+    ],
+    "text": "We analyze the performance of our algorithm while varying the values of the parameters, and the sparsity patterns of the observed voxels. For these experiments, we use four distinct subvolumes that encompass diverse anatomy from ADNI data, as illustrated in Fig. 6 . We start with isotropic data and use different observation masks as described in each experiment."
+  },
+  {
+    "index": 97,
+    "kind": "figure",
+    "id": "F6",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13"
+    ],
+    "text": "Fig. 6: Regions used for hyper-parameter analysis. Fig. 6: Open in a new tab Representative example of four subvolumes used in analyses, shown in saggital, coronal and axial views."
+  },
+  {
+    "index": 98,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S14"
+    ],
+    "text": "Hyper-parameters."
+  },
+  {
+    "index": 99,
+    "kind": "p",
+    "id": "P44",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S14"
+    ],
+    "text": "We evaluate the sensitivity of our method under different hyper parameters: the number of clusters, k ∈ [1, 2, 5, 10, 15] and the number of dimensions of the low dimensional embedding d ∈ [10, 20, 30, 40, 50]. While different regions give optimal results with different settings, overall our algorithm produces comparable results for the middle range of these parameters. We run all of our experiments with k = 5 and d = 30."
+  },
+  {
+    "index": 100,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S15"
+    ],
+    "text": "Sparsity patterns."
+  },
+  {
+    "index": 101,
+    "kind": "p",
+    "id": "P45",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S15"
+    ],
+    "text": "First, we evaluate how our algorithm performs under three different mask patterns, all of which allow for the same number of observed voxels. Specifically, we (i) use the true sparsely observed planes as in the first experiment; (ii) simulate random rotations of the observation planes mimicking acquisitions in different directions; and (iii) simulate random mask patterns. The latter setup is useful for denoising or similar tasks, and is instructive of the performance of our algorithm. Fig. 7 demonstrates that our algorithm performs better under acquisition with different directions, and similarly under truly random observations as more entries of the cluster covariance matrices are directly observed. This demonstrates a promising application of this model to other settings where different patterns of image voxels are observed."
+  },
+  {
+    "index": 102,
+    "kind": "figure",
+    "id": "F7",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S15"
+    ],
+    "text": "Fig. 7: Mask Analysis. Fig. 7: Open in a new tab Top: example masks for each simulation, shown in the saggital plane. The first experiment reflects the limited variability of axial-only acquisitions, whereas the second and third experiments represent increasingly more varied patterns of observed voxels. Bottom: imputation errors. More varied masks leads to improved reconstructions."
+  },
+  {
+    "index": 103,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S16"
+    ],
+    "text": "Slice Thickness."
+  },
+  {
+    "index": 104,
+    "kind": "p",
+    "id": "P46",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S16"
+    ],
+    "text": "We also investigate the effects of slice thickness on the results. The model treats the original data as high resolution planes. Here, we simulate varying slice thickness by blurring isotropic data in the direction perpendicular to the slice acquisition direction. We then use the sampling masks of the scans used in the main experiments to identify observed, albeit blurred, voxels. Fig. 8 shows that although the algorithm performs worse with larger slice thickness, it provides plausible imputation results. For example, results show minimal noticeable differences, even for a blur kernel of σ = 1mm, simulating a slice with significant signal contribution from 4mm away. Our method, which treats observed slices as thin, is nevertheless robust to slice thicknesses variations."
+  },
+  {
+    "index": 105,
+    "kind": "figure",
+    "id": "F8",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S13",
+      "S16"
+    ],
+    "text": "Fig. 8: Slice thickness simulation. Fig. 8: Open in a new tab Top: saggital close-up of a region where axial slices were blurred in the direction perpendicular to the acquisition direction; followed by respective imputed results. Bottom: performance of our algorithm under different slice thickness simulations are shown MSE (solid line) and standard deviation interval (shaded region)."
+  },
+  {
+    "index": 106,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S17"
+    ],
+    "text": "E. Skull Stripping"
+  },
+  {
+    "index": 107,
+    "kind": "p",
+    "id": "P47",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S17"
+    ],
+    "text": "We also illustrate how imputed data might facilitate downstream image analysis. Specifically, the first step in many analysis pipelines is brain extraction – isolating the brain from the rest of the anatomy. Typical algorithms assume that the brain consists of a single connected component separated from the skull and dura by cerebral spinal fluid [ 29 ]. Thus, they often fail on sparsely sampled scans that no longer include a clear contrast between these regions. Fig. 9 provides an example where the brain extraction fails on the original subject scan but succeeds on our reconstructed image."
+  },
+  {
+    "index": 108,
+    "kind": "figure",
+    "id": "F9",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S17"
+    ],
+    "text": "Fig. 9: Skull Stripping Example. Fig. 9: Open in a new tab Example of a skull stripping failure for linear and NLM interpolation. Skull stripping dramatically improves when applied to the imputed image for this example."
+  },
+  {
+    "index": 109,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S18"
+    ],
+    "text": "F. Clinical Dataset"
+  },
+  {
+    "index": 110,
+    "kind": "p",
+    "id": "P48",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S18"
+    ],
+    "text": "We also demonstrate our algorithm on a clinical set of 766 T2-FLAIR brain MR scans in a stroke patient cohort. These scans are severely anisotropic (0.85 × 0.85mm in-plane, slice separation of 6mm). All subjects are affinely registered to an atlas and the intensity is normalized."
+  },
+  {
+    "index": 111,
+    "kind": "p",
+    "id": "P49",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S18"
+    ],
+    "text": "Fig. 10 illustrates representative restoration improvements in T2-FLAIR scans from a clinical population. Our method produces more plausible structure, as can be especially seen in the close-up panels focusing on anatomical details. We provide additional example results in the Supplementary Materials in the supplementary files / multimedia tab."
+  },
+  {
+    "index": 112,
+    "kind": "figure",
+    "id": "F10",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S9",
+      "S18"
+    ],
+    "text": "Fig. 10: Representative restorations in the clinical dataset. Fig. 10: Open in a new tab Reconstruction using NLM, linear interpolation and our method for two representative subjects. Our method reconstructs more plausible substructures, as can be especially seen in the close-up panels of the skull and the periventricular region. Additional examples are available in the Supplementary Materials in the supplementary files / multimedia tab."
+  },
+  {
+    "index": 113,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19"
+    ],
+    "text": "V. DISCUSSION"
+  },
+  {
+    "index": 114,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S20"
+    ],
+    "text": "Modeling Choices."
+  },
+  {
+    "index": 115,
+    "kind": "p",
+    "id": "P50",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S20"
+    ],
+    "text": "We explicitly model and estimate a latent low-dimensional embedding for each patch. The likelihood model (5) does not include the latent patch representation x i , leading to observed patch covariance C k O i , O i = W k O i ( W k O i ) T + σ k 2 I . Since the set of observed voxels O i varies across subjects, the resulting Expectation Maximization algorithm [ 6 ] becomes intractable if we marginalize the latent representation out before estimation. Introducing the latent structure simplifies the optimization problem."
+  },
+  {
+    "index": 116,
+    "kind": "p",
+    "id": "P51",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S20"
+    ],
+    "text": "We investigated an alternative modeling choice that instead treats each missing voxel as a latent variable. In particular we consider the missing values of patch y i as latent variables, which can be optionally combined with the latent low-dimensional patch representation. These assumptions lead to an Expectation Conditional Maximization (ECM) [ 14 ], [ 18 ], a variant of the Generalized Expectation Maximization where parameter updates depend on the previous parameter estimates. The resulting algorithm estimates the expected missing voxel mean and covariance directly, and then updates the cluster parameters (see Supplementary Materials for a complete derivation). The most notable difference between this formulation and simpler algorithms that iteratively fill in missing voxels and then estimate GMM model parameters is in the estimation of the expected data covariance, which captures the covariance of the missing and observed data (c.f. [ 18 ], Ch.8). We found that compared to the method presented in Section II , this variant often got stuck in local minima, had difficulty moving away from the initial missing voxel estimates, and was an order of magnitude slower than the presented method. We provide both implementations in our code."
+  },
+  {
+    "index": 117,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S21"
+    ],
+    "text": "Restoration."
+  },
+  {
+    "index": 118,
+    "kind": "p",
+    "id": "P52",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S21"
+    ],
+    "text": "Our restoration method assumes that the observed voxels are noisy manifestations of the low dimensional patch representation, and reconstructs the entire patch, including the observed voxels, leading to smoother images. This formulation assumes the original observed voxels are noisy observations of the true data. Depending on the downstream analyses, the original voxels could be kept in the reconstruction. In addition, we also investigated an alternative reconstruction method of filling in the missing voxels given the observed voxels as noiseless ground truth (not shown). This formulation leads to sharper but noisier results. The two restoration methods therefore yield images with different characteristics. This tradeoff is a function of the noise in the original acquisition: higher noise in the clinical acquisition leads to noisier reconstructions using the alternative method, whereas in the ADNI dataset the two methods perform similarly. In addition, imputation can be achieved by sampling the posterior distribution rather than using conditional mean estimation, enabling a better estimate of the residual noise for downstream analysis."
+  },
+  {
+    "index": 119,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S22"
+    ],
+    "text": "Usability."
+  },
+  {
+    "index": 120,
+    "kind": "p",
+    "id": "P53",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S22"
+    ],
+    "text": "Our model assumes that whether a voxel is observed is independent of the intensity of that voxel. Although the voxels missing in the sparsely sampled images clearly form a spatial pattern, we assume there is no correlation with the actual intensity of the voxels. The model can therefore be learned from data with varying sparseness patterns, including restoring data in all acquisition directions simultaneously."
+  },
+  {
+    "index": 121,
+    "kind": "p",
+    "id": "P54",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S22"
+    ],
+    "text": "The proposed method can be used for general image imputation using datasets of varying resolution. For example, although acquiring a large high resolution dataset for a clinical study is often infeasible, our algorithm will naturally make use of any additional image data available. Even a small number of acquisitions in different directions or higher resolution than the study scans promise to improve the accuracy of the resulting reconstruction."
+  },
+  {
+    "index": 122,
+    "kind": "p",
+    "id": "P55",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S22"
+    ],
+    "text": "The presented model depends on the image collection containing similar anatomical structures roughly aligned, such as affinely aligned brain or cardiac MR scans. Smaller datasets that contain vastly different scans, such as traumatic brain injuries or tumors, may not contain enough consistency to enable the model to learn meaningful covariation. However, a wide range of clinical datasets contain the anatomical consistency required, and can benefit from the proposed method."
+  },
+  {
+    "index": 123,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S23"
+    ],
+    "text": "Initialization."
+  },
+  {
+    "index": 124,
+    "kind": "p",
+    "id": "P56",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S19",
+      "S23"
+    ],
+    "text": "We experimented with several initialization schemes, and provide them in our implementation. A natural initialization is to first learn a simple GMM from the linearly interpolated volumes, and use the resulting parameter values as initializations for our method. This leads to results that improve on the linear interpolation but still maintain somewhat blocky effects caused by interpolation. More agnostic initializations, such as random parameter values, lead to more realistic anatomy but noisier final estimates. Different methods perform well in different regions of the brain. The experimental results are initialized by first learning a simple GMM from the linearly interpolated volumes, and using the resulting means with diagonal covariances as an initial setting of the parameters. We start with a low dimensional representation to be of dimension 1, and grow it with every iteration up to the desired dimension. We found that this approach outperforms all other strategies."
+  },
+  {
+    "index": 125,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S24"
+    ],
+    "text": "VI. Conclusions"
+  },
+  {
+    "index": 126,
+    "kind": "p",
+    "id": "P57",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S24"
+    ],
+    "text": "We propose an image imputation method that employs a large collection of low-resolution images to infer fine-scale anatomy of a particular subject. We introduce a model that captures anatomical similarity across subjects in large clinical image collections, and imputes, or fills in, the missing data in low resolution scans. The method produces anatomically plausible volumetric images consistent with sparsely sampled input scans."
+  },
+  {
+    "index": 127,
+    "kind": "p",
+    "id": "P58",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S24"
+    ],
+    "text": "Our approach does not require high resolution scans or expert annotations for training. We demonstrate that our algorithm is robust to many data variations, including varying slice thickness. The resulting method enables the use of untapped clinical data for large scale scientific studies and promises to facilitate novel clinical analyses."
+  },
+  {
+    "index": 128,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "SM1"
+    ],
+    "text": "Supplementary Material"
+  },
+  {
+    "index": 129,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "S25"
+    ],
+    "text": "Acknowledgments"
+  },
+  {
+    "index": 130,
+    "kind": "p",
+    "id": "P59",
+    "scope": [
+      "article",
+      null,
+      null,
+      "S25"
+    ],
+    "text": "This work was supported by NIH NINDS R01NS086905, NIH NICHD U01HD087211, NIH NIBIB NAC P41EB015902, NIH R41AG052246-01, 1K25EB013649-01, 1R21AG050122-01, NSF IIS 1447473, Wistron Corporation and SIP. Data collection and sharing for this project was funded by the Alzheimer’s Disease Neuroimaging Initiative (ADNI) (National Institutes of Health Grant U01 AG024904) and DOD ADNI (Department of Defense award number W81XWH-12-2-0012). ADNI is funded by the National Institute on Aging, the National Institute of Biomedical Imaging and Bioengineering, and through generous contributions from several agencies listed at http://adni.loni.usc.edu/about/ ."
+  },
+  {
+    "index": 131,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1"
+    ],
+    "text": "Appendix A"
+  },
+  {
+    "index": 132,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "Expectation Maximization Updates"
+  },
+  {
+    "index": 133,
+    "kind": "p",
+    "id": "P60",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "Following (5) , the complete likelihood of our model is:"
+  },
+  {
+    "index": 134,
+    "kind": "table",
+    "id": "FD20",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "p ( Y O , X ; θ ) = ∏ i ∑ k π k N ( y i O i , x i ; μ k O i , C k O i O i ) , (19)"
+  },
+  {
+    "index": 135,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "where X = { x i } . The expectation of this probability is then"
+  },
+  {
+    "index": 136,
+    "kind": "table",
+    "id": "FD21",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "Q ( θ ∣ θ ) = E X ∣ Y O , θ [ log p ( Y O , X ; θ ) ] = ∑ i , k E [ k ( − d 2 log 2 π − 1 2 log ∣ σ k 2 I ] − 1 2 σ k 2 ( y i O i − W k O x i − μ k O i ) T ( y i O i − W k O x i − μ k O i ) − d 2 log 2 π − 1 2 log ∣ I ∣ − 1 2 x i x i T ) ] . (20)"
+  },
+  {
+    "index": 137,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "Computing this expectation requires evaluating E [ k ], E [ x i ∣ k ], and E [ x , x i T ∣ k ] , which is trivially done to obtain the expectation step updates (6) - (8) ."
+  },
+  {
+    "index": 138,
+    "kind": "p",
+    "id": "P61",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "For the maximization step, we optimize (20) with respect to the model parameters."
+  },
+  {
+    "index": 139,
+    "kind": "table",
+    "id": "FD22",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "∂ Q ∂ μ k ∝ ∑ i ∈ P j ∂ ∂ μ k E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] ∝ ∑ i ∈ P j E [ k ( y i O i − W k O i x i − μ k O i ) ] = ∑ i ∈ P j γ ik ( y i O i − W k O i x ^ ik − μ k O i ) = 0 μ k j = 1 ∑ i ′ γ i ′ k ∑ i ∈ P j γ ik ( y i j − W k j x ^ ik ) (21)"
+  },
+  {
+    "index": 140,
+    "kind": "table",
+    "id": "FD23",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "∂ Q ∂ W k ∝ ∑ i ∈ P j ∂ E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] ∂ W k ∝ ∑ i ∈ P j E [ k ( W k O i x i − ( y i O i − μ k O i ) ) x i T ] = ∑ i ∈ P j γ ik W O i ( x ^ ik x ^ ik T + S ik ) − ( y i O i − ( μ k O i ) ) x ^ ik T = 0 W k j = [ ∑ i ∈ P j γ ik ( x ^ ik x ^ ik T + S ik ) ] − 1 ∑ i ∈ P j γ ik ( y i j − μ k j ) x ^ ik T = ∑ i ∈ P j δ ik ( y i j − μ k j ) x ^ ik T A j − 1 (22)"
+  },
+  {
+    "index": 141,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "where δ and A are defined in (9) and (11) , respectively. By combining (22) and (21) , we obtain"
+  },
+  {
+    "index": 142,
+    "kind": "table",
+    "id": "FD24",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "μ k j ∑ i γ ik = ∑ i ∈ P j γ ik y i j − W k j ∑ i ∈ P j γ ik x ^ ik μ k j = ∑ i ∈ P j δ ik y i j − W k j b j μ k j = ∑ i ∈ P j δ ik y i j − ∑ i ∈ P j δ ik ( y i j − μ k j ) x ^ ik T A j − 1 b j μ k j ( 1 − ∑ i ∈ P j δ ik x ^ ik T A j − 1 b j ) = ∑ i ∈ P j δ ik y i j ( 1 − x ^ ik T A j − 1 b j ) μ k j = ∑ i ∈ P j δ ik y i j ( 1 − x ^ ik T A j − 1 b j ) ∑ i ∈ P j δ ik ( 1 − x ^ ik T A j − 1 b j ) . (23)"
+  },
+  {
+    "index": 143,
+    "kind": "p",
+    "id": "P62",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "We therefore update μ k j via (23) , followed by W k j using (22) . Finally,"
+  },
+  {
+    "index": 144,
+    "kind": "table",
+    "id": "FD25",
+    "scope": [
+      "article",
+      null,
+      null,
+      "APP1",
+      "S26"
+    ],
+    "text": "∂ Q ∂ σ k 2 ∝ ∑ i ∈ P j − ∂ ∂ σ k 2 1 σ k 2 E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] − ∂ ∂ σ k 2 N log σ k 2 = ∑ i ∈ P j 1 σ k 4 E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] − N σ k 2 = 0 σ k 2 = ∑ i ∈ P j E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] σ k 2 = ∑ j ∑ i ∈ P j γ ik [ ( y i j − μ k j − W k j x ^ ik ) 2 + W k j S ik ( W k j ) T ] ∑ j ∑ i ∈ P j γ ik . (24)"
+  },
+  {
+    "index": 145,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "fn-group1"
+    ],
+    "text": "Footnotes"
+  },
+  {
+    "index": 146,
+    "kind": "p",
+    "id": "P63",
+    "scope": [
+      "article",
+      null,
+      null,
+      "fn-group1"
+    ],
+    "text": "Data used in the preparation of this article were obtained from the Alzheimers Disease Neuroimaging Initiative (ADNI) database ( adni.loni.usc.edu ). The primary goal of ADNI has been to test whether serial magnetic resonance imaging (MRI), positron emission tomography (PET), other biological markers, and clinical and neuropsychological assessment can be combined to measure the progression of mild cognitive impairment (MCI) and early Alzheimers disease (AD)."
+  },
+  {
+    "index": 147,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "Contributor Information"
+  },
+  {
+    "index": 148,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "Adrian V. Dalca, Computer Science and Artificial Intelligence Lab, MIT (main contact: adalca@csail.mit.edu) and also Martinos Center for Biomedical Imaging, Massachusetts General Hospital, HMS."
+  },
+  {
+    "index": 149,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "Katherine L. Bouman, Computer Science and Artificial Intelligence Lab, MIT."
+  },
+  {
+    "index": 150,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "William T. Freeman, Computer Science and Artificial Intelligence Lab, MIT and Google."
+  },
+  {
+    "index": 151,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "Natalia S. Rost, Department of Neurology, Massachusetts General Hospital, HMS."
+  },
+  {
+    "index": 152,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "Mert R. Sabuncu, School of Electrical and Computer Engineering, and Meinig School of Biomedical Engineering, Cornell University."
+  },
+  {
+    "index": 153,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ci93_"
+    ],
+    "text": "Polina Golland, Computer Science and Artificial Intelligence Lab, MIT.."
+  },
+  {
+    "index": 154,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "ref-list1"
+    ],
+    "text": "References"
+  },
+  {
+    "index": 155,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ad93_"
+    ],
+    "text": "Associated Data"
+  },
+  {
+    "index": 156,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ad93_"
+    ],
+    "text": "This section collects any data citations, data availability statements, or supplementary materials included in this article."
+  },
+  {
+    "index": 157,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "article",
+      null,
+      null,
+      "_ad93_",
+      "_adsm93_"
+    ],
+    "text": "Supplementary Materials"
+  }
+]

@@ -1,0 +1,73 @@
+{
+  "scope": "Reported rounded means only; no raw patient observations or experimental replication.",
+  "masc": {
+    "metrics": ["SSIM", "PSNR", "MSE", "NMSE", "MAE"],
+    "maximize": [true, true, false, false, false],
+    "hip10": {
+      "physical_page": 10,
+      "table": 1,
+      "MASC": [0.7224,19.73,0.0111,0.0546,0.0640],
+      "static_with_MAR": {
+        "Random": [0.6949,18.79,0.0140,0.0680,0.0708],
+        "Random-LowBias": [0.6929,19.10,0.0131,0.0635,0.0716],
+        "Equispaced": [0.4085,12.82,0.0538,0.2607,0.1546],
+        "Center-out": [0.5532,16.33,0.0248,0.1194,0.1107]
+      }
+    },
+    "hip5": {
+      "physical_page": 18,
+      "table": 5,
+      "MASC": [0.7056,19.41,0.0128,0.0615,0.0742],
+      "static_with_MAR": {
+        "Random": [0.6789,18.36,0.0162,0.0760,0.0861],
+        "Random-LowBias": [0.6580,18.39,0.0175,0.0809,0.0885],
+        "Equispaced": [0.5716,17.01,0.0214,0.1018,0.0980],
+        "Center-out": [0.5599,15.64,0.0334,0.1549,0.1313]
+      }
+    },
+    "fastMRI10": {
+      "physical_page": 12,
+      "table": 3,
+      "MASC": [0.5803,21.41,0.0083,0.0497,0.0682],
+      "static_with_MAR": {
+        "Random": [0.5562,20.41,0.0111,0.0642,0.0773],
+        "Random-LowBias": [0.5636,20.41,0.0108,0.0558,0.0767],
+        "Equispaced": [0.5402,20.12,0.0116,0.0663,0.0790],
+        "Center-out": [0.5072,17.79,0.0199,0.0994,0.1096]
+      }
+    },
+    "frozen_metal_PPO_pretrained_MAR": [0.6874,17.72,0.0182,0.0888,0.0820],
+    "frozen_comparison_physical_page": 11,
+    "hip_split_subjects": [160,20,20],
+    "slices_per_subject": 36,
+    "hip_split_slices": [5760,720,720],
+    "paired_t_test_unit_known": false,
+    "patient_aggregation_of_reported_means_known": false,
+    "fastMRI_test_patient_count": null,
+    "full_action_cost_seconds": null
+  },
+  "thesis": {
+    "arxiv_id": "2312.04327v1",
+    "conditions": ["cvb UNet", "cvb cResNet", "c+rhz UNet", "c+rhz cResNet"],
+    "physical_page": 110,
+    "table6_2_final25_SSIM": {
+      "LBCS": [0.6294,0.6417,0.7768,0.7941],
+      "RL": [0.6298,0.6415,0.7761,0.7935]
+    },
+    "table6_3_sampling_rate_SSIM_AUC": {
+      "LBCS": [0.5134,0.5243,0.7035,0.7096],
+      "RL": [0.5142,0.5242,0.7035,0.7111]
+    },
+    "table6_4_physical_page": 112,
+    "table6_4_metrics": ["SSIM sampling-rate AUC", "SSIM acceleration-factor AUC", "SSIM final-rate", "PSNR sampling-rate AUC", "PSNR acceleration-factor AUC", "PSNR final-rate"],
+    "table6_4": {
+      "LBCS": [0.6079,0.4787,0.6886,28.491,23.799,30.211],
+      "DS-DDQN": [0.6101,0.4797,0.6855,28.240,23.978,29.652],
+      "SS-DDQN": [0.6139,0.4797,0.6882,28.424,23.918,29.929]
+    },
+    "table6_2_or_6_3_condition_rows_are_independent_patients": false,
+    "classification_ROC_AUC": false,
+    "patient_split_independence_verified_here": false,
+    "exact_inference_action_cost_seconds": null
+  }
+}

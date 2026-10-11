@@ -1,0 +1,181 @@
+{
+  "complete": true,
+  "errors": [],
+  "OpenMASC": [
+    {
+      "comparator": "same_architecture_VD_random",
+      "delta_SSIM": "0.001",
+      "delta_PSNR_dB": "0.09"
+    },
+    {
+      "comparator": "same_architecture_equispaced",
+      "delta_SSIM": "0.009",
+      "delta_PSNR_dB": "0.53"
+    },
+    {
+      "comparator": "without_DCR",
+      "delta_SSIM": "0.067",
+      "delta_PSNR_dB": "6.17"
+    },
+    {
+      "comparator": "without_PPO_DCR_cotrain",
+      "delta_SSIM": "0.001",
+      "delta_PSNR_dB": "0.07"
+    }
+  ],
+  "Greedy": [
+    {
+      "setting": "knee_base",
+      "greedy_minus_test_GT_NA_oracle": "0.0017",
+      "gamma09_minus_greedy": "0.0002"
+    },
+    {
+      "setting": "knee_long",
+      "greedy_minus_test_GT_NA_oracle": "0.0021",
+      "gamma09_minus_greedy": "0.0007"
+    },
+    {
+      "setting": "brain_base",
+      "greedy_minus_test_GT_NA_oracle": "0.0007",
+      "gamma09_minus_greedy": "0.0000"
+    },
+    {
+      "setting": "brain_long",
+      "greedy_minus_test_GT_NA_oracle": "0.0008",
+      "gamma09_minus_greedy": "0.0004"
+    }
+  ],
+  "approximate_training_cost": [
+    {
+      "dataset": "knee",
+      "horizon": "base",
+      "greedy_approximate_GPU_days": "1.0",
+      "nongreedy_approximate_GPU_days": "1.5",
+      "measurement_quality": "Very approximate policy-training table only; excludes reconstruction pretraining/inference/I-O attribution"
+    },
+    {
+      "dataset": "knee",
+      "horizon": "long",
+      "greedy_approximate_GPU_days": "1.5",
+      "nongreedy_approximate_GPU_days": "4.0",
+      "measurement_quality": "Very approximate policy-training table only; excludes reconstruction pretraining/inference/I-O attribution"
+    },
+    {
+      "dataset": "brain",
+      "horizon": "base",
+      "greedy_approximate_GPU_days": "2.0",
+      "nongreedy_approximate_GPU_days": "6.0",
+      "measurement_quality": "Very approximate policy-training table only; excludes reconstruction pretraining/inference/I-O attribution"
+    },
+    {
+      "dataset": "brain",
+      "horizon": "long",
+      "greedy_approximate_GPU_days": "4.5",
+      "nongreedy_approximate_GPU_days": "20.0",
+      "measurement_quality": "Very approximate policy-training table only; excludes reconstruction pretraining/inference/I-O attribution"
+    }
+  ],
+  "active_fewshot": [
+    {
+      "K": 4,
+      "proposed_minus_random_percentage_points": "8.2",
+      "proposed_minus_DVRL_percentage_points": "4.6",
+      "support_plus_reward_validation_label_slots": 12,
+      "unique_subject_annotation_count_confirmed": false
+    },
+    {
+      "K": 8,
+      "proposed_minus_random_percentage_points": "7.6",
+      "proposed_minus_DVRL_percentage_points": "3.8",
+      "support_plus_reward_validation_label_slots": 16,
+      "unique_subject_annotation_count_confirmed": false
+    },
+    {
+      "K": 16,
+      "proposed_minus_random_percentage_points": "6.7",
+      "proposed_minus_DVRL_percentage_points": "3.8",
+      "support_plus_reward_validation_label_slots": 24,
+      "unique_subject_annotation_count_confirmed": false
+    }
+  ],
+  "OpenMASC_test_subjects": 20,
+  "OpenMASC_test_slices": 720,
+  "slice_to_subject_ratio": 36,
+  "paired_P_values_recomputed": false,
+  "source_bindings": [
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/check_primary_table_arithmetic_v1.py",
+      "bytes": 3340,
+      "sha256": "0d2eff2af9779de0ecc64e5167bd198f943d8c4dd0fdb7bb4c1751bc275869b5"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/CPU_EXPLORATION_PROTOCOL.md",
+      "bytes": 1632,
+      "sha256": "bf7b06fa64b351946cfffeb108fdb6d66012db4a47b8a98a00617c53327e80de"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/primary_html_attempt01/openmasc/blocks.json.gz",
+      "bytes": 15966,
+      "sha256": "a02362a1d16895368c4d3d4d994cc6bf3099d64dae1e449899b5320428ae8182"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/primary_html_attempt01/greedy/blocks.json.gz",
+      "bytes": 27448,
+      "sha256": "933264e40102a8053aa42992f7067e584baf7a2d89971e8930cff753ff479008"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/primary_html_attempt01/active_fewshot/blocks.json.gz",
+      "bytes": 8251,
+      "sha256": "1e8496756bece6f62533cdaee7b3f5fe9e54a3e2513e97e74e45d4092db1067b"
+    }
+  ],
+  "warnings": [
+    "Contrasts are not additive causal contribution shares",
+    "Reported means cannot recover patient-level paired variance or significance",
+    "Few-shot K+8 counts label slots only; annotation reuse and unique ID accounting unresolved",
+    "Printed rounded means may differ from prose differences by 0.1 pp"
+  ],
+  "MRI_arrays_loaded": 0,
+  "GT_arrays_loaded": 0,
+  "GPU_calls": 0,
+  "optimizer_updates": 0,
+  "medical_effect_scored": false,
+  "publication_claim_confirmed": false,
+  "resources_before": {
+    "workspace_free_bytes": 8040026112,
+    "available_ram_bytes": 106299367424,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 38375501,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6139157,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 322359
+    },
+    "guarded_workspace_free_bytes": 8001650611
+  },
+  "resources_after": {
+    "workspace_free_bytes": 8040026112,
+    "available_ram_bytes": 106973798400,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 38375501,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6139157,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 322359
+    },
+    "guarded_workspace_free_bytes": 8001650611
+  },
+  "elapsed_seconds": 0.02579299989156425
+}

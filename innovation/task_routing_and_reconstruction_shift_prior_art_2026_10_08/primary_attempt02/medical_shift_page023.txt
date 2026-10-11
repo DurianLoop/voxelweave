@@ -1,0 +1,33 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+OriginalInput
+Segmentation
+Difference
+U-Net Pix2Pix SDE
+PSNR:  34.4
+ PSNR:  35.1
+ PSNR:  35.2
+DSC: 0.77 DSC: 0.77 DSC: 0.77
+Figure 9: Reconstruction with corresponding segmentation and Dice score of an MRI image
+with acceleration 8 for the different models.
+0.1 for the EMA. The remaining hyperparameters and architectural details were adopted
+unchanged from the original U-Net (Ronneberger et al., 2015), Pix2Pix (Isola et al., 2017),
+and SDE (Luo et al., 2023) publications. Image pre-processing consisted of min-max nor-
+malization to the 0-1 range and resizing to 256x256 for all reconstruction models.
+The models were trained on a single NVIDIA A40 or A100 GPU. The SDE model was
+computationally most expensive and needed a maximum of 48 hours to train from scratch.
+For all models, the final weights were chosen based on performance on the validation split
+during training.
+MRI preprocessing and reconstruction details.UCSF-PDGM provides reconstructed
+single-channel images (no multi-coil raw k-space data or complex-valued images). As a re-
+sult, no coil combination, coil compression, or sensitivity map estimation was performed. To
+simulate undersampled MRI acquisitions, reconstructed images were retrospectively trans-
+formed to synthetic k-space using a discrete Fourier transform, implicitly assuming zero
+phase. Radial undersampling masks (Feng, 2022) were applied in k-space, and zero-filled
+reconstructions were obtained via inverse Fourier transform. The models were then trained
+in an image-to-image fashion to map the zero-filled images to the original reconstructed
+images. This pipeline was chosen to align with standard practice in MRI reconstruction
+studies when raw k-space is unavailable. The original UCSF-PDGM dataset was acquired
+using a 3.0 tesla scanner and a dedicated 8-channel head coil (Calabrese et al., 2022). Two
+gadolinium-based contrast agents were used across the cohort: gadobutrol at a dose of 0.1
+mL/kg and gadoterate at a dose of 0.2 mL/kg.
+23

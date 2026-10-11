@@ -1,0 +1,45 @@
+3.2. DATA-DRIVEN APPROACHES
+These unrolled approaches require training the modelsfθ on a dataset of reference images
+and observations{xi,yi}m
+i=1 by minimizing a lossℓ(·,·):
+θ∗ = arg min
+θ
+1
+m
+m∑
+i=1
+ℓ(xi,f(yi;θ)). (3.6)
+Various losses have been used in the literature. Initial works usedℓ2 loss (Schlemper
+et al., 2017; Hammernik et al., 2018), but lately practitioners have turned to usingℓ1 loss,
+SSIM or compounds of these Muckley et al. (2021).ℓ1 was indeed found to outperformℓ2
+on vision tasks Zhao et al. (2016). The structural similarity (SSIM) (Wang et al., 2004)
+is a metric developed to match more closely the human perception, and recent work have
+proposed that a weighted sum betweenℓ1 loss and the multiscale SSIM (MS-SSIM) as a
+compromise (Zhao et al., 2016).
+Deep learning-based reconstruction methods further shift the burden of computation,
+compared to compressed sensing approaches. While these enabled faster acquisition at
+the cost of a slower, iterative reconstruction procedures, deep learning-based methods
+retain the benefit of enabling sub-Nyquist sampling, but also enable fast reconstruction,
+in the order of10−1 second for a slice (Jin et al., 2017; Hammernik et al., 2018). However,
+the computational burden is only shifted an additional step: these methods need to be
+trained with large, fully-sampled1 datasets (Zbontar et al., 2019).
+3.2.3 Deep image prior
+In a spirit closer to dictionary learning and classical CS, Ulyanov et al. (2018) have shown
+that untrained CNN can provide a sufficiently strong prior to enable image reconstruction,
+even without training data. Given an untrained CNNfθ a single measurement instance
+yω, the idea in deep image prior (DIP) is simply to minimize
+min
+θ
+∥yω−Aωfθ(z)∥2
+2 (3.7)
+wherez is a fixed, randomly sampled vector, and where the parametersθ are randomly
+initialized. Then, using an iterative optimization algorithm, fitting the weights to the
+observations enables the network to output a high-quality reconstructed image without
+supervision or training data. This method was successfully applied to MRI in (Darestani
+and Heckel, 2021; Yoo et al., 2021). A common pitfall of DIP is that this flexibility comes
+at the price of an increase inference time: the network weights must be retrained for
+each individual image. In addition, DIP can suffer from overfitting and so heuristics such
+as early stopping are used to counteract this (Ulyanov et al., 2018; Sun et al., 2021).
+1In their recent work, Yaman et al. (2020) proposed approaches to train only using undersampled
+data, but having access to a dataset of undersampled images is still required.
+27

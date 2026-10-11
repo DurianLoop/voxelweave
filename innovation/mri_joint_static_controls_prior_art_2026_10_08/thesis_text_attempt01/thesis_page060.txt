@@ -1,0 +1,29 @@
+5 Scalable learning-based sampling
+optimization
+In this chapter, we present our extensions to the framework of Gözcü et al. (2018). We
+primarily aim at drastically improving the scalability of their method. We begin by
+presenting in detail their learning-based CS (LBCS) framework in Section 5.1. In Section
+5.2, we take a short detour in the field of submodular function maximization, from which
+Gözcü et al. (2018) took inspiration, and discuss how algorithms that have been proposed
+in this context could help improve the LBCS method. In Section 5.3, we present our two
+improvements over LBCS, namelylazy LBCS andstochastic LBCS. We then carry out
+extensive validation of these methods in Sections 5.4 and 5.5, and discuss the results in
+Section 5.61.
+5.1 Learning-based Compressive Sensing (LBCS)
+LBCS aims at designing a non-adaptive mask in a sequential fashion, and tackles Problem
+4.5. Indeed, solving this problem in a naive, brute-force approaches would only be possible
+in very simple cases, as the total number of masks grows exponentially, with a rateO(2P ).
+Therefore, one must useapproximate solutions to this problem. Gözcü et al. (2018)
+proposed a greedy, parameter-free approach, where a mask is grown sequentially by
+adding elements to the mask in an iterative fashion. This approach, called Learning-Based
+Compressed Sensing (LBCS) allows to reduce the number of configurations evaluated to
+a complexityO(P 2). The simplified procedure is illustrated on Figure 5.1.
+A couple of elements must be introduced in order to formally define their algorithm.
+To implement the constraints of sampling in MRI, typically acquiring full lines in the
+1The work in this chapter is based on the following publications:
+Gözcü, B., Sanchez, T., and Cevher, V. (2019). Rethinking sampling in parallel MRI: A data-driven
+approach. In 27th European Signal Processing Conference (EUSIPCO) .
+Sanchez, T., Gözcü, B., van Heeswijk, R. B., Eftekhari, A., Ilıcak, E., Çukur, T., and Cevher, V. (2020a).
+Scalable learning-based sampling optimization for compressive dynamic MRI. InICASSP 2020 - 2020
+IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 8584–8588.
+47

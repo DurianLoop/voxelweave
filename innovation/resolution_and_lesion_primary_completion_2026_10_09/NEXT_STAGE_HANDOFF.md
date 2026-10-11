@@ -1,0 +1,21 @@
+# 接续入口：两篇主文补完，医学任务继续
+
+目标仍active：一直研究探索验证直到可发表且独立确认claim，不操作用户终端训练。不把本批完整阅读/原表资格当医学claim；本次新增患者医学效果/训练更新0。无依赖安装、无代理委派、无其他PID查询/操作。GPU授权持续有效，但最新5dd886仅free1394MiB，new stage起跑8192MiB不降，原CPU运行不迁移。全部新增仍innovation。
+
+下轮第一步真正poll session74234和29823。最新实际de0ee2含session_id，pipeline5952/35904/wall4274.4016355，pre9.5367431640625e-7、shared-post2.384185791015625e-6、isolated/full-chain2.86102294921875e-6、support7.438494264988549e-15、coordinate1.1368683772161603e-13。仅已完成字段，不是全35904通过。最新实际f882d8含session_id，raw_pchip_spatial1100/2992，median2.1740442秒，累计21558.9276853秒；前三臂各2992。两个进程均仍live，无真实terminal。不要将空stdout当结束。
+
+原四臂整个exit0无session后，完整真实返回保存spatial_adaptation_matched_2026_10_08/ACTUAL_TRAINING_TERMINAL_TOOL.json并附observed_unified_exec_session=29823，capture_training_terminal.py→evaluate_matched.py→保存真实evaluation terminal→capture_evaluation_terminal.py→summarize_matched.py。先四last2992/11968日志/每患者272，再36生产+36functional完整FOV；优先于辅助查新。不能先评价完成三个臂。六医学门槛、3e-6/3e-12/二值零差、完整患者分母、last不改。11开发19series、已见4验证9series；8未见确认12series和lockedIXI继续关闭。
+
+完整MRI74234整个exit0后，完整真实返回保存resolution_degradation_controls_2026_10_08/ACTUAL_FULL_REAL_PIPELINE_TERMINAL_TOOL.json并附observed_unified_exec_session=74234，再audit_full_real_terminal.py。若exit1先保存failed_field和真实terminal并诊断，不能放宽门槛、删患者/轴/patch或训练；也不能修改live源/其冻结绑定。
+
+本次实质进展：补完VINN和lesion ensemble两不同主文及有关inline附录/三表；旧EuropePMC500未改。c485b9实际exit0只是获取，351110实际exit0登记分段阅读范围；图像像素、作者源码/模型、VINN Table9–16没有新核读/执行。7e3666实际exit0：24HTMLtable单元格重提一致、68Fraction/Decimal差、5456权重公式；28validation端点PP13改善/11退化/4持平、ensemble18低于best single，仅source均值非患者显著性。公式sum=n−1与显示sum1差异保留，不能猜作者代码；VINN ASD .293/.303原差异保留。
+
+研究候选仍为充分任务能力后的MRI机制/应用问题：真实采集可见性对actual action损害差的增量预测，且所有强cost/defer/QC同获feature、容量/监督/预算/全费用匹配。spacing-aware/latent interpolation/label preservation/cluster PP/ensemble/relative gain本身均已有明确先例。准备已补[后续矩阵](NEXT_TRIAL_PREPARATION.md)，可获益余量、严格pipeline LOPO初始化/动作标签生成/全费用/8患者确认仍未验证。全11GT的parent不能冒充患者折外初始权重。
+
+磁盘c90923为8,030,814,208bytes、RAM97,090,273,280bytes；储备外约30.8MB仍不足22task last预计123,691,414bytes/六臂新训练全部输出。不降低8GB。新本stage budget1.2MB，当前归档时813139bytes，预留后附100KB；旧full stage约3.23MB，仍须预留日志到1.5MB、audit150KB、post100KB的5MB总量。原医学评价3MB allowance继续。
+
+上一待执行turn29归档已真实752221 exit0，新增36累计6412；本批b094f1实际exit0，新29累计6441；c90923实际exit0再核新29与根hash。最新indexSHA6c480a23fc223f1e7bdccae5c2f8831c52e5e25defe22bb8b9e2ab0bca7f8d75，proofSHA87c1bb27f2929b762a791dd7e16f65f6c2a9bbd57ba39f88c9404fa6bbd0df95。旧6412逻辑SHA全核不变、rolling仍排除，仅其frozen_config允许。不要覆盖/重跑旧indices。
+
+本批45条保存的真实返回：37条gzip（原379204→113709bytes，8c356a372cb0e82d31fd8f13d11f767539e4692a3de1126c836209b01e60b070）、6条PART02、2条POST_ARCHIVE；另外两条未store的小只读返回单独标“显示转录”，不伪装恢复原对象。工具截断/旧乱码及rg wildcard错误保留。中文后续用UTF8，shell不展开rg位置通配符，使用-g与实际目录。标准库urllib，不安装requests；大JSON通过apply_patch临时buffer→短Python无损gzip，别塞shell参数。只删除新临时buffer。
+
+FINAL_PUBLIC_RESPONSE.md、POST_ARCHIVE_VISIBLE_DIALOGUE.md、POST_ARCHIVE_ACTUAL_TOOL_OBSERVATIONS.json和此handoff为归档后的后附，下一delta再纳入；冻结旧文件不回改。最后一次保存核验另后附，不开启无穷自引用归档。

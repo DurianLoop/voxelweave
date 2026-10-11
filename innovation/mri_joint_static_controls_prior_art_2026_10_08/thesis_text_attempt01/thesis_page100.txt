@@ -1,0 +1,46 @@
+6.1. REINFORCEMENT LEARNING TO OPTIMIZE SAMPLING
+TRAJECTORIES
+However, this objective makes the training unstable and slow, the sequence of iterates
+(s,a,r,s ′) from a single episode are heavily correlated, and because the targetYQ depends
+on Qϕ that is updated each iteration. As a result, Mnih et al. (2015) proposed two
+mechanisms to alleviate these issues. Experience replay is the idea that instead of
+computing updates directly on the sequence of iterates from the current episodes, the
+tuples (s,a,r,s ′) are stored in a buffer from which a sample is drawn at random to
+perform the update. The second mechanism is periodic updating, where the network
+used in the target has its weights frozen and only periodically updated.
+While these mechanisms allowed to fix some large issues of Q-learning, DQN was found
+to still suffer from overestimating the value of state-action pairs, and Van Hasselt et al.
+(2016) proposed to use Double-Q learning as a way to address this issue. As a result, the
+objective looks like
+L(θ) = E(s′,r,a,s)∼U(D)[(
+TargetY DoubleQ
+/bracehtipdownleft/bracehtipupright/bracehtipupleft/bracehtipdownright
+r +γ max
+a′
+Qϕ−(s′,a′)−Qϕ(s,a ))2].
+The changes here are the ones from DQN:U(D) is a uniform distribution over the replay
+memory, andϕ− refer to the weights of the frozen network. The main difference however
+is to be found in the targetY DoubleQ. Double Q-learning is based on the observation
+that in the Q-learning targetYQ, the same values are used to select an action and to
+evaluate making it more likely to select overestimated values (Hasselt, 2010). This can
+be made explicit as
+YQ =r +γQϕ(s′, arg max
+a′
+Qϕ(s′,a′))
+In double Q-learning, two values of weightsϕ and ϕ′ are used to decouple the action
+selection and evaluation, resulting in the target
+Y DoubleQ =r +γQϕ(s′, arg max
+a′
+Qϕ′(s′,a′)).
+After theQ-function has been trained, inference on new environments is done by following
+greedily the policy prescribed by theQ-function, namely
+at = arg max
+a
+Qϕ(st,a ) for t = 1,...,T.
+This is the model that Pineda et al. (2020) used in their article. They propose two
+variants of the model, a subject-specific DDQN (SS-DDQN) as well as a dataset-specific
+DDQN. The difference lies in the input given to theQ-function. In the SS-DDQN, the
+neural network will take as inputˆxt andωt and output a|A| dimensional vector, with the
+probability to take each actiona∈A as the next move. On the contrary, the DS-DDQN
+will only take as inputωt, and as a result, the policy will only depend on the current
+87

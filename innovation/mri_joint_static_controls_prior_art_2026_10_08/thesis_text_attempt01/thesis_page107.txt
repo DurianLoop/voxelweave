@@ -1,0 +1,40 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+fastMRI (Zbontar et al., 2019) single-coil knee dataset for the experiments. We slightly
+modify follow their preprocessing (using complex data instead of magnitude data, different
+data normalization) that do not affect the relative ordering of the different methods. We
+provide ablations and a detailed discussion of these changes in Appendix A.2.1.
+Specifically, theycrop the data to 128× 128, which we refer to as (c)). Zhang et al.
+(2019b) insteadresizes the data to128× 128 which we replicate by first cropping to
+256× 256 and then resizing them to128× 128. This preprocessing results in images with
+different fields of view. We refer to this preprocessing as (c+r) and integrate it to our
+ablations. We also evaluate horizontal (h) sampling masks, used in Gözcü et al. (2018);
+Jin et al. (2019) in addition to the vertical (v) sampling masks used by Bakker et al.
+(2020); Zhang et al. (2019b) and Pineda et al. (2020).
+The deep reconstructors used in Pineda et al. (2020); Bakker et al. (2020) pre-trained
+by randomly sampling a mask from a set of distributions with different parameters. We
+ablated over two pretraining regimes which we abbreviate asb and z, respectively. We
+describe them in more detail in Appendix A.1
+Reconstruction models. We ablate over the two reconstruction models used in the RL
+SotA works of Pineda et al. (2020) and Bakker et al. (2020), namely a cascade of residual
+networks (cResNet) architecture from Zhang et al. (2019b), used in Pineda et al. (2020)
+and theUNet baseline provided in the fastMRI dataset, used in Bakker et al. (2020).
+The training details and masks used for the training of the reconstruction models are
+described in Appendix A.1.
+For the UNet, like Bakker et al. (2020) we take a single channel for magnitude only data
+as input, while for the cResNet we take the 2 complex channels as inputs. All models are
+trained usingℓ1 loss and directly output the reconstruction without a final nonlinearity.
+The UNet has 837635 parameters in total, while the cResNet is larger with 1093479
+parameters.
+Sampling methodsIn each ablation setting we compared the method of Bakker et al.
+(2020) to the following baselines and oracles (citations at the end of each item refer to
+prior works that also evaluate them):
+• Random sampling (Random): Acquire a fixed proportion of low-frequency lines
+in Fourier and then randomly sample the remaining lines (Jin et al., 2019; Pineda
+et al., 2020; Bakker et al., 2020).
+• Low-to-high frequencies (LtH): select k-space lines from low-to-high frequencies
+lines (Zhang et al., 2019b; Pineda et al., 2020; Jin et al., 2019).
+• (Stochastic) Learning-based Compressive Sampling (LBCS) (Gözcü et al., 2018;
+Sanchez et al., 2020a): This method trains a non-adaptive, greedy sampling policy
+that selects as a measurement candidate in each acquisition step the column that
+94

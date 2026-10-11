@@ -1,0 +1,20 @@
+3.6.2. Test time corruption
+Because our dataset lacks truly corrupted images, we simulated catas￾trophic degradation during testing using Gaussian noise (std=10) and bias
+field artefacts (polynomial degree 2, coefficients in [0.7, 0.9]). These parame￾ters differ substantially from the training augmentations to reduce evaluation
+bias. We also introduced a “false present” scenario—setting an entire scan
+to zero except for a single corner voxel—simulating a missing scan that by￾passes automated missing-data detection. Figure 5 shows an example of
+each test-time corruption type.
+Clean False present Gaussian noise Bias field
+Figure 5: Test time corruption examples. Transformations applied on an example
+FLAIR scan from the validation set. The image with bias field corruption is too dark
+to see by eye, so it has been rescaled for visualisation purposes only. White matter
+hyperintensities (WMH) in red and ischaemic stroke lesions (ISL) in blue.
+4. Results and discussion
+4.1. Modality specialists win when trained on fully multi-modal data
+Table 1 demonstrates that in an ideal training scenario—where all sub￾jects possess all modalities—the specialist U-Nets achieve the strongest mean
+macro-average performance, showing a significant improvement over the multi￾channel U-Net. Although U-HeMIS or MMAR yielded the highest Dice Simi￾larity Coefficient (DSC) in 6 out of 15 inference modality combinations, these
+improvements over the specialist U-Net were not statistically significant.
+Evaluating specialist models trained on single modalities reveals the in￾dependent predictive value of each MRI sequence. As anticipated, FLAIR is
+the most informative modality for both WMH and ISL segmentation, while
+DWI is the least informative, and T2w outperforms T1w. The highest macro￾average DSC on this dataset (58.01%) was achieved by the specialist model
+16

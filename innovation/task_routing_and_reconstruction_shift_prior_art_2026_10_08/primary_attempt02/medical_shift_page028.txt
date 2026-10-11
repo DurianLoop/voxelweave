@@ -1,0 +1,37 @@
+Wohlrapp Bubeck Rueckert Lotter
+AI/AN Asian Black NH/PI Other White
+Female,>62 54 1539 923 314 2518 6456 11804
+Female,≤62 39 1739 608 136 1710 9500 13732
+Male,>62 56 1734 1023 240 3553 8984 15590
+Male,≤62 27 1924 539 171 1853 11170 15684
+176 6936 3093 861 9634 36110 56810
+Table 5: Patient-wise groups used for analysis based on sex, age, and race for the CheXpert
+dataset. Unequally distributed with very few samples for American Indian or
+Alaska Native (AI/AN) and Native Hawaiian or Other Pacific Islander (NH/PI).
+Male Female
+≤58 155 92 147
+>58 144 110 254
+299 202 501
+Table 6: Patient distribution by sex and age for the UCSF-PDGM dataset. Patients under
+58 and females represent minority groups.
+Additional Fairness Results
+In addition to Equalized Odds and Skewed Error Ratio in the main text, we investigate two
+additional bias metrics:
+Equality of Opportunity (EOP):
+P( ˆY= 1|Y= 1,A= 0)
+=P( ˆY= 1|Y= 1,A= 1).
+We report the worst case Equality of Opportunity (Hardt et al., 2016) difference between
+groups
+maxi,j|P( ˆY= 1|Y= 1,A=i)
+−P( ˆY= 1|Y= 1,A=j)|,
+∀A∈A.
+EOP is a relaxation of EODD, requiring fairness only concerning the positive class
+(Y= 1).
+∆Dice:Given the limited availability of dedicated segmentation fairness metrics, we also
+compute:
+∆Dice = max
+i,j
+DiceAi−DiceAj
+,A∈A
+which represents the maximum difference in Dice across all protected subgroupsA.
+28

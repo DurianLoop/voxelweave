@@ -1,0 +1,41 @@
+7.1. GENERATIVE ADVERSARIAL NETWORKS (GANS) FOR
+POSTERIOR MODELING
+opposite goals. The generator tries to generate candidate samples that resemble the
+true distributionp(x), whereas thediscriminator aims at distinguishing real samples
+from generated ones. The generator network learns to map data from a latent space to
+the data distribution, and is described asgθ : RL→ RP. The discriminator performs a
+classification task, receiving a sample and outputting the probability that it has to be
+real, and so is described asdϕ : RP→ R.
+The two-player game can then be formally framed as (Goodfellow et al., 2014):
+min
+θ
+max
+ϕ
+Ex∼p(x) [log (dϕ(x))] + Ez∼p(z) [log (1−dϕ (gθ (z)))] (7.1)
+where z∼p(z) is a random variable in the latent space follow a simple distribution such
+as a multivariate Gaussianp(z) =N (z; 0,I). The objective is simply a cross-entropy
+term for binary classification. The model is calledadversarial becausegθ and dϕ aim at
+achieving opposite goals, they are adversaries in the game.
+In practice, the models are trained by minimizing Equation 7.1 in an alternating fashion,
+where dϕ is optimized fork steps and thengθ is optimized for a single step. This is due
+to the fact that the maximization overϕ happens in the inner problem, and in theory,
+this would imply that each time thatgθ change,dϕ should be trained until convergence.
+As this would incur prohibitive costs, the optimization is done overk steps only.
+GANs have had tremendous practical success, and manage to generate photorealistic
+images (Karras et al., 2019) or transfer artistic styles (Isola et al., 2017) among other
+things. But their application are extremely widespread (Goodfellow, 2016; Pan et al.,
+2019; Kazeminia et al., 2020).
+7.1.2 Conditional GANs
+However, in the present case, we are not interested inunconditional generation, where
+the model directly learns to generate samples from the data distributionp(x). We rather
+want to be able to approximateconditional distributions of the formp(x|y), where we
+want to condition the data distribution on some specific observationy.
+The first conditional GANs aimed at doing class-conditional generation (Mirza and
+Osindero, 2014), where the model should learn to generate images from the data dis-
+tribution that are consistent with the class given as input. For instance, if the model
+aimed at learning to represent cats and dogs, conditional generation would be the ability
+to integrate class information in the generative model in order to obtain samples from
+different classes on demand, i.e. have a generator of the formgθ(z,c ), wherec is the
+label of the class of interest.
+However, in the case of MRI and inverse problems, we are more interested in image-
+105

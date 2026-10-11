@@ -1,0 +1,49 @@
+Learning to Sample and Reconstruct for Accelerated MRI 2
+Traditional CS-MRI methods [2, 3] first subsample the measurements in the Fourier
+domain with heuristic sampling policies and then reconstruct MR images by solving
+an ill-posed inverse problem. These optimization-based methods are interpretable
+and with theoretical guarantees. Although they have notably reduced acquisition
+time compared to commercial MRI, they still have room for improvement.
+Recent advances in Deep Learning (DL) [4–10] have led to significant
+improvements in MRI reconstruction by using DL models as reconstructors. These
+models use heuristic sampling policies similar to CS-MRI and are trained on specific
+datasets. However, the quality of the sampling policies and reconstructors can be
+quantified by examining their acceleration-quality trade-off. The heuristic sampling
+policies may have a limited acceleration-quality trade-off, as they cannot adaptively
+decide the sampling strategy according to the anatomical structures of patients.
+To overcome this, some approaches learn an adaptive sampling policy which
+designs a specific sampling pattern for each individual image based on its unique
+characteristics, rather than by human design. One such approach views the sequential
+sampling in the Fourier domain as a feedback control process, formulates the sampling
+trajectory as a Partially Observed Markov Decision Process (POMDP) and solves it
+via deep Reinforcement Learning (RL). Existing dynamic sampling methods [11–13]
+propose using a dense-reward POMDP to learn parametric samplers with a fixed pre-
+trained reconstructor via deep RL. However, these methods suffer from the training
+mismatch, where the sampling pattern used to pre-train the reconstructor is different
+from the pattern given by the RL-learned sampler. This can lead to suboptimal
+performance in the learned pair of samplers and reconstructors.
+In this paper, we propose a novel alternating training framework, L2SR (Learning
+to Sample and Reconstruct), which incorporates an innovative sparse-reward POMDP
+formulation to facilitate the joint optimization of MRI sampling policies and
+reconstruction models. In contrast to previous efforts [11–13] our approach addresses
+the training mismatch issue, which emerges when samplers and reconstructors are
+optimized as isolated subproblems rather than focusing on the comprehensive joint
+problem. Unlike dense-reward POMDPs, our sparse-reward formulation uniquely
+disentangles the sampling and reconstruction stages by deliberately eliminating
+intermediate reconstructions during the sampling process. The final reconstruction
+occurs only at the end, leading to a unique joint sampler-reconstructor optimization
+problem. This problem can be solved by alternately optimizing the sampler (with the
+reconstructor kept constant) through RL, and the reconstructor (with the sampler
+kept constant) through back-propagation. Our experiments on fastMRI dataset [14]
+demonstrates L2SR’s capability to enhance MRI reconstruction quality.
+The main contributions of this paper are:
+• We formulate the MRI sampling and reconstruction process as a joint optimization
+problem of learning optimal MRI samplers and reconstructors, a novel formulation
+not explored in previous study. This formulation could potentially enhance the
+trade-off between acceleration and quality.
+• We propose a novel sparse-reward POMDP formulation for MRI sampling
+that addresses three key issues with dense-reward POMDPs: (1) It is more
+computationally efficient for inference by avoiding intermediate reconstructions;
+(2) It avoids the distributional mismatch issue, which is proven to have an
+advantage in reconstruction performance; (3) It provides a viable approach to
+tackle the joint sampler-reconstructor optimization problem.

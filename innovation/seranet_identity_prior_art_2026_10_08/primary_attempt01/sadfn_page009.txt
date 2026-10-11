@@ -1,0 +1,37 @@
+A Segmentation-aware Deep Fusion Network for Compressed Sensing MRI 9
+the MR image is sent to the Pre-SegNet to extract the segmentation features,
+which are then utilized for the multilayer feature aggregation in Pre-SegNet and
+feature fusion. Meanwhile, the zero-filled MR image is also input to the deep
+fusion network. The `2 Euclidean distance between the output reconstructed
+MR image and the corresponding full-sampled MR image in the training dataset
+is minimized. During the optimization, the parameters in the Pre-RecNetN and
+Pre-SegNet are kept fixed, while we only adjust the parameters in the deep fusion
+network and the 1 × 1 convolutions in multilayer feature aggregation.
+4 Experiments
+4.1 Datasets
+We train and test our SADFN model on MRBrainS datasets from Grand Chal￾lenge on MR Brain Image Segmentation(MRBrainS) Benchmark [28]. The datasets
+provides well-aligned multiple modalities MRI including T1, T1-IR and T2-
+FLAIR with segmentation labels by human experts. For simplicity, we only use
+the T1 weighted MRI data. In the future work, we plan to extend the model on
+multi-modalites MRI imaging. Total 5 scans are provided public segmentation
+labels. We randomly choose four scans for training containing total 192 slices.
+The training MR images are of size 240×240. We use the left MRI scan for
+testing the model performance containing total 48 slices.
+4.2 Implementation Details
+We train and test the algorithm on Tensorflow for the Python environment on
+a NVIDIA Geforce GTX 1080Ti with 11GB GPU memory and Intel Xeon CPU
+E5-2683 at 2.00GHz. The detailed network architectures for Pre-RecNet, Pre￾SegNet and SADFN have been introduced in previous section.
+The ADAM is used as the optimizer. We train the Pre-RecNet for 32000
+iterations using a batch containing four under-sampled and their corresponding
+full-sampled MR images as training pairs in Equation 2. The Pre-SegNet is also
+pre-trained for 32000 iterations using a batch containing 16 randomly cropped
+fully-sampled 128×128 patches and their segmentation labels. Again, we note
+that during the fine-tuning of the SADFN model, compressed feature tensor
+is yielded by multilayer features aggregation (MLFA) and the feature tensor
+is propagated to the Pre-RecNet before the feature fusion in each block. The
+SADFN is fine-tuned 12000 iterations using the same training batchsize as the
+pre-training of Pre-RecNet. We select the initial learning rate to be 0.001 for
+pre-trained stage and 0.0001 for fine-tune stage, the first-order momentum to
+be 0.9 and the second momentum to be 0.999 for both stages. We adopt batch
+normalization (BN) in Pre-SegNet. We also adopt data augmentation for training
+as implemented in [29].

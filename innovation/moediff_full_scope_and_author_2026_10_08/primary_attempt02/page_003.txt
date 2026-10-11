@@ -1,0 +1,116 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3
+results not only validate the technical soundness of MoEDiff￾SR but also underscore its clinical relevance.
+The primary contributions of this study include the following:
+• Token-based expert selection: We introduce a gating
+mechanism that computes token-wise expert activation
+scores based on multi-scale patch embeddings. This en￾ables fine-grained, region-aware expert selection, allowing
+the model to dynamically adapt to diverse anatomical and
+textural features across brain regions.
+• MoE for adaptive diffusion denoising: A novel MoE
+framework dynamically combines specialized diffusion
+denoisers tailored for specific anatomical characteristics,
+significantly enhancing the preservation of fine anatomical
+details.
+• Integration of anatomical priors: We incorporate gradi￾ent nonlinearity and bias field corrections into the training
+phase, significantly enhancing the gating network’s ability
+to accurately assign experts based on precise anatomical
+and tissue-specific characteristics, thereby improving
+perceptual fidelity and structural accuracy.
+• Clinical validation: Through the real clinical evaluation,
+our model demonstrates enhanced diagnostic performance
+in detecting subtle pathologies that are typically obscured
+in lower-resolution MRI, thereby affirming its clinical
+utility and diagnostic relevance.
+II. METHODOLOGY
+The main flowchart is illustrated in Fig. 1. Initially, given a
+7T MRI slice x, along with its corresponding gradient nonlinear￾ity correction g and bias field correction b, is processed through
+an image encoder E1 to generate the latent representation
+z0. Subsequently, the corresponding 3T MRI slice y serves
+as conditional input to the proposed MoEDiff-SR module,
+illustrated in Fig. 2. Finally, the resultant latent output zˆ0 from
+MoEDiff-SR is decoded by D to produce a super-resolved
+7MRI slice xˆ with 7T-like resolution and quality. The image
+encoder and decoder utilized in this study are derived from
+the VQ-VAE architecture [23]. Given that this study primarily
+emphasizes the MoEDiff-SR module, its detailed description
+and analysis are provided in the subsequent sections.
+Fig. 1: The flowchart of the proposed global methodology.
+A. Multi-scale patch embedding
+MRI scans exhibit complex anatomical variations across
+different regions. To effectively capture both global contextual
+information and local texture details, we employ a multi￾scale patch embedding strategy followed by Transformer￾based feature extraction and adaptive denoising using a MoE
+framework. Specifically, given a conditional input 3T MRI
+slice y, we decompose it into patches at multiple spatial scales,
+ensuring that the model captures features at different levels of
+granularity:
+• Large-scale patches (64×64): Encode global anatomical
+coherence and structural relationships.
+• Medium-scale patches (32×32): Capture mid-level contex￾tual features, providing a balance between spatial context
+and localized information.
+• Small-scale patches (16×16): Preserve fine-grained details,
+critical for structures like cortical boundaries and vascular
+features.
+Each set of patches is passed through a dedicated linear
+convolutional projection layer with kernel size and stride equal
+to the patch size, performing non-overlapping tokenization,
+which generates multi-scale embeddings Flarge, Fmedium, Fsmall.
+These multi-scale patch embeddings are concatenated along
+the token dimension to form a comprehensive feature repre￾sentation Fmulti-scale, which is then processed through the Swin
+Transformer encoder [24], donated as E2, effectively modelling
+both long-range dependencies and local spatial relationships
+in the MRI slice:
+zc = E2(Fmulti-scale), zc ∈ R
+N×d
+(1)
+where zc denotes the Transformer-encoded feature tokens, N is
+the total number of non-overlapping patches aggregated from
+all scales, and d is the feature embedding dimension of each
+token.
+B. Gating Mechanism
+To enable anatomically adaptive and semantically meaningful
+expert selection, we propose a token-aware gating mechanism
+that computes routing probabilities based on fine-grained
+interactions between expert-specific queries and Transformer￾encoded token representations. Given the encoded token
+sequence zc ∈ R
+N×d
+, we first project each token through
+a shared lightweight MLP to obtain a refined representation
+z˜c ∈ R
+N×d
+, where z˜
+n
+c ∈ R
+d denotes the n-th token. Then,
+each expert Ei
+is associated with a learnable query vector
+qi ∈ R
+d
+. We compute token-wise attention weights via cosine
+similarity followed by softmax normalization:
+Attn(i) =
+exp (cos θ(qi
+, z˜
+n
+c
+))
+PN
+m=1 exp (cos θ(qi
+, z˜m
+c
+))
+(2)
+The expert activation score is then calculated as the attention￾weighted semantic response:
+Scorei =
+X
+N
+n=1
+Attn(i)
+· cos θ(qi
+, z˜
+n
+c
+) (3)
+Finally, to encourage balanced expert utilization and prevent
+the collapse of routing to a small subset of experts, we
+apply a frequency-aware softmax to compute the final routing
+probability for each expert:

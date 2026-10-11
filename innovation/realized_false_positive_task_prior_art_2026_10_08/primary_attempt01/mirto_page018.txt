@@ -1,0 +1,109 @@
+18 N. K. Hernashki and S. Chatterjee
+0 100 200 300 400
+above-floor lesions (of 472)
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+detected
+missed, sub-threshold evidence
+missed, no evidence
+selected, IoU < 0.10
+−1 0 1
+log volume (z-score)
+−2.5
+0.0
+2.5
+5.0
+T2 contrast (z-score)
+REFLECT
+missed
+detected
+−1 0 1
+log volume (z-score)
+UCCD
+−1 0 1
+log volume (z-score)
+cDDPM
+−1 0 1
+log volume (z-score)
+AnomalyDINO
+Fig. 11. Detection at 20 cm3
+, validation threshold. (a) Error modes of the 472 above-floor lesions. (b) Detected (coloured)
+and missed (grey) lesions by standardised log volume and T2 contrast: volume separates them almost completely.
+−0.05 0.00 0.05 0.10
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+FLAIR − model: voxel AUROC
+−0.2 0.0 0.2 0.4
+FLAIR − model: voxel AUPRC
+−0.4 −0.2 0.0 0.2
+FLAIR − model: Dice, 20 cm³
+−0.15 −0.10 −0.05 0.00
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+T2 − model: voxel AUROC
+−0.4 −0.2 0.0
+T2 − model: voxel AUPRC
+−0.6 −0.4 −0.2 0.0
+T2 − model: Dice, 20 cm³
+baseline minus model (95% CI)
+subject mean subject median pooled
+Fig. 12. Baselines minus models for voxel AUROC, voxel
+AUPRC and Dice (20 cm3
+, validation threshold) under three
+aggregations, with Holm-adjusted families. FLAIR beats the
+residual models only in subject-averaged threshold-free met￾rics.
+ROC (+0.005 [−0.006, 0.016], T2 minus model). All base￾line contrasts, at every budget and aggregation, are listed
+in Appendix D.8.
+3.9 Training data
+Hypotheses (exploratory). If the healthy training data
+were a neutral background to a comparison of methods,
+giving every method the same alternative training set
+should leave the contrasts between methods unchanged.
+And if a training set could be chosen per method from
+validation data, the choice should be stable under resam￾pling of the 24 validation subjects.
+Holding the evaluation fixed and giving all four meth￾ods the same alternative training set reversed a signifi￾cant contrast (Fig. 13a). REFLECT − UCCD Dice was
+−0.042 [−0.060, −0.025] with all methods trained on IXI￾HH+Guys and +0.100 [0.079, 0.121] with all trained on
+MOOD+IXI, both pH < 0.005. The method × training￾set interaction carried 0.115 of Dice variance across the
+five training sets, and the four-method order differed
+from the IXI-HH+Guys order in 50% to 92% of defen￾sible universes, depending on the comparison set. The
+MOOD+IXI comparison needs a caveat: it adds T1 data
+for every method, and cDDPM’s MOOD+IXI training set
+was 72% T1, so it compares the same sources with multi￾contrast training. The comparison on IXI-HH+Guys is
+the clean one.
+Choosing a training set per method on 24 validation
+subjects was itself unstable (Fig. 13b). The primary se￾lection rule (median validation slice Dice) chose IXI￾HH+Guys for REFLECT in only 36.8% of 104 bootstrap
+resamples (MOOD+IXI 37.9%, MOOD+IXI-HH 22.8%),
+at a test regret of 0.055 Dice. Across resamples each rule
+produced between 27 and 137 distinct joint choices for the
+four methods, and the most frequent joint choice never
+exceeded 37.5%. Both hypotheses are therefore rejected,
+which is the empirical case for fixing a common train￾ing set by design, as we did. H1 and H2 held with every
+common training set (Appendix E). All twenty method–
+training-set combinations and the verdicts of the hypothe￾ses with each set of training data are in Appendix E.
+3.10 Latent aggregation for REFLECT
+Hypothesis. REFLECT’s four latent channels need not
+agree on where an anomaly lies, and its published map
+averages them. If their disagreement carries signal, ag￾gregating the channels by it should sharpen the map and
+raise Dice at equal burden. The median absolute deviation
+across channels (MAD) is retained as the recommended
+aggregation only if its interval does not overlap that of
+the best other aggregation.
+Replacing REFLECT’s published map by the fusion of
+Eq. (27) raised Dice at equal burden in two independently
+trained models (Fig. 14). At 20 cm3 with cohort matching,
+the MAD aggregation improved on the published map
+by +0.052 [0.045, 0.058] for REFLECT trained on IXI￾HH+Guys and by +0.038 [0.033, 0.043] for REFLECT
+trained on MOOD+IXI; every latent aggregation im￾proved it in both models; scoring with the latent stream
+alone hurt (−0.063 and −0.073); and the image stream
+alone beat the published fusion (+0.016, +0.014). At its
+own validation threshold, which is what a user would ob￾tain, MAD reached 0.544 [0.521, 0.566] (median 0.597) at
+15.3 cm3
+realised burden against 0.492 [0.468, 0.516] for
+the published map (median 0.542) at 15.7 cm3
+(on the

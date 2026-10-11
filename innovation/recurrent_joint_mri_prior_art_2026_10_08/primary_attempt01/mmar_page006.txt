@@ -1,0 +1,21 @@
+the subset of 206 patients (mean age ± std = 66 ± 11; 33% female; 69%
+hypertensive; 21% diabetics) with a complete set of MRI sequences avail￾able, in addition to WMH and ISL segmentation masks. Stroke sub-types
+included cortical and lacunar strokes affecting several locations including:
+middle cerebral artery, anterior cerebral artery, brain stem, cerebellum, in￾ternal and external capsules, lentiform nucleus, and the thalamus.
+Prior to model training, all scans underwent skull-stripping using Synth￾Strip (Hoopes et al., 2022), N4 bias-field correction (Tustison et al., 2010),
+and resampling to a 1 mm isotropic resolution. Data was randomly parti￾tioned into 103 training, 41 validation, and 62 test subjects (lesion distribu￾tions shown in Figure 1).
+Figure 1: Lesion volume distributions. White matter hyperintensity (WMH) and
+ischaemic stroke lesion (ISL) volumes across the training (left), validation (middle) and
+test (right) set. The number of cortical or lacunar ISL are reported over all individual
+lesions since each subject may have more than one (or zero) ISL.
+2.2. Hetero-modal training splits
+Clinical reality dictates that datasets frequently contain missing modali￾ties. To expand the pool of usable training data for WMH and ISL segmen￾tation, our goal is to leverage all available patient data to improve feature
+representation rather than discarding subjects with incomplete scans. To
+systematically evaluate this hetero-modal learning setting, we derived three
+different training data distributions from our dataset, illustrated in Figure
+2.
+2.2.1. Training split 1
+In this setup, all sequences are present for all training subjects. We used
+this modality-complete training split to evaluate and benchmark the over￾all effectiveness of each hetero-modal method against the modality specialist
+models (i.e., models that are trained and evaluated with a fixed combination
+6

@@ -1,0 +1,60 @@
+2 Qiaoying Huang, Xiao Chen, Dimitris Metaxas, and Mariappan S. Nadar
+ConvLSTM
+UNet
+Reg 1 DC Reg 2 DC Reg 3 DC
+k-space data
+AttReg DC
+under-sampled mask
+Initial mask
+F
+−1
+reconstructed image
+segmentation 
+probability map
+(initial or refined)
+attention
+map
+shared weights
+(a) Reconstruction module (b) Segmentation module
+(c) Attention module (d) Recurrent module
+k-space data & mask
+ConvLSTM
+UNet
+Refined mask
+x0
+real
+part
+imaginary
+part
+reconstructed 
+image
+segmentation probability map
+(c)
+(Input)
+(Output)
+Fig. 1. The proposed model takes the under-sampled k-space data as input and out￾puts segmentation masks. It consists of (a) reconstruction module, (b) segmentation
+module, (c) attention module and (d) recurrent module.
+Several end-to-end learning frameworks have been proposed for various appli￾cations. Caballero et al. [2] propose an unsupervised brain segmentation method
+that treats both reconstruction and segmentation simultaneously using patch￾based dictionary sparsity and a Gaussian mixture model. This method is not
+suitable for complicated scenarios such as the case where there are no clear
+boundaries between different tissues. Schlemper et al. [10] propose two neural
+networks (LI-net and Syn-net) that predict cardiac segmentation from under￾sampled k-space data. The Syn-net uses UNet [8] to map zero-filling image
+(inverse Fourier transform of under-sampled k-space) directly to segmentation
+maps. The LI-net exploits latent space features and requires fully-sampled images
+during training. Huang et al. [5] propose a Joint-FR-Net that simply optimizes
+a joint reconstruction and segmentation network by a combined loss function.
+The most relevant work to ours is [11] where the authors present a deep neural
+network architecture termed SegNetMRI. Specifically, the reconstruction and
+the segmentation sub-networks are pretrained and fine-tuned with shared en￾coders. The final segmentation depends on the combination of the intermediate
+segmentation results. The segmentation sub-network in SegNetMRI is trained
+on reconstructed images, which contain artifacts and noises and may influence
+the performance of segmentation. Different from SegNetMRI, we propose a new
+feature sharing method that overcomes the interference with noisy data.
+One challenge for end-to-end segmentation learning is the preparation of the
+training data with ground truth segmentation. Most current studies simulate the
+raw k-space data from DICOM images using direct Fourier transform. However,
+realistic k-space data can rarely be recovered from the images alone due to the
+complex-value nature of MR and common MR post-processing practices that
+may alter the acquisition. In addition, it is hard to obtain the ground truth
+segmentation for training. Manual labeling which is performed on images is prone
+to imperfect reconstruction and human error for small anatomy structures.

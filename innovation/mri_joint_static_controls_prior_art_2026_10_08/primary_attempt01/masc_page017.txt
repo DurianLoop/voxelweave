@@ -1,0 +1,42 @@
+Accelerated MRI with Metal Implants
+Appendix A. Additional Implementation Details
+Algorithm 1 outlines our co-adaptive training procedure, where the PPO policy and MAR-
+UNet are jointly optimized after each rollout.
+Algorithm 1: MASC: Joint PPO and MAR-UNet Training
+Input :DatasetD, rollout lengthN, scaling factorα
+Output:Trained policyπ θ and MAR-UNetg ψ
+Initialize policyπ θ, value networkV ϕ, pretrained MAR-UNetg ψ
+whilenot convergeddo
+Initialize rollout bufferB←∅
+foreachsteptin rolloutdo
+Reset environment if episode done
+Sample actiona t∼π θ(·|st)
+Update maskM t+1←M t∪{at}
+ReconstructI t+1←F−1(kfull⊙Mt+1)
+Apply MAR-UNet to obtaing ψ(It+1)
+Compute rewardr t←α·(Q(g ψ(It+1),I∗)−Q(g ψ(It),I∗))
+Store transition (st,at,rt,st+1) inB
+end
+Update PPO policyθand valueϕusingB
+Update MAR-UNetψwithL finetune =∥g ψ(It)−I ∗∥2
+2
+end
+returnπ θ,g ψ
+Appendix B. Additional Dataset Details
+We selected 200 subjects from the AutoPET FDG-PET/CT dataset (Gatidis et al., 2022)
+for MRI simulation. Table 4 summarizes patient demographics.
+Table 4:Dataset demographics (n=200).Summary of patient characteristics from the
+AutoPET dataset used for MRI simulation.
+Characteristic Value
+Subjects 200
+Age (years) 62.0±15.4 (range: 11–95)
+Sex
+Male 115 (57.5%)
+Female 84 (42.0%)
+Not reported 1 (0.5%)
+Diagnosis
+Melanoma 70 (35.0%)
+Lung cancer 65 (32.5%)
+Lymphoma 61 (30.5%)
+Negative 4 (2.0%)
+17

@@ -1,0 +1,539 @@
+                                                                                                                                             1
+
+
+
+
+   Uncertainty Estimation and Out-of-Distribution
+    Detection for Deep Learning-Based Image
+     Reconstruction using the Local Lipschitz
+         Danyal F. Bhutto, Bo Zhu, Jeremiah Z. Liu, Neha Koonjoo, Hongwei B. Li, Bruce R. Rosen,
+                                         and Matthew S. Rosen
+
+   Abstract— Accurate image reconstruction is at the heart
+of diagnostics in medical imaging. Supervised deep                                          I. INTRODUCTION
+learning-based approaches have been investigated for
+solving inverse problems including image reconstruction.                         ROM cancer staging and treatment planning to the
+However, these trained models encounter unseen data                              functional observation of fetal cardiac health,
+distributions that are widely shifted from training data                         medical imaging is an indispensable necessity for
+during deployment. Therefore, it is essential to assess                          healthcare. With specialized imaging sensors, we
+whether a given input falls within the training data                             can peer inside the human body and for instance
+distribution for diagnostic purposes. Uncertainty
+                                                                     follow a disease progression. Depending on the imaging
+estimation approaches exist but focus on providing an
+uncertainty map to radiologists, rather than assessing the           modality, the nature of sensor data varies widely, such as
+training distribution fit. In this work, we propose a method         ultrasound element-time space data, X-ray and Computed
+based on the local Lipschitz-based metric to distinguish             Tomography (CT) radon sinogram data, and Magnetic
+out-of-distribution images from in-distribution with an area         Resonance Imaging (MRI) k-space data. Based on the unique
+under the curve of 99.94%. Empirically, we demonstrate a             characteristics of their tomographic forward model encoding,
+very strong relationship between the local Lipschitz value
+                                                                     the sensor-domain data is transformed into comprehensible
+and mean absolute error (MAE), supported by a high
+Spearman's rank correlation coefficient of 0.8475, which             images through a complex inverse problem-solving process
+determines the uncertainty estimation threshold for optimal          known as image reconstruction. Hence, image reconstruction
+model performance. Through the identification of false               will often necessitate regularization to well-pose the inverse
+positives, the local Lipschitz and MAE relationship was              problem. Additionally, sensor-domain data contain millions of
+used to guide data augmentation and reduce model                     sample values, making accurate data processing a
+uncertainty. Our study was validated using the AUTOMAP
+                                                                     computationally demanding and intricate series of steps that
+architecture for sensor-to-image Magnetic Resonance
+Imaging (MRI) reconstruction. We compare our proposed                mainly rely on hand-crafted analytical methods for image
+approach with baseline methods: Monte-Carlo dropout and              reconstruction.
+deep ensembles, and further analysis included MRI                       In recent years, there have been notable efforts to apply Deep
+denoising and Computed Tomography (CT) sparse-to-full                Learning (DL) techniques to image reconstruction [1]–[4]. In
+view reconstruction using UNET architectures. We show                2018, Zhu et al. introduced a novel approach that leveraged
+that our approach is applicable to various architectures and
+                                                                     neural networks for domain-transform manifold learning,
+learned functions, especially in the realm of medical image
+reconstruction, where preserving the diagnostic accuracy             enabling the reconstruction of MRI data in a single pass by
+of reconstructed images remains paramount.                           mapping sensor-domain data to image-domain in a data-driven
+                                                                     fashion [5]. Their dual-domain manifold learning formalism,
+  Index Terms—Deep Learning, image reconstruction,                   known as AUTOMAP, was capable of learning multiple
+magnetic resonance imaging, computed tomography,                     forward-encoding schemes for MRI, including Radon
+uncertainty estimation, local Lipschitz                              projection and undersampled Fourier k-space, as well as
+
+   This work was supported by the National Science Foundation           J. Z. Liu was with the Department of Biostatistics, Harvard University,
+Graduate Research Fellowship under Grant No. DGE-1840990 and         Cambridge, MA, 02115. He is now with Google Research, Mountain
+NSF NRT: National Science Foundation Research Traineeship Program    View, CA, 94043 (email: jereliu@google.com).
+(NRT): Understanding the Brain (UtB): Neurophotonics DGE-               N. Koonjoo, H. B. Li, and B. R. Rosen are with the Harvard Medical
+1633516NSF.                                                          School, Boston, MA, 02115 and the Athinoula A. Martinos Center for
+  D. F. Bhutto is with the Department of Biomedical Engineering at   Biomedical Imaging, Department of Radiology, Massachusetts General
+Boston University, Boston, MA, 02215 and with the Athinoula A.       Hospital, Charlestown, MA, 02129 (email: nkoonjoo@mgh.harvard.edu,
+Martinos Center for Biomedical Imaging, Department of Radiology,     holi2@mgh.harvard.edu, and brrosen@mgh.harvard.edu).
+Massachusetts General Hospital, Charlestown, MA, 02129 (email:          M. S. Rosen is with Harvard Medical School, Boston, MA, 02115, the
+bhutto@bu.edu).                                                      Athinoula A. Martinos Center for Biomedical Imaging, Department of
+  B. Zhu was with the Athinoula A. Martinos Center for Biomedical    Radiology, Massachusetts General Hospital, Charlestown, MA, 02129
+Imaging, Department of Radiology, Massachusetts General Hospital,    and the Department of Physics, Harvard University, Cambridge, MA,
+Charlestown, MA, 02129 (email: bozhu5@gmail.com).                    02138, United States (email: msrosen@mgh.harvard.edu).
+                                                                                                                                      2
+
+
+reconstruct positron emission tomography (PET) images from           Lipschitz bounds can serve as nonlinear discriminants in
+sinogram data. Koonjoo et al. also demonstrated that domain-         classification tasks [29]. Moreover, the Lipschitz value can also
+specific trained models could yield significantly improved           be used to establish upper bounds on estimated regression error
+results, even when the forward-encoding model remains the            in the presence of noise, particularly in the context of vector-to-
+same [6]. Employing DL in image reconstruction also includes         vector regression, owing to the Lipschitz continuity property of
+enhanced signal-to-noise ratio (SNR) [5] with denoising              the Mean Absolute Error (MAE) [33]. It has also been
+capabilities [7] and reducing image artifacts [8]. These             employed in domain-transform manifold learning for image
+techniques can also effectively mitigate the challenges              reconstruction, to demonstrate the robustness of AUTOMAP
+associated with undersampled data during reconstruction [5],         models [6].
+[9]–[11].                                                               Numerous neural network architectures have been proposed
+   With constant deployment of several DL-based image                in the literature for DL in image reconstruction, including
+reconstruction approaches into medical facilities, their             AUTOMAP [5], dAUTOMAP [34], RIM-net [35], XPDNet
+robustness [12]–[15] and their applicability to data beyond the      [36], and DAGAN [37]. Convolutional Neural Networks
+training distribution [16], [17] has been questioned. There is       (CNNs) have also been employed for reconstruction tasks due
+also a growing focus on quantifying hallucinations or false          to their capacity to reduce artifacts, preserve structural details,
+structures introduced by these techniques [18], which could          and denoise images [10], [38]–[41]. In our study, we shall
+potentially lead to misdiagnosis. Recent work has addressed the      mainly employ AUTOMAP for our analysis due to the presence
+challenge of uncertainty estimation by training bifurcated           of both fully connected layers and convolutional layers within
+networks that produce both a reconstructed image and a               the neural network architecture. The fully connected layers are
+prediction of potential errors within the reconstructed image        designed to learn the inverse transformation, a capability
+[19], [20]. Another study utilized a total deep variation            supported by the universal approximation theorem [42]. Zhu et
+regularizer in a multi-step process to reconstruct predictions       al. initially demonstrated AUTOMAP's effectiveness in
+and quantified pixel-wise epistemic uncertainty, type of             reconstructing MRI k-space data, by learning the inverse of Fast
+uncertainty from the training dataset that often is reduced by       Fourier Transform. Subsequent research has expanded its utility
+more data [21]. While these methods offer a visual prediction        to various domains and functions, such as infrared
+of errors in the reconstructed image, their effectiveness is         interferometry for image reconstruction in astronomy [43]. We
+contingent on the training dataset and may not extend well to        also employ UNET architectures for MRI denoising [41] and
+out-of-distribution (OOD) images, such as trained on brain           sparse-to-full view CT reconstruction [10], to highlight that our
+scans while reconstructing and predicting uncertainty for OOD        method is applicable to fully convolutional neural networks.
+knee k-space input. In another study, researchers introduced            In this study, we showcase an approach to differentiate
+slight inconsistencies into the training datasets by applying a      between out-of-distribution (OOD) and in-distribution (ID)
+constant bias to create models with minor shifts, subsequently       samples that will help mitigate the risks associated with
+using the variations in predictions from these models to             reconstructing data that falls outside the training data
+measure epistemic uncertainty. While this approach                   distribution. We present the methodology for calculating the
+outperformed baseline methods, the authors acknowledged its          local Lipschitz value and elaborate on the training specifics for
+limitations in not mitigating biases introduced by the training      different neural network architecture. Additionally, we
+data, which, in turn, affect the reliability of the uncertainty      introduce a reconstruction pipeline in which a radiologist has
+estimates [22]. Some traditional techniques include Monte-           established a predefined local Lipschitz threshold for optimal
+Carlo dropout [23] and deep ensemble [24]. However, the main         performance. We provide empirical evidence supporting the
+limitations are the need to inference multiple times for each        use of the local Lipschitz value to estimate MAE as a means of
+input for Monte-Carlo and to train multiple models for deep          estimating uncertainty. We compare our local Lipschitz
+ensemble. Particularly in medical imaging where image sizes          technique to Monte-Carlo dropout and deep ensemble to
+are large, these two approaches are computationally heavy and        demonstrate the ability to establish a performance threshold for
+provide uncertainty results related to the intensity and texture     reconstructions and to identify when an input falls outside the
+of a reconstructed image, rather than uncertainty related to         training data distribution, enabling the use of alternative
+accuracy.                                                            methods for reconstruction. This approach helps avoid
+   Lipschitz-based metrics to demonstrate robustness have been       reconstructions in situations where the model's generalization
+explored in various studies for classification to vector-to-vector   may be limited.
+regression neural network approaches [6], [25]–[33]. Weng et
+al. introduced a robustness metric called Cross Lipschitz                                II. METHODOLOGY
+Extreme Value for Network Robustness (CLEVER). They
+                                                                       A. DL for Image Reconstruction Preliminaries
+provide theoretical justification for using the local Lipschitz to
+estimate robustness and provide experimental results of                 In DL-based image reconstruction tasks, the objective is to
+robustness against adversarial noise [25]. Zou et al. computed       reconstruct a target image 𝑦 from input data 𝑥 by learning a
+the Lipschitz bounds of convolutional neural networks,               reconstruction mapping 𝑓: ℝ → ℝ that minimizes the cost
+including models like AlexNet and GoogleNet, illustrating how        function 𝐶(𝑦, 𝑦) where 𝑦 = 𝑓 (𝑥) is ground truth image and
+                                                                                                                                    3
+
+
+𝑦 = 𝑓(𝑥) is the predicted image. The data is denoted as            the network struggles to effectively manage noise and produces
+{𝑦 , 𝑥 } where 𝑖 th observation, 𝑥 is an 𝑛 × 𝑛 set of input        an image that significantly deviates from a clean reconstruction,
+parameters, and 𝑦 is an 𝑛 × 𝑛 set of image output values. The      the local Lipschitz constant is associated with increased MAE
+accuracy can be defined between the truth vector 𝑦 =               and uncertainty.
+{𝑦 , … , 𝑦 } and the predicted vector 𝑦 = {𝑦 , … , 𝑦 } using
+the Mean Absolute Error (MAE) function, 𝑀𝐴𝐸(𝑦, 𝑦) =                  C. Comparison to Baseline
+   ∑ ‖𝑦 − 𝑦 ‖ .
+                                                                      Given the inherent uncertainties associated with real-world
+                                                                   data distributions, it is imperative to identify OOD test cases,
+  B. Calculation of the Local Lipschitz                            particularly where a model has not generalized effectively. For
+                                                                   the model AUTOMAP as illustrated in Fig. 1a, we present two
+  By definition, a function 𝑓 is 𝐿-Lipschitz continuous if for     approaches, using the local Lipschitz and measuring the
+any input 𝑥, 𝑦 ∈ ℝ , there exists a nonnegative constant 𝐿 ≥ 0.    variance in output after perturbing the input with Gaussian
+                                                                   noise four times, as demonstrated in (6) where Φ is
+                ‖𝑓(𝑥) − 𝑓(𝑦)‖ ≤ 𝐿‖𝑥 − 𝑦‖                 (1)       AUTOMAP, 𝑥 is the input image, and 𝑒 is 5% Gaussian noise
+                                                                   added.
+   The Lipschitz constant 𝐿 is the maximum ratio of variations
+in the output space over variations in the input space. This
+                                                                      𝑉𝑎𝑟[Φ(𝑥 + 𝑒 ), Φ(𝑥 + 𝑒 ), Φ(𝑥 + 𝑒 ), Φ(𝑥 + 𝑒 )]            (6)
+allows the Lipschitz constant to be a measure of the sensitivity
+of a Lipschitz continuous function with respect to the input
+                                                                      We compare these methods to baseline approaches,
+perturbations. The local Lipschitz constant is calculated when
+                                                                   specifically Monte-Carlo dropout and deep ensemble. For the
+𝑦 = 𝑥 + 𝑒, where 𝑒 is some input perturbation such as Gaussian
+                                                                   Monte-Carlo method, we modified the AUTOMAP
+noise.                                                             architecture with the addition of a dropout layer, as illustrated
+   For our reconstruction task, let us denote Φ for the DL         in Fig. 1b. During inference, the dropout layer activates and
+operation, either AUTOMAP or UNET, 𝐿 for the Lipschitz             deactivates different nodes, resulting in multiple outputs for a
+constant, 𝑥 for input image, and 𝑒 for error. We rewrite (1) as    single input. Hence, with 50 iterations, 50 clean and 50 noisy
+follows.                                                           images were reconstructed for each clean and noisy input,
+                                                                   respectively, and the local Lipschitz was calculated using the
+         ‖Φ(𝑥 + 𝑒) − Φ(𝑥)‖ ≤ 𝐿 ‖𝑥 + 𝑒 − 𝑥‖                 (2)     average outputs and variance of all the 50 clean reconstructed
+                                                                   images. For the deep ensemble method, five AUTOMAP
+            ‖Φ(𝑥 + 𝑒) − Φ(𝑥)‖ ≤ 𝐿 ∗ ‖𝑒‖                    (3)
+                                                                   models were trained and inferenced (see Fig. 1a) and the local
+                                                                   Lipschitz of the average output was computed, along with the
+   Given the small magnitude of ‖𝑒‖, we reorganize (3) and
+                                                                   variance of the five images generated by each trained model. In
+place an upper bound by empirically calculating 𝐿 , where the
+                                                                   Fig. 2, the receiver operating characteristic curves (ROC) and
+image 𝑥 = 𝑥 + 𝑒.                                                   AUC values are plotted. In Fig. 3, the uncertainty estimation
+                                                                   maps for AUTOMAP using the local Lipschitz, Monte-Carlo
+                         ‖Φ(𝑥′) − Φ(𝑥)‖
+                  𝐿 ≥                                      (4)     dropout, and deep ensemble techniques are compared.
+                            ‖𝑥′ − 𝑥‖
+                                                                     D. Neural Network Architectures
+                     1      ‖Φ(𝑥′) − Φ(𝑥)‖                 (5)        The AUTOMAP architecture is diagramed in Fig 1a. The
+               𝐿 ≥                                                 first fully connected layer, FC1, has 25,000 nodes with the tanh
+                     𝑛         ‖𝑥′ − 𝑥‖
+                                                                   activation function. The second fully connected layer, FC2, has
+                                                                   16384 nodes and no activation function. Both convolutional
+   Equation (4) lets us estimate the 𝐿 for any image after we      layers, Conv1 and Conv2, have 128 filters of size 5 x 5, with
+perturb it by Gaussian noise 𝑒 and compare the variations in the   the tanh and relu activation functions respectively. The
+output space over the input space. By calculating the mean of      convolutional transpose layer has 1 filter of size 7 x 7 and no
+the difference in output to the difference in input as             activation function. The AUTOMAP GitHub code,
+demonstrated in (5), the 𝐿 value can be interpreted as             https://github.com/MattRosenLab/AUTOMAP, was used as the
+representing the impact the network has on the accuracy in         initial starting point and further modified. The baseline methods
+recreating the output, given that the input difference remains     for comparison were Monte-Carlo and deep ensemble. For the
+small. For the AUTOMAP, Monte-Carlo dropout, and deep              Monte-Carlo method, a dropout layer was introduced after the
+ensemble models with noise levels ranging from 5% to 20% of        Conv1 layer, with a 25% probability of randomly deactivating
+the standard deviation of input k-space intensities added as       nodes, as illustrated in Fig. 1b. This modification yielded results
+Gaussian noise. Table 1 presents Spearman's rank correlation       that were comparable in accuracy to the single AUTOMAP
+coefficient values, highlighting a very strong correlation         model. Given that AUTOMAP is a computationally and
+between the 𝐿 and MAE. Since DL image reconstructions
+models learn denoising and lead to SNR gain, in cases where
+                                                                                                                                               4
+
+
+
+
+ Fig. 1: a) AUTOMAP architecture utilized for the single model and deep ensemble method. b) AUTOMAP architecture with a dropout layer
+ incorporated after the first convolutional layer for the Monte-Carlo method. c) UNET architecture for denoising MRI images. First, IFFT is
+ performed on the noisy k-space to form the noisy image input. Then the UNET employs residual learning through skip connections to learn the
+ difference between the noisy image input and clean image output. The same architecture is employed to transform a sparse view CT image,
+ reconstructed from a subsampled sinogram, to a full view CT image.
+memory-intensive architecture, five individual AUTOMAP                  effectively learn the transformation from a sparsely sampled
+models were trained to generate five images for the deep                reconstructed CT image to a fully sampled reconstructed image
+ensemble method.                                                        [10]. Our UNET architecture was inspired by Jin et al., and it
+  Mehta et al. demonstrated the applicability of UNETs for              incorporates skip connections to facilitate residual learning.
+denoising MRI images, which leads to improved SNR and                   This design enables the network to learn the difference between
+enhanced prediction accuracy for brain tumor detection [41].            the input image and the ground truth. The UNET architecture is
+Similarly, Jin et al. showed that a UNET architecture can               diagramed in Fig. 1c. We employed the same UNET
+                                                                                                                                   5
+
+
+architecture for training models to denoise MRI images and           dataset comprised of coronal proton density-weighted with and
+reconstruct full view from sparse view CT images.                    without fat suppression, axial proton density-weighted with fat
+                                                                     suppression, sagittal proton density, and sagittal T2-weighted
+                                                                     with fat suppression images. The fastMRI datasets constitutes
+  E. Image datasets and pre-processing
+                                                                     as OOD due to the images acquired using different field
+   For AUTOMAP, the training dataset consisted of 50,000 2D          strength, MR techniques, and parameters. All fastMRI images
+T1 weighted brain magnitude-only MRI images acquired at 3T           were preprocessed and normalized using the pyFFTW, a python
+from the MGH-USC Human Connectome Project (HCP) public               wrapper around the FFTW library. The ID and OOD datasets
+dataset [44]. First, each image was cropped to 256 x 256 and         were not augmented.
+subsampled to 128 x 128. Then each image was tiled to create
+a 256 x 256 image containing four reflections of the 128 x 128.         Both the denoising MRI UNET and the CT sparse-to-full
+Lastly, the final image was created by randomly cropping a 128       view reconstruction UNET utilized the 50,000 2D T1 weighted
+x 128 section. This approach to data augmentation was                magnitude-only brain images from the MGH-USC HCP dataset
+employed to promote translational invariance during training         for training, with the same data augmentations previously
+[5], [6]. The k-space input was generated by forward-encoding        described. To form the noisy image input for the denoising MRI
+each image using the Fast Fourier Transform provided by              UNET, the k-space was generated using MATLAB’s native 2D
+MATLAB’s native 2D FFT function. To learn a robust internal          FFT function, 10% Gaussian noise was added to the real and
+representation and promote manifold learning, the k-space input      imaginary values of k-space, and the final noisy image was
+was noise corrupted with one percent multiplicative noise. The       reconstructed using MATLAB’s native 2D IFFT function. The
+target image remained ‘noise-free’. To prepare the data for the      clean output was kept as ‘noise-free’ by reconstructing the
+network, the real and imaginary values of the k-space input          image from the clean k-space. The test dataset for the denoising
+were separated and then concatenated, resulting in an input          MRI UNET consisted of 5,000 brain images from the ID dataset
+vector of size 1 x 32,768 for each image. The target image was       and was preprocessed without data augmentations. To form the
+vectorized to size 1 x 16384.                                        sparse view reconstructed CT image, each image was forward
+                                                                     encoded using MATLAB’s native Radon function resulting in
+                                                                     a 360 view sinogram, 10% Gaussian noise was added, the
+                                                                     sinogram was subsampled by a factor of 4 to acquire 90 views,
+                                                                     and lastly, the sparse view image input was reconstructed using
+                                                                     MATLAB’s native Iradon function. The full view image output
+                                                                     was reconstructed from the full 360 view noise-free sinogram
+                                                                     using the Iradon function. The test dataset for the CT
+                                                                     reconstruction UNET consisted of 5,000 brain images from the
+                                                                     ID dataset and was preprocessed without data augmentations.
+
+
+                                                                       F. Training details
+                                                                        For training AUTOMAP, we employed the RMSProp
+                                                                     optimization                   algorithm                    (see
+                                                                     http://www.cs.toronto.edu/~tijmen/csc321/slides/lec-
+                                                                     ture_slides_lec6.pdf) with the following hyperparameters:
+                                                                     learning rate = .00002, momentum = 0.0, decay = 0.9 with
+Fig. 2: ROC curves and AUC values of six methods to detect OOD       minibatches of size = 50. We introduced weight regularization
+knee images from ID brain images using the 𝐿 values and the          to all the fully connected and convolutional layers with an 𝑙 -
+variance of multiple outputs. When using the 𝐿 values, the single
+model AUTOMAP, with an AUC of 87.77%, performed comparably           norm penalty (𝜆 = .001) to prevent overfitting, not performed
+to the Monte-Carlo and deep ensemble methods with an AUC of          in the original paper [5]. An additional 𝑙 -norm penalty (𝛾 =
+87.60% and 87.92% respectively. Using variance, the AUTOMAP          .0001) was applied to the feature map activations of the second
+outperforms both baseline methods with an AUC of 99.94% versus
+an AUC of 97.43% and 95.29% for Monte-Carlo and deep ensemble        convolutional layer to promote sparse representations. The cost
+methods respectively.                                                function minimized was the sum squared loss difference
+                                                                     between the network output and the target image. All models
+   We curated two testing datasets for analysis - an ID and an       were trained for 100 epochs. AUTOMAP typically took 7-8
+OOD datasets. In medical imaging, OOD is defined as inputs
+that are unseen due to a selection bias in the training data [45],
+[46]. The ID dataset consisted of 5,000 brain MRIs from the
+HCP dataset but was not a subset of the training set. The OOD
+dataset consisted of 5,000 knee MRI images acquired at 1.5T
+and 3T from the NYU fastMRI dataset [47]. While the training
+and ID datasets comprised of T1 weighted images, the OOD
+                                                                                                                                                         6
+
+
+
+
+ Fig. 3: MRI reconstructions with a) reference image, b-d) AUTOMAP with local Lipschitz, e-g) Monte-Carlo, and h-j) deep ensemble
+ reconstruction, error map, and uncertainty map results. For Monte-Carlo dropout and deep ensemble respective uncertainty maps g) and j),
+ significant variations are concentrated in areas with high intensity and noticeably pronounced texture patterns in the reconstructions e) and h)
+ respectively, indicated by red arrows. These regions aren’t correlated to high error regions as indicated by red arrows in their respective error
+ maps f) and i). In contrast, b-d), which represents the local Lipschitz approach, calculated using 5% Gaussian noise, offers a more effective
+ method for uncertainty estimation. This is because the noise in k-space is not localized to high or low frequencies but rather distributed throughout
+ and modeled using Gaussian noise.
+
+hours to train using the TensorFlow 2.2.0 machine learning                   traditional approaches. As depicted in Fig. 2, the plots of the
+framework [48] with 2 NVIDIA Tesla GV100 graphics                            ROC curves and AUC values for six methods aimed at
+processing units (GPUs) with 32 GB memory capacity each.                     detecting OOD knee images from the ID brain images using the
+   For both UNETs, we employed the RMSProp optimization                      𝐿 values and the variance of multiple outputs. We compared
+algorithm with the following hyperparameters: learning rate =                the single AUTOMAP model with the baseline methods of
+.0002, momentum = 0.0, decay = 0.9 with minibatches of size                  Monte-Carlo and deep ensemble. When using the 𝐿 values,
+= 100, and trained for 100 epochs. During training, one percent              AUTOMAP, with an AUC of 87.77%, performs similarly to the
+multiplicative noise was also applied to the image input. The                Monte-Carlo and deep ensemble methods, which achieve
+cost function minimized was sum squared loss difference
+                                                                                                   TABLE 1
+between the network output and the target image. The UNETs                    SPEARMAN’S RANK CORRELATION COEFFICIENT VALUES FOR
+typically took 11-12 hours to train using TensorFlow 2.2.0                           THE RELATIONSHIP BETWEEN 𝐿 AND MAE
+machine learning framework [48] with 2 NVIDIA Tesla GV100
+graphics processing units (GPUs) with 32 GB memory capacity
+each.
+
+                          III. RESULTS
+  A. Out-of-distribution Detection
+   To guarantee only the test data that falls within the training
+distribution is used for diagnosis, we validate our suggested
+Lipschitz and variance metrics for OOD detection against
+                                                                                                                                                   7
+
+
+
+
+ Fig. 4: a) Image reconstruction pipeline designed for integration into clinical settings to assess suitable reconstruction performance through
+ calculating the local Lipschitz value, 𝐿 . If the 𝐿 is below a predetermined threshold 𝛶, the DL image reconstruction model performed with
+ sufficient accuracy. If the 𝐿 is above the threshold 𝛶, there is greater uncertainty than desired, and the data should be processed using an
+ alternative technique. b) Empirical evidence of the monotonic relationship between the local Lipschitz value, 𝐿 , and MAE for 5,000 ID images
+ with 5% and 10% Gaussian noise for the single AUTOMAP model, as well as for Monte-Carlo and deep ensemble methods, each with 5% noise,
+ left to right columns respectively. The Spearman’s rank correlation coefficient values are listed on the top and suggest a very strong correlation.
+ c) Selective prediction to determine threshold 𝛶. As indicated by the red arrows in the leftmost column, a radiologist can determine the upper
+ threshold for MAE that qualifies as suitable performance and subsequently, by matching the percentage of referred images, identify the threshold
+ 𝛶 from the mean 𝐿 plot.
+
+
+AUCs of 87.60% and 87.92%, respectively. When employing                     levels ranging from 5% to 20%, highlighting the effectiveness
+variance, AUTOMAP outperforms both baseline methods with                    of using the 𝐿 as an indicator of reconstruction quality and
+an impressive AUC of 99.94%, compared to AUCs of 97.43%                     uncertainty.
+and 95.29% for Monte-Carlo and deep ensemble methods,
+respectively.                                                                  In Fig. 3, we illustrate MRI reconstructions with a) reference
+                                                                            image, b-d) AUTOMAP with local Lipschitz, e-g) Monte-
+                                                                            Carlo, and h-j) deep ensemble reconstruction, error map, and
+  B. The Local Lipschitz as Uncertainty Estimation Metric
+                                                                            uncertainty map results. In the case of Monte-Carlo and deep
+   The applicability of the local Lipschitz value was extended              ensemble respective uncertainty maps g) and j), significant
+to its utility in estimating uncertainty. We demonstrate the                variations are concentrated in areas with high intensity and
+empirical evidence of its correlation with MAE, and establish               noticeably pronounced texture patterns in the reconstructions e)
+an uncertainty threshold for accuracy. Table 1 displays the                 and h) respectively, indicated by red arrows. These regions
+Spearman's rank correlation coefficient values for three                    aren’t correlated to high error regions as indicated by red arrows
+reconstruction methods, each calculated using the ID dataset                in their respective error maps f) and i). In contrast, b-d), which
+consisting of 5,000 images. These methods include the single                represents the local Lipschitz approach, calculated using 5%
+model AUTOMAP, Monte-Carlo dropout, and deep ensemble.                      Gaussian noise, offers a more effective method for uncertainty
+Table 1 shows a remarkably strong correlation between the 𝐿                 estimation. This is because the noise in k-space is not localized
+and MAE for all three methods across added Gaussian noise
+                                                                                                                                         8
+
+
+to high or low frequencies but rather distributed throughout and          and subsequently, by matching the percentage of referred
+modeled using Gaussian noise.                                             images, identify the threshold Υ from the mean 𝐿 plot.
+
+   In Fig. 4a, we present a pipeline designed for integration into           To demonstrate that this monotonic relationship extends to
+clinical settings to assess suitable reconstruction performance.          other architectures and learned functions, in Fig. 5a, we observe
+The algorithm deployed in this pipeline reconstructs two                  that the same relationship holds for an MRI denoising UNET,
+images, one noisy and one clean, to calculate the local Lipschitz         composed entirely of convolutional layers. There is a very
+value, 𝐿 . This value is obtained by measuring the difference             strong correlation, indicated by the Spearman correlation value
+between the output and input and then compared to a                       of 0.7113, between the 𝐿 and MAE. This network was trained
+predetermined uncertainty threshold, Υ. If 𝐿 < 𝛶, it indicates            to denoise reconstructions with 10% noise, and we calculated
+that the DL image reconstruction model performed with                     the 𝐿 by taking the difference between a reconstruction with
+sufficient accuracy. However, if 𝐿 ≥ 𝛶, the data should be                15% noise and one with 10% noise. In Fig. 5b, we present the
+processed using an alternative technique. This approach helps             𝐿 versus MAE plot for the sparse-to-full view CT UNET
+ensure that only images reconstructed with adequate accuracy              reconstruction model. Once again, we calculated the 𝐿 by
+are retained for further analysis and diagnosis purposes, which           taking the difference between a reconstruction with 15% noise
+is of the utmost importance in clinical settings.                         and one with 10% noise. The same monotonic relationship is
+                                                                          evident, with a very strong Spearman correlation value of
+   In Fig. 4b, we provide a visual representation of the                  0.7722.
+relationship between the 𝐿 for 5,000 ID images, using the
+single model AUTOMAP with 5% and 10% noise, as well as                       This evidence strongly suggests that the relationship between
+Monte-Carlo and deep ensemble methods, each with 5% noise.                the 𝐿 and MAE can serve as an effective method for
+This correlation reinforces the utility of the local Lipschitz as a       estimating uncertainty and can be applied as a checkpoint in the
+measure of reconstruction quality and uncertainty.                        reconstruction pipeline for various architectures and learned
+                                                                          functions. This approach ensures that only images
+   In Fig. 4c, we illustrate how a threshold, Υ, can be determined        reconstructed with sufficient accuracy are used in diagnostic
+through selective prediction for reconstruction methods. We               applications, enhancing the reliability and trustworthiness of
+arrange the 𝐿 values of the ID validation dataset in descending           the models deployed.
+order. Next, we progressively ‘refer’ images with the highest
+𝐿 to an alternative reconstruction technique, and at each step,
+                                                                            C. Identification of False Positives (FP) to Guide Data
+calculate the mean 𝐿 and the MAE of the remaining set. As
+                                                                          Augmentation and Reduce Epistemic Uncertainty
+the top and bottom rows of Fig. 4c show, as more images are
+referred during each iteration, both the mean 𝐿 and the MAE                  In Fig. 6a, we display the 𝐿 vs MAE plot for 5,000 OOD
+of the remaining images decrease. As indicated by the red                 knee images. These 𝐿 values were calculated by applying 5%
+arrows in the leftmost column, a radiologist can determine the            Gaussian noise. Due to the moderate relationship indicated by
+upper threshold for MAE that qualifies as suitable performance            the Spearman’s correlation value of 0.4362 between the 𝐿 and
+                                                                          MAE, we investigated the specific samples that exhibited low
+                                                                          𝐿 and high MAE. The red box highlights instances classified
+                                                                          as FP with low 𝐿 (𝐿 < .6) and high MAE (𝑀𝐴𝐸 > .023). In
+                                                                          Fig. 6b, from the top row to the bottom row, we display the FP
+                                                                          images, random images from the OOD dataset, and random
+                                                                          images from the ID dataset, representing the training dataset,
+                                                                          respectively. The FP images are of high intensity and
+                                                                          encompass the entire frame with a different field-of-view
+                                                                          (FOV) compared to the random OOD or random ID images.
+                                                                          This information unveils a weakness in our existing data
+                                                                          augmentation pipeline and provides valuable information for
+                                                                          reducing epistemic uncertainty leading to improved
+                                                                          performance and generalization.
+  Fig. 5: a) The local Lipschitz value, 𝐿 , versus MAE plot for the
+  denoising MRI UNET indicates a strong correlation with a Spearman’s
+  rank correlation coefficient value of 0.7113. b) The local Lipschitz
+  value, 𝐿 , versus MAE plot for the CT sparse-to-full view
+                                                                                                IV. DISCUSSION
+  reconstruction UNET indicates a strong correlation with a Spearman’s       In this study, we emphasize the importance of identifying if
+  rank correlation coefficient value of 0.7722. These plots empirically
+  demonstrate the monotonic relationship between the 𝐿 and MAE and
+                                                                          an image is ID and reconstructed with minimal uncertainty,
+  that the local Lipschitz uncertainty estimation method can apply to     ensuring that patient safety is never compromised. We present
+  different architectures and learned functions.                          a single model AUTOMAP variance method for detecting OOD
+                                                                                                                                                9
+
+
+
+
+ Fig. 6: The local Lipschitz value, 𝐿 , versus MAE plot for OOD knee images using the AUTOMAP reconstruction model. The red box indicates
+ the FPs with low 𝐿 (𝐿 < .6) and high MAE (𝑀𝐴𝐸 > .023). b) from the top row to the bottom row, FP images, random images from the OOD
+ dataset, and random images from the ID dataset that represent the training dataset, respectively. The FP images are of high intensity and
+ encompass the entire frame with a different FOV than the random OOD or random ID images. This information unveils a weakness in our existing
+ data augmentation pipeline and provides valuable information for reducing epistemic uncertainty leading to improved performance and
+ generalization.
+
+images, which surpasses baseline methods in performance                  Spearman's rank correlation coefficient, and expand its use
+while remaining simple to implement. It's important to note that         from studying robustness to uncertainty estimation of DL image
+the baseline methods require a significantly larger amount of            reconstruction techniques. We show results for both
+memory and time. The Monte-Carlo method demands multiple                 AUTOMAP and UNET architectures and for different
+inferences for each input, involving 50 inferences and storage           reconstruction applications and methods. Through selective
+of 50 images per input. The deep ensemble method necessitates            prediction, we illustrate a method for determining a local
+the training and storage of multiple models, specifically five           Lipschitz uncertainty threshold. When the local Lipschitz value
+AUTOMAP models, which results in five inferences and                     of an image exceeds this threshold, the reconstructed image is
+storage of five images per input. The limitation in our OOD              deemed inaccurate, and an alternative technique should be
+detection method is the need to inference with noise multiple            employed for reconstruction. In the future, we aspire to
+times for variance calculation (n=4), which is still considerably        collaborate with radiologists to determine the optimal local
+less computationally intensive.                                          Lipschitz threshold for a deployed model in a clinical setting.
+                                                                         Lastly, we use our local Lipschitz method to identify FP and
+  Furthermore, we demonstrate a monotonic relationship                   provide potential improvements to the data augmentation
+between the local Lipschitz value and MAE, as measured by the            pipeline that may help model generalization. Given the
+                                                                                                                                                            10
+
+
+expanding role of AI in medical image reconstruction, with                       [18] S. Bhadra, V. A. Kelkar, F. J. Brooks, and M. A. Anastasio, “On
+                                                                                      hallucinations in tomographic image reconstruction,” arXiv, 2020, doi:
+companies like GE Healthcare gaining FDA clearance for their                          10.48550/arxiv.2012.00646.
+models, it has become increasingly crucial to establish accuracy                 [19] R. Barbano, Ž. Kereta, C. Zhang, A. Hauptmann, S. Arridge, and B. Jin,
+checkpoints within the reconstruction pipeline. These                                 “Quantifying Sources of Uncertainty in Deep Learning-Based Image
+                                                                                      Reconstruction,” Arxiv, 2020, doi: 10.48550/arxiv.2011.08413.
+checkpoints will help ensure patient safety while maintaining
+                                                                                 [20] R. Shaw, C. H. Sudre, S. Ourselin, and M. J. Cardoso, “Estimating MRI
+high standards of accuracy and reliability.                                           Image Quality via Image Reconstruction Uncertainty,” Arxiv, 2021, doi:
+                                                                                      10.48550/arxiv.2106.10992.
+                           V. REFERENCES                                         [21] D. Narnhofer, A. Effland, E. Kobler, K. Hammernik, F. Knoll, and T.
+                                                                                      Pock, “Bayesian Uncertainty Estimation of Learned Variational MRI
+                                                                                      Reconstruction,” Arxiv, 2021, doi: 10.48550/arxiv.2102.06665.
+ [1] S. Arridge, P. Maass, O. Öktem, and C.-B. Schönlieb, “Solving inverse       [22] J. J. Thiagarajan, R. Anirudh, V. Narayanaswamy, and P.-T. Bremer,
+     problems using data-driven models,” Acta Numer, vol. 28, pp. 1–174,              “Single Model Uncertainty Estimation via Stochastic Data Centering,”
+     2019, doi: 10.1017/s0962492919000059.                                            Arxiv, 2022, doi: 10.48550/arxiv.2207.07235.
+ [2] G. Wang, J. C. Ye, and B. D. Man, “Deep learning for tomographic image      [23] Y. Gal and Z. Ghahramani, “Dropout as a Bayesian Approximation:
+     reconstruction,” Nat Mach Intell, vol. 2, no. 12, pp. 737–748, 2020, doi:        Representing Model Uncertainty in Deep Learning,” Arxiv, 2015, doi:
+     10.1038/s42256-020-00273-z.                                                      10.48550/arxiv.1506.02142.
+ [3] K. Hammernik et al., “Physics-Driven Deep Learning for Computational        [24] B. Lakshminarayanan, A. Pritzel, and C. Blundell, “Simple and Scalable
+     Magnetic Resonance Imaging: Combining physics and machine learning               Predictive Uncertainty Estimation using Deep Ensembles,” Arxiv, 2016,
+     for improved medical imaging,” IEEE Signal Process. Mag., vol. 40, no.           doi: 10.48550/arxiv.1612.01474.
+     1, pp. 98–114, 2023, doi: 10.1109/msp.2022.3215288.                         [25] T.-W. Weng et al., “Evaluating the Robustness of Neural Networks: An
+ [4] F. Knoll et al., “Deep-Learning Methods for Parallel Magnetic Resonance          Extreme       Value      Theory     Approach,”      Arxiv,    2018,   doi:
+     Image Reconstruction,” IEEE Signal Process. Mag., vol. 37, no. 1, pp.            10.48550/arxiv.1801.10578.
+     128–140, 2020, doi: 10.1109/msp.2019.2950640.                               [26] T.-W. Weng et al., “Towards Fast Computation of Certified Robustness
+ [5] B. Zhu, J. Z. Liu, S. F. Cauley, B. R. Rosen, and M. S. Rosen, “Image            for ReLU Networks,” Arxiv, 2018, doi: 10.48550/arxiv.1804.09699.
+     reconstruction by domain-transform manifold learning,” Nature, vol. 555,    [27] W. Ruan, X. Huang, and M. Kwiatkowska, “Reachability Analysis of
+     no. 7697, pp. 487–492, 2018, doi: 10.1038/nature25988.                           Deep Neural Networks with Provable Guarantees,” Arxiv, 2018, doi:
+ [6] N. Koonjoo, B. Zhu, G. C. Bagnall, D. Bhutto, and M. S. Rosen,                   10.48550/arxiv.1805.02242.
+     “Boosting the signal-to-noise of low-field MRI with deep learning image     [28] R. Balan, M. Singh, and D. Zou, “Lipschitz Properties for Deep
+     reconstruction,” Sci Rep-uk, vol. 11, no. 1, p. 8248, 2021, doi:                 Convolutional Networks,” Arxiv, 2017, doi: 10.48550/arxiv.1701.05217.
+     10.1038/s41598-021-87482-7.                                                 [29] D. Zou, R. Balan, and M. Singh, “On Lipschitz Bounds of General
+ [7] H. C. Burner, C. J. Schuler, and S. Harmeling, “Image denoising: Can             Convolutional        Neural       Networks,”      arXiv,     2018,    doi:
+     plain Neural Networks compete with BM3D?,” 2012 IEEE Conf. Comput.               10.48550/arxiv.1808.01415.
+     Vis. Pattern Recognit., vol. 1, pp. 2392–2399, 2012, doi:                   [30] P. Bartlett, D. J. Foster, and M. Telgarsky, “Spectrally-normalized margin
+     10.1109/cvpr.2012.6247952.                                                       bounds for neural networks,” Arxiv, 2017.
+ [8] C. Dong, Y. Deng, C. C. Loy, and X. Tang, “Compression Artifacts            [31] S. Verma and Z.-L. Zhang, “Stability and Generalization of Graph
+     Reduction by a Deep Convolutional Network,” arXiv, 2015, doi:                    Convolutional Neural Networks,” Arxiv, 2019.
+     10.48550/arxiv.1504.06993.                                                  [32] M. Fazlyab, A. Robey, H. Hassani, M. Morari, and G. J. Pappas,
+ [9] B. Kelly, T. P. Matthews, and M. A. Anastasio, “Deep Learning-Guided             “Efficient and Accurate Estimation of Lipschitz Constants for Deep
+     Image Reconstruction from Incomplete Data,” arXiv, 2017, doi:                    Neural Networks,” Arxiv, 2019, doi: 10.48550/arxiv.1906.04893.
+     10.48550/arxiv.1709.00584.                                                  [33] J. Qi, J. Du, S. M. Siniscalchi, X. Ma, and C.-H. Lee, “On Mean Absolute
+[10] K. H. Jin, M. T. McCann, E. Froustey, and M. Unser, “Deep                        Error for Deep Neural Network Based Vector-to-Vector Regression,” Ieee
+     Convolutional Neural Network for Inverse Problems in Imaging,” IEEE              Signal Proc Let, vol. 27, pp. 1485–1489, 2020, doi:
+     Trans. Image Process., vol. 26, no. 9, pp. 4509–4522, 2017, doi:                 10.1109/lsp.2020.3016837.
+     10.1109/tip.2017.2713099.                                                   [34] J. Schlemper et al., “dAUTOMAP: decomposing AUTOMAP to achieve
+[11] K. Hammernik et al., “Learning a variational network for reconstruction          scalability and enhance performance,” Arxiv, 2019.
+     of accelerated MRI data,” Magn. Reson. Med., vol. 79, no. 6, pp. 3055–      [35] K. Lønning, P. Putzky, J.-J. Sonke, L. Reneman, M. W. A. Caan, and M.
+     3071, 2018, doi: 10.1002/mrm.26977.                                              Welling, “Recurrent inference machines for reconstructing heterogeneous
+[12] Y. Huang, T. Würfl, K. Breininger, L. Liu, G. Lauritsch, and A. Maier,           MRI data,” Med Image Anal, vol. 53, pp. 64–78, 2019, doi:
+     “Medical Image Computing and Computer Assisted Intervention –                    10.1016/j.media.2019.01.005.
+     MICCAI 2018, 21st International Conference, Granada, Spain, September       [36] Z. Ramzi, P. Ciuciu, and J.-L. Starck, “XPDNet for MRI Reconstruction:
+     16-20, 2018, Proceedings, Part I,” Lect. Notes Comput. Sci., pp. 145–153,        an application to the 2020 fastMRI challenge,” Arxiv, 2020, doi:
+     2018, doi: 10.1007/978-3-030-00928-1_17.                                         10.48550/arxiv.2010.07290.
+[13] N. M. Gottschling, V. Antun, B. Adcock, and A. C. Hansen, “The              [37] G. Yang et al., “DAGAN: Deep De-Aliasing Generative Adversarial
+     troublesome kernel: why deep learning for inverse problems is typically          Networks for Fast Compressed Sensing MRI Reconstruction,” Ieee T Med
+     unstable,” arXiv, 2020, doi: 10.48550/arxiv.2001.01258.                          Imaging, vol. 37, no. 6, pp. 1310–1321, 2017, doi:
+[14] V. Antun, F. Renna, C. Poon, B. Adcock, and A. C. Hansen, “On                    10.1109/tmi.2017.2785879.
+     instabilities of deep learning in image reconstruction and the potential    [38] D. M. Pelt and K. J. Batenburg, “Fast Tomographic Reconstruction From
+     costs of AI,” Proc National Acad Sci, vol. 117, no. 48, pp. 30088–30095,         Limited Data Using Artificial Neural Networks,” IEEE Trans. Image
+     2020, doi: 10.1073/pnas.1907377117.                                              Process., vol. 22, no. 12, pp. 5238–5251, 2013, doi:
+[15] M.-H. Laves, M. Tölle, and T. Ortmaier, “Uncertainty for Safe Utilization        10.1109/tip.2013.2283142.
+     of Machine Learning in Medical Imaging, and Graphs in Biomedical            [39] D. Boublil, M. Elad, J. Shtok, and M. Zibulevsky, “Spatially-Adaptive
+     Image Analysis, Second International Workshop, UNSURE 2020, and                  Reconstruction in Computed Tomography Using Neural Networks,”
+     Third International Workshop, GRAIL 2020, Held in Conjunction with               IEEE Trans. Méd. Imaging, vol. 34, no. 7, pp. 1474–1485, 2015, doi:
+     MICCAI 2020, Lima, Peru, October 8, 2020, Proceedings,” Lect. Notes              10.1109/tmi.2015.2401131.
+     Comput. Sci., pp. 81–96, 2020, doi: 10.1007/978-3-030-60365-6_9.            [40] H. Chen et al., “Low-dose CT via convolutional neural network,” Biomed.
+[16] M. Asim, M. Daniels, O. Leong, A. Ahmed, and P. Hand, “Invertible                Opt. Express, vol. 8, no. 2, p. 679, 2017, doi: 10.1364/boe.8.000679.
+     generative models for inverse problems: mitigating representation error     [41] D. Mehta, D. Padalia, K. Vora, and N. Mehendale, “MRI image denoising
+     and dataset bias,” arXiv, 2019, doi: 10.48550/arxiv.1905.11672.                  using U-Net and Image Processing Techniques,” 2022 5th Int. Conf. Adv.
+[17] V. A. Kelkar, S. Bhadra, and M. A. Anastasio, “Compressible Latent-              Sci. Technol. (ICAST), vol. 00, pp. 306–313, 2022, doi:
+     Space Invertible Networks for Generative Model-Constrained Image                 10.1109/icast55766.2022.10039653.
+     Reconstruction,” IEEE Trans. Comput. Imaging, vol. 7, pp. 209–223,
+     2020, doi: 10.1109/tci.2021.3049648.
+                                                                                   11
+
+
+[42] K. Hornik, M. Stinchcombe, and H. White, “Multilayer feedforward
+     networks are universal approximators,” Neural Networks, vol. 2, no. 5,
+     pp. 359–366, 1989, doi: 10.1016/0893-6080(89)90020-8.
+[43] J. Sanchez-Bermudez, A. Alberdi, R. Schödel, and A. Sivaramakrishnan,
+     “CASSINI-AUTOMAP: a novel image reconstruction algorithm for
+     infrared interferometry,” Opt Infrared Interf Imaging Viii, vol. 12183, pp.
+     121831K-121831K–14, 2022, doi: 10.1117/12.2629488.
+[44] Q. Fan et al., “MGH–USC Human Connectome Project datasets with
+     ultra-high b-value diffusion MRI,” Neuroimage, vol. 124, no. Pt B, pp.
+     1108–1114, 2016, doi: 10.1016/j.neuroimage.2015.08.075.
+[45] T. Cao, C.-W. Huang, D. Y.-T. Hui, and J. P. Cohen, “A Benchmark of
+     Medical Out of Distribution Detection,” arXiv, 2020, doi:
+     10.48550/arxiv.2007.04250.
+[46] D. Zimmerer et al., “MOOD 2020: A Public Benchmark for Out-of-
+     Distribution Detection and Localization on Medical Images,” IEEE
+     Trans. Méd. Imaging, vol. 41, no. 10, pp. 2728–2738, 2022, doi:
+     10.1109/tmi.2022.3170077.
+[47] J. Zbontar et al., “fastMRI: An Open Dataset and Benchmarks for
+     Accelerated MRI,” Arxiv, 2018, doi: 10.48550/arxiv.1811.08839.
+[48] M. Abadi et al., “TensorFlow: Large-Scale Machine Learning on
+     Heterogeneous      Distributed     Systems,”      Arxiv,     2016,     doi:
+     10.48550/arxiv.1603.04467.
+

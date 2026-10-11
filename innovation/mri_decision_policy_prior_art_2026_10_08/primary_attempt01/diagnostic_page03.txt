@@ -1,0 +1,49 @@
+The MRI Scanner as a Diagnostic: Image-less Active Sampling 3
+Prediction Ground 
+Truth
+Feature Input Policy 
+Network Sampling Policy
+Feature 
+Operator
+Classification
+NetworkFeature 
+Maps
+ Reward 
+Function
+Undersampled 
+K-space
+Low Quality Image
+Inverse 
+Fourier 
+Transform
+Sample New 
+K-space 
+Line 
+Extract 
+Feature
+Fig. 2. Our framework for active MRI sampling for point-of-care diagnosis.
+pulses, which can be measured in k-space (i.e., the frequency domain). Con-
+sidering the single coil measurement, the k-space data can be represented as a
+2-dimensional complex-valued matrix x∈ Cr×c, where r is the number of rows
+andc is the number of columns. The spatial imageI can be obtained by applying
+the inverse Fourier Transform to x, denoted as I =F −1(x). The undersampled
+k-space can be therefore represented asxs =UL◦x, whereUL can be viewed as a
+binary mask U∈{ 0, 1}r×c with L measurements from k-space. In our work, we
+exclusively consider the Cartesian mask for MRI undersampling. Consequently,
+the undersampled image is denoted as Is =F −1(xs).
+3 Methods
+Overview: Our framework, illustrated in Figure 2, aims to reduce acquisition
+time by selectively sampling the k-space according to diagnostic significance,
+in a progressive fashion. The process begins with a small subset of randomly
+sampledk-space with L measurements denoted asxs0 =UL◦x, resulting in a low-
+quality imageIs0.Is0 is then input into a pre-trained classification network f to
+generate the initial prediction y0. The extracted feature maps m0 are processed
+by the Feature OperatorO, producing high-level featuresh0 =O(m0), which are
+then fed into the Active Sampler S. The policy network generates a sampling
+policypϕ(h0) parameterised byϕ, guiding the selective sampling of diagnostically
+significant lines from the k-space. These sampled lines are subsequently added
+toUL. The updated undersampled k-space data at step t∈ [0,T ] are denoted as
+xst =Ut◦x, and are then fed back into the classification network with inverse
+Fourier transform. The iterative process continues until a sampling budget T
+is exhausted or user-defined reliability criteria are satisfied. During the training
+stage, the predictions yt, accompanied by the ground truth diagnostic label g,

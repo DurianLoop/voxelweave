@@ -1,0 +1,34 @@
+A Segmentation-aware Deep Fusion Network for
+Compressed Sensing MRI
+Zhiwen Fan∗
+, Liyan Sun∗
+, Xinghao Ding?
+, Yue Huang,
+Congbo Cai, John Paisley†
+Fujian Key Laboratory of Sensing and Computing for Smart City, Xiamen University,
+Fujian, China
+†Department of Electrical Engineering, Columbia University, New York, NY, USA
+?Correponding Author: dxh@xmu.edu.cn ?
+Abstract. Compressed sensing MRI is a classic inverse problem in the
+field of computational imaging, accelerating the MR imaging by mea￾suring less k-space data. The deep neural network models provide the
+stronger representation ability and faster reconstruction compared with
+”shallow” optimization-based methods. However, in the existing deep￾based CS-MRI models, the high-level semantic supervision information
+from massive segmentation-labels in MRI dataset is overlooked. In this
+paper, we proposed a segmentation-aware deep fusion network called
+SADFN for compressed sensing MRI. The multilayer feature aggregation
+(MLFA) method is introduced here to fuse all the features from differ￾ent layers in the segmentation network. Then, the aggregated feature
+maps containing semantic information are provided to each layer in the
+reconstruction network with a feature fusion strategy. This guarantees
+the reconstruction network is aware of the different regions in the image
+it reconstructs, simplifying the function mapping. We prove the utility
+of the cross-layer and cross-task information fusion strategy by compar￾ative study. Extensive experiments on brain segmentation benchmark
+MRBrainS validated that the proposed SADFN model achieves state￾of-the-art accuracy in compressed sensing MRI. This paper provides a
+novel approach to guide the low-level visual task using the information
+from mid- or high-level task.
+Keywords: Compressed Sensing, Magnetic Resonance Imaging, Medi￾cal Image Segmentation, Deep Neural Network
+1 Introduction
+Magnetic resonance imaging (MRI) is a medical imaging technique used in ra￾diology to produce the anatomical images in human body with the advantages
+of low radiation, high resolution in soft tissues and multiple imaging modali￾ties. However, the major limitation in MRI is the slow imaging speed which
+causes motion artifacts [1] when the imaging subject moves consciously or un￾consciously. The high resolution in k-t space is also difficult to be achieved in
+? The co-first authors contributed equally.
+arXiv:1804.01210v1 [cs.CV] 4 Apr 2018

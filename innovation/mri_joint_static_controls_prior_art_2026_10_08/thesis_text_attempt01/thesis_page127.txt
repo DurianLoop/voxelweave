@@ -1,0 +1,40 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+Reconstruction models.For this MRI experiment, we used two types of reconstruction
+models. The first one is the c-ResNet of Zhang et al. (2019b) that was trained to
+minimize the negative log-likelihood of Equation 7.8 along the adversarial contribution
+of the evaluator. The model was trained using Adam (Kingma and Ba, 2014) with
+β = (0.5, 0.999), lr = 6· 10−4 over 100 epochs. The learning rate was linearly decayed
+starting at 50 epochs until it reached0 at the end of training.
+The second type of model that we considered are different GAN versions. We observed
+that for Fourier-based conditional generation, the training of the Neural Conditioner
+(NC) (Belghazi et al., 2019) was generally unstable and generally did not lead to good
+performance, although it did very well in the image setting. We observed that the
+model proposed by Adler and Öktem (2018a) generally performed better than a standard
+conditional WGAN, and this is the one that we used in our experiments. We refer to it
+as theAO or GAN model. For the generator, we used the residual UNet (ResUNet) of
+Belghazi et al. (2019), and used also their ResNet-like architecture as discriminator. In
+the GAN case, the reconstruction was estimated by computing the empirical mean from
+a set of samples. In our experiments, we observed that merely2 samples managed to
+provide an informative mean and variance, although averaging on more samples led to
+an increase in overall image quality.
+For the WGAN we use Adam (Kingma and Ba, 2014),β = (0, 0.9), TTUR (Heusel et al.,
+2017) with learning rates oflrG = 10−4 and lrD = 3· 10−4. The training is done over
+100 epochs, and the learning rate was halved at50 epochs. We used the gradient penalty
+(Gulrajani et al., 2017) with a weight of10, following Adler and Öktem (2018a) along
+with a drift penalty with a weight of10−3. The output of the generator was followed
+by a data-consistency layer (Schlemper et al., 2018; Mardani et al., 2018), which has
+the role of replacing the generated data with the observed ones at the last layer, and a
+sigmoid to keep the range of the data in[0, 1]. Further details on the architecture and on
+the training are given in Appendix B.1.
+Sampling methods. Similarly to what we did in the previous Chapter (Section 6.3),
+we evaluated the models on different policies, that we detail below.
+• Random sampling (Random): Acquire a fixed proportion of low-frequency lines
+in Fourier and then randomly sample the remaining lines.
+• Evaluator: Zhang et al. (2019b) proposed to train an evaluator that tries to
+estimate the current mean-squared error for each line in k-space.
+• (Stochastic) Learning-based Compressive Sampling (LBCS) (Gözcü et al., 2018;
+Sanchez et al., 2020a)
+• Policy Gradient model (RL): The greedy, adaptive deep reinforcement learning
+method of Bakker et al. (2020).
+114

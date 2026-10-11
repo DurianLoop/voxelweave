@@ -1,0 +1,108 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7
+Additionally, we present a quantitative evaluation of the SR
+performance on the test set using the Learned Perceptual Image
+Patch Similarity (LPIPS) metric [32], as summarized in Table I.
+The LPIPS metric quantifies the perceptual similarity between
+the generated 7T-like outputs and the corresponding 7T ground
+truth, with lower scores indicating higher perceptual fidelity and
+better alignment with the high-field MRI reference. As can be
+seen, incorporating both g and b yields the lowest LPIPS score
+of 0.0311. Removing either correction degrades performance,
+with the exclusion of g leading to an increase in LPIPS to
+0.0460, while omitting b results in an even higher score of
+0.0541. The absence of both corrections further exacerbates the
+perceptual degradation, yielding the highest LPIPS of 0.0598.
+For context, we report the LPIPS score of 0.0896 between
+real 3T and 7T images as a reference baseline, illustrating
+that even in the worst-case scenario without g and b, our SR
+model outperforms the direct perceptual discrepancy between
+different field strengths.
+These results highlight the critical role of gradient nonlin￾earity and bias field corrections in enhancing both training
+stability and perceptual fidelity in our MoE-based super￾resolution framework. The ablation study confirms that their
+absence significantly degrades performance, reinforcing their
+necessity for achieving more stable training and superior SR
+reconstruction quality.
+TABLE I: Analysis of impact of b and g
+g
+LPIPS b
+with b without b
+with g 0.0311 0.0541
+without g 0.0460 0.0598
+real 3T vs real 7T (context reference) 0.0896
+B. Comparisons with state-of-the-art methods
+The comparison is divided into two main parts: Qualitative
+visualization analysis and quantitative metric-based analysis.
+1) Qualitative visualization analysis: To facilitate a focused
+qualitative assessment, Table II provides a visualization com￾parison of representative models from the CNN- and diffusion￾based models, ESRGAN [18] and SR3 [33], together with
+our proposed method. To ensure fairness and consistency, all
+models were trained on the same dataset using input slices
+with uniform dimensions (256 × 256 pixels). Given the voxel
+size transformation involved in the SR task, enhancing 2D
+in-plane resolution from 1.5mm×1.5mm to 0.7mm×0.7mm,
+an approximate magnification factor of 2.1× was required. To
+align with this target, ESRGAN was evaluated using its nearest
+supported scaling factor of 2×, while SR3 was configured
+to produce outputs at 512×512 pixels. For a more intuitive
+and comprehensive evaluation, regions clearly displaying
+distinctions among white matter, grey matter fissures, and
+cortical boundaries were specifically emphasized. Visualization
+results illustrate significant differences among these methods.
+As can be seen, ESRGAN tends to lose substantial high￾frequency details, resulting in overly smooth outputs that
+lack crucial anatomical details and lead to overall image
+distortion. Conversely, SR3 demonstrates notably better SR
+performance on high-frequency edges, particularly cortical
+boundaries. However, SR3 still exhibits significant artefacts in
+cortical and white matter areas, undermining overall anatomical
+fidelity. Leveraging the MoE architecture, our proposed method
+effectively addresses the limitations observed in existing
+techniques. The collaboration among meticulously designed
+experts and different denoising strategies applied to each region
+enhance the simultaneous reconstruction capabilities for both
+high- and low-frequency regions, enabling accurate depiction
+of intricate cortical boundaries and coherent preservation of
+textures in grey and white matter areas, closely resembling the
+original 7T ground-truth MRIs.
+2) Quantitative metric-based analysis: Beyond ESRGAN
+and SR3, Table III extends the comparison to a diverse set of
+State-of-the-Art (SOTA) SR methods, including WavTrans [34],
+MASA [35], McMRSR [36], MC-VarNet [37], and DisC-Diff
+[38], thereby enabling a comprehensive performance evaluation.
+The assessment covers image quality metrics in terms of
+PSNR (dB), SSIM, LPIPS (10−2
+), and RMSE (10−2
+), as
+well as computational efficiency, measured in terms of Params
+(M) and FLOPs (G). As can be seen, all selected methods
+have achieved varying degrees of SR performance based on
+the 3T data. However, our proposed approach consistently
+achieves the best overall performance across all image quality
+metrics. Specifically, it attains the highest PSNR of 38.16 dB
+and SSIM of 0.93, indicating superior fidelity and structural
+preservation, while also achieving the lowest LPIPS of 1.18
+and RMSE of 1.83, which reflect enhanced perceptual quality
+and minimal reconstruction error. These results underscore
+the model’s ability to generate highly accurate and visu￾ally faithful super-resolved images. Among the competing
+diffusion-based methods, SR3 and DisC-Diff, although they
+trail our method across all metrics, nonetheless demonstrate the
+competitive efficacy of advanced diffusion architectures. MC￾VarNet, which is based on a variational network framework,
+achieves reconstruction quality (PSNR of 35.59, SSIM of 0.89),
+but exhibits inferior perceptual alignment (LPIPS of 2.12)
+and higher reconstruction error (RMSE of 3.47), suggesting
+limitations in modelling finer image textures. Intermediate
+performance is observed in MASA and WavTrans, highlighting
+their limited capacity in recovering both global structure and
+fine-scale details. From a computational perspective, diffusion￾based models are typically characterized by relatively large
+parameter counts, attributable to their inherently complex
+generative architectures. Nevertheless, they exhibit notable
+advantages in computational efficiency in terms of FLOPs. For
+example, although our ensemble diffusion framework comprises
+a substantial number of parameters (133.02 M), it maintains a
+low computational cost of only 56.12 G FLOPs, primarily due
+to its latent-space operation. This stands in sharp contrast to
+CNN-based models such as ESRGAN, which, despite having
+a comparatively modest parameter count (16.73 M), incurs a
+substantially higher computational burden of 1450.87 G FLOPs.
+This inefficiency arises largely from its reliance on pixel-level
+inference and densely connected convolutional operations at
+full spatial resolution, which collectively contribute to inflated
+computational demands. Furthermore, benefiting from the

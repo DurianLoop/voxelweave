@@ -1,0 +1,54 @@
+Learning to Sample and Reconstruct for Accelerated MRI 24
+Appendix B.2. Proof of theorem 2
+Proof Without loss of generality, suppose that M0 = 0.
+We denote
+J(a,R) = Ex∼DS(R(Ma⊙F (x)), x).
+We first prove that for ∀∥a∥1 =T , we have
+J(a,Rdense)≤J(a,Rsparse),
+by contradiction.
+If it does not hold, there ∃∥ a⋆∥1 =T that
+J(a⋆,Rdense)>J (a⋆,Rsparse).
+Then, we prove that it contradicts to the the maximum property of Rsparse.
+Notice that the input of R is~y = Ma⊙ y, so their exists a well-defined function
+A : CN×N → {0, 1}N,~y → a. Specifically, values of a at the indicators of zero
+columns of ~y equal to 0, and others equal to 1. We define Y : CN×N → R+,~y→
+minA (~y)(at)=1{∥|Mat⊙~y|∥2} as the minimal norm of the non-zero column of ~y.
+We construct a new reconstructor on two disjoint closed subsets of CN×N:
+Rnew
+ϵ (~y) =
+{
+Rsparse, ∥A (~y)∥1≤T and A (~y)̸= a⋆
+Rdense, A (~y) = a⋆ and Y (~y)≥ϵ
+,
+where ϵ > 0 is pending. (We give a supplementary description for the convenience
+of understanding: the constrain of the second term Y (~y)≥ ϵ is just for continuity.)
+Then, we further extent the domain of Rnew
+ϵ to CN×N by Tietze extension theorem,
+denoted asRNew
+ϵ : CN×N→ RN×N
+ϵ ∈C.
+Finally, we verify that RNew
+ϵ is better than Rsparse, that is
+Ea∼πh
+T
+J(a,Rsparse)< Ea∼πh
+T
+J(a,RNew
+ϵ ),
+which contradicts to the maximum property.
+Sinceπh
+T (a⋆)> 0, we only need to verify that
+J(a⋆,Rsparse)<J (a⋆,RNew
+ϵ ).
+Indeed, we choose a sufficiently small ϵ satisfying
+Ex∼D1 {Y (Ma⋆F x)≥ϵ}·
+[
+S(Rdense(Ma⋆
+F x),x )− S(Rsparse(Ma⋆
+F x),x )
+]
+> 2
+3(J(a⋆,Rdense)−J(a⋆,Rsparse)),
+and
+Ex∼D1 {Y (Ma⋆F x)<ϵ} < 1
+3(J(a⋆,Rdense)−J(a⋆,Rsparse)).

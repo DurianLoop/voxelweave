@@ -1,0 +1,32 @@
+MIRTO 43
+Table 63. Secondary hypotheses and their outcome (all methods trained on IXI-HH+Guys).
+Secondary hypothesis Estimate Verdict
+UCCD, 20 cm3
+: the threshold-relaxation term is positive, its interval
+excludes 0, and it exceeds the fixed-threshold term
++0.078 [0.073, 0.083] vs +0.006 held
+AnomalyDINO, 20 cm3
+: the total gain from hysteresis with pruning is
+≤ 0
+−0.001 [−0.011, 0.010] held
+Above-floor sensitivity falls with hysteresis and pruning (UCCD,
+AnomalyDINO)
+−0.045; −0.089 held
+UCCD small-lesion sensitivity < 0.10 0.073 held
+Jaccard index of the missed-lesion sets of UCCD with REFLECT and
+with cDDPM ≥ 0.70
+0.813; 0.938 held
+UCCD transfer gap at 5 cm3 > 0, interval excludes 0 −0.008 [−0.008, −0.007] failed
+UCCD voxel AUROC falls under antero-posterior and left-right flips;
+AnomalyDINO slice-level AUROC does not fall under an
+antero-posterior flip
+−0.198, −0.260; +0.181 held
+Observed minus borrowed-map AROC > 0 (UCCD, AnomalyDINO) +0.266; +0.124 [0.100, 0.148] held
+are reported without a shift, a decision made with knowledge of the check’s result. (8) One subject fails the overlap
+floor of the registration gate for UCCD and cDDPM and is kept; excluding it is immaterial (Section 3.1). (9) No
+untouched BraTS 2020 subjects remain for a hold-out set, so confirmation requires a new cohort, to be evaluated
+under a pre-registered protocol that fixes the training set and every threshold rule.
+Software. Analyses used Python 3.11 with NumPy, pandas, SciPy and statsmodels, and R with lme4 for the mixed
+models and logistf for Firth regression. The evaluator implements every gate, diagnostic, metric and identity of
+Section 2 and is checked against 31 synthetic test cases, each with a known answer. Computational cost is reported
+in Appendix D.10.

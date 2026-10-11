@@ -1,0 +1,62 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+0 0.005 0.01 0.015 0.02 0.025 0.03 0.035 0.04 0.045 0.05
+Ground truth
+Coherence-VD
+Mask
+PSNR=31.87
+SSIM=0.94
+Frame 2
+PSNR=33.52
+SSIM=0.94
+Frame 5
+PSNR=33.08
+SSIM=0.94
+Frame 7
+PSNR=33.53
+SSIM=0.94
+Frame 8
+LB-VD
+PSNR=34.33
+SSIM=0.96
+PSNR=35.16
+SSIM=0.95
+PSNR=34.55
+SSIM=0.95
+PSNR=35
+SSIM=0.96
+SGv1-Cardiac
+PSNR=36.14
+SSIM=0.97
+PSNR=37.26
+SSIM=0.96
+PSNR=36.61
+SSIM=0.96
+PSNR=36.63
+SSIM=0.97
+SGv1-V ocal
+PSNR=37.18
+SSIM=0.97
+PSNR=37.71
+SSIM=0.97
+PSNR=37.47
+SSIM=0.97
+PSNR=37.93
+SSIM=0.97
+Figure 5.13: Reconstruction with KTF at15% (Jung et al., 2009) sampling rate for the vocal
+anatomy of size 256×256×10. It unfolds the temporal profile of Figure 5.11. The PSNR and
+SSIM displayed are computed for each image individually, and the overall PSNR for each image
+is the one of Figure 5.11. The ground truth is added at the end of each line for comparison.
+Noisy experiments. In order to test the robustness of our framework to noise, we
+artificially added bivariate circularly symmetric complex random Gaussian noise to the
+normalized complex images, with a standard deviationσ = 0.05 for both the real and
+imaginary components. We then tested to see whether the greedy framework is able
+to adapt to the level of noise by prescribing a different sampling pattern than in the
+previous experiments.
+We chose to use V-BM4D (Maggioni et al., 2012) as denoiser with its default suggested
+mode using Wiener filtering and low-complexity profile, and provided the algorithm the
+standard deviation of the noise as the denoising parameter. The comparison between the
+fully sampled denoised images and the original ones yields an average PSNR of24.95
+dB across the whole dataset. Due to the fact that none of the reconstruction algorithms
+that we used have a denoising parameter incorporated, we simply apply the V-BM4D
+68

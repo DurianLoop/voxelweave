@@ -1,0 +1,104 @@
+mappings from Ω to the class of probability measures on Zk. The task adapted loss function
+is given by (9) with
+𝓁D(d,d′) :=
+∫
+Ω
+[
+−
+∑
+i∈Zk
+d(t)(i) log
+[
+d′(t)(i)
+]]
+dt for d,d′ : Ω→ PZk,
+τ(z)(t) :=δz(t) for z : Ω→ Zk and t∈ Ω.
+The decision distance 𝓁D : D×D→ R simply integrates the point-wise cross entropy of the
+(point-wise) independent probability measures d(t) and d′(t). The cross entropy is a well-
+known notion from information theory for quantifying the dissimilarity between probability
+distributions [16] and it is often used as a learning objective in generative models involving
+probability distributions.
+Bayes risk in (10) associated with a decision ruleT : X→D for a given task priorη0∈ P∆
+can then be written as
+Rη0(T) := Eη0⊗Pz
+[
+𝓁D
+(
+τ(z),T(x)
+)]
+=
+∫
+X
+[∫
+∆
+[∫
+Ω
+− log
+[
+T(x)(t)
+(
+z(t)
+)]
+dt
+]
+dη0(z)
+]
+dPz(x).
+The corresponding empirical risk minimization in (11) is
+(13) ϑ∗∈ arg min
+ϑ∈Ξ
+{ 1
+m
+m∑
+i=1
+∫
+Ω
+− log
+[
+Tϑ(xi)(t)
+(
+zi(t)
+)]
+dt
+}
+.
+Note that T(x)(t) is a probability distribution over Zk and z(t)∈ Zk when z ∈∆ , so in
+particularT(x)(t)
+(
+z(t)
+)
+∈ [0, 1] for any t∈ Ω.
+The set of decision rules D ={Tϑ}ϑ∈RN can be parametrized by (deep) neural networks,
+in which case solving (13) corresponds to training a segmentation operator. Deep neural net
+architectures suitable for semantic segmentation are presented in [61, 74, 84], see also the
+surveys in [91, 34]. In particular, the SegNet architecture has been successful for semantic
+segmentation of 2D images [5]. For (binary) segmentation one may use the U-net [81, 15].
+6.2.3. Anomaly detection. The task here is to detect the diﬀerence (anomaly) between
+two grey-scale images, so X =L2(Ω, R)×L2(Ω, R) for a ﬁxed domain Ω⊂ Rn. This becomes
+a non-randomized decision rule in a statistical estimation problem where ∆ := X and the
+anomaly is represented by grey-scale images, so the decision space is D :=L2(Ω, R). The task
+adapted loss function is given by (9) with
+𝓁D(d,d′) :=
+‖‖d−d′‖‖2
+∆ for d,d′∈D and τ(z) :=z1−z2 for z = (z1,z 2)∈∆ .
+Bayes risk in (10) associated with a decision rule T : X→ D for given task prior η0∈ P∆
+becomes
+Rη0(T) := Eη0⊗Pz
+[
+𝓁D
+(
+τ(z),T(x)
+)]
+=
+∫
+X
+[∫
+∆
+‖‖‖(z1−z2)−T (x1,x 2)
+‖‖‖
+2
+D
+dη0(z)
+]
+dPz(x1,x 2)
+12

@@ -1,0 +1,49 @@
+38 N. K. Hernashki and S. Chatterjee
+Table 49. FLAIR and T2 intensity minus each model, Holm-adjusted within the baseline families.
+Contrast Voxel AUROC, subject mean Voxel AUROC, pooled Voxel AUPRC, subject mean Voxel AUPRC, pooled Dice 20 cm3 validation τ, subject mean
+FLAIR − REFLECT +0.018 [0.009, 0.027], p_H < 0.005 −0.071 [−0.085, −0.057], p_H < 0.005 +0.105 [0.085, 0.126], p_H < 0.005 −0.127 [−0.190, −0.059], p_H < 0.005 −0.173 [−0.205, −0.142], p_H 0.006
+FLAIR − UCCD +0.085 [0.076, 0.094], p_H < 0.005 +0.012 [−0.005, 0.027], p_H 0.43 +0.108 [0.087, 0.129], p_H < 0.005 −0.065 [−0.110, −0.019], p_H 0.026 −0.216 [−0.247, −0.184], p_H 0.006
+FLAIR − cDDPM +0.077 [0.067, 0.086], p_H < 0.005 +0.007 [−0.009, 0.022], p_H 0.43 +0.086 [0.065, 0.106], p_H < 0.005 −0.078 [−0.123, −0.033], p_H 0.007 −0.195 [−0.228, −0.163], p_H 0.006
+FLAIR − AnomalyDINO +0.118 [0.106, 0.130], p_H < 0.005 +0.048 [0.029, 0.066], p_H < 0.005 +0.405 [0.381, 0.430], p_H < 0.005 +0.229 [0.184, 0.274], p_H < 0.005 +0.158 [0.123, 0.192], p_H 0.006
+T2 − REFLECT −0.096 [−0.103, −0.088], p_H < 0.005 −0.130 [−0.143, −0.119], p_H < 0.005 −0.353 [−0.373, −0.333], p_H < 0.005 −0.418 [−0.464, −0.367], p_H < 0.005 −0.411 [−0.434, −0.389], p_H 0.006
+T2 − UCCD −0.029 [−0.039, −0.018], p_H < 0.005 −0.048 [−0.062, −0.034], p_H < 0.005 −0.350 [−0.371, −0.328], p_H < 0.005 −0.356 [−0.382, −0.328], p_H < 0.005 −0.454 [−0.474, −0.433], p_H 0.006
+T2 − cDDPM −0.037 [−0.047, −0.027], p_H < 0.005 −0.052 [−0.067, −0.039], p_H < 0.005 −0.372 [−0.395, −0.350], p_H < 0.005 −0.369 [−0.395, −0.342], p_H < 0.005 −0.434 [−0.455, −0.412], p_H 0.006
+T2 − AnomalyDINO +0.005 [−0.006, 0.016], p_H 0.42 −0.012 [−0.027, 0.004], p_H 0.43 −0.053 [−0.073, −0.033], p_H < 0.005 −0.062 [−0.088, −0.035], p_H < 0.005 −0.080 [−0.102, −0.059], p_H 0.006
+Table 50. Share of universes in which a model-free baseline outranks a model.
+Universe set Baseline Model Share of universes baseline > model Tied
+defensible T2 intensity REFLECT 0.1 % 1.7 %
+defensible T2 intensity UCCD 0.0 % 1.7 %
+defensible T2 intensity cDDPM 0.2 % 1.8 %
+defensible T2 intensity AnomalyDINO 27.0 % 7.6 %
+defensible FLAIR intensity REFLECT 25.1 % 2.2 %
+defensible FLAIR intensity UCCD 32.5 % 2.2 %
+defensible FLAIR intensity cDDPM 30.6 % 2.2 %
+defensible FLAIR intensity AnomalyDINO 95.8 % 4.1 %
+reference C, all T2 intensity REFLECT 0.0 % 1.6 %
+reference C, all T2 intensity UCCD 1.0 % 1.6 %
+reference C, all T2 intensity cDDPM 1.1 % 1.5 %
+reference C, all T2 intensity AnomalyDINO 26.3 % 6.5 %
+reference C, all FLAIR intensity REFLECT 28.2 % 2.2 %
+reference C, all FLAIR intensity UCCD 37.7 % 2.2 %
+reference C, all FLAIR intensity cDDPM 34.9 % 2.2 %
+reference C, all FLAIR intensity AnomalyDINO 95.0 % 3.4 %
+D.9 Latent aggregation for REFLECT
+Table 51 lists every score rule against the published map in both checkpoints, Table 52 each rule at its own validation
+threshold, and Table 53 the retention criterion for MAD. Every latent aggregation improves on the published map
+in both checkpoints and under both matchings; latent-only scoring is worse in every setting; the image stream alone
+is better than the published fusion in all four settings at 20 cm3
+. The image-only rule is infeasible at 5 cm3 on the
+validation set, and removing the clip has inconsistent effects.
+Table 51. Score rule minus the published REFLECT map, Dice at 20 cm3
+, matched to the published map’s realised burden
+over the cohort or per subject; REFLECT trained on IXI-HH+Guys and on MOOD+IXI.
+Score rule (REFLECT) IXI-HH+Guys: cohort-matched burden IXI-HH+Guys: subject-matched burden MOOD+IXI: cohort-matched MOOD+IXI: subject-matched
+MAD (L2) +0.052 [0.045, 0.058] +0.053 [0.046, 0.060] +0.038 [0.033, 0.043] +0.034 [0.028, 0.040]
+robust max (L4) +0.030 [0.024, 0.035] +0.022 [0.016, 0.027] +0.031 [0.027, 0.036] +0.022 [0.019, 0.026]
+Euclidean norm (L3) +0.029 [0.023, 0.034] +0.023 [0.018, 0.028] +0.029 [0.024, 0.033] +0.022 [0.018, 0.025]
+whitened mean (L5) +0.030 [0.024, 0.035] +0.021 [0.015, 0.026] +0.027 [0.022, 0.031] +0.015 [0.012, 0.019]
+mean (L1) +0.027 [0.022, 0.033] +0.018 [0.013, 0.023] +0.028 [0.024, 0.032] +0.018 [0.015, 0.022]
+image only +0.016 [0.013, 0.020] +0.014 [0.010, 0.018] +0.014 [0.011, 0.016] +0.010 [0.006, 0.014]
+smoothing 1 mm +0.021 [0.014, 0.027] +0.006 [−0.001, 0.013] +0.020 [0.016, 0.024] +0.007 [0.002, 0.011]
+no clipping −0.005 [−0.016, 0.006] −0.015 [−0.025, −0.005] −0.014 [−0.025, −0.004] +0.009 [0.004, 0.015]
+latent only −0.063 [−0.076, −0.049] −0.042 [−0.054, −0.032] −0.073 [−0.087, −0.059] −0.038 [−0.046, −0.029]

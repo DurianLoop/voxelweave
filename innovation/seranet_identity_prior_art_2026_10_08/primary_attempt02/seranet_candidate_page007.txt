@@ -1,0 +1,61 @@
+Title Suppressed Due to Excessive Length 7
+2 3 4 5 6 7
+Number of steps
+0.85
+0.86
+0.87
+0.88
+(a) Dice value of 10% noise data
+Two-step (Type A)
+Two-step (Type B)
+Joint (Type A)
+Joint (Type B)
+SERANet (Type A)
+SERANet (Type B)
+2 3 4 5 6 7
+Number of steps
+0.815
+0.820
+0.825
+0.830
+0.835
+0.840
+0.845
+0.850
+(b) Dice value of 20% noise data
+Two-step (Type A)
+Two-step (Type B)
+Joint (Type A)
+Joint (Type B)
+SERANet (Type A)
+SERANet (Type B)
+Fig. 2. Dice score as a function of the number of reconstruction blocks.
+Ground truth (20% noise)
+Ground truth
+One-step
+One-step
+Two-step
+Two-step
+Joint
+Joint
+SERANet
+SERANet
+Fig. 3. Segmentation result of SERANet and the compared models. CSF, GM and
+WM parts in each brain are colorized with purple, orange and white, respectively.
+modules but is trained together with only segmentation loss on the final output.
+In order to evaluate the robustness under different settings, we compare perfor￾mances of Two-step, Joint and SERANet with different number of reconstruction
+blocks. We also implement two different reconstruction blocks: one using cascad￾ing CNN (Type A) and the other using auto-encoder (Type B). The Dice’s score
+against number of reconstruction block is plotted in Figure 2. We observe, as
+expected, that with more cascading reconstruction blocks the segmentation per￾formances of all tested methods improve. However, SERANet outperforms the
+others in all settings which proves the benefit of using the attention module.
+For visualization, we also train an One-step model that takes input as zero￾filling images (inverse Fourier transform of under-sampled k-space data) and
+outputs the segmentation maps. We visualize segmentation results and recon￾structed images of models trained by 20% noise data in Figure 3. Our method
+SERANet predicts more accurate anatomical segmentation details and clearer
+image contrasts compared to Two-step and Joint. This shows SERANet over￾comes the interference with noisy input by using the attention module.
+Comparisons to State-of-the-Art We provide qualitative and quantitative
+comparisons to three state-of-the-art algorithms: LI-net[10] Syn-net[10], and
+SegNetMRI[11]. We also compare to the One-step model. We list the perfor￾mance of SERANet-7 that with 7 reconstruction blocks and SERANet-2 that
+with 2 reconstruction blocks. The results of all methods are reported in Table
+2. We also list whether the method is pretrained and what loss the method
+uses to optimize in column 2 and 3, respectively. For LI-net and Syn-net, since
+they perform segmentation from fully-sampled data as a warm start, we consider

@@ -1,0 +1,68 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+We note also that using more than2 samples can boost the overall performance of the
+GAN reconstruction. For instance, using5 samples for the GAN reconstruction can boost
+the overall performance on the method: paired with the GAN policy, it reaches up to
+31.43 dB and 0.759 SSIM, and on LBCS, it goes up to32.10 dB and 0.773 PSNR. This
+amounts to an improvement of0.8 to 1 dB and between0.03 to 0.04 SSIM. However,
+averaging on increasingly many samples has a diminishing return, and in our experiments,
+a plateau is reached around20 samples.
+We also tried to perform sampling from the Gaussian NLL of Zhang et al. (2019b), and as
+expected, the policy performed just like random sampling, as the NLL does not capture
+the complexity of the posterior distribution.
+Policy Model
+GAN Reconstructor
+PSNR SSIM PSNR SSIM
+Random 29.48 0 .699 29 .79 0 .757
+Gaussian NLL 29.48 0 .699 29 .69 0 .747
+Evaluator 30.03 0 .710 30 .77 0 .765
+GAN 30.67 0 .726 30 .48 0 .762
+LBCS 31.06 0 .735 31 .41 0 .781
+RL 30.88 0 .731 30 .68 0 .766
+MSE Oracle 30.98 0 .734 31 .23 0 .778
+Table 7.2: Average PSNR and SSIM test set AUC (one AUC per image) on knee data in thec+rh
+setting. The AUC is computed between the8 initial lines and25% sampling rate.
+0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+Sampling rate
+0.650
+0.675
+0.700
+0.725
+0.750
+0.775
+0.800
+0.825
+0.850
+0.875SSIM
+Random
+Gaussian NLL
+Evaluator
+GAN
+LBCS
+RL
+MSE Oracle
+0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+Sampling rate
+0.700
+0.725
+0.750
+0.775
+0.800
+0.825
+0.850
+0.875SSIM
+Random
+Gaussian NLL
+Evaluator
+GAN
+LBCS
+RL
+MSE Oracle
+Figure 7.1: SSIM plots of results shown in Table 7.2, showing the different performance of the
+policies. The left plot is the result of the evaluation on our GAN model, and the right plot is
+evaluated using the reconstructor of Zhang et al. (2019b). Although Table 7.2 computes the AUC
+until 25%, this table extends the evaluation until50% sampling rate.
+Policy distribution.Turning now to Figure 7.2, we can see how different the policy
+looks through the testing set for LBCS, the evaluator and our GAN. The probabilities
+are computed as average of the masks that are observed at sampling rate25% of the
+116

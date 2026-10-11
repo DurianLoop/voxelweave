@@ -1,0 +1,41 @@
+Wohlrapp Bubeck Rueckert Lotter
+200
+ 150
+ 100
+ 50
+ 0 50 100 150 200
+Bias Change (%)
+0.00
+0.01
+0.02
+0.03
+0.04Density
+Distribution of Bias Changes
+Race
+Sex
+Age
+Figure 3: Distribution of bias changes (percent change compared to original images) across
+all reconstruction models, datasets, and tasks, stratified by sensitive attribute.
+The vertical lines mark the medians. Most shifts cluster near zero, but sex shows
+a broader positive tail. Separate plots by sensitive attribute are contained in Fig.
+20.
+that the mode of these shifts is centered around zero, indicating little bias change in most
+instances. However, there is a noticeable tail towards positive bias changes, especially for
+sex, which exhibits a median increase of 24%. This is partly attributable to sex having a
+lower baseline bias than age and race (Table 1).
+The bias changes for each pathology and model are provided in Figures 4 and 5 (rep-
+resented by the “Reconstruction” value in each plot). For UCSF-PDGM, no significant
+fairness deviations were observed when using the reconstructed images compared to the
+original images for either the segmentation or classification tasks (Figure 5). CheXpert
+shows more frequent significant shifts. Out of the 36 combinations (12 pathologies x 3 re-
+construction models), there were 8 significant changes for sex (all in the positive direction)
+and 12 significant changes for age (4 in the positive direction). Due to large error bars,
+there were 0 significant changes for race, but alternative analysis which excluded subgroups
+with small sample sizes did reveal some significant changes (Appendix A). Overall, the
+pathology-level findings support the histogram trend with a slight bias increase for sex and
+a slight decrease for age. The absolute magnitude of the effects were generally modest;
+however, some are of the order of a 0.05 change in EODD, corresponding to a 5% difference
+in sensitivity/specificity, which is meaningful at the population level. Across reconstruction
+methods, the GAN and SDE-based models exhibited smaller bias shifts than the traditional
+U-Net (Table 2).
+8

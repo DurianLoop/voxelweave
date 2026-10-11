@@ -1,0 +1,15 @@
+# 下一轮先poll原session，然后继续能力与强控制
+
+先实际poll29823，禁止重启、迁移或改源。当前最新实际e6c39d首分支1980/2992，仍返回session_id；其余三分支尚无完成证据。CPU4/interop1/below-normal，四分支总11968更新、wall27000秒、全部stage45MB、磁盘/RAM各8GB储备、无optimizer恢复。最近实际GPUfree1394MiB，授权有效但未达8192MiB启动条件。
+
+本轮已完成两篇不同主文与作者四文件静态审计、两项非医学CPU探索、强控制准备、任务网接口只读。READING_PROVENANCE为真实V2 b982b0 exit0，V1失败7a0c0c与原脚本保留不改。完整阅读/范围/局限见PRIMARY_READING_AND_PROJECT_DECISIONS；不再重跑既有训练39996、pilot396或旧56FOV/V4。
+
+真正训练terminal保存到新实际观察文件，标observed_unified_exec_session=29823，随后原spatial_adaptation_matched五入口：capture_training_terminal.py→evaluate_matched.py→capture_evaluation_terminal.py→summarize_matched.py，check_prepared_entry仅语法/来源。必须四last2992和11968日志全部核实；完整36生产+36functionalFOV、概率3e-6/坐标3e-12/二值零差异、原六医学门槛不降。比较同输入spatial2992−intensity2992，不把旧99步或额外预算混入主归因。
+
+能力未足继续普通强基线，不进入收益头或未见确认。能力足够后先明确具体动作与合法observed特征，以开发患者fold外生成实际paired动作损害变化，保留全部成本/拒绝/coverage；加边界距离体积聚合、learned QC/error-cost/defer、预算匹配随机/静态/always-action/直接任务控制。当前TaskUNet3D无dropout、无显式feature输出，不能仅train模式重复forward就称MC-dropout；MC/ensemble需另立训练与成本方案。
+
+QCResUNet Appendix B仅写均值概率而Jungo原文明确entropy(mean)，实际作者执行未核，不判原论文错误。静态构造器/argparse不一致是固定四文件准备缺口，不是整repo复现失败。16组合中6个错误图不嵌套只限可视化；二值signed方向可恢复不是创新。
+
+归档接上一累计5976，APPEND_PROOF真正exit后以其新数量和SHA为准；本轮后附PART02/POST_ARCHIVE文件下一delta纳入。滚动training目录除frozen_config全部排除，不写冻结其live receipt/journal，不改旧index/已绑定文件/根状态。公开记录保存范围见VISIBLE_DIALOGUE，交接前缺失逐字commentary不补造。
+
+goalactive，无独立确认或发表claim。用户GPU授权持续，8未见确认患者12series及lockedIXI仍关；异质T2不统称CISS、不缩分母、不降门槛、不安装、不委派、不枚举/操作其他PID。新写入只innovation。

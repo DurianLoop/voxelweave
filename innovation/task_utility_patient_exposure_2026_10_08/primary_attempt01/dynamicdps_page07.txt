@@ -1,0 +1,40 @@
+Title Suppressed Due to Excessive Length 7
+In-distribution Out-of-distribution Inf. time
+PSNR (↑) SSIM (↑) LPIPS (↓) PSNR (↑) SSIM (↑) LPIPS (↓) (s)
+U[18] 28 ±.97 .87 ±.03 .10±.02 24 ±1.9 .80 ±.06 .18 ±.05 -
+G[25] 27 ±.02 .85 ±.02 .09±.01 18 ±5.6 .76 ±.04 .24 ±.03 -
+DPS[6] 27 ±.92 .84 ±.03 .10 ±.02 26 ±1.9 .81 ±.06 .14 ±.04 196 ±0.6
+Ours 29±1.0 .88±.03 .10±.02 27±1.9 .86±.06 .13±.03 -
+Ours+U 29±1.0 .89±.03 .09±.02 26±1.9 .86±.06 .13±.04 37±0.8
+Ours+G 29±.90 .89±.03 .09±.02 26±.06 .86±.06 .13±.03 38±0.8
+Table 1: Quantitative comparison of image quality across in/out-of-distribution
+datasets, where an upward arrow indicates that a higher value is better. "Ours"
+refers to DynamicDPS with diffusion models only (T=1000). "U" and "G" de-
+note U-Net [18] and ESRGAN [25], respectively.
+3.2 Main Results
+Table 1 shows a quantitative comparison against baselines. While conditional
+models perform similarly to diffusion-based methods on IND data, their perfor-
+mance degrades on OOD, underscoring their sensitivity to data shifts. In con-
+trast, all of our approaches perform robustly on OOD and outperform baselines.
+Notably, Ours with ESRGAN on OOD data boosts PSNR and LPIPS by over
+50%, demonstrating the ability to refine the output under a few time steps. We
+also include Ours as an ablation, using only DynamicDPS without any condi-
+tional backbone, which still outperforms DPS on both IND and OOD, validating
+the benefit of our dynamic data consistency formulation.
+Efficiency is assessed by comparing inference speed on IND data. Although
+DynamicDPS is computationally heavy due to the data consistency step, lever-
+aging the time-skipping strategy via DCATS speeds up by over 80% compared
+to DPS [6], using only on average 50 time steps with U-Net vs. 1000 for DPS.
+Figure 2 presents a qualitative comparisons against baseline conditional mod-
+els. As indicated by the red arrows, conditional models generate both intrinsic
+and extrinsic hallucinations such as false sulci and contrast artifacts. In contrast,
+DynamicDPS consistently reduces hallucinations while preserving anatomical
+structures. These results highlight the effectiveness of our approach in visually
+also mitigating hallucinations across various conditional models.
+3.3 Further Analysis
+Figure 3a shows visual results tested on real LF and HF scans. While ESRGAN
+struggles to enhance contrast and fails on the HF scan, introducing extrinsic
+hallucinations, ours improves tissue contrast without visible hallucinations in
+bothscans.Notably,evenwith minimal tuning of the data consistency parameter,
+our approach achieves superior visual contrast and image quality than the HF
+scan (second row), underscoring its robustness across varying degradation levels.

@@ -1,0 +1,35 @@
+# 收到的上一模型交接（恢复时状态）
+
+本文件记录本次恢复时用户提供摘要中的目标、约束、已完成证据和待办；来源是用户的交接摘要，不能替代随后真实工具返回。当前轮新增观察另存公开对话与PART04起实际返回。
+
+## 目标与边界
+
+目标active，直到可发表且独立确认claim。新增仅D:\MRI\innovation；GPU允许，但不得枚举、终止、重启、迁移或干预用户终端及其他PID。不改冻结来源、根.gitignore/environment，不安装/委派。11开发患者/19series；4已见验证/9series；8未见确认/12series和lockedIXI关闭。六医学门槛、完整患者分母、last checkpoint、概率3e-6/坐标3e-12/二值零差不降。两个live session必须真实poll，空输出含session_id仍live。
+
+## 接续时两个任务
+
+原四臂29823最新非空c4279b：native intensity已2992、native spatial2530/2992，median2.1298887秒、累计11707.0925881秒；随后e33f69空但live。raw两臂未观察完成，frozen CPU。GPU bb8c50 total24455/free1394MiB/util94%，未达8192MiB储备。四臂真正exit0后capture_training_terminal → evaluate_matched → capture_evaluation_terminal → summarize_matched；核四last2992/11968journal/每患者272曝光，再36production+36functional完整FOV。
+
+全schedule几何56132最新5b8af5：800/5984，active229、FG不足0、elapsed253.636秒。qualify_full_schedule_support.py重建2992步每步2patch的候选往返增强；读19开发labels/metadata，不读MRI/model/验证；active全体素Torch/SciPy支持，inactive独立identity域。GT仅原训练crop/pivot，不据GT筛增强/病例。CPU1/低优先级/wall5400秒/stage5MB/RAMdisk各8GB，不是四臂单次spatial支持结果。rolling不冻结，仅frozen_config允许。真实exit0无session_id后保存ACTUAL_FULL_SCHEDULE_TERMINAL_TOOL.json加observed_unified_exec_session=56132，再audit_full_schedule_terminal.py核5984journal与sample_batch零dummy重放2992母label/geometry。audit不二次重算所有mask，独立SciPy资格在qualifier逐field做。
+
+## 已完成实际证据
+
+本目录real_context首跑eb79d9 exit1是来源链查找StopIteration，在MRI/GT前；原脚本和空attempt01保留。V2 session55568真正563565 exit0，236.428秒；11/19，两输入76fields，MRI38、GT19、model/checkpoint/forward/update/医学效益0。缓存image/physical_label/母batch/basecrop SHA匹配；向量context提取与独立切片+flip逐位一致。全target MRI独立SciPy重算max intensity5.960464477539063e-08、support6.783462680459706e-14、二值0/76SHA匹配；FG不足0、labels位级保持。强度79691776体素，独特geometry38/39845888target体素。API不接GT；缺坐标填0+validity0，不称真实halo；cache padding允许基本强度变换但validity0；unpadded域不是raw-PCHIP真实观测证书；mask-loss/identity未冻结、全2992尚未认证、无分割收益。
+
+成本不是训练部署总费用：cache加载82.793秒、context提取6.976/median.08797秒、production MRI+support双采样39.379/median.50979秒、independent55.468/median.66656秒；单source值数组23,183,040–32,798,304bytes不是peak。
+
+FastSurfer v2.3.0首次API e0096c exit1/403保留；Git只读smart-HTTP b9f50a exit0固定lightweight tag commit550e84596b7adbc01bd0f2e93f1a127b1cb2df99，无clone/fetch对象/工作区变更。GOUHFI用此版本，但非已证实2022精确训练版本。四源码未截断读2361行：interp650/networks410/sub_module820/augmentation481。native skip与2Dfeature Zoom返回实际整数修正SF后反采样，crop/pad、align_corners=False，名义SF逆数不足；AddGaussianNoise是两轴同delta加性，存在类未认证启用；gn1等实为BatchNorm2d，非GroupNorm/项目InstanceNorm；/255clip与zscore不同；Zoom3d未定义method静态疑点不是实际VINN路径，没执行，不能称作者模型失败。未import/执行/权重/trainer/dataset/config；新增不同论文正文0。详情AUTHOR_CODE_AND_ENTRY_DECISIONS.md。
+
+## 前轮冻结归档和研究判断
+
+full_support_oracle_and_vinn_followup前轮1698d0真正exit0；旧6164不变、新60、累计6224。indexSHA ce00927df00d7d18a443fa569ad0f2273d7a2d966668a66bce6748b18f05cada，proofSHA e1ff1a3c80d62e016bbf9f7deec4a78917ab528484eb21b1a22a794532aa168b。不得修改/重跑；POST/FINAL_PUBLIC_RESPONSE/LAST_POST_ARCHIVE_HANDOFF为后附，下一delta纳入。
+
+38stress geometry中8全支持/30部分不足；5/19有zpadding，旧fullFOV实为paddedcache已澄清。crop-only9patch的FG不足51803/611350曝光体素=8.4735%；完整unpadded域FG不足0、背景不足6.9627%。InstanceNorm合成反例内部conv差0、norm差3.8565，inputmask不认证输出安全。VINN和2026lesion-wise ensemble作者稿文字已读，图像像素/supp/finalPDF/作者实现未核。剩余方向是合法采集可见性→具体动作真实病灶损害差和全部费用，而非label不变/halo/普通选模后处理。全11开发GT训练19998parent不可用来宣称严格折外预测。
+
+## 接续归档待办
+
+本目录协议、源码、receipts、README、VISIBLE_DIALOGUE_TURN25、NEXT_STAGE_HANDOFF和PART01–03已存在。恢复时缺READING_PROVENANCE且README对应链接未成立，未写运行新delta；必须补齐后接6224。PART01–03含36实际返回，最后store key为turn25_full_schedule_poll2(5b8af5)、turn25_training_poll3(e33f69)、turn25_full_schedule_frozen_preflight(9329a3)。stage约639189bytes，disk约8.039GB贴近8GB守卫，别下载大物件。
+
+根hash：.gitignore 7ecc6ec4f2bebbd8e96ad38f4fa76810a9db5254312f392ba49fd39b8f622524；environment.yml dfdae9bfd34dd605be9dd8a488107fa56863bd99fc1f5835af8cbb8113905257。
+
+下一步是先真实poll29823/56132、补实际完成provenance、只纳已完成和frozen_config接6224并核链接/根hash/旧hash，真实archive exit0才称完成；保存本轮用户请求和公开续记/最终回复/POST。两任务terminal后各自audit，完整几何决定ordinary强baseline；充分任务能力后严格patient-fold外具体动作净收益，目标保持active。

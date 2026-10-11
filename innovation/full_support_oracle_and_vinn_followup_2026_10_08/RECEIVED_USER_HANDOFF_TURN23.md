@@ -1,0 +1,17 @@
+# 用户给出的前轮模型交接（接续事实保留）
+
+用户给出的交接指出目标active，前一轮为progress，尚未得到可发表且经独立验证claim。新文件限D:\MRI\innovation；用户允许GPU，但不干预终端训练或其他PID，不枚举/终止/重启/迁移其他进程。session29823须实际轮询，不根据空输出或经过时间推断结束。不改冻结来源/.gitignore/environment.yml、不装依赖、不委派代理；11开发患者19series，4已见验证9series，8未见确认12series及lockedIXI关闭，六医学门槛/完整患者分母/lastcheckpoint不变。
+
+交接时a7b0e3仍live：native_reference_intensity2992完成，native_reference_spatial1100/2992、median2.127152950037271秒、累计8642.198906400008秒；raw-PCHIP两支未观察完成。GPU6094dd total24455/free1394MiB/util89%，未达8192MiB储备。四臂真正exit0后原capture_training_terminal→evaluate_matched→capture_evaluation_terminal→summarize_matched，先四last2992/11968journal，再36production+36独立functional完整FOV，3e-6概率/3e-12坐标/零binary及六医学门槛不降。
+
+resolution_and_lesion_followup_2026_10_08归档f8d4bc exit0：旧6111hash保持、新53、累计6164，index SHA9e305e8909cc490ebbf32684e097819966a1917a76188362c72e9175c9afa551，proof SHA5bb3eeada2792af8c2f2d39e6acfd95f9beafe29abfc565ff78f71bce24336db。POST/final/last handoff为index后附，下个delta纳入；不可重跑/修改该归档。
+
+本新目录已有：原全support核验7011eb exit1，第3patch坐标门槛失败；旧脚本/attempt01保留。V2准备abd1ab exit0，原源SHA5fbf5efcf58c03eb52497df8da9b89db474d7a3c9725784a66bd32987bee8a58、V2SHAf35d5a80e9add6427acb64cbc9b2434131bbaa4e215f1c5e08d2e13c6e15baec，但准备器记录SHA未事先assert固定值，协议措辞需另文澄清。坐标diagnostic e1958a exit0：旧19/38失败，最大8.15703060652595e-12；V2基向量直接旋转38全通过，最大5.684341886080802e-14，未放宽门槛。
+
+V2 session82691/f75c96真正exit0，52.815秒；38独特几何patch/39845888目标体素，crop-only与fullFOV两条路径各独立SciPy全体素比较，共76fields，最大7.127631818093505e-14、binary差0；8patch全支持、30部分不足，full支持比例.9525508880615234–1，mean .9748582588998895 vs旧crop-only .7314353742097554。只读geometry，MRI/GT/model arrays与forward/updates均0。不能因保守box全超界禁用全部增强，不能称无损、医学损害或患者收益。
+
+作者原文取得50ff0b exit1：VINN BioC429；病灶集成BioC200但正文No result不是论文；VINN PMC HTML200/417484bytes，SHAc3013ac688177b8276e394ad00fe8124deffdb8a78ebbf3c242da41f8bdbbd8b，DOI10.1016/j.neuroimage.2022.118933，PMC9801435/PMID35122967，metadata为author manuscript、页头待核。bs4缺失尝试043513 exit1，未安装；标准库parser6753b0 exit0，250blocks/21tables（可能含公式），receipt阅读0，正文8–147、方法41–91、结果92–133、讨论134–147、Appendix160–235、references249。仍需小段未截断实际阅读，不可计读完。
+
+交接下一步：继续实际poll29823；实现DEVELOPMENT_LABEL_SUPPORT_PROTOCOL（19开发reference labels，旧physical_label/lattice/fulltarget与motherbatch SHA、start/flips复原38patch，GT不生成mask、不筛病例、MR/model不读，统计FG/BG支持不足）；核读VINN原文附录表；prepare合法普通增强强基线，不改当前四臂；任务能力足够再推动合法可见性→具体病灶动作净收益，对强QC/error-cost/defer及全费用；写provenance/公开对话/README/handoff，接6164delta归档，滚动训练除immutable frozen_config排除。
+
+交接还列出了15个可用turn23 store键，本轮已经实际提取保存至ACTUAL_TOOL_OBSERVATIONS_PART01–04.json。该用户交接是前一模型的摘要，本文件保留其接续事实；其后来“真实fullFOV”语义更正见padding addendum，不倒改旧摘要或已绑定证据。

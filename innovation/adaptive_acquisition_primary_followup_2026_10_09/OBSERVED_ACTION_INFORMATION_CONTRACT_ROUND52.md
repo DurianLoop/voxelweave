@@ -1,0 +1,13 @@
+# 后续动作收益实验的部署信息合同
+
+当前研究问题仍是假设：在固定已观测稀疏MRI、相同动作可用性与预算下，采集信息能否增加实际患者动作净收益，超过同信息risk差/metadata/SSC/strongstatic/random/QCdefer。Greedy current commit的静态阅读明确区分observed reconstruction和带GT统计的质量评分；不能把合法训练reward与部署输入混为一谈。
+
+部署允许项：ObservedMRI的只读实测像素、已测slice索引、合法采集affine/spacing/native-shape等扫描元信息、此前合法处理动作历史、当前可选动作集合和累计实际费用、在对应训练患者上冻结的模型。归一化均值/std只由部署允许像素计算；完整MRI参考或GT统计不能用于selector或候选动作。FFT(magnitude)不能冒充实测complex-kspace。
+
+评估隔离项：完整母参考MRI/GT只用于训练监督、开发action收益标签、oracle上界诊断和最终冻结规则评分。GT-informed oracle不是可部署对照。19998全开发parent仅能力诊断；严格LOPO的全部learned components都必须排除heldout患者且cold-init，不仅留出selector head。
+
+需要在医学候选pipeline真实具备之后执行以下非干扰检查：固定observed package和允许元信息，改变/替换隐藏GT与未测参考像素，部署action/probability/cost路径应逐位不变；selector与candidate入口拒绝GT字段；same-observed不同隐藏truth只允许evaluation metrics变化。此项目前仅准备，不声称已执行真实MRI验证。
+
+对照容量与信息：delta-head与两risk-head使用同信息、同容量、同loss/selection预算；任务差重参数化不当创新。metadata-only和mask/history-only固定可选集合；availability strata内置乱图像信息，保留mask/history/计算预算与患者级聚合。原条件MI toy只证度量混淆，不能替代实际病灶FN/FP与defer费用。
+
+试验前须确认强task六gate与合法action oracle正余量，否则不训练路由器。4已见患者9series不能新独立确认；8未见12series/lockedIXI继续关闭。最终独立确认只能对冻结的完整pipeline，不对开发选中的任意新阈值追补成功结论。

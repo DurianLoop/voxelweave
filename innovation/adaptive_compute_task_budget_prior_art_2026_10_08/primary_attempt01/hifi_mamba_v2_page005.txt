@@ -1,0 +1,118 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5
+Method
+fastMRI CC359
+PSNR ↑ SSIM ↑ NMSE ↓ PSNR ↑ SSIM ↑ NMSE ↓
+AF=4 AF=8 AF=4 AF=8 AF=4 AF=8 AF=4 AF=8 AF=4 AF=8 AF=4 AF=8
+Zero-Filling 29.25 25.95 0.723 0.620 0.035 0.064 24.79 21.27 0.725 0.576 0.053 0.120
+UNet (MICCAI 2015) 31.66 28.60 0.798 0.697 0.021 0.035 28.27 24.28 0.847 0.720 0.025 0.059
+ISTA-NET (CVPR 2018) 33.27 29.44 0.832 0.714 0.012 0.030 32.03 25.44 0.902 0.744 0.010 0.046
+ReconFormer (TMI 2023) 33.75 30.42 0.837 0.728 0.011 0.026 32.46 26.47 0.906 0.766 0.010 0.039
+FpsFormer (AAAI 2025) 33.74 30.63 0.841 0.732 0.011 0.026 32.35 26.65 0.897 0.768 0.010 0.038
+LMO (CVPR 2025) 34.49 31.10 0.846 0.744 0.011 0.023 35.35 27.99 0.921 0.787 0.006 0.028
+HiFi-MambaV1(P2) (AAAI 2026) 34.47 31.38 0.853 0.758 0.010 0.021 35.74 28.08 0.935 0.802 0.005 0.027
+HiFi-MambaV1(P1) (AAAI 2026) 34.85 31.81 0.855 0.762 0.010 0.020 36.93 28.49 0.942 0.810 0.004 0.026
+HiFi-MambaV2(P2) 34.63 31.73 0.854 0.763 0.010 0.019 36.80 28.68 0.955 0.841 0.003 0.022
+HiFi-MambaV2(P1) 34.86 31.89 0.855 0.764 0.010 0.019 37.21 29.05 0.957 0.849 0.003 0.020
+TABLE I: Quantitative comparison on the fastMRI-Equispaced and CC359-Equispaced under 4× and 8× acceleration factors.
+Load-balancing regularization. Pure top-1 routing can lead
+to expert collapse, where only a small subset of experts are
+frequently selected while others remain idle. To encourage
+more uniform expert utilization, we import a lightweight load￾balancing regularizer on the router outputs. Let
+pe =
+1
+BHW
+X
+b,h,w
+Gb,h,w,e (13)
+denote the average routing probability for expert e. We define
+Lbal = Nr
+X
+Nr
+e=1
+p
+2
+e
+, (14)
+which is minimized when all experts receive equal mass pe =
+1/Nr. And our final loss function could be described as:
+L =
+1
+B
+X
+B
+b=1
+
+xˆb − x
+gt
+b
+
+
+1
+| {z }
+Lrec
++λbalLbal (15)
+where B is the batch size, and λbal controls the strength of
+the load-balancing regularization. xˆb ∈ C
+H×W denote the final
+reconstruction of the b-th sample and x
+gt
+b
+its ground truth.
+V. EXPERIMENTS
+A. Experimental Settings
+Datasets. We evaluate HiFi-MambaV2 on five publicly avail￾able MRI datasets: fastMRI (knee) [1], CC359 (brain) [29],
+ACDC (cardiac) [30], M4Raw (multi-coil brain) [31], and
+Prostate158 (prostate) [32]. I) fastMRI. The dataset comprises
+1,172 single-coil coronal knee scans with Proton Density
+Fat-Suppressed (PDFS) weighting. We follow the official
+train/validation/test split. II) CC359. Raw brain MR volumes
+acquired, with 25 subjects for training and 10 for testing. III)
+ACDC. Cine cardiac MR images of 150 subjects. Following
+the official split, 100 cases are used for training and 50
+for testing IV) M4Raw. This dataset includes multi-contrast,
+multi-repetition, and multi-channel brain MRI k-space data
+from 183 volunteers scanned at 0.3T with a four-channel coil.
+1,024 and 240 volumes are used for training and validation,
+respectively. V) Prostate158. The dataset provides prostate
+MR images from 158 volunteers, split into 139 training and
+19 testing cases. To ensure consistent anatomical content, the
+first and last five slices of fastMRI and the first and last 15
+slices of CC359 are discarded. Data preprocessing is shown
+AF Methods PSNR SSIM NMSE
+×4
+ISTA-NET 27.23 0.784 0.017
+LMO 28.15 0.808 0.015
+HiFi-MambaV1(P1) 28.85 0.833 0.013
+HiFi-MambaV2(P2) 28.88 0.832 0.013
+HiFi-MambaV2(P1) 29.04 0.837 0.012
+×8
+ISTA-NET 22.02 0.579 0.055
+LMO 22.68 0.600 0.052
+HiFi-MambaV1(P1) 23.22 0.654 0.046
+HiFi-MambaV2(P2) 23.61 0.656 0.038
+HiFi-MambaV2(P1) 23.91 0.662 0.039
+TABLE II: Single-coil MRI reconstruction comparison at ac￾celeration factor ×4 and ×8 with random mask at Prostate158.
+in Appendix A.1. Data introduction is described in Appendix
+A.2.
+Evaluation Metrics. Reconstruction quality is evaluated
+using three standard metrics: Peak Signal-to-Noise Ratio
+(PSNR) [33], Structural Similarity Index (SSIM) [34], and
+Normalized Mean Squared Error (NMSE) [35].
+Training Details. Training employs the AdamW optimizer
+with an initial learning rate of 8 × 10−4
+, cosine annealing
+schedule, and a five-epoch warm-up. The model is trained for
+100 epochs. All experiments are conducted on two NVIDIA
+H100 GPUs; FLOPs are measured on an NVIDIA A100.
+B. Comparison with State-of-the-Art Methods
+1) Quantitative Results: Tables I–IV present comprehen￾sive quantitative comparisons across multiple datasets, sam￾pling patterns, and acceleration factors. HiFi-MambaV2 con￾sistently achieves the best or second-best performance in
+all settings, demonstrating stable reconstruction accuracy and
+strong generalization across both single- and multi-coil con￾figurations.
+Equispaced sampling (fastMRI and CC359). As summa￾rized in Table I, HiFi-MambaV2 delivers consistent gains
+over CNN-, Transformer-, and previous Mamba-based archi￾tectures under both 4× and 8× acceleration. On fastMRI,
+V2(P1) attains 34.86 dB/0.855 SSIM at 4× and 31.89 dB/0.764
+SSIM at 8×, outperforming LMO by +0.37 dB/+0.011 and
++0.79 dB/+0.020, respectively. On CC359, V2(P1) achieves
+37.21 dB/0.957 SSIM at 4× and 29.05 dB/0.849 SSIM at 8×,
+surpassing LMO by +1.86 dB/+0.036 and +1.06 dB/+0.062.
+The corresponding NMSE reductions confirm that HiFi-

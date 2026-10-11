@@ -1,0 +1,15 @@
+# 2026-10-08 本轮状态：脑肿瘤 QC 强对照收敛
+
+科研goal仍active，无独立确认或可发表claim。本轮实质进展：核读QCResUNet作者v2主文+附录与Jungo2020期刊主文；固定作者commit静态完整读四文件；真实完成两项非医学CPU探索；写出强QC/error-cost/defer和动作控制准备，并核实当前任务网无dropout。16条索引不是16篇全文，四源码和数学例子不计患者医学验证。
+
+原session29823仍live。最新实际e6c39d含1870和1980更新，native_reference_intensity1980/2992，median2.0704351000022143秒、累计4162.358085199958秒；loss .13625933229923248只作进度。其余三分支尚无完成记录。四分支真正exit0、四state及11968journal核验后才能运行完整36FOV最终评价；不挑中间state、不用99步旧control归因。
+
+GPU授权有效，接续实际cc37d9 totals24455MiB/free1394MiB，未达固定8192MiB启动门槛；原CPU4/interop1/below-normal训练继续，不重启或迁移live进程、不枚举或操作其他PID。根.gitignore SHA7ecc6ec4f2bebbd8e96ad38f4fa76810a9db5254312f392ba49fd39b8f622524、environment.yml SHA dfdae9bfd34dd605be9dd8a488107fa56863bd99fc1f5835af8cbb8113905257经本轮核对不变；不安装、不委派，新写入只innovation。
+
+新原文排除宽泛QC/错误图/signed错误头/不确定性聚合首创。仍可探索仅observed异质T2下具体缺层动作的真实任务损害变化及全患者净费用，但此前SafeRestore/MoEDiff/defer先例排除仅“收益头”首创。首先需补足医学能力与开发动作余量；没有新增医学通过或未见确认。
+
+入口：[本轮README](tumor_qc_strength_followup_2026_10_08/README.md)、[原文笔记和项目判断](tumor_qc_strength_followup_2026_10_08/PRIMARY_READING_AND_PROJECT_DECISIONS.md)、[后续试验准备](tumor_qc_strength_followup_2026_10_08/STRONG_QC_AND_ACTION_PREPARATION.md)、[实际来源登记](tumor_qc_strength_followup_2026_10_08/READING_PROVENANCE.json)、[公开对话](tumor_qc_strength_followup_2026_10_08/VISIBLE_DIALOGUE_TURN20_PART01.md)。登记V1 7a0c0c exit1因根文件relative_to失败且未产生最终登记，保留；V2 b982b0 exit0完成，不改V1。
+
+当前11开发患者19series、已见4验证患者9series；8未见确认患者12series及lockedIXI继续关闭，原六医学门槛不降、完整分母不变。新stage5MB、训练stage45MB、磁盘/RAM各8GB储备保持。
+
+本轮归档接上一5976证据；具体新数量以APPEND_PROOF真实exit为准。live训练目录除frozen_config外全部排除，不把归档成功当训练完成。

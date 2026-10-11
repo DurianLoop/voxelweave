@@ -1,0 +1,213 @@
+Mind the Detail: Uncovering Clinically Relevant Image Details in Accelerated MRI with Semantically Diverse Reconstructions
+Jan Nikolas Morshuis
+Affiliation: University of Tübingen, Germany
+Christian Schlarmann
+Affiliation: University of Tübingen, Germany
+Thomas Küstner
+Affiliation: University of Tübingen, Germany
+Affiliation: University Hospital of Tübingen, Germany
+Christian F. Baumgartner*Affiliation: University of Tübingen, Germany
+Affiliation: University of Lucerne, Switzerland
+*Shared last authorship
+E-mail nikolas.morshuis@uni-tuebingen.deMatthias Hein*Affiliation: University of Tübingen, Germany
+Abstract
+In recent years, accelerated MRI reconstruction based on deep learning has led to significant improvements in image quality with impressive results for high acceleration factors. However, from a clinical perspective image quality is only secondary; much more important is that all clinically relevant information is preserved in the reconstruction from heavily undersampled data. In this paper, we show that existing techniques, even when considering resampling for diffusion-based reconstruction, can fail to reconstruct small and rare pathologies, thus leading to potentially wrong diagnosis decisions (false negatives). To uncover the potentially missing clinical information we propose “Semantically Diverse Reconstructions” (SDR), a method which, given an original reconstruction, generates novel reconstructions with enhanced semantic variability while all of them are fully consistent with the measured data.
+To evaluate SDR automatically we train an object detector on the fastMRI+ dataset. We show that SDR significantly reduces the chance of false-negative diagnoses (higher recall) and improves mean average precision compared to the original reconstructions. The code is available on https://github.com/NikolasMorshuis/SDR.
+Keywords:
+MRI Reconstruction Detection Uncertainty
+1 Introduction
+Accelerated MRI reconstruction from undersampled k-space data is an inverse problem with infinitely many solutions. However, it is common to reconstruct only a single solution, thereby ignoring potentially different yet still plausible reconstructions. Deep-learning-based approaches, including novel techniques based on diffusion models, have led to impressive reconstruction results in terms of image quality even for high acceleration factors. On the other hand, in clinical practice, some pathological tissue changes can be small and may occur rarely, making them potentially underrepresented in the training data. As a result, overconfident reconstruction models may favor more likely solutions of healthy tissue if consistent with the measurement data, potentially leading to missed pathologies. Missing clinically relevant pathologies in the reconstruction can be a major obstacle to the application of accelerated MRI in clinical practice.
+While some
+recent reconstruction methods such as diffusion-models [3, 4, 11] are capable of generating multiple different solutions by repeated sampling, it has been shown that these models tend to sample the most likely solutions frequently but only rarely sample less likely solutions that might still be diagnostically relevant [5] (see Fig. 1 top right). Moreover, sampling multiple reconstructions can be time-consuming as it requires repeating the denoising process.
+Figure 1: Method overview. At high acceleration factors (12x shown here), naive MRI reconstruction suffers from artifacts (left). Recent reconstruction methods like DDIP [4] can recover image details and generate multiple reconstructions, but these often lack diversity, potentially leading to missed pathologies (top right). Our proposed SDR approach produces semantically diverse reconstructions, helping detect pathologies that might otherwise be missed (bottom right).
+To address this problem, we propose a technique to generate semantically diverse reconstructions (SDR) that are fully consistent with the measured k-space data. Our SDR approach can be applied post-hoc to initial reconstructions obtained using any reconstruction method, producing a set of alternative solutions that preserve data consistency while potentially revealing pathologies not present in the original reconstruction. This offers the unique possibility to study a diverse set of data-consistent solutions and their inherent uncertainty. Our method generates these alternative solutions in ≈3\approx 3 seconds per image, which is faster than the sampling time of diffusion models that can require several minutes per image [11].
+Our technique relies on identifying candidate regions in reconstructed images and
+modifying them to alter their semantic content while ensuring consistency with the measured k-space data. To generate semantically diverse reconstructions, we develop an adversarially robust version of the detection algorithm ViTDet [14], leveraging techniques from [20] for the ViT-Backbone. We then use the features of candidate regions to maximize the semantic distance from the existing reconstructions (see Fig. 1 bottom right). This is motivated by the observation that the Euclidean distance in the feature space of adversarially robust vision encoders is a good semantic metric and that maximizing distance in this feature space leads to semantically meaningful changes [6]. We explore two versions of our method: i) an automatic selection of regions to be optimized using the proposal network of the object detector, ii) manual annotation of a candidate image region by the human user, e.g. a doctor.
+In experiments on the fastMRI+ dataset [27], we demonstrate that our method is able to produce a semantically diverse set of possible MRI reconstructions that capture more possible pathologies compared to alternative sampling techniques based on diffusion models [4] and the E2E-Varnet [22]. We quantitatively verify this by showing that pathology recall – obtained with a separate Faster-RCNN detector [18] – outperforms the baseline techniques, while mean average precision is not negatively affected.
+2 Related Work
+The generation of multiple solutions in deep-learning-based MRI reconstructions is a relatively recent area of research. Morshuis et al. [17] proposed a method to produce diverse MRI-reconstructions corresponding to minimum and maximum segmentations in a downstream task. This approach estimates the segmentation uncertainty due to the ill-posed nature of the reconstruction problem.
+Küstner et al. [13] trained models with different initial seeds to generate multiple reconstructions, which were then used to estimate reconstruction uncertainty. They observed that uncertainty was highest in image regions containing pathologies.
+Recent studies have demonstrated the strong performance of diffusion models in MR reconstruction [11, 3, 4, 25]. Apart from producing high-quality reconstructions, these techniques can also be used to generate multiple solutions by repeated sampling from the posterior distribution of images that are consistent with the measurement data.
+Only few works have focused on pathology detection in MRI [10, 26]. Other work has used the pathology annotations provided by some datasets [27, 7] to compare reconstruction metrics in these relevant areas [13, 7] or to show that measurement noise can lead to changes in reconstructions in these areas [16]. To our knowledge, ours is the first work to consider pathology detection in accelerated MRI reconstruction utilizing multiple reconstructions.
+3 Method
+3.1 Background and Notation
+The goal of MRI reconstruction is to find a reconstructed image 𝒙^\bm{\hat{x}} that is consistent with the measured k-space data 𝒚\bm{y} subject to the following equation:
+𝒚=𝑨​𝒙^ with 𝒚∈ℂm,𝑨∈ℂm×n,𝒙^∈ℂn,\bm{y}=\bm{A}\bm{\hat{x}}\quad\text{ with }\quad\bm{y}\in\mathbb{C}^{m},\quad\bm{A}\in\mathbb{C}^{m\times n},\quad\bm{\hat{x}}\in\mathbb{C}^{n},(1)
+where 𝑨=M​ℱ​S\bm{A}=M\mathcal{F}S with the coil sensitivity maps SS, the Fourier transform ℱ\mathcal{F} and the undersampling mask MM. MRI acquisitions are often accelerated by only measuring a fraction of the k-space data𝒚\bm{y}.
+The fully sampled image, which would have been obtained by measuring the entire k-space, contains a (possibly empty) set of pathologies denoted as 𝒮={s1,s2,…}\mathcal{S}=\{s_{1},s_{2},...\}. However, due to image degradation caused by acceleration, a different set of pathologies, 𝒮′={s1′,s2′,…}\mathcal{S^{\prime}}=\{s^{\prime}_{1},s^{\prime}_{2},...\}, is visible in the reconstructed image 𝒙^\bm{\hat{x}}. Ideally, 𝒮\mathcal{S} and 𝒮′\mathcal{S^{\prime}} should be identical to ensure accurate diagnosis. However, there are infinitely many reconstructions that satisfy Eq. 1 with no guarantee that they correctly reconstruct pathologies. As a result, 𝒮′\mathcal{S^{\prime}} may fail to include all pathologies present in the patient, particularly for high acceleration factors.
+In this work, we aim to generate a set of reconstructions, 𝒳={𝒙^(1),…,𝒙^(Nr​e​c)}\mathcal{X}=\{\bm{\hat{x}}^{(1)},\ldots,\bm{\hat{x}}^{(N_{rec})}\}, such that when considered jointly, the reconstructed images capture a set of pathologies 𝒮′\mathcal{S^{\prime}} that includes as many of the ground truth pathologies 𝒮\mathcal{S} as possible (few false negatives) while not hallucinating pathologies (few false positives).
+3.2 Generating Diverse Solutions Maximizing Semantic Distance
+Our key contribution is a method which, given an initial reconstruction 𝒙^(1)\bm{\hat{x}}^{(1)}, can efficiently generate a set of reconstructions 𝒳\mathcal{X} that are semantically diverse in the regions where pathologies are likely to occur.
+To achieve this, we iteratively generate additional reconstructions 𝒙^(i)\bm{\hat{x}}^{(i)}, i=2,…,Nr​e​ci=2,\ldots,N_{rec}, by maximizing semantic distance dd to all previous reconstructions 𝒙^(j)\bm{\hat{x}}^{(j)} in an iterative procedure
+𝒙^(i)←𝒟​𝒞​(PB⁡(𝒙^(1),r)​(𝒙^(i)+η​∇𝒙^(i)​∑j≠id⁡(𝒙^(i),𝒙^(j)))),\bm{\hat{x}}^{(i)}\leftarrow\mathcal{DC}\bigg(P_{B(\bm{\hat{x}}^{(1)},r)}\Big(\bm{\hat{x}}^{(i)}+\eta\nabla_{\bm{\hat{x}}^{(i)}}\sum\nolimits_{j\neq i}d(\bm{\hat{x}}^{(i)},\bm{\hat{x}}^{(j)})\Big)\bigg),(2)
+where η\eta is the step size, ∇𝒙^(i)\nabla_{\bm{\hat{x}}^{(i)}} is the gradient operator, PB⁡(𝒙^(1),r)P_{B(\bm{\hat{x}}^{(1)},r)} is the projection onto the ℓ2\ell_{2}-ball of radius rr around 𝒙^(1)\bm{\hat{x}}^{(1)}, and 𝒟​𝒞\mathcal{DC} is the projection operator mapping the reconstruction 𝒙^(i)\bm{\hat{x}}^{(i)} on the data-consistent space. We ensure data-consistency by replacing the k-space data with the original measured data at the locations where a measurement was acquired. To prevent potential artifacts from occurring, we run M-Step Conjugate Gradient before, minimizing the distance of the predicted k-space to the measurement. Furthermore, the projection PB⁡(𝒙^(1),r)P_{B(\bm{\hat{x}}^{(1)},r)} ensures that ‖𝒙^(i)−𝒙^(1)‖2≤r||\bm{\hat{x}}^{(i)}-\bm{\hat{x}}^{(1)}||_{2}\leq r, where rr is the allowed perturbation radius set to r=3r=3 in our experiments. The value has been chosen, as it allows for meaningful perturbations while keeping the number of new false positives low.
+To measure semantic distance between images, we utilize the features of a ViTDet detection network fϕf_{\phi}[14], which we have finetuned on the fastMRI+ data. Relevant proposal bounding boxes ℬ={b1,b2,…}\mathcal{B}=\{b_{1},b_{2},...\} can be selected using methods described in Sec. 3.4.
+Given the box-features 𝒂(i)=fϕ​(𝒙^(i),b)\bm{a}^{(i)}=f_{\phi}(\bm{\hat{x}}^{(i)},b) we define
+d⁡(𝒙^(i),𝒙^(j))=∑b∈ℬ‖fϕ​(𝒙^(i),b)−fϕ​(𝒙^(j),b)‖2.d(\bm{\hat{x}}^{(i)},\bm{\hat{x}}^{(j)})=\sum_{b\in\mathcal{B}}\left\|f_{\phi}(\bm{\hat{x}}^{(i)},b)-f_{\phi}(\bm{\hat{x}}^{(j)},b)\right\|_{2}.(3)
+The proposed algorithm is summarized in Alg. 1.
+Input:𝒚\bm{y}, 𝒙^(1)\bm{\hat{x}}^{(1)}, fϕf_{\phi}, R​P​NRPN, No​p​tN_{opt}, Nr​e​cN_{rec}, rrOutput:𝒳={𝒙^(1),…,𝒙^(Nr​e​c)}\mathcal{X}=\{\bm{\hat{x}}^{(1)},...,\bm{\hat{x}}^{(N_{rec})}\}ℬ={b1,b2,…}←R​P​N​(𝒙^(1))\mathcal{B}=\{b_{1},b_{2},...\}\leftarrow RPN(\bm{\hat{x}}^{(1)}) or manually ; // Generate Proposal Boxesfori←1i\leftarrow 1toNr​e​cN_{rec}do𝜺(i)∼𝒩⁡(0,σ2)​ with ​𝜺(1)=0\bm{\varepsilon}^{(i)}\sim\mathcal{N}(0,\sigma^{2})\text{ with }\bm{\varepsilon}^{(1)}=0 ; // Keep init. recon.𝒙^(i)←PB⁡(𝒙^(1),r)​(𝒙^(1)+𝜺(i))\bm{\hat{x}}^{(i)}\leftarrow P_{B(\bm{\hat{x}}^{(1)},r)}\big(\bm{\hat{x}}^{(1)}+\bm{\varepsilon}^{(i)}\big), where B⁡(𝒙^(1),r)={𝒙|‖𝒙−𝒙^(1)‖2≤r}B(\bm{\hat{x}}^{(1)},r)=\{\bm{x}\,|\,\|\bm{x}-\bm{\hat{x}}^{(1)}\|_{2}\leq r\},
+𝒙^(i)←𝒟​𝒞​(𝒙^(i))\bm{\hat{x}}^{(i)}\leftarrow\mathcal{DC}(\bm{\hat{x}}^{(i)}) ; // Data consistency𝒂(i)←fϕ​(𝒙^(i),ℬ)\bm{a}^{(i)}\leftarrow f_{\phi}(\bm{\hat{x}}^{(i)},\mathcal{B}) ; // Get box-featuresend for
+fork←0k\leftarrow 0toNo​p​tN_{opt}dofori←2i\leftarrow 2toNr​e​cN_{rec}dod(i)=∑j≠i‖𝒂(i)−𝒂(j)‖2d^{(i)}=\sum_{j\neq i}||\bm{a}^{(i)}-\bm{a}^{(j)}||_{2} ; // Calculate feature distances𝒙^(i)←PB⁡(𝒙^(1),r)​(𝒙^(i)+η​∇𝒙^(i)d(i))\bm{\hat{x}}^{(i)}\leftarrow P_{B(\bm{\hat{x}}^{(1)},r)}\big(\bm{\hat{x}}^{(i)}+\eta\nabla_{\bm{\hat{x}}^{(i)}}d^{(i)}\big)𝒙^(i)←𝒟​𝒞​(𝒙^(i))\bm{\hat{x}}^{(i)}\leftarrow\mathcal{DC}(\bm{\hat{x}}^{(i)}) ; // Data consistency𝒂(i)←fϕ​(𝒙^(i),ℬ)\bm{a}^{(i)}\leftarrow f_{\phi}(\bm{\hat{x}}^{(i)},\mathcal{B}) ; // Get box-features end for
+end for
+Algorithm 1Generating semantically diverse reconstructions by optimizing the distance between box features 𝒂(i)\bm{a}^{(i)} obtained by the robust ViTDet.
+3.3 Adversarially Robust Backbone
+Our application relies on gaining semantically meaningful gradients from the box-feature encoder fϕf_{\phi} in Eq. (3). While gradients of deep learning models are generally not interpretable [15], it is well-known that adversarially robust models possess semantically more meaningful gradients [24, 19, 1, 9, 6].
+To obtain an adversarially robust detection model, we leverage the recently proposed adversarial fine-tuning method of [20]. We apply this method to the ViT-backbone gϕg_{\phi} of the ViTDet. The ViT-backbone also serves as the backbone of the box-feature encoder fϕ=hϕ∘gϕf_{\phi}=h_{\phi}\circ g_{\phi}. This ensures the stability of both the backbone and box features under small adversarial perturbations. The training objective is
+min⁡∑iϕ⁡max‖𝜹‖2≤r​‖gϕ​(𝒙i+𝜹)−gϕorg​(𝒙i)‖22,\min_{\phi}\sum_{i}\max_{\left\|\bm{\delta}\right\|_{2}\leq r}\left\|g_{\phi}(\bm{x}_{i}+\bm{\delta})-g_{\phi_{\textrm{org}}}(\bm{x}_{i})\right\|_{2}^{2},(4)
+where gϕorgg_{\phi_{\textrm{org}}} is the frozen original backbone, rr is the adversarial perturbation budget, and 𝐱i\mathbf{x}_{i} are unlabeled training images. In contrast to [20], we use the ℓ2\ell_{2}-norm instead of the ℓ∞\ell_{\infty}-norm to bound the perturbation budget, as this generally yields better generative capabilities [1].
+Figure 2: Automatic Proposal Generation. Given an initial reconstruction, we filter the proposal boxes given by the Region Proposal Network (RPN) of the ViTDet to only keep the 75% of boxes with the highest score. We then apply Non-Maximum Suppression (NMS) on the remaining proposals. The remaining proposal boxes are then used for optimization with SDR-A.
+We set rr to 10 and train for 20,000 steps on ImageNet data at resolution 640 using a batch size of 16. While it would be natural to train on fastMRI images, we have observed a stronger performance when training on a much larger set of diverse natural images.
+3.4 Box-Proposal Selection
+We introduce two approaches for identifying the box regions to optimize, which are motivated by two different use-cases.
+With Manual (SDR-M) Proposal Box Generation we address the scenario where a user suspects a pathology in a specific area and manually draws a bounding box. We simulate user annotations by perturbing the ground-truth boxes in size (75%-125%) and position (up to 25% of width or height).
+With Automatic (SDR-A) Proposal Box Generation we address the case when no patient-specific information on the location of pathologies is available. In this scenario, we use the Region Proposal Network (RPN) of the ViTDet. We filter out the 25% of boxes that have the lowest probability, as these are often in the background of the MRI image. We then utilize Non-Maximum-Suppression (NMS) to remove boxes with significant overlap (IoU > 0.05), see Figure 2.
+After applying either method, we get a set of proposal boxes ℬ={b1,b2,…}\mathcal{B}=\{b_{1},b_{2},...\} in which we optimize the reconstructions to be semantically different.
+Figure 3: Combining predictions of multiple reconstructions. We combine overlapping detection boxes and average their probability score across reconstructed images to compute the mAP of our detections.
+Figure 4: Evaluation of reconstruction methods.
+Both SDR-A and SDR-M outperform single and multiple reconstructions using the original reconstruction techniques (DDIP, CSGM, E2E-VN) in terms of recall (better detection of pathologies) while achieving similar or better mAP0.25.
+Thus SDR generates clinically relevant reconstructions outperforming resampling.
+4 Data, Evaluation and Results
+Assessing clinical relevance of reconstructions would ideally require input from clinicians. As it is difficult to do such an evaluation at scale, instead, we evaluate by training an object detector and use it as a proxy for human annotators.
+Data and Training:
+Open datasets of MRI reconstruction data are rare [12, 7, 21, 23] and only a few provide annotated pathologies [27, 7]. For our experiments we use the fastMRI+ [27] knee data, as it provides enough annotated slices to train large detection networks. We split the fastMRI+ validation set subject-wise into test and validation set.
+For evaluation, we considered the 10 most frequent pathology classes in fastMRI+, as the remaining classes have not enough
+test samples.
+Object Detector for Evaluation: To ensure an objective evaluation independent of the ViTDet used for generating the reconstructions of SDR, we trained a separate Faster-RCNN detection network [18] which we use for evaluation.
+Combining detections of multiple images:
+Given a set of potential pathology detections 𝒮′={s1′,s2′,…}\mathcal{S}^{\prime}=\{s^{\prime}_{1},s^{\prime}_{2},...\} that was extracted from a set of reconstructions 𝒳\mathcal{X}, we need to remove near duplicates and estimate the probability of each bounding box for the calculation of mean average precision (mAP).
+To remove near duplicates, we used NMS to eliminate overlapping bounding boxes (Intersection-over-Union (IoU) ≥0.25\geq 0.25) of the same class. To estimate the probability scores of the remaining boxes, we averaged the probability for a given bounding box si′s^{\prime}_{i} across all reconstructed images and set the probability score to 0 for reconstructions that did not contain the bounding box.
+Reconstruction Techniques:
+We analyzed the benefits of SDR with three base reconstruction methods: the diffusion-based DDIP [4], and CSGM [11] approaches, as well as the E2E-VarNet [22]. We produce 3 total reconstructions for each image using the baselines as well as SDR, i.e. SDR (Nr​e​c=3N_{rec}=3). While the diffusion models can generate multiple reconstructions by design, we trained three separate E2E-VarNets with three different random seeds for each acceleration to reconstruct three different images during inference.
+Performance Measures:
+We measured the methods’ ability to produce sets of reconstructions that contain the ground truth pathologies using the recall, where a recall of 1 indicates no missed pathologies. As more reconstructions might lead to more false positives, we also measured mean Average Precision (mAP0.25) [8]. For both metrics, we consider an IoU of 0.25 as correct detection. Small IoU thresholds are commonly used in medical detection tasks [2] to account for uncertain border definitions and the typically small size of pathologies.
+Figure 5: Qualitative Results
+The highlighted box in the ground truth shows a cartilage thickness loss (left) and a high grade ligament sprain (right). The initial reconstructions are often too smooth, preventing the detection of the pathologies. The semantic changes of SDR-M (left) and SDR-A (right) reveal the pathological changes. Yellow arrows indicate pathologies.
+5 Results
+The quantitative results in Fig. 4 show that SDR-A and SDR-M have higher recall than the original single and multiple reconstructions. Thus SDR allows to uncover pathologies which can be missed with the original reconstruction methods. This is true for the diffusion-based reconstruction methods CSGM and DDIP as well as the often applied technique E2E-VarNet. At the same time SDR even improves mAP0.25 and thus SDR is not simply achieving higher recall by introducing more false positive detections.
+We observed that it is necessary to use a ViTDet with robust backbone for the generation in SDR, as the original ViTDet did not improve in recall or mAP compared to repeated sampling.
+6 Discussion and Conclusion
+We have shown that existing accelerated MRI reconstruction methods can miss pathologies and have suggested SDR to explore semantically different but fully data consistent reconstructions. The evaluation of SDR reconstructions with an object detector shows fewer missed pathologies (higher recall)
+while improving mAP. We believe that SDR can lead to a safer and more reliable development of image reconstructions for accelerated MRI.
+The generated semantically diverse reconstructions can also be utilized by a clinician to better understand the reconstruction uncertainty, as the diverse reconstructions visualize disparities between the solutions. This would allow the clinician to acquire further measurements if necessary.
+Acknowledgements
+Funded by the Deutsche Forschungsgemeinschaft (DFG, Ger-
+man Research Foundation) under Germany’s Excellence Strategy - EXC number 2064/1
+- Project number 390727645. The authors thank the International Max Planck Research
+School for Intelligent Systems (IMPRS-IS) for supporting JNM and CS.
+References
+[1]
+Augustin, M., Meinke, A., Hein, M.: Adversarial robustness on in- and
+out-distribution improves explainability. In: ECCV (2020)
+[2]
+Baumgartner, M., Jäger, P.F., Isensee, F., Maier-Hein, K.H.: nndetection: A
+self-configuring method for medical object detection. In: de Bruijne, M.,
+Cattin, P.C., Cotin, S., Padoy, N., Speidel, S., Zheng, Y., Essert, C. (eds.)
+MICCAI 2021. pp. 530–539. Springer International Publishing, Cham (2021)
+[3]
+Chung, H., Ye, J.C.: Score-based diffusion models for accelerated mri. Medical
+Image Analysis p. 102479 (2022)
+[4]
+Chung, H., Ye, J.C.: Deep diffusion image prior for efficient ood adaptation
+in 3d inverse problems. In: Leonardis, A., Ricci, E., Roth, S., Russakovsky,
+O., Sattler, T., Varol, G. (eds.) ECCV 2024. pp. 432–455. Springer Nature
+Switzerland, Cham (2025)
+[5]
+Cohen, N., Manor, H., Bahat, Y., Michaeli, T.: From posterior sampling to
+meaningful diversity in image restoration. In: ICLR (2024)
+[6]
+Croce, F., Schlarmann, C., Singh, N.D., Hein, M.: Adversarially robust clip
+models can induce better (robust) perceptual metrics. In: IEEE SaTML (2025)
+[7]
+Desai, A.D., Schmidt, A.M., Rubin, E.B., Sandino, C.M., Black, M.S., Mazzoli,
+V., Stevens, K.J., Boutin, R., Re, C., Gold, G.E., et al.: Skm-tea: A dataset
+for accelerated mri reconstruction with dense image labels for quantitative
+clinical evaluation. In: NeurIPS Datasets and Benchmarks Track (2021)
+[8]
+Everingham, M., Van Gool, L., Williams, C.K., Winn, J., Zisserman, A.: The
+pascal visual object classes (voc) challenge. IJCV 88, 303–338
+(2010)
+[9]
+Ganz, R., Elad, M.: Clipag: Towards generator-free text-to-image generation.
+In: WACV (2024)
+[10]
+Harman, F., Selver, M.A., Baris, M.M., Canturk, A., Oksuz, I.: Deep
+learning-based meniscus tear detection from accelerated mri. IEEE Access
+11, 144349–144363 (2023)
+[11]
+Jalal, A., Arvinte, M., Daras, G., Price, E., Dimakis, A.G., Tamir, J.I.:
+Robust compressed sensing mri with deep generative priors. NeurIPS (2021)
+[12]
+Knoll, F., Zbontar, J., Sriram, A., Muckley, M.J., Bruno, M., Defazio, A.,
+Parente, M., Geras, K.J., Katsnelson, J., Chandarana, H., Zhang, Z.,
+Drozdzalv, M., Romero, A., Rabbat, M., Vincent, P., Pinkerton, J., Wang, D.,
+Yakubova, N., Owens, E., Zitnick, C.L., Recht, M.P., Sodickson, D.K., Lui,
+Y.W.: fastmri: A publicly available raw k-space and dicom dataset of knee
+images for accelerated mr image reconstruction using machine learning.
+Radiology: Artificial Intelligence 2(1), e190007 (2020), pMID:
+32076662
+[13]
+Küstner, T., Hammernik, K., Rueckert, D., Hepp, T., Gatidis, S.: Predictive
+uncertainty in deep learning–based mr image reconstruction using deep
+ensembles: Evaluation on the fastmri data set. Magnetic Resonance in Medicine
+92(1), 289–302 (2024)
+[14]
+Li, Y., Mao, H., Girshick, R., He, K.: Exploring plain vision transformer
+backbones for object detection. In: ECCV. pp. 280–296. Springer (2022)
+[15]
+Mahendran, A., Vedaldi, A.: Understanding deep image representations by
+inverting them. In: CVPR (2015)
+[16]
+Morshuis, J.N., Gatidis, S., Hein, M., Baumgartner, C.F.: Adversarial
+robustness of mr image reconstruction under realistic perturbations. In:
+Haq, N., Johnson, P., Maier, A., Qin, C., Würfl, T., Yoo, J. (eds.)
+Machine Learning for Medical Image Reconstruction. pp. 24–33. Springer
+International Publishing, Cham (2022)
+[17]
+Morshuis, J.N., Hein, M., Baumgartner, C.F.: Segmentation-guided mri
+reconstruction for meaningfully diverse reconstructions. In: Mukhopadhyay,
+A., Oksuz, I., Engelhardt, S., Mehrof, D., Yuan, Y. (eds.) Deep Generative
+Models. pp. 180–190. Springer Nature Switzerland, Cham (2024)
+[18]
+Ren, S., He, K., Girshick, R., Sun, J.: Faster r-cnn: Towards real-time object
+detection with region proposal networks. IEEE transactions on pattern
+analysis and machine intelligence 39(6), 1137–1149 (2016)
+[19]
+Santurkar, S., Ilyas, A., Tsipras, D., Engstrom, L., Tran, B., Madry, A.: Image
+synthesis with a single (robust) classifier. In: NeurIPS (2019)
+[20]
+Schlarmann, C., Singh, N.D., Croce, F., Hein, M.: Robust clip: Unsupervised
+adversarial fine-tuning of vision embeddings for robust large vision-language
+models. ICML (2024)
+[21]
+Solomon, E., Johnson, P.M., Tan, Z., Tibrewala, R., Lui, Y.W., Knoll, F., Moy,
+L., Kim, S.G., Heacock, L.: fastmri breast: A publicly available radial
+k-space dataset of breast dynamic contrast-enhanced mri. Radiology:
+Artificial Intelligence 7(1), e240345 (2025)
+[22]
+Sriram, A., Zbontar, J., Murrell, T., Defazio, A., Zitnick, C.L., Yakubova, N.,
+Knoll, F., Johnson, P.: End-to-end variational networks for accelerated mri
+reconstruction. In: Martel, A.L., Abolmaesumi, P., Stoyanov, D., Mateus, D.,
+Zuluaga, M.A., Zhou, S.K., Racoceanu, D., Joskowicz, L. (eds.) MICCAI 2020.
+pp. 64–73. Springer International Publishing, Cham (2020)
+[23]
+Tibrewala, R., Dutt, T., Tong, A., Ginocchio, L., Lattanzi, R., Keerthivasan,
+M.B., Baete, S.H., Chopra, S., Lui, Y.W., Sodickson, D.K., et al.: Fastmri
+prostate: A public, biparametric mri dataset to advance machine learning for
+prostate cancer imaging. Scientific Data 11(1), 404 (2024)
+[24]
+Tsipras, D., Santurkar, S., Engstrom, L., Turner, A., Madry, A.: Robustness may
+be at odds with accuracy. In: ICLR (2019)
+[25]
+Xie, Y., Li, Q.: Measurement-conditioned denoising diffusion probabilistic
+model for under-sampled medical image reconstruction. In: Wang, L., Dou, Q.,
+Fletcher, P.T., Speidel, S., Li, S. (eds.) MICCAI 2022. pp. 655–664.
+Springer Nature Switzerland, Cham (2022)
+[26]
+Yen, C.Y., Singhal, R., Sharma, U., Ranganath, R., Chopra, S., Pinto, L.:
+Adaptive sampling of k-space in magnetic resonance for rapid pathology
+prediction. In: ICML (2024)
+[27]
+Zhao, R., Yaman, B., Zhang, Y., Stewart, R., Dixon, A., Knoll, F., Huang, Z.,
+Lui, Y.W., Hansen, M.S., Lungren, M.P.: fastmri+, clinical pathology
+annotations for knee and brain fully sampled magnetic resonance imaging data.
+Scientific Data 9(1), 152 (2022)

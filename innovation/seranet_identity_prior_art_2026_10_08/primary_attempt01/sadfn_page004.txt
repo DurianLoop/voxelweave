@@ -1,0 +1,35 @@
+4 Fan et al
+2 Related Work
+2.1 Compressed Sensing MRI
+In the study of CS-MRI, the researches focus on proposing appropriate regular￾ization. In the pioneer work SparseMRI [3], the fixed transform operator wavelets
+and total variation is adopted for regularization in Equation 1. More methods
+[6,7,8] are proposed to address the same objective function efficiently. The vari￾ants of wavelet are proposed to exploit the geometric information in MR images
+adaptively in [9,10,11]. Dictionary learning techniques are also utilized in situ to
+model the MR images adaptively [5,12,13]. Nonlocal prior also can be introduced
+as regularizator [14] or combined with sparse prior in [10].
+Recently, the deep neural network models are introduced in CS-MRI. A
+vanilla deep convolutional neural network (CNN) is used to learn the func￾tion mapping from the zero-filled MR images to the full-sampled MR images
+[15]. Furthermore, a modified U-Net architecture is utilized to learn the residual
+mapping in [16]. The above deep-based CS-MRI models overlooks the accurate
+information on the sampled positions in the compressive measurements. In [4],
+a deep cascaded CNN (DC-CNN) is proposed to cascade several basic blocks to
+learn the mapping with each block containing the nonlinear convolution layers
+and a nonadjustable data fidelity layer. In data fidelity layers, the reconstructed
+MR images are corrected by the accurate k-space samples. Despite the state￾of-the-art reconstruction quality has been achieved using the DC-CNN model,
+the high-level supervision information from the manual labels in MRI datasets
+hasn’t been taken into consideration, still leaving room for further improvement
+on model performance.
+2.2 MR Image Segmentation
+With the segmentation labels in MRI datasets, different models are proposed to
+learn to automatically segment the MR images into different tissues from the
+test set. Compared with conventional segmentation methods based on manually
+designed features, the deep neural network models can extract image features au￾tomatically, leading to better segmentation performance. Recently, the U-shaped
+network called U-Net trained in end-to-end and pixel-to-pixel manner is proposed
+in [17], which can take the input of arbitrary size and produce the output of the
+same size, achieving the state-of-the-art medical image segmentation accuracy
+and computational efficiency. Its variant where the 2D operations are replaced
+with 3D ones is proposed in [18] called 3D U-Net. The residual learning is also
+utilized in the segmentation model in [19]. The recurrent neural network can effi￾ciently model the relation among different frames in the volumetric MR data can
+introduced in the medical image segmentation [20,21]. Throughout the paper,
+we use the classic 2D U-Net for single-frame MRI segmentation for the single￾frame MRI reconstruction, and the proposed model can be easily extended to
+volumetric MRI data.

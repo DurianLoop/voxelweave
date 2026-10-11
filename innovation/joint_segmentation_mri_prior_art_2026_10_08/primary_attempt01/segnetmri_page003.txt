@@ -1,0 +1,53 @@
+(a) ZF (b) PANO (c) MRN5 (d) Full-sample (GT) (e) Mask
+(f) ZF Seg (g) PANO Seg (h) MRN5 Seg (i) Full-sample Seg (j) Manual Seg
+Figure 2: First row: The reconstructed MRI using different CS-MRI methods and a 20% sampling mask. These are then segmented by an
+independently-trained segmentation model based on the state-of-the-art U-Net (referred to as MSN in this paper for its MRI application).
+connections are used by this model to directly send lower￾layer features to high-layer features by concatenation.
+Training this MSN model using fully-sampled MRI and
+their segmentation labels, we test this models performance
+on reconstructed MRI produced by various CS-MRI meth￾ods. We use a 20% Cartesian under-sampling mask as shown
+in Figure 2(e). Our tested methods including the degraded
+zero-filled (ZF) reconstruction as baseline, PANO [Qu et al.,
+2014] and the proposed MRN model which will be discussed
+in the following section1
+.
+We observe that the zero-filled (ZF) reconstruction in Fig￾ure 2(a) produces a low-quality MR image, which leads to the
+poor segmentation performance shown in Figure 2(f). The
+PANO reconstructed MRI in Figure 2(b) has been segmented
+better in Figure 2(g), but is still far from satisfactory because
+of the loss of structural details in the reconstruction. The seg￾mentation using the fully-sampled (FS) MRI in Figure 2(d)
+is shown in Figure 2(i). Though this isn’t the ground truth
+segmentation, it is the segmentation performed on the ground
+truth MRI, and so represented an upper bound for CS-MRI
+on this segmentation task. The manually label segmentation
+is shown in Figure 2(j). This experiment shows that while
+CS-MRI can substantially improve the reconstruction qual￾ity visually, the fine structural details which are important for
+segmentation can still be mission, leaving much space for fur￾ther improvement.
+3.2 An MRI Reconstruction Network
+Deep learning for CS-MRI has the advantage of large mod￾eling capacity, fast running speed, and high-level seman￾tic modeling ability, which eases the integration of high￾1We adjust the parameters of PANO for this problem.
+level task information compared with traditional sparsity￾based CS-MRI models. Therefore, we adopt the same
+MSN encoder-decoder architecture from Figure 1 as a basic
+encoder-decoder unit with a global residual shortcut, which
+has been proven to help network training. The encoder￾decoder unit produces the reconstructed MRI. Since with
+deep neural networks the information loss can become se￾vere, we introduce a data fidelity (DF) unit to help correct
+the Fourier coefficients of the reconstructed MRI produced
+by the encoder-decoder architecture on the sampled positions
+in k-space. This takes advantage of the fact that we have ac￾curate measurements at the under-sampled k-space locations,
+and so the layers of the network should not override this in￾formation. (The details of the data fidelity unit can be found
+in [Schlemper et al., 2017].)
+The encoder-decoder architecture and data fidelity unit
+make up a basic block. As more blocks are stacked in a
+cascaded manner, the quality of the reconstructed MRI of
+each block can be gradually improved [Schlemper et al.,
+2017]. We therefore cascade N such basic units to form the
+MRI reconstruction network (MRNN ) in Figure 3. The re￾construction encoder in different blocks extract features at
+different depth. Previously in Figure 1, we observed that
+MRN5 achieves better reconstruction performance in Figure
+2(c) than the non-deep PANO method, but the segmentation
+output in Figure 2(h) (MRN→MSN) is still inferior to the
+fully-sampled segmentation. This motivates the following
+joint framework.
+3.3 SegNetMRI: A Unified Deep Neural Network
+Based on these observations, we propose a joint framework
+for CS-MRI reconstruction/segmentation that uses a deep
+neural network. We call this joint network SegNetMRI,

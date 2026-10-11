@@ -1,0 +1,43 @@
+Lu Lu Qu Zhu Guo Lionts Zhu Yang Yao Rajagopal Landman W ang Yan Huo
+and entropy coefficient of 0.01. The reward scaling factor isα= 100, and the quality metric
+weights areλ ssim = 0.5 andλ nmse = 0.5. All experiments use an acceleration factor of
+10×(2 initial plus 18 budget acquired lines). Additionally, experiments with a different
+acceleration factor of 5×(8 initial plus 32 budget acquired lines) are shown in Appendix C.
+Baseline Methods.We compare against four conventional acquisition strategies and
+two learned baselines: (1) Center-out, acquiring lines from k-space center outward; (2)
+Random, uniform random selection; (3) Random-LowBias, random selection biased to-
+ward central k-space; (4) Equispaced, fixed equidistant sampling; and (5) Deep Q-Network
+(DQN) (Mnih et al., 2015); (6) Subject-Specific Double Deep Q-Network (SS-DDQN), a
+learned policy based on Double DQN for active MRI acquisition (Pineda et al., 2020).
+Conventional baselines are evaluated both with and without MAR post-processing to en-
+able comparison against both naive sampling and two-stage acquisition-then-reconstruction
+approaches.
+Ablation Study.We conduct ablation experiments with five configurations: (1) Clean-
+trained PPO without MAR; (2) Metal-trained PPO without MAR; (3) Clean PPO + Pre-
+trained MAR (frozen); (4) Metal PPO + Pretrained MAR (frozen); and (5) MASC with
+joint co-adaptive optimization. The comparison between (4) and (5) isolates the benefit of
+end-to-end training versus applying MAR only at inference.
+3.3. Evaluation Metrics
+We assess reconstruction quality using SSIM, Peak Signal-to-Noise Ratio (PSNR), Mean
+Squared Error (MSE), NMSE, and Mean Absolute Error (MAE). All metrics are computed
+on final reconstructions after the acquisition budget is exhausted, reported as mean±
+standard deviation across the test set.
+4. Results
+4.1. Comparison with Baseline Acquisition Strategies
+Table 1 presents the quantitative comparison between our proposed MASC method and
+baseline acquisition strategies on the test set. Baseline methods are evaluated both with
+and without MAR post-processing to compare against naive sampling strategies and two-
+stage acquisition-then-reconstruction pipelines.
+Among conventional baselines without MAR, Center-out achieves the best performance,
+consistent with the understanding that low-frequency k-space components contain the ma-
+jority of image energy and structural information. Random-LowBias outperforms uniform
+Random sampling by biasing selection toward the k-space center, while Equispaced sam-
+pling performs worst as it is designed for parallel imaging with coil sensitivity information
+unavailable in our single-coil setting. DQN and SS-DDQN, learned acquisition policies
+based on value-based RL, outperform Center-out in MSE and NMSE but underperform in
+SSIM, suggesting that value-based RL can learn useful sampling patterns but may not fully
+capture perceptual quality objectives.
+When MAR post-processing is applied to baseline acquisitions, reconstruction quality
+improves substantially across all methods. Interestingly, Random and Random-LowBias
+with MAR achieve strong performance (SSIM>0.69), as incoherent sampling patterns
+8

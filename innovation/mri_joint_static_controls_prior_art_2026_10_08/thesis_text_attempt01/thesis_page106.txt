@@ -1,0 +1,39 @@
+6.3. RE-EXAMINING DEEP RL FOR MRI SAMPLING
+The area under curve is a numerical integration of the performance curve of the form
+{rt,ℓ (xi, ˆxθ(yωt,i))}T
+t=t0 that relates the sampling rate or acceleration factor at the
+t-th step to its performance. We used thesklearn implementation, that implements
+it using a trapezoidal rule. We compute an individual AUC for each test sample and
+then aggregate the resulting set{AUCi}ntest
+i=1 by computing its empirical mean and
+variance.
+This measure is susceptible to changes in reparation of the area under the curve,
+and this is the reason that the result changes when moving from sampling rate to
+acceleration factor (1/sampling rate). Indeed, when representing acceleration factors,
+in the case of Pineda et al. (2020) (cf. Table 6.4)20 out of 332 sampling locations
+cover 90% of the acceleration factor plot, biasing the AUC towards attributing most
+of its weight the high acceleration factors.
+6.3 Re-examining deep RL for MRI sampling
+Our initial impetus is the observation that the non-adaptive oracle used in Bakker et al.
+(2020) is highly reminiscent of the LBCS method Gözcü et al. (2018), which has been
+used as a strong baseline in the literature (Jin et al., 2019; Sanchez et al., 2020b). To our
+surprise, evaluating these methods against the greedy RL method in the data processing
+pipeline used in Zhang et al. (2019b) resulted in the fixed method not only coming close
+to the non-adaptive oracle, but actually closely matching the RL method (see Table 6.3).
+Wanting to perform a fair comparison as well as to assess the impact of the variability in
+the pipelines used across the literature, we closely replicated the pipeline of Bakker et al.
+(2020)4 as well as an extensive ablation study to understand this reversal and identify its
+source.
+6.3.1 Experimental setting
+In the sequel, the termsetting then refers to a particular choice of preprocessing, subsam-
+pling and postprocessing of the data, independently of the data source (we always use the
+same dataset) and the model or sampling policy used. Preprocessing and postprocessing
+are relevant throughout the training of the reconstruction and the policy models, whereas
+changes in the sampling masks only directly affect the pretraining of the reconstructor,
+as the training the policy is done by successive rollouts using the policy model itself.
+Dataset and preprocessing.Like the original paper of Bakker et al. (2020), we used the
+4We thank the authors for providing the original checkpoints and general help and responsiveness
+during this replication. Our results did not show theexact same numbers as Bakker et al. (2020), as we
+did not use the same train-val-test split and dataset undersampling. We discuss this further in Appendix
+A.2.1.
+93

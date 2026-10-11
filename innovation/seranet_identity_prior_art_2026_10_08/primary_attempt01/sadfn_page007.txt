@@ -1,0 +1,62 @@
+A Segmentation-aware Deep Fusion Network for Compressed Sensing MRI 7
+mentation model called Pre-SegNet. The parameter setting of the Pre-SegNet
+is shown in Table 2. The pooling operation can help the network extract the
+Table 2. The parameter setting of the Pre-SegNet.
+Layer Input Filter Size Stride Number of Filters Activation Output
+Conv1 240*240 3*3 1 32 ReLU 240*240*32
+Conv2 240*240*32 3*3 1 32 ReLU 240*240*32
+Max Pooling1 240*240*32 N/A 2 N/A N/A 120*120*32
+Conv3 120*120*32 3*3 1 64 ReLU 120*120*64
+Conv4 120*120*64 3*3 1 64 ReLU 120*120*64
+Max Pooling2 120*120*64 N/A 2 N/A N/A 60*60*64
+Conv5 60*60*64 3*3 1 128 ReLU 60*60*128
+Conv6 60*60*128 3*3 1 128 ReLU 60*60*128
+Deconv1 60*60*128 3*3 1 64 ReLU 120*120*64
+Conv7 120*120*(64+64) 3*3 1 64 ReLU 120*120*64
+Conv8 120*120*64 3*3 1 64 ReLU 120*120*64
+Deconv2 120*120*64 3*3 1 32 ReLU 240*240*32
+Conv9 240*240*(32+32) 3*3 1 32 ReLU 240*240*32
+Conv10 240*240*32 3*3 1 32 ReLU 240*240*32
+Conv11 240*240*32 3*3 1 4 Linear 240*240*4
+Softmax 240*240*4 N/A N/A N/A N/A 240*240
+image features in different scales and the symmetric concatenation is utilized
+to propagate the low-layer features to high layers directly, providing accurate
+localization. We train the Pre-SegNet using the full-sampled MR images and
+their corresponding segmentation labels as training data pairs by minimizing
+the following pixel-wise cross-entropy loss function
+LSeg 
+x
+f s
+i
+, tgt
+i
+; θs
+
+= −
+X
+Ls
+i=1
+X
+R
+j=1
+X
+C
+c=1
+t
+gt
+ijc ln tijc. (3)
+Where the t
+gt
+i
+is the segmentation label in the training batch and ti
+is the corre￾sponding segmentation result produced by Pre-SegNet. θs denotes the network
+parameter and Ls is the number of MRI data in the training batch. C denotes
+the the number of classes of the label. Taking the brain segmentation for ex￾ample [28], the brain tissues can be classified into white matter, gray matter,
+cerebrospinal fluid and background. Thus C is 4 for segmentation.
+3.3 Deep Fusion Network
+With the well-trained Pre-RecNet and Pre-SegNet, we can construct the segmentation￾aware deep fusion network with N blocks (SADFNN ) by integrating the features
+from the Pre-RecNet and Pre-SegNet, which involving a cross-layer multilayer
+feature aggregation strategy and a cross-task feature fusion strategy.
+Segmentation-aware Feature Extraction Module As we discussed in the
+related work section, the multilayer feature aggregation can be used to fuse the
+information from layers in different depth. Here we extract the feature maps from

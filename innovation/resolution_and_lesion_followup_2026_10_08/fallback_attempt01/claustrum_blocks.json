@@ -1,0 +1,908 @@
+[
+  {
+    "index": 0,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "abstract"
+    ],
+    "text": "ABSTRACT"
+  },
+  {
+    "index": 1,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract"
+    ],
+    "text": "The claustrum is a band‐like gray matter structure located between putamen and insula whose exact functions are still actively researched. Its sheet‐like structure makes it barely visible in in vivo magnetic resonance imaging (MRI) scans at typical resolutions, and neuroimaging tools for its study, including methods for automatic segmentation, are currently very limited. In this paper, we propose a contrast‐ and resolution‐agnostic method for claustrum segmentation at ultra‐high resolution (0.35 mm isotropic); the method is based on the SynthSeg segmentation framework, which leverages the use of synthetic training intensity images to achieve excellent generalization. In particular, SynthSeg requires only label maps to be trained, since corresponding intensity images are synthesized on the fly with random contrast and resolution. We trained a deep learning network for automatic claustrum segmentation, using claustrum manual labels obtained from 18 ultra‐high resolution MRI scans (mostly ex vivo). We demonstrated the method to work on these 18 high resolution cases (Dice score = 0.632, mean surface distance = 0.458 mm, and volumetric similarity = 0.867 using 6‐fold cross validation (CV)), and also on in vivo T1‐weighted MRI scans at typical resolutions (≈1 mm isotropic). We also demonstrated that the method is robust in a test–retest setting and when applied to multimodal imaging (T2‐weighted, proton density, and quantitative T1 scans). To the best of our knowledge this is the first accurate method for automatic ultra‐high resolution claustrum segmentation, which is robust against changes in contrast and resolution. The method is released at https://github.com/chiara‐mauri/claustrum_segmentation and as part of the neuroimaging package FreeSurfer."
+  },
+  {
+    "index": 2,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "abstract"
+    ],
+    "text": "The claustrum is a still poorly understood structure, with limited neuroimaging tools available for its study. Here we propose a method for automatic claustrum segmentation at ultra‐high resolution (0.35 mm), which can be applied to images of any contrast and resolution. The method is accurate, robust, and achieves excellent generalization."
+  },
+  {
+    "index": 3,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "Introduction"
+  },
+  {
+    "index": 4,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "The claustrum is a thin, sheet‐like subcortical gray matter structure situated between insular cortex and putamen, enclosed by the white matter of the capsule. It includes a thin dorsal section and a thicker ventral portion characterized by fragmented components, often referred to as “fingers” or “puddles” (Mathur 2014; Coates and Zaretskaya 2024; Remedios et al. 2010). Its precise boundaries are not yet fully characterized (Mathur 2014); while earlier studies estimated a volume of approximately 800 mm3 per hemisphere (Kapakin 2011; Milardi et al. 2015), more recent work using high‐resolution imaging has reported significantly larger volumes, ranging from 1243 mm3 to 2074 mm3 per hemisphere (Calarco et al. 2023; Coates and Zaretskaya 2024; Kang et al. 2020). Discrepancies in nomenclature also exist. Most studies divide the claustrum into dorsal and ventral portions (e.g., Mathur (2014); Coates and Zaretskaya (2024)), whereas some (Kang et al. 2020; Casamitjana et al. 2024) refer to its most inferior portion extending into the temporal lobe as the “temporal claustrum”—a region considered part of the ventral claustrum in the former classification. In this study, we follow the former dorsal–ventral convention."
+  },
+  {
+    "index": 5,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "The claustrum has been shown to have the highest connectivity in the brain per volume unit (Torgerson et al. 2015), with vast anatomical connections to almost all cortical areas (Baizer et al. 2014; Coates et al. 2024; Crick and Koch 2005; Smith et al. 2020; Dillingham et al. 2017), including temporal (Rodríguez‐Vidal et al. 2024), motor (Goll et al. 2015), somatosensory (Goll et al. 2015), visual (Goll et al. 2015; Rodríguez‐Vidal et al. 2024; Milardi et al. 2015), auditory (Goll et al. 2015; Milardi et al. 2015), limbic (Goll et al. 2015; Smith et al. 2019; Torgerson et al. 2015), associative (Goll et al. 2015), sensorimotor (Rodríguez‐Vidal et al. 2024; Milardi et al. 2015), and prefrontal cortices (Goll et al. 2015; Rodríguez‐Vidal et al. 2024; Milardi et al. 2015; Brown et al. 2017), and language areas (Rodríguez‐Vidal et al. 2024). It has also been shown to be highly interconnected with various subcortical structures (Goll et al. 2015; Dillingham et al. 2017), including basal ganglia and amygdala (Rodríguez‐Vidal et al. 2024; Milardi et al. 2015). Besides its wide structural connectivity, claustrum functions have also been the object of interest, with hypotheses about its role in consciousness (Smythies et al. 2012; Torgerson et al. 2015; Chau et al. 2015) and conscious percepts (Crick and Koch 2005), multisensory integration (Mathur 2014; Banati et al. 2000; Hadjikhani and Roland 1998; Naghavi et al. 2007), fluency heuristic decisions (Volz et al. 2010), cognitive control (Madden et al. 2022; Krimmel et al. 2019; White et al. 2018), task switching (Krimmel et al. 2019; Mathur 2014), saliency detection (Mathur 2014; Rodríguez‐Vidal et al. 2024; Remedios et al. 2014), attention (Goll et al. 2015; Brown et al. 2017; Smith et al. 2020; Atlan et al. 2018; Mathur 2014) and salience‐guided attention (Smith et al. 2019, 2020; Terem et al. 2020). Additionally, other studies suggested that the claustrum may regulate cortical excitability (Atilgan et al. 2022), modulate cortical down‐states during sleep (Smith et al. 2020), and it may be involved in the processing of visual sexual stimuli (Redouté et al. 2000) and in mental preparation leading to successful problem solving (Tian et al. 2011). However, there is still no clear consensus about its functions, with some contradictory results and many open questions (Mathur 2014; Remedios et al. 2010; Atilgan et al. 2022; Coates et al. 2024; Dillingham et al. 2017; Baizer et al. 2014)."
+  },
+  {
+    "index": 6,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "The claustrum has also been suggested to play a role in various neurological disorders (Nikolenko et al. 2021; Benarroch 2021), such as autism (Wegiel et al. 2015; Davis 2008), Parkinson's disease (Sitte et al. 2017; R. N. Sener 1998; Kalaitzakis et al. 2009; Arrigo et al. 2019), schizophrenia (Cascella et al. 2011; Cascella and Sawa 2014; Bernstein et al. 2016), major depressive disorder (Bernstein et al. 2016), Wilson's disease (Sener 1993; R. N. Sener 1998), Alzheimer's disease (Venneri and Shanks 2014; Bruen et al. 2008), Lewy body dementia (Kalaitzakis et al. 2009; Yamamoto et al. 2007), epilepsy (Silva et al. 2018; Meletti et al. 2015), seizures (Zhang et al. 2001; Wada and Kudo 1997), delusional states (Patru and Reser 2015), disruption of consciousness (Koubeissi et al. 2014), and asphyxia (R. N. Sener 1998). However, these findings need to be corroborated by further analysis, as some of the studies suffer from small sample sizes, and several aspects remain unexplored."
+  },
+  {
+    "index": 7,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "Additional investigation of the claustrum and its functions is therefore of great importance, and MRI offers a valuable, non‐invasive approach, with excellent soft tissue contrast. However, difficulties arise from the thin shape of the structure, which makes it barely visible in in vivo MRI scans at typical resolutions and poses many challenges for both its manual labeling and automatic segmentation. Neuroimaging tools for the study of the claustrum are currently very limited. The majority of structural brain atlases, for instance, do not include the claustrum, with the exceptions of a few histological atlases (Ding et al. 2016; Mai et al. 2015; Casamitjana et al. 2024; Ewert et al. 2018; Calarco et al. 2023, 2024). Recently, rigorous protocols for claustrum manual labeling, including both its dorsal and ventral components, have been developed using high‐resolution in vivo (Kang et al. 2020) and ex vivo (Coates and Zaretskaya 2024) MRI images. However, manual labeling is a time‐consuming process that requires domain expertise—even more so for a thin and challenging structure like the claustrum—and the protocols developed on high‐resolution images might not be applicable at lower resolutions. Consequently, the development of a reliable method for automatic claustrum segmentation is essential to advance our understanding of the structure and its functional roles. This method may also be employed for post hoc correction of automatic segmentations in the surrounding region, where the putamen is often mislabeled to include parts of the external capsule and the claustrum (Perlaki et al. 2017; Dewey et al. 2010). We have observed this to be particularly common in Bayesian segmentation methods, which are widely used in neuroimaging, potentially biasing downstream region‐of‐interest (ROI) analyses."
+  },
+  {
+    "index": 8,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "A few approaches have been proposed in the literature for automatic claustrum segmentation: Berman et al. (2020) used an intensity‐based approach on T1‐ and T2‐weighted in vivo scans at 0.7‐mm isotropic resolution, with k‐means clustering used to separate the claustrum from white matter in a region of interest detected through anatomical landmarks. Brun et al. (2022) adopted a single‐atlas segmentation approach: It created a brain atlas of claustrum at 0.5 mm isotropic by registering together 7T T1‐weighted in vivo scans of multiple subjects and then manually labeling the claustrum in the resulting template. The atlas was then deformed into subject spaces to yield the claustrum segmentation on new cases. Similarly, Coates and Zaretskaya (2024) and Coates et al. (2024) manually labeled the claustrum on a single ultra‐high resolution ex vivo MRI image (0.1‐mm isotropic) and then nonlinearly registered it on unseen in vivo scans to produce automatic segmentations. Finally, Albishri et al. (2022) and Li et al. (2021) trained neural networks based on 2D U‐Net architectures (Ronneberger et al. 2015) to segment claustrum on T1‐ and/or T2‐weighted in vivo scans at 0.7 mm isotropic and 1 mm isotropic resolution respectively, while Neubauer et al. (2022) extended the model from Li et al. (2021) to neonatal brains using transfer learning. However, these approaches suffer from some shortcomings: Berman et al. (2020) achieve low performances and include only the dorsal portion of the claustrum, while Brun et al. (2022) and Coates and Zaretskaya (2024) do not quantify segmentation accuracy. Albishri et al. (2022) and Li et al. (2021) employ supervised convolutional neural networks (CNNs), which are known to perform well on in‐distribution data but to generalize poorly across datasets due to substantial variability in acquisition protocols and imaging sequences (Billot, Greve, et al. 2023), often necessitating fine‐tuning or re‐training to maintain performance on out‐of‐distribution data. We demonstrated this limited generalizability in the case of Albishri et al. (2022)."
+  },
+  {
+    "index": 9,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "In this paper, we propose a novel approach to claustrum segmentation which addresses these shortcomings: We manually labeled claustrum on ultra‐high resolution (0.1–0.25 mm isotropic) ex vivo and in vivo images where claustrum is clearly visible. Then, as ex vivo and in vivo have different contrasts, we trained a contrast‐ and resolution‐agnostic deep learning network to automatically segment the claustrum. Because of the contrast‐ and resolution‐independent nature of the network, we can also apply this method to in vivo datasets at standard (≈1 mm isotropic) resolution of any contrast, which is a scenario of interest in many applications. The proposed method is based on SynthSeg (Billot, Greve, et al. 2023), a segmentation framework that only requires a set of label maps to be trained; no real intensity scans are needed since all training intensity images are synthesized from the labels. In particular, a 3D U‐Net (Ronneberger et al. 2015) is trained on heavily augmented versions of the provided labels and on corresponding intensity images that are synthesized on‐the‐fly with varying contrast and resolution, making the automatic segmentation insensitive to these variations. The use of synthetic images has been widely leveraged in various neuroimaging applications (Billot, Greve, et al. 2023; Hoffmann et al. 2021; Iglesias et al. 2021, 2023; Hoopes et al. 2022), and it allows the network to have a rich training environment, overlooking the idiosyncrasies of a specific training dataset and yielding state‐of‐the‐art generalization (Billot, Magdamo, et al. 2023)."
+  },
+  {
+    "index": 10,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0001"
+    ],
+    "text": "The use of this contrast‐ and resolution‐insensitive method yields the following advantages: (1) During training, it enables leveraging of ultra‐high‐resolution labels from ex vivo scans, which capture both dorsal and ventral claustrum components, while subsequently applying the method to segment the entire claustrum in standard‐resolution in vivo images. (2) It allows the method to achieve state‐of‐the‐art generalization across different in vivo datasets of the same modality, regardless of the specific scanner and acquisition protocol used. (3) It enables claustrum segmentation in in vivo images across a wide range of contrasts and resolutions, including T1‐weighted, T2‐weighted, proton density (PD), and quantitative T1 scans. To the best of our knowledge, this is the first method for automatic high‐resolution claustrum segmentation that yields accurate segmentation across all of claustrum and displays excellent generalization. The method is released at https://github.com/chiara‐mauri/claustrum_segmentation, as well as in the neuroimaging software FreeSurfer (Fischl 2012)."
+  },
+  {
+    "index": 11,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0002"
+    ],
+    "text": "Data"
+  },
+  {
+    "index": 12,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0002"
+    ],
+    "text": "To develop the claustrum segmentation method, we used ultra‐high resolution MRI scans comprising 15 ex vivo samples and one in vivo T1‐weighted scan, as detailed in Table 1. In total, 18 hemispheres (12 left, 6 right) were included, with isotropic resolution ranging from 0.1 to 0.25 mm. An example of an ex vivo hemisphere, with the claustrum region highlighted, is shown in Figure 1. These data were used to obtain claustrum manual labels and subsequently train a SynthSeg segmentation method, as will be explained in Section 3."
+  },
+  {
+    "index": 13,
+    "kind": "table-wrap",
+    "id": "hbm70303-tbl-0001",
+    "scope": [
+      "body",
+      "hbm70303-sec-0002"
+    ],
+    "text": "TABLE 1Demographics of the ultra high‐resolution MRI scans used for manual labeling of the claustrum.SampleIn vivo/ex vivoAgeSexField of view (FoV)PMI (hours)Brain weights (grams)MRI resolution (mm, isotropic)1Ex vivo78MLeft hemisphere2413200.122Ex vivo75FLeft hemisphere1511400.123 (Costantini et al. 2023)Ex vivo79MLeft hemisphere1512000.154Ex vivo70FLeft hemisphere2311030.125Ex vivo73FRight hemisphere2315000.156Ex vivo62MLeft hemisphere1613500.157Ex vivo60FLeft hemisphere213800.158Ex vivo75MRight hemisphere2413100.129Ex vivo60MLeft hemisphere2113100.1210Ex vivo81MLeft hemisphere612700.1211Ex vivo61Mright hemisphere2313100.1212Ex vivo52FLeft hemisphere1512500.1213 (Edlow et al. 2019)Ex vivo58FWhole brain1412100.1014Ex vivo57FLeft hemisphere2412150.1215Ex vivo48MRight hemisphere??0.1216 (Lüsebrink et al. 2017)In vivo34MWhole brain——0.25 Note: None of the ex vivo cases had neurological disorders prior to death, and the in vivo scan is from a healthy subject. Some information about sample 15 was not available. All samples, except for cases 13 and 16, have been scanned in situ.Abbreviation: PMI = postmortem interval."
+  },
+  {
+    "index": 14,
+    "kind": "fig",
+    "id": "hbm70303-fig-0001",
+    "scope": [
+      "body",
+      "hbm70303-sec-0002"
+    ],
+    "text": "FIGURE 1Example of an ex vivo hemisphere (case 14, left hemisphere, axial view, slice 789, voxel size 0.12 mm), where a cropped region around claustrum is highlighted. Note that the contrast between claustrum and white matter faints in the anterior end of claustrum (blue arrow), raising challenges in the delineation of the structure."
+  },
+  {
+    "index": 15,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0002"
+    ],
+    "text": "We also considered several in vivo datasets acquired at typical in vivo resolutions to test the segmentation method in this scenario. In particular, we employed: –The IXI dataset, which is composed of T1‐weighted scans of 581 healthy subjects spanning the whole adulthood (20–86 years old), with resolution 0.94 × 0.94 × 1.20 mm. This dataset comprises scans from three different sites, acquired with a Philips 3 T scanner, a Philips 1.5T scanner, and a GE 1.5T scanner.–The Miriad dataset (Malone et al. 2013), which contains repeated T1‐weighted scans of 46 subjects with mild–moderate Alzheimer's disease (AD) (mean age 69.4 ± 7.1 years) and of 23 healthy controls (mean age 69.7 ± 7.2 years), acquired by the same radiographer with the same scanner and sequences. The data resolution is 0.94 × 0.94 ×1.50 mm. For each subject, we used the first two scans, which were taken on average 16 days apart from each other.–The FreeSurfer maintenance (FSM) dataset (Greve and Fischl 2024), which is composed of multimodal images of 39 subjects, has 1‐mm isotropic voxel size. Specifically, all subjects in the dataset have a T1‐weighted MPRAGE scan, while 31 subjects also have a T2‐weighted scan. For 36 subjects, a PD‐weighted (M0 image) and a quantitative T1 (qT1) scan were also computed from an MP2RAGE, via steady‐state Bloch equations (Marques et al. 2010). The same method was also used to synthesize MPRAGE images (1‐mm isotropic) with different inversion times (TI), based on PD and qT1 scans. Each of these modalities presents a different contrast, enabling the evaluation of the segmentation method across diverse imaging conditions."
+  },
+  {
+    "index": 16,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003"
+    ],
+    "text": "Method"
+  },
+  {
+    "index": 17,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "Claustrum Manual Labeling Protocol"
+  },
+  {
+    "index": 18,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "The claustrum was manually annotated in all hemispheres listed in Table 1 on every fifth coronal slice, with labels interpolated on the remaining slices as described below. Two raters contributed sequentially: Rater 1 (J.M.) first labeled seven hemispheres (cases 4, 13, 14, 15, and 16), while rater 2 (R.F.) completed the remaining cases, some of which had been briefly initiated by rater 1. To assess inter‐rater variability, rater 2 independently re‐labeled all seven cases previously annotated by rater 1. These alternative labels were used solely for inter‐rater comparison and were not merged with the original annotations."
+  },
+  {
+    "index": 19,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "Both raters labeled the claustrum in the coronal view using the FreeView software—part of the FreeSurfer software package (Fischl 2012)—with the voxel edit tool (brush size of 1 or 2 voxels). For labeling larger areas, they delineated an initial outline, followed by filling the structure, while in narrower regions labeling was performed voxel by voxel. Additionally, the raters were instructed to optimize the contrast in FreeView to better distinguish the claustrum from adjacent structures, especially for samples with subtle differences in signal intensity."
+  },
+  {
+    "index": 20,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "Both dorsal and ventral portions of the claustrum were labeled. Tracing started by locating the superior (or dorsal) portion of the claustrum, which is an extremely thin but tall area of gray matter residing within cortical white matter, broadly located between the putamen medially and the insula laterally in its midsection. Two narrow isthmuses of white matter occur on either side of the dorsal claustrum, the external capsule medially (Figure 2b,A) and the extreme capsule laterally (Figure 2b,B) at its midsection. In the superior direction, the claustrum continues as a narrow strip, extends beyond its midway neighbors (putamen and insula), and ultimately curves toward and hugs the superior cortical gyri (Figure 2b,C), so tracing followed accordingly. The superior curve of the claustrum points laterally in the respective frontal or parietal lobes."
+  },
+  {
+    "index": 21,
+    "kind": "fig",
+    "id": "hbm70303-fig-0002",
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "FIGURE 2(a–c) Different views of an ex vivo hemisphere (case 14, left hemisphere) cropped around the claustrum, with overimposed manual label. The coronal view (b) shows both dorsal and ventral portions of the claustrum and was used for manual tracing. The dorsal part is thinner, enclosed between the external (A) and the extreme (B) capsules, and ultimately wraps around the superior cortical gyri (C). The ventral portion is wider, displays the characteristic “fingers” (D), and closely follows the contour of the ventral amygdala (E). (d, e) 3D rendering of the claustrum manual label of the same case, shown from two different angles. Note that the structure has only one connected component and that the fragmented look of the ventral “fingers” appears only in 2D views."
+  },
+  {
+    "index": 22,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "Tracing then proceeded toward the inferior (or ventral) claustrum, which fans out into divided sections at the temporal stem, showing a fan‐like structure (or “fingers”; Figure 2b,D). The ventral claustrum occupies a greater territory than the superior portion (which does not expand out at the corona radiata); it is not restrained by the narrow zone at the midsection and expands ventrally near the temporal stem white matter. When feasible, individual ventral “fingers” were delineated separately, whereas they were labeled as a single structure if their spacing was smaller than the voxel size (see Figure 3). Special care was taken in the mid‐ventral region to prevent the claustrum label from extending into the ventral amygdala (Figure 2b,E)."
+  },
+  {
+    "index": 23,
+    "kind": "fig",
+    "id": "hbm70303-fig-0003",
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "FIGURE 3Two coronal views of an ex vivo hemisphere (case 14, left hemisphere) cropped around claustrum, with overimposed manual label. Light‐blue arrows point to ventral “fingers” that have been annotated individually, while red arrows highlight regions where they were labeled as a whole, due to voxel size limitations."
+  },
+  {
+    "index": 24,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "This protocol was used to manually label claustrum in every fifth coronal slice. In the remaining slices, labels were generated with SmartInterpol (Atzeni et al. 2018), an automated method that exploits a combination of label fusion and convolutional neural networks to transfer the existing labels to the slices without annotations. SmartInterpol has the advantage of reducing the burden of manual tracing, while providing labels that vary smoothly across slices (see Supporting Information: Section 1 for a visual example). The strategy of labeling every 5th slice was adopted after testing intervals of 2, 4, 5, and 10 slices and visually inspecting the resulting final labels (results not shown)."
+  },
+  {
+    "index": 25,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0004"
+    ],
+    "text": "After applying SmartInterpol, the segmentation in each coronal slice was cross‐checked against adjacent slices, and axial as well as 3D views were also inspected (shown in Figure 2a,d,e respectively). Manual adjustments were performed as needed in the coronal view to ensure label accuracy and consistency across slices, with axial and 3D views used for additional anatomical guidance. The axial view was particularly useful for detecting minor underlabeling of the dorsal claustrum, especially in its most superior region."
+  },
+  {
+    "index": 26,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0005"
+    ],
+    "text": "Whole Field of View (FoV) Labels"
+  },
+  {
+    "index": 27,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0005"
+    ],
+    "text": "After obtaining claustrum manual annotations as described in Section 3.1, the left hemisphere labels were left–right reversed so that all labels appeared on the right hemisphere. All label volumes were cropped to a FoV of 56 mm per dimension and downsampled to 0.35 mm isotropic voxel size (160 voxels per dimension); this is necessary to accommodate GPU memory during training. SynthSeg training requires dense labels where the whole FoV is annotated, not just the claustrum, so we used the default SynthSeg whole‐brain network (Billot, Greve, et al. 2023) to segment the surrounding structures—for example, putamen, cortex, white matter—from the MRI scans (all on the right hemisphere, downsampled to 0.35 mm isotropic), and then cropped the resulting segmentations with the same FoV as the manual labels. The claustrum manual labels were then superimposed on the SynthSeg segmentations, mostly overwriting voxels that have been labeled by SynthSeg as white matter or putamen. Additionally, all voxels adjacent to the claustrum were forced to be white matter in the final labels to ensure that white matter appeared between the claustrum and other structures, such as putamen and insula. These final labels will be used for training the segmentation model. Figure 4 provides an overview of the training labels creation pipeline, while Figure 5 presents an example of a final label, including both claustrum and surrounding structures."
+  },
+  {
+    "index": 28,
+    "kind": "fig",
+    "id": "hbm70303-fig-0004",
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0005"
+    ],
+    "text": "FIGURE 4Overview of the pipeline used to create training labels. Case 14 (left hemisphere) is shown. In the merged figure, white arrows highlight regions where whole‐brain SynthSeg incorrectly labeled the claustrum as putamen. The claustrum is shown with partial transparency to make these errors visible. In the subsequent figure, yellow arrows indicate voxels that were manually reassigned to white matter (WM); these appear as black regions in the image. Note that this WM–enforced boundary was applied only during the creation of training labels and was not used at test time."
+  },
+  {
+    "index": 29,
+    "kind": "fig",
+    "id": "hbm70303-fig-0005",
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0005"
+    ],
+    "text": "FIGURE 5Example of axial (left, slice number 270), coronal (middle, slice number 247), and sagittal (right, slice number 118) view of a label map (case 14, left hemisphere flipped on the right side), obtained by overimposing the claustrum manual label to the automatic segmentation of surrounding structures, which were used to train the SynthSeg segmentation model. The claustrum label is at 0.35 mm resolution, whereas the other structures are output by the whole‐brain SynthSeg at 1 mm. The slices shown here correspond to those in Figure 2, given the claustrum voxel sizes of 0.35 mm versus 0.12 mm, respectively."
+  },
+  {
+    "index": 30,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "Training the Automatic Segmentation Method"
+  },
+  {
+    "index": 31,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "We trained SynthSeg 1 on the labels described in Section 3.2 to segment the claustrum and other structures in the ROI (we will show only claustrum segmentation in the remainder). In particular, SynthSeg performs a heavy spatial augmentation of the provided labels with both affine and nonlinear diffeomorphic transformations, to enrich the training environment. Synthetic intensity images are then generated, conditioned on the given labels, by sampling random intensities via a Gaussian Mixture Model. A set of common image augmentations is also applied in the following order: bias field, intensity normalization, gamma transform, Gaussian smoothing and downsampling (to simulate different lower resolutions). Downsampling is performed either isotropically or anisotropically, with the resolution randomly sampled from the uniform distributions U0.35,3.5 and U0.35,5 respectively. The synthetic intensity images are then upsampled back to the labels resolution (0.35‐mm isotropic in our case, compared to 1‐mm isotropic in the default SynthSeg). This ensures that the network learns to produce sharp, high‐resolution segmentations, regardless of the simulated voxel size. A U‐Net model (Ronneberger et al. 2015) is trained on these label‐intensity pairs (see Figure 6 and Figure S2.1 for examples), with both label augmentation and synthetic intensity image generation performed on the fly to increase variability during training. Note that, since all intensity images are synthesized with random contrast, the presence of a single in vivo case in the training set does not influence the learning process. The actual image contrast, which differs between in vivo and ex vivo cases, is only encountered by the model at test time, when real images are fed into the model."
+  },
+  {
+    "index": 32,
+    "kind": "fig",
+    "id": "hbm70303-fig-0006",
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "FIGURE 6Top: Example of augmented labels derived from the label shown in Figure 5 (case 14, axial view, slice number 270). Bottom: Corresponding synthetic images generated with random contrast."
+  },
+  {
+    "index": 33,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "We first performed some pilot experiments to determine the optimal configuration of architecture and synthesis hyperparameters for claustrum segmentation (the configuration adopted in Billot, Greve, et al. (2023) was optimized for whole‐brain segmentation at 1 mm). Compared to the baseline configuration in Billot, Greve, et al. (2023), we tweaked different architecture characteristics (such as kernel size, number of levels, number of features, learning rate, batch size, weights attributed in the loss to different structures), and some SynthSeg‐specific features (such as grouping of structures in the Gaussian Mixture Model, resolution of synthetic data and hyperparameters of the prior for the amount of rotation and deformation in the labels augmentation, for the Gaussian Mixture Model, and for the gamma transform in the image synthesis). For each modification to the baseline setting, we trained a model for 100 epochs on 12 cases, and we tested it on 3 validation cases. We found that none of these changes yielded a significant improvement in performance (results not shown). We therefore selected the same architecture as in Billot, Greve, et al. (2023), given by a 3D U‐Net with 5 levels, 2 convolutions per level with kernel size 3 × 3 × 3, soft Dice Loss, a learning rate of 10−4, and a batch size of 1, and the default synthesis parameters, except for one modification in the image synthesis: We added random voxel‐wise Gaussian noise when generating synthetic image intensities, since we found that it crucially increased the robustness of the method (see Appendix B)."
+  },
+  {
+    "index": 34,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "With this selected configuration, we then trained the model using 6‐fold cross‐validation (CV) to assess performance: We split the data into a training set of 12 subjects, a validation set, and a test set of 3 images each, and we repeated the procedure 6 times so that every subject appeared in the test set exactly once. For each split, we trained the model for 100 epochs (equivalent to 500,000 training steps), with synthetic images generated on the fly, independently of the fold. The validation set was used to determine the best epoch—that is, the epoch that yielded the best validation Dice score (see Appendix A) for the claustrum—which was then used to make predictions on the test subjects. We highlight that, whereas the Dice loss used during training was computed on synthetic images and encompassed all structures within the ROI, the validation Dice score used for epoch selection was computed on real images instead, and only for the claustrum."
+  },
+  {
+    "index": 35,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "To apply the method to a new image (for validation and testing in the CV and in all experiments in the remainder), we used the following procedure. We first needed a final step in the pre‐processing of the 18 high‐resolution dataset: We non‐linearly registered each high‐resolution intensity image to MNI152 2 using the contrast‐insensitive SynthMorph (Hoffmann et al. 2021) and then mapped the claustrum manual labels for all 18 cases in MNI152 space using this transform (resampling them at 0.35 mm isotropic). We then created a simple prior probabilistic atlas in MNI152 space (shown in Supporting Information: Section 3) by averaging all warped manual labels, and we then left–right flipped it to obtain a probabilistic atlas for the left claustrum as well. These atlases were used to crop a new image into the proper FoV around the claustrum (they are not otherwise used in the segmentation): Given a new test image, we first register it to MNI152, then map the probabilistic atlases into the native space and threshold them at 0.001. Once there, we crop a cube of size 60 mm per dimension around the claustrum prior on each hemisphere and upsample to 0.35 mm isotropic to create images of the appropriate size to feed into the model (note that these FoVs are in the native space of the input image). The network is then applied to the cropped volumes to yield a segmentation of the claustrum in the (0.35 mm isotropic) native space. Note that before feeding the left volume into the network, we left–right reverse it since the model has been trained on right hemispheres. The resulting segmentation is then flipped back into the native orientation. The registration to establish the FoV again uses SynthMorph so as to maintain contrast‐independence. By default, the registration is affine; non‐linear registration can be used but it increases the processing time. The purpose of the registration step is just to establish a FoV in the location likely to be around the claustrum and otherwise plays no role in the segmentation itself, so an affine transformation is accurate enough."
+  },
+  {
+    "index": 36,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "Using this method to apply the model to the real intensity images, we assessed CV performance using the Dice score as the primary metric. To contextualize these results, we did the following: (1) We computed the Dice score between the labels obtained by the two raters on the seven shared samples (described in Section 3.1) as a measure of inter‐rater variability. For four of these samples, the coronal slices manually labeled before applying SmartInterpol were identical for both raters. For these cases, we also computed the Dice score on these slices only. (2) We applied the pre‐trained method from Albishri et al. (2022) 3 to our 0.25 mm isotropic in vivo labeled case (sample 16 in Table 1, downsampled at 0.7 mm isotropic to match the training resolution of their model) and computed the resulting overlap with ground truth using the Dice score. We did not perform a comparison to the method proposed by Li et al. (2021), as it relies on a preprocessing step (adaptive nonlocal means denoising, as described in https://github.com/hongweilibran/claustrum_multi_view), which is no longer maintained."
+  },
+  {
+    "index": 37,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "Furthermore, we assessed CV performance in terms of other test metrics (intersection over union, true positive rate, false discovery rate, robust Hausdorff distance, mean surface distance, and volumetric similarity; see Appendix A). We also compared automatic segmentations and manual labels in terms of claustrum volume and its spatial extensions along the x, y, and z axes, defined as the length of edges of the smallest bounding box that encloses the whole claustrum. Finally, we evaluated the impact on CV performance of including a single in vivo case in the dataset, and of using labels from one rater versus the other for the samples labeled by both (details in Supporting Information: Sections 5 and 6, respectively)."
+  },
+  {
+    "index": 38,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "To evaluate the performance of the method on lower‐resolution data as well, we downsampled all 18 hemispheres to voxel sizes ranging from 0.4 to 3.5 mm isotropic. For each voxel size and CV fold, we tested the model previously trained on high‐resolution data on the corresponding downsampled test subjects. We then computed the average Dice score across folds for each resolution. It is important to note that the models remain unchanged, with the lower resolution only impacting the test phase. This simulation experiment enables us to evaluate how well our method, trained at 0.35 mm resolution, captures fine claustrum details when applied to lower‐resolution data."
+  },
+  {
+    "index": 39,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0006"
+    ],
+    "text": "After assessing performance with CV, we trained a final model on all the 18 available cases for 100 epochs (500,000 training steps). We also developed a procedure to assess segmentation quality in the absence of ground truth and used it to choose an epoch of the final model (based on in vivo data), as described in the section below."
+  },
+  {
+    "index": 40,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0007"
+    ],
+    "text": "Quality Assessment of Segmentations Without Ground Truth"
+  },
+  {
+    "index": 41,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0007"
+    ],
+    "text": "The nonlinear registration of the manual labels in MNI space described in Section 3.3 (which was used to create an atlas of claustrum needed to crop a new intensity image) served two additional purposes: (1) We can compute Dice statistics between any two pairs of manual labels after nonlinear registration; this allows us to understand the variability of the Dice coefficient between manual labels, contingent upon the accuracy of the nonlinear registration. (2) It allows us to compute Dice scores between the automatic segmentation on a new image and the 18 manual labels as a measure of quality (once that image has been nonlinearly registered to MNI152). Note that this nonlinear registration of the new image is only performed as part of the evaluation; it is not needed to do the segmentation."
+  },
+  {
+    "index": 42,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0007"
+    ],
+    "text": "To evaluate the quality of an automatic segmentation, we therefore nonlinearly register it to MNI152 space using SynthMorph, with trilinear interpolation for resampling. We then compute the Dice score between the registered segmentation and each of the 18 manual labels in MNI space. The maximum Dice score across these comparisons is used as our quality control (QC) measure. This QC score can be automatically generated, enabling the assessment of segmentation quality on very large datasets without having to examine each and every image. Only segmentations with low QC scores are in fact flagged for visual review in subject space. The rationale behind this procedure is the following: A high QC score indicates that the segmentation closely resembles at least one manual label after alignment to MNI space, and is thus likely to be accurate. In contrast, a very low QC score signals a notable deviation from all manual labels in MNI space, which could result from a segmentation failure or a registration error. Importantly, the latter case does not compromise our QC procedure, since the segmentation will be inspected in subject space, and will therefore pass the visual assessment, if accurate. In theory, this procedure could be applied to every analysis, but the nonlinear registration from the test subject space to MNI space does substantially increase the execution time, so we only use it for our evaluation of segmentation quality."
+  },
+  {
+    "index": 43,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0007"
+    ],
+    "text": "We emphasize that the QC score should not be interpreted as a direct measure of segmentation accuracy. In addition to the possibility of assigning low QC scores to high‐quality segmentations due to registration inaccuracies, even a perfect segmentation will not achieve a QC score of 1. In fact, the QC score does not express similarity to the segmentation ground truth (which is assumed to be unavailable), but to a set of reference annotations, rather indicating if the segmentation displays plausible anatomy (contingent upon registration accuracy). To define a possible range of good QC scores, we computed QC metrics for the 18 high‐resolution manual labels. For each manual case, the QC score was calculated as the maximum value derived from pairwise Dice comparisons with other manual labels, yielding a reference distribution of 18 scores. Given that the manual labels are accurate in the subject space, and their alignment to the MNI152 space was visually validated, this reference distribution outlines the expected range of satisfactory QC scores, while concurrently expressing the intrinsic inter‐subject variability of the claustrum."
+  },
+  {
+    "index": 44,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0007"
+    ],
+    "text": "Finally, we highlight that the probabilistic atlas in MNI space described in Section 3.3 is solely used for cropping new test images around the claustrum and otherwise plays no role in segmentation or evaluation. This evaluation of segmentation quality relies instead on the individual manual labels in MNI space, which were used to compute the QC scores."
+  },
+  {
+    "index": 45,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0003",
+      "hbm70303-sec-0007"
+    ],
+    "text": "As mentioned in the previous section, we trained the final model on all manual labels for 100 epochs, but we still need to pick the best one from those 100. We based the epoch selection on T1‐weighted in vivo images, in particular on a set of 20 subjects from the IXI dataset. On this validation set, we ran the automatic segmentation for each epoch and used the nonlinear registration to MNI152 to compute the QC metric as discussed above. We then chose the epoch that had the highest mean QC score on the validation subjects and used the corresponding model as the final segmentation method for the experiments described in the next section."
+  },
+  {
+    "index": 46,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0008"
+    ],
+    "text": "Experiments on In Vivo Data"
+  },
+  {
+    "index": 47,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0008"
+    ],
+    "text": "To assess robustness, we applied the final segmentation model to all the 581 in vivo images from the IXI dataset, computing the QC score for every subject, as explained in Section 3.4. We then visually inspected (in subject space) the segmentations with the 50 lowest QC scores to investigate potentially problematic segmentations. We also used claustrum volume in the segmentation as an indicator of success or failure and looked at the subjects with the 20 smallest and the 20 largest volumes in the dataset, as an additional pool of potentially suspicious cases. We then compared the distribution of the QC score and claustrum volumes obtained on the IXI subjects to the corresponding ones obtained on the manual labels. Additionally, we assessed the effect on segmentation of magnetic field strength. A total of 396 subjects were scanned at 1.5 T across two sites, while 185 subjects were scanned at 3 T. In the absence of ground truth, we compared QC metrics and claustrum volumes between the two groups."
+  },
+  {
+    "index": 48,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0008"
+    ],
+    "text": "In order to assess test–retest robustness of the proposed method, we applied it to repeated scans from the Miriad dataset: We rigidly registered the two time points to a subject‐specific template (using Reuter et al. (2012))—as typically done in longitudinal analysis to avoid bias toward one specific time point—then applied the method to both images (using the same FoV), and computed the Dice score between the two segmentations to quantify the stability of the method. We also compared claustrum volumes obtained for AD subjects vs. healthy controls."
+  },
+  {
+    "index": 49,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0008"
+    ],
+    "text": "To test the generalization ability of the method to different modalities, we applied it to multimodal images from the FSM dataset. For each subject, we applied the method to the T1‐weighted scan as baseline, and to the T2‐weighted, PD, and quantitative T1 scans (when available), using the same FoV. We then computed the Dice score between the obtained segmentations and the one computed on the T1‐weighted scan, as a measure of robustness. Additionally, for each subject for whom they were available, we applied the method to all synthetic images (using the same FoV) and then computed the Dice score between each segmentation and the one obtained on the image with TI = 1000, which was set as reference. This experiment allows us to test the robustness of the method with respect to different contrasts in a controlled setting as well as its ability to handle different TIs that may be encountered in the acquisition of real images."
+  },
+  {
+    "index": 50,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "Results"
+  },
+  {
+    "index": 51,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "The CV results on the 18 high‐resolution cases are shown in Table 2, reporting an average Dice score of 0.632 ± 0.061. This compares to an inter‐rater variability Dice score of 0.805 ± 0.018 across the seven samples labeled by both raters. In the four cases where the manually annotated slices were identical, the inter‐rater Dice score was 0.836 ± 0.018 when computed on those slice alone, compared to 0.812 ± 0.027 when computed on the whole labels. Additionally, applying the method of Albishri et al. (2022) to our in vivo labeled case resulted in a Dice score of 0.299. Supporting Information: Sections 4–6 provide additional details on CV results, including training and validation curves across all folds, CV performance excluding the in vivo case, and the impact on results of using labels from one rater versus the other for the seven samples labeled by both, respectively."
+  },
+  {
+    "index": 52,
+    "kind": "table-wrap",
+    "id": "hbm70303-tbl-0002",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "TABLE 2Results of 6‐fold CV on the 18 high‐resolution cases.Dice scoreIoUTPRFDRHDMSDVS0.632 ± 0.0610.465 ± 0.0660.676 ± 0.1000.381 ± 0.1191.824 ± 0.585 mm0.458 ± 0.124 mm0.867 ± 0.092 Note: For each test metric, mean and standard deviation across the 18 cases are reported.Abbreviations: FDR, false discovery rate; HD, Robust Hausdorff distance; IoU, intersection over union; MSD, mean surface distance; TPR, true positive rate, VS, volumetric similarity."
+  },
+  {
+    "index": 53,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "Figure 7a shows the distribution of claustrum volumes in the CV automatic segmentations, compared to the ones in the manual labels. We obtained an average of 1415.35 ± 260.66 mm3 in the automatic vs. 1253.05 ± 283.79 mm3 in the manual segmentations (a difference of 162 mm3, around 13%). For comparison, we also display the distribution of claustrum volumes reported in the literature by studies on high resolution imaging or histology (Calarco et al. 2023; Coates and Zaretskaya 2024; Kang et al. 2020), whose details are reported in figure 7c. We note that Coates and Zaretskaya (2024) provides volume estimates from manually labeling case 13 (Edlow et al. 2019) in MNI152 space, whereas all other reported volumes, including ours, are in native space. To ensure comparability, we non‐linearly registered their manual labels 4 into native space using the inverse of the previously computed SynthMorph warp, and then used the volumes in native space—rather than MNI152—in the literature analysis. The resulting average hemispheric volume from the literature is 1405.80 ± 216.15 mm3, displaying a 12% difference from our manual labels. Additionally, Figure 7b shows the claustrum spatial extension along the x, y, and z axes, where we observe a relative difference between extensions in CV predictions and manual labels of 9.08%, 11.92%, and 6.80%, in the right–left, anterior–posterior, and superior–inferior directions, respectively."
+  },
+  {
+    "index": 54,
+    "kind": "fig",
+    "id": "hbm70303-fig-0007",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 7(a) Distribution of claustrum volumes on a single hemisphere in the 18 automatic segmentations obtained with CV, and in the corresponding manual labels. As a reference, we also display values reported in the literature from other studies using high resolution imaging or histology (Kang et al. (2020); Calarco et al. (2023); Coates and Zaretskaya (2024); details provided in Figure 7c). In all boxplots, the red line represents the median, the box spans the inter‐quartile range (first to third quartiles), and the whiskers extend to the farthest data point within 1.5 times the inter‐quartile range. (b): Claustrum spatial extension along the x, y, and z axes (defined by the smallest bounding box enclosing the claustrum) for both CV predictions and manual labels. RAS orientation is used: x represents the right–left, y the anterior–posterior, and z the superior–inferior direction. Average x, y, z extensions for CV predictions: 17.15 ± 2.20 mm, 40.15 ± 3.47 mm, 39.03 ± 3.48 mm. Average x, y, z extensions for manual labels: 19.06 ± 2.59 mm, 36.26 ± 4.95 mm, 42.02 ± 4.00 mm. Note that while the comparison of spatial extensions between automatic and manual segmentations is meaningful, their absolute values are instead influenced by variations in head orientation across cases. (c) Claustrum volumes reported in previous studies using high‐resolution imaging or histology. All volumes are derived from a single case. Since Coates and Zaretskaya (2024) provides volume estimates for case 13 in MNI152 space, for comparison we report in the table the volume of their manual label warped in native space, and the volume of our manual label for the same case too. Note that we included their volumes in native space—and not in MNI152—in the distribution of volumes from the literature displayed in Figure 7a."
+  },
+  {
+    "index": 55,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "An example of claustrum segmentation obtained with the proposed method on two test subjects in the CV procedure is shown in Figure 8. The case in the top row shows in general a good agreement between ground truth and prediction (Dice score = 0.737, predicted volume 1350 mm3 vs. real volume of 1457 mm3). Some boundary errors are present, mostly false negatives, particularly at the anterior/posterior and superior/inferior ends, where the claustrum is extremely thin. The bottom row example shows increased false positives along the boundaries, with a very thin ground truth in the dorsal area (Dice score = 0.616, predicted volume 1239 mm3 vs. real volume of 923 mm3). Both examples also show segmentation errors in the ventral region, where some “fingers” are under‐ or over‐segmented."
+  },
+  {
+    "index": 56,
+    "kind": "fig",
+    "id": "hbm70303-fig-0008",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 8Axial and coronal views of predictions from the proposed method on two test subjects, using two different CV folds. Green indicates true positives, red false positives, and yellow false negatives. Arrows highlight false positives where the claustrum segmentation overlaps with putamen (due to hyper‐intensities, probably Virchow‐Robin spaces) or cortex. Statistics for case 14: Dice = 0.737, TPR = 0.700, FDR = 0.222, HD = 1.443 mm, MSD = 0.332 mm, VS = 0.962, predicted volume = 1350.03 mm3, real volume = 1457.60 mm3. This case shows performance above average and has been selected to allow comparison to Figures 2 and 5. Statistics for case 2: Dice = 0.616, TPR = 0.700, FDR = 0.450, HD = 1.262 mm, MSD = 0.370 mm, VS = 0.854, predicted volume = 1239.84 mm3, real volume = 923.6 mm3. This case has been selected to illustrate examples of overlabeling errors."
+  },
+  {
+    "index": 57,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "Figure 9 shows the Dice score obtained by the CV models trained on high‐resolution data and tested on downsampled images. From 0.35 mm to around 1.4 mm, the CV Dice score declines only marginally. Beyond this point, the performance degradation becomes more pronounced."
+  },
+  {
+    "index": 58,
+    "kind": "fig",
+    "id": "hbm70303-fig-0009",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 9Dice scores obtained by CV models trained on high‐resolution data and tested on downsampled images. For each voxel size, the dot represents the mean CV Dice score, while the whiskers extend to one standard deviation away from the average."
+  },
+  {
+    "index": 59,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "When we then trained the model on all the 18 high‐resolution cases, training took around 7 days on an RTX 8000 GPU. The procedure for identifying the optimal epoch based on the QC score as described in Section 3.4 selected the model of the 19th epoch, which yielded an average QC metric of 0.580 ± 0.060 on the IXI subset used for validation."
+  },
+  {
+    "index": 60,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "After applying this final segmentation method to all IXI images and visually inspecting the cases with the 50 lowest QC scores and with the 20 smallest and 20 largest volumes, we concluded that the method showed some segmentation errors in around half of the inspected volumes, but it never severely failed. The most common error was to label some part of the putamen as claustrum, especially in its posterior part, or in the presence of darker voxels within the putamen, as is shown in Figure 10. These voxels are likely Vichow‐Robins spaces or some kind of lesion. Since the set of examined subjects is expected to include the worst segmentations, we can conclude that the method never critically failed when applied to over 500 subjects from the IXI dataset. Figure 10 shows the segmentations obtained for the subjects with the two lowest and the two highest QC scores. We observe that the segmentations with the two lowest scores appear incomplete (red arrows) and overlapping with the putamen at times (blue arrows), especially in the presence of darker voxels. On the other end, the cases with the two highest scores display segmentations that are anatomically accurate and complete, with the claustrum wrapping around the cortex superiorly (in the coronal views). A 3D view of claustrum segmentation on an IXI subject with a QC score close to the dataset average is shown in Figure S7.1."
+  },
+  {
+    "index": 61,
+    "kind": "fig",
+    "id": "hbm70303-fig-0010",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 10Claustrum segmentation on subjects from the IXI dataset with the two lowest and the two highest QC scores (averaged across hemispheres). Slices were selected from similar locations as in Figures 2 and 5 to facilitate a visual comparison."
+  },
+  {
+    "index": 62,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "Additionally, Figure 11 shows the distribution of the QC score and claustrum volumes obtained on the IXI subjects, together with the corresponding distributions computed on the manual labels. We obtained an average QC score of 0.570 ± 0.060 for the IXI dataset and 0.539 ± 0.078 for the reference distribution computed on the manual labels. The IXI QC metrics stratified by field strength were on average 0.570 ± 0.045 on 1.5T and 0.570 ± 0.047 on 3T scans (p value = 0.741 with linear regression adjusted for age). Regarding claustrum volumes, we obtained a mean of 1793.92 ± 259.16 mm3 on the IXI subjects, which compares to 1253.05 ± 283.79 mm3 on the manual labels, and 1405.80 ± 216.15 mm3 from previous studies in the literature (Coates and Zaretskaya 2024; Calarco et al. 2023; Kang et al. 2020). Average IXI volumes stratified by field strength were 1788.18 ± 252.44 mm3 on 1.5 T scans versus 1806.23 ± 239.80 mm3 on 3T (p value = 0.593 with linear regression adjusted for age)."
+  },
+  {
+    "index": 63,
+    "kind": "fig",
+    "id": "hbm70303-fig-0011",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 11Top: Distribution of QC scores on the IXI subjects, computed as explained in Section 3.4, together with the reference distribution for QC scores, computed on the 18 high‐resolution manual labels. Bottom: Distribution of claustrum volumes on a single hemisphere on the automatic segmentations on IXI subjects, and in the 18 high‐resolution manual labels. As a reference, we also display values reported in the literature from other studies using high‐resolution imaging or histology (Coates and Zaretskaya 2024; Calarco et al. 2023; Kang et al. 2020). In all boxplots, the red line indicates the median, the box spans the first to third quartiles, and the whiskers extend to the farthest data point within 1.5 times the inter‐quartile range. For clarity, IXI data points are displayed only when they fall outside the whiskers (i.e., as outliers)."
+  },
+  {
+    "index": 64,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "On the Miriad test–retest dataset, we discarded 3 subjects for which the first two sessions scans were unavailable, and other 5 subjects where the rigid registration was inaccurate (for a spatial scaling factor between the two images), obtaining 40 ad subjects and 21 healthy controls. On these remaining subjects, we obtained an average Dice score between claustrum segmentations computed on two subsequent scans of 0.781 ± 0.068 (0.774 ± 0.068 on AD subjects and 0.796 ± 0.065 on healthy controls), denoting a good robustness of the method. The average claustrum volume for healthy controls and AD subjects was 1757.74 ± 188.67 mm3 and 1593.54 ± 318.88 mm3, respectively (one‐sided p value = 0.0158 with linear regression adjusted for age). Figure 12 shows an example of the agreement between the segmentations on repeated scans for one AD subject and one healthy control. Repeated segmentations show good overlap, with most differences occurring at the boundaries and in the fragmented ventral region. A 3D rendering of claustrum segmentations on repeated scans for a healthy subject is displayed in Figure S7.2."
+  },
+  {
+    "index": 65,
+    "kind": "fig",
+    "id": "hbm70303-fig-0012",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 12Claustrum segmentations obtained on repeated T1‐weighted scans of two subjects from the Miriad dataset. In green we show the overlap between the two time points segmentations, in red the voxels in the first time point segmentation that are not included in the second one, and in yellow the voxels in the second time point segmentation that are not included in the first one. Top row: Healthy subject with Dice score between segmentations of 0.796 (averaged across hemispheres). Bottom row: AD subject with Dice score between segmentations of 0.778 (averaged across hemispheres). These subjects were chosen for their representative test–retest Dice scores."
+  },
+  {
+    "index": 66,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "Table 3 shows the average Dice score between segmentations obtained on different modalities of the same subject in the FSM dataset. We observe that the highest average Dice is obtained between quantitative T1 and T1‐weighted (0.809 ± 0.044) and lowest obtained between PD and T1‐weighted scans (0.696 ± 0.085). Figure 13 shows images from different modalities of one subject, together with the overlap between the segmentation obtained on these modalities and the one computed on the T1‐weighted scan. We note that there is a good agreement, with a few differences at the boundaries. A 3D rendering of claustrum segmentations from T1‐weighted and T2‐weighted scans of a FSM subject is also shown in Figure S7.3."
+  },
+  {
+    "index": 67,
+    "kind": "table-wrap",
+    "id": "hbm70303-tbl-0003",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "TABLE 3Mean and standard deviation of Dice score between claustrum segmentations computed on T1‐weighted (T1w) scans and other modalities (T2‐weighted (T2w), proton density (PD), and quantitative T1 (qT1)) of the same subject, across all subjects in the FSM dataset. In brackets, the number of subjects that are used to compute the average Dice score.T2w vs. T1w (n = 31)PD vs. T1w (n = 36)qT1 vs. T1w (n = 36)0.720 ± 0.0830.696 ± 0.0850.809 ± 0.044"
+  },
+  {
+    "index": 68,
+    "kind": "fig",
+    "id": "hbm70303-fig-0013",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 13Left: Axial view of different modalities of the same subject from the FSM dataset (subject ID: 011). Right: Overlap between the segmentation obtained on the given modality and the one computed on the T1w scan. In green, we show the overlap between the two segmentations, in red the voxels that are in the T1w segmentation and that are not included in the other modality one, and in yellow the voxels in the other modality segmentation that are not included in the T1w one. To facilitate comparison, we show the same axial slice (slice 100) across all modalities. For consistency, the slice was chosen from a similar location as in previous axial‐view figures. For this subject, Dice scores (vs. T1w segmentation, averaged across hemispheres) are 0.800 for T2w, 0.730 for PD, and 0.818 for qT1. This subject was selected for its representative segmentation quality."
+  },
+  {
+    "index": 69,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "Figure 14 shows the Dice score between claustrum segmentations computed on synthesized images with varying TI and the one obtained on TI = 1000, averaged across subjects of the FSM dataset. As the TI increases, the Dice score initially decreases on average, reaching its minimum at TI = 380 with an average value of 0.676 ± 0.094, and then it increases toward a complete overlap. When averaged across all TI and subjects, the method obtains a Dice score of 0.873 ± 0.109. Figure 15 shows synthetic images with varying TI for one subject in the dataset, together with the agreement between the segmentations obtained on those images and the one computed on TI = 1000. We observe that the contrast changes rapidly from TI = 300 to TI = 500, and then it varies more smoothly, in line with the Dice changing shown in Figure 14. In general the subject displays a very good overlap between the segmentations, with the most differences obtained at TI = 400, in line with the lowest Dice score achieved on average at TI = 380 in Figure 14."
+  },
+  {
+    "index": 70,
+    "kind": "fig",
+    "id": "hbm70303-fig-0014",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 14Dice score between claustrum segmentations computed on synthesized images with different TI and the one obtained on TI = 1000, on the FSM dataset. The full line shows the average Dice across all the subjects, and the bars extend to one standard deviation away from the average. The Dice score obtained on average using CV on the high resolution cases is also shown as reference (0.632, see Table 2)."
+  },
+  {
+    "index": 71,
+    "kind": "fig",
+    "id": "hbm70303-fig-0015",
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "FIGURE 15Left: Axial view of synthetic images of one subject from the FSM dataset, obtained with different TI (subject ID: 010, slice: 99). Right: Overlap between the segmentation obtained on the image with the given TI and the one computed on TI = 1000. In green, we show the overlap between the two segmentations, in red the voxels that are in the segmentation on TI = 1000 and not in the other TI one, and in yellow the vice versa."
+  },
+  {
+    "index": 72,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0009"
+    ],
+    "text": "In all these experiments on in vivo data, it took around 3 min to apply the method on a subject using basic configurations (only the affine registration to MNI152 space to determine the FoV) using a machine with 16 CPUs. The version with the nonlinear registration to MNI152 space, used to compute the QC score for quality assessment, took around 10 min per subject on the same machine."
+  },
+  {
+    "index": 73,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "Discussion and Conclusion"
+  },
+  {
+    "index": 74,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "In this paper we proposed a method based on the SynthSeg framework for ultra‐high resolution claustrum segmentation, which is robust against changes in contrast and resolution. To the best of our knowledge, this is the first method for automatic claustrum segmentation with these features. The method was designed to exploit ultra‐high resolution ex vivo images, which display details that are not visible in typical in vivo scans, to learn to segment claustrum in all its components. Then, since it is contrast‐ and resolution‐insensitive, the method can be applied to in vivo images (which typically differ in contrast from ex vivo scans) across a wide range of contrasts and resolutions."
+  },
+  {
+    "index": 75,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "We assessed performance of the method using CV on the 18 high‐resolution scans, where we obtained a moderate Dice score (0.632 ± 0.061), which might be due to the challenging nature of claustrum segmentation. We also quantified CV performance in terms of other metrics, achieving for instance a mean surface distance of 0.458 ± 0.124 mm, a volumetric similarity of 0.867 ± 0.092, and an intersection over union of 0.465 ± 0.066. The latter penalizes segmentation errors more strongly than Dice score and therefore provides valuable insight for a thin, small structure like the claustrum."
+  },
+  {
+    "index": 76,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "Comparing our Dice score with the performance of other available segmentation methods, we observe that Berman et al. (2020) achieved an average Dice score of 0.55, while Brun et al. (2022) and Coates and Zaretskaya (2024) did not quantify their claustrum segmentation accuracy—Coates and Zaretskaya (2024) reported that their own method can be used to approximate the claustrum location in typical MRI scans. The two existing deep learning approaches (Li et al. 2021; Albishri et al. 2022) achieved higher Dice scores (0.718 and 0.82, respectively). However, our results were obtained at substantially higher resolution, where the increased visibility of fine structural features in the ventral claustrum, such as finger‐like extensions, may contribute to lower the Dice score. Additionally, a contrast‐agnostic method is generally expected to perform worse than a supervised CNN that is tested on its own training domain, but it gains in ability to generalize. For instance, Albishri et al. (2022)'s Dice score of 0.82 was assessed with 5‐fold CV within one homogeneous dataset. When we applied their pre‐trained method to our in vivo labeled case, the predictions were poor, with a Dice score of 0.299. Besides the change of dataset (with different scanner and image acquisition protocol), differences in image resolution and labeling protocol may also account for the significant decrease in performance. A segmentation method that instead aims to generalize across contrasts and resolutions was recently proposed in Casamitjana et al. (2024). It performs segmentation of 333 ROIs across the whole brain—including the claustrum—using a probabilistic atlas derived from histology, integrated into a Bayesian framework. We tested this method on our high‐resolution dataset (0.35 mm isotropic), achieving an average Dice score of 0.370 ± 0.112 against our manual labels. Several factors may contribute to this low Dice score, such as differences in labeling protocols, the method not being optimized for single‐hemisphere segmentation, and the presence of a strong bias field, which is particularly challenging for Bayesian methods. Overall, these results highlight a difference in the intended application: Our method targets accurate claustrum segmentation, while their method appears to be more suitable for whole‐brain application, where the claustrum is not the primary focus."
+  },
+  {
+    "index": 77,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "In the context of inter‐rater variability, we observed that our CV Dice score was exceeded by inter‐rater Dice scores, both before and after applying SmartInterpol: They ranged between 0.80 and 0.83, suggesting that the high inter‐rater agreement is not merely an outcome of using SmartInterpol. Other studies assessing inter‐rater variability for claustrum segmentation reported Dice values between 0.67 and 0.83 (Berman et al. 2020; Coates et al. 2024; Coates and Zaretskaya 2024), while Li et al. (2021) computed an intra‐rater variability Dice score of 0.667. Part of the gap between our CV and inter‐rater Dice scores may stem from SynthSeg's contrast‐agnostic nature: While human raters are able to perform optimally on these high‐resolution hemispheres with good contrast around the claustrum, the automatic method may trade performance on this specific domain for generalizability, which is, however, essential for its broader use. We note that SynthSeg could be tuned on a specific domain by adjusting intensity priors in the GMM. However, Billot, Greve, et al. (2023) showed that doing so consistently lowered performance, highlighting the benefits of augmenting data beyond realistic boundaries."
+  },
+  {
+    "index": 78,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "In addition to CV on the 18 high‐resolution cases, we demonstrated that our method also works on scans at typical in vivo resolutions (≈1 mm isotropic). When tested on the 18 hemispheres downsampled at different lower resolutions, the method exhibited excellent robustness, maintaining good performance up to approximately 1.5‐mm isotropic. Additionally, it proved effective on in vivo T1‐weighted scans at typical resolutions from the IXI, Miriad, and FSM datasets, including subjects with AD. On the IXI data, we evaluated segmentation accuracy in absence of ground truth using the QC score and claustrum volume to identify the most suspicious cases for detailed visual inspection, and we concluded that the method did not severely fail on any subject. Furthermore, the QC scores on the IXI data were, on average, similar to the corresponding reference distribution computed on the high‐resolution manual labels (0.570 ± 0.060 vs. 0.539 ± 0.078, respectively). We remind that the QC score is not a direct measure of segmentation performance. This comparison rather aims to contextualize the QC scores for IXI data in relation to a reference distribution of satisfactory QC values, which reflects natural inter‐subject variability of the claustrum. We point out here that IXI is a challenging data set with a very wide subject age range, large voxel size, 1.5T and 3T, and two different MRI scanner manufactures. The success of the claustrum segmentation on 581 subjects from this dataset demonstrates its robustness. The lack of significant differences in results obtained on 1.5T and 3T scans further proves the method as robust against variations in contrast."
+  },
+  {
+    "index": 79,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "Regarding claustrum volumes, CV segmentations on high‐resolution cases yielded values comparable to the manual annotations (1415.35 ± 260.66 mm3 vs. 1253.05 ± 283.79 mm3 respectively; ≈13% difference), while segmentations on the IXI dataset resulted in substantially larger volumes (1793.92 ± 259.16 vs. 1253.05 ± 283.79 mm3 respectively; ≈43% difference). It is not clear why the IXI volumes are so much higher, but it is likely due to partial volume effects at 1 mm when trying to segment a structure sometimes only 0.5 mm wide. In contrast, the standard deviations of volume distributions for IXI‐based segmentations and high‐resolution cases (both manual and automatic) are comparable, suggesting that inter‐subject variability in claustrum volume is preserved across different data types. The volumes derived from our manual labels are also broadly consistent with those reported in other high‐resolution claustrum studies (1253.05 ± 283.79 mm3 vs. 1405 ± 216.15 mm3 respectively; ≈12% difference). However, cross‐study comparisons should be interpreted with caution, as they are influenced by differences in resolution, imaging modalities, labeling protocols, and sample sizes (see Figure 7c): Calarco et al. (2023), using histology at a resolution similar to our labels (0.1 mm isotropic), reported a comparable volume (1243 mm3), while Kang et al. (2020)'s measurement was higher (1715 mm3 on average per hemisphere), possibly due to partial volume effects at lower resolution (0.7‐mm isotropic). Coates and Zaretskaya (2024) labeled a case included in our study, allowing for direct volume comparison with our manual label: We found that the two volumes of the right claustrum were consistent after spatial alignment (1468.9 vs. 1497 mm3; 1.9% difference), while we observed a larger discrepancy in the left hemisphere (1438.1 vs. 1168.2 mm3; 18.8% difference). This discrepancy may arise from left–right inconsistencies that we observed in their labeling, where the right ventral claustrum appeared more extensively labeled than the left, potentially contributing to their significant volume asymmetry."
+  },
+  {
+    "index": 80,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "The robustness of the method was also evaluated in a test–retest setting (average Dice score between two repeated scans of 0.781 ± 0.068) and across different contrasts. It showed a good generalization ability to different modalities, with the lowest overlap obtained between PD and T1‐weighted scans (0.696 ± 0.085), probably because of the poor contrast around claustrum in PD images. While the method is in fact robust toward changes in contrast, performance still depends on the ability of a contrast to resolve the claustrum. When using synthetic images to simulate different MPRAGES over a range of TIs, the method showed very good robustness as well (average Dice score across all TIs and subjects of 0.873 ± 0.109), with the most differences observed on average at TI = 380 (Dice score of 0.676 ± 0.094). In practice, the impact of the performance drop at TI = 380 ms may be irrelevant as the typical TI range encountered in 3T MPRAGES is narrower, usually between 800 and 1000 ms. The broader TI range in our experiment served as a stress test for the contrast‐insensitive performance of the method, since it produces extreme contrast variations (see Figure 15). Remarkably, despite these extreme changes, the method maintained strong performance."
+  },
+  {
+    "index": 81,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "We emphasize that the contrast‐ and resolution‐insensitivity of the method is contingent on adequate signal quality: For reliable segmentation, images should have a voxel size of at least 1–1.5 mm and good contrast around the claustrum. If poor resolution, contrast, or image quality renders the claustrum indistinguishable, the segmentation will be largely guessed, requiring cautious interpretation. Also, for optimal generalizability, model selection should ideally use a diverse validation set with different contrasts and resolutions. In the absence of such a dataset, we adopted different criteria: For CV, we maximized the Dice score on labeled images (primarily ex vivo), while for the final model, we trained on all available labeled data and optimized the average QC score on a subset of in vivo T1‐weighted IXI scans. In the latter case, T1‐weighted scans were selected as they represent the most practical and commonly used modality for claustrum segmentation. Although this non‐heterogeneous validation set may bias the model toward its contrast and resolution, our results still demonstrate strong generalization across diverse imaging conditions. This broad range of tested scenarios also enables practical recommendations for designing in vivo claustrum segmentation studies. T1‐weighted images seem to provide the best contrast, while resolution should balance accuracy and acquisition time, depending on the specific application: Whereas our results show good performance up to 1.4 mm voxel size, higher resolutions inevitably capture finer structural details. As mentioned earlier, images should be high‐quality to yield reliable outcomes."
+  },
+  {
+    "index": 82,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "Beyond the need for high image quality, the proposed method is subject to other limitations. In terms of training data, the high‐resolution ex vivo images were crucial for capturing fine claustrum details and developing a high‐resolution segmentation model. However, the small sample size and high average age of the dataset (61.94 ± 13.66 years) may limit generalizability and introduce age‐related bias. These constraints—typical of ex vivo datasets—are partially mitigated through SynthSeg extensive label augmentation and synthetic intensities generation, which alter morphological features well beyond typical age effects and expose the model to a high degree of variability. SynthSeg has in fact been shown to require fewer training examples than supervised CNNs to achieve optimal performance (Billot, Greve, et al. 2023). Our robust results on larger, diverse datasets—spanning different ages, scanner types, and contrasts—seem to be in agreement with this finding, suggesting that these data limitations are (at least partially) addressed by the method (see also Supporting Information: Section 8 for insights into the method's ability to detect age effects in the IXI dataset)."
+  },
+  {
+    "index": 83,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "Although we focused on claustrum segmentation in the paper, for context the model was trained to segment all structures within the ROI. Training labels for other structures were generated by the SynthSeg whole‐brain framework, which is suboptimal for high‐resolution hemispheres due to its 1‐mm resolution segmentations and whole‐brain design. However, these training labels were sufficient for our objective and provided valuable contextual information for claustrum segmentation. Future research could focus on refining these labels, potentially leading to improved automatic segmentation of these regions within the ROI. Similarly, SynthMorph was designed for whole‐brain image registration and may not work optimally on high‐resolution ex vivo hemispheres. However, visual inspection confirmed accurate alignment of the manual labels to MNI space, before proceeding with the construction of the probabilistic atlas and QC analysis. Both SynthSeg and SynthMorph were chosen for their contrast‐independent properties."
+  },
+  {
+    "index": 84,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "After using whole‐brain SynthSeg to generate the training labels, the data were cropped with the claustrum centered in the FoV—a common but suboptimal practice in image segmentation. Although this can introduce shortcut learning, which prevents detection of the claustrum at image borders (Lin et al. 2024), our consistent FoV centering around the claustrum during testing ensured it did not hamper our results. We also mirrored all training labels to the right hemisphere and trained the model exclusively on right‐sided data, processing left hemispheres at test time by reversing the input ROI. This approach ensures the model remains agnostic to the hemisphere, avoiding the introduction of laterality bias. This is crucial to enable future unbiased assessment of hemispheric asymmetries in the claustrum, which have been suggested by prior research (Kapakin 2011). Finally, despite the extensive hyperparameter tuning that we conducted to optimize the model for claustrum segmentation, CV performance on high‐resolution data was still moderate. Future work could explore alternative loss functions, such as distance transform or topology‐preserving losses (Kirchhoff et al. 2024), to potentially improve segmentation accuracy for a thin structure like the claustrum."
+  },
+  {
+    "index": 85,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      "hbm70303-sec-0010"
+    ],
+    "text": "Besides these considerations, the proposed method was able to address shortcomings of existing methods for claustrum segmentation, such as segmenting only the dorsal part of the claustrum (Berman et al. 2020) achieving inaccurate or unquantified results (Berman et al. 2020; Brun et al. 2022; Coates and Zaretskaya 2024), and being difficult to generalize to unseen datasets (Albishri et al. 2022; Li et al. 2021). Thanks to the use of synthetic images during training—with augmented labels and random contrast intensities—it was able to successfully segment dorsal and ventral portions of the claustrum in T1‐weighted scans across multiple datasets, as well as multimodal images, yielding exceptional generalization. Given the scarcity of neuroimaging tools for the study of the claustrum (including methods for its automatic segmentation), the shortcomings of existing methods, and the variety of unresolved questions about the structure and its functions, we believe that the proposed method will be a valuable resource for further investigations of the claustrum. It may also be useful as a post hoc correction tool for automatic segmentations of surrounding regions, such as addressing putamen overlabeling errors (Perlaki et al. 2017; Dewey et al. 2010)."
+  },
+  {
+    "index": 86,
+    "kind": "title",
+    "id": null,
+    "scope": [
+      "body",
+      null
+    ],
+    "text": "Supporting information"
+  },
+  {
+    "index": 87,
+    "kind": "p",
+    "id": null,
+    "scope": [
+      "body",
+      null
+    ],
+    "text": "Data S1: Supporting Information."
+  }
+]

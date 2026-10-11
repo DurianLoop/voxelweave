@@ -1,0 +1,51 @@
+Title Suppressed Due to Excessive Length 5
+Algorithm 1: SERANet: Segmentation with Recurrent Attention Network
+input : under-sampled k-space data y, under-sampling mask m, N, T
+1 x
+(N−1)
+0
+, x
+(N)
+0 ← fRec(y, m) ; // initial reconstruction feature x0
+2 s0 ← fSeg(x
+(N)
+0
+) ; // initial segmentation result s0
+3 if t ≤ T then
+4 xt ← fDC ◦ fAttReg(x
+(N−1)
+0
+, st−1) ; // Attention module
+5 st ← fSeg(xt) ; // Recurrent segmentation
+output: sT
+under-sampled k-space data y and mask m, SERANet learns to segment the
+brain in T iterations. N is the number of Reg blocks and DC layers. As de￾scribed in Algorithm 1, line 1 and 2 generate the initial reconstructed image x0
+and brain tissue map s0. Then line 3 to 5 represent a recurrent segmentation￾aware reconstruction and segmentation process. The attention module fAttReg
+takes the initial reconstruction feature x
+N−1
+0
+(feature from the N −1 reconstruc￾tion block) and segmentation probability maps st−1 as input and generates new
+image xt, as illustrated in Figure 1 (c) and (d). To capture and memorize the
+spatial information at different recurrences, a ConvLSTM layer [12] is integrated
+into the UNet for segmentation. The objective function of the whole model is
+defined as lce(sT , sgt), where sT denotes the output of the final iteration. By
+doing so, the reconstruction module in our method does not see nor need any
+ground truth reconstruction image during training. The recovered image con￾tent is guided by the segmentation error solely, which suffices the aim to recover
+image domain features from the raw data that best suits the segmentation task,
+rather than the conventional reconstruction task. The usage of “reconstruction”
+to name the module is just for conceptual simplicity.
+2.4 Generate k-space data with oracle segmentation maps
+We propose here a novel method to generate realistic k-space data with ground
+truth segmentation map. Specifically, a widely utilized MRI scanner simulator
+MRiLab [7][1] is adopted to provide a realistic virtual MR scanning environment,
+which includes scanner system imperfection, MR acquisition pattern and MR
+data generation and recording. We use publicly available digital brain phantoms
+from BrainWeb [3] as the object “scanned” in the MRI simulator. Each brain
+is consisted of 12 tissue types with known spatial distributions. Each tissue
+type has a unique set of values of MR physical parameters such as T1 and T2
+that are needed for the MR scan simulation. Fully-sampled k-space data is then
+simulated by scanning the digital brain in MRiLab. Under-sampling is performed
+retrospectively by keeping a subset of the full-sampled data. To mimic realistic
+MR scanning, white Gaussian noises are added to the k-space data at multiple
+levels. The network never sees the fully-sampled data. The spatial distributions
+of the tissues are the oracle segmentation maps.

@@ -1,0 +1,77 @@
+Task-Aware Dynamic Transformer for Efficient
+Arbitrary-Scale Image Super-Resolution
+Tianyi Xua, Yijie Zhoua, Xiaotao Hub, Kai Zhangc, Anran Zhangd, Xingye Qiue,f and Jun Xua,g,*
+a School of Statistics and Data Science, Nankai University, Tianjin, China
+b College of Computer Science, Nankai University, Tianjin, China
+c School of Intelligence Science and Technology, Nanjing University, Suzhou, China
+d Tencent Data Platform, Beijing, China
+e Zhejiang University, Hangzhou, China
+f Systems Engineering Research Institute, China State Shipbuilding Corporation Limited, Beijing, China
+g Guangdong Provincial Key Laboratory of Big Data Computing, The Chinese University of Hong Kong, Shenzhen, China
+Abstract. Arbitrary-scale super-resolution (ASSR) aims to learn a
+single model for image super-resolution at arbitrary magnifying scales.
+Existing ASSR networks typically comprise an off-the-shelf scale-
+agnostic feature extractor and an arbitrary scale upsampler. These
+feature extractors often use fixed network architectures to address
+different ASSR inference tasks, each of which is characterized by an
+input image and an upsampling scale. However, this overlooks the
+difficulty variance of super-resolution on different inference scenarios,
+where simple images or small SR scales could be resolved with less
+computational effort than difficult images or large SR scales. To tackle
+this difficulty variability, in this paper, we propose a Task-Aware
+Dynamic Transformer (TADT) as an input-adaptive feature extractor
+for efficient image ASSR. Our TADT consists of a multi-scale feature
+extraction backbone built upon groups of Multi-Scale Transformer
+Blocks (MSTBs) and a Task-Aware Routing Controller (TARC). The
+TARC predicts the inference paths within feature extraction backbone,
+specifically selecting MSTBs based on the input images and SR
+scales. The prediction of inference path is guided by a new loss
+function to trade-off the SR accuracy and efficiency. Experiments
+demonstrate that, when working with three popular arbitrary-scale
+upsamplers, our TADT achieves state-of-the-art ASSR performance
+when compared with mainstream feature extractors, but with relatively
+fewer computational costs. The code is available at https://github.com/
+Tillyhere/TADT.
+1 Introduction
+The goal of Arbitrary-Scale Super-Resolution (ASSR) is to learn a
+single model capable of performing image super-resolution at arbitrary
+scales [18, 9, 42, 50]. Current ASSR methods [18, 9, 4, 27] primarily
+focus on developing arbitrary-scale upsamplers to predict the high-
+resolution (HR) image from the feature of a low-resolution (LR) image
+extracted by an off-the-shelf feature extractor [31, 54, 30]. Inspired
+by the merits of meta-learning [13], the work of MetaSR [18] learns
+adaptive upsamplers according to the SR scale. Later, the methods
+of [9, 50, 27, 6] leverage the implicit neural representation [ 10] to
+predict the upsampled HR image by the coordinates and the feature
+∗ Corresponding Author. Email: csjunxu@nankai.edu.cn
+(a) (b)
+Figure 1. PSNR results, GFLOPs and parameter amounts of different
+feature extractors working with the upsampler LIIF [ 9] for (a)×2 super-
+resolution and (b)×3 super-resolution on the DIV2K validation set [1]. The
+disc radius is proportional to parameter amounts of different feature extractors.
+Baseline and TADT are our feature extractors that will be introduced in §3.3.
+map of the corresponding LR image. However, feature extractors [31,
+54, 30] in these ASSR methods are usually scale-agnostic, which
+discourage the adaptivity of extracted feature map to the multiple
+user-defined SR scale and leads to inferior SR results [42, 14].
+To extract scale-aware feature for image ASSR, some researchers
+attempt to design scale-conditional convolutions to dynamically gener-
+ate scale-aware filters [42, 14, 46]. For example, ArbSR [42] employs
+scale-aware convolution which fuses a set of filters using weights
+dynamically generated based on the scale information. The method
+of EQSR [46] achieves adaptive modulation of convolution kernels
+with scale-aware embedding. Implicit Diffusion Model [14] presents a
+scale-aware mechanism to work with a denoising diffusion model for
+high-fidelity image ASSR. In short, these methods mainly implement
+feature-level or parameter-level modulation mechanisms for scale-
+aware feature extraction. However, these feature extractors tackle the
+input images and SR scales of different difficulty by fixed network ar-
+chitectures. This inevitably emerges huge computational redundancy
+in “easy” inference scenarios, e.g., “simple” images and/or small SR
+scales, that can be effectively resolved with less computational effort.
+The variability of restoring difficulty on different images is inherent
+in image restoration [26]. It is more evident for image ASSR, since the
+difficulty variance of ASSR comes from not only content-diverse input
+images, but also different upsampling scales. On one hand, content-
+diverse images often suffer from different restoration difficulty and
+arXiv:2408.08736v2  [cs.CV]  25 Aug 2024

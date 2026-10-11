@@ -1,0 +1,97 @@
+MIRTO 25
+A Derivations of the identities
+Identity 1. By definition g¯m(b) = D¯ m(τ
+⋆
+m,b) − D¯ m(ˆτm,b), since the mean of differences is the difference of means.
+Hence
+∆⋆ − ∆val =
+
+D¯
+a(τ
+⋆
+a,b) − D¯
+a(ˆτa,b)
+
+−
+
+D¯
+c(τ
+⋆
+c,b) − D¯
+c(ˆτc,b)
+
+= ¯ga(b) − g¯c(b),
+which is Eq. (13). For Eq. (14), on an interval where βm is strictly decreasing, D¯ m(τ ) = Ψm(βm(τ )), so g¯m =
+Ψm(βm(τ
+⋆
+)) − Ψm(βˆm), and βm(τ
+⋆
+) = b for the interpolated threshold (and ≤ b, within one grid step, for Eq. (11)).
+The mean-value theorem gives ξm. Neither statement holds for medians or pooled Dice, which are not linear in the
+subjects’ Dice. ⊓⊔
+Lemma 1. The argument is the standard one for the training-conditional coverage of split-conformal prediction [64,1];
+we give it for the burden loss. Because FPi(τ ) is non-increasing, {τ : FPi(τ ) > b} = {τ < ti} up to the convention
+at the boundary, so Li(τ ) = 1[ti > τ ] and nRˆ
+n(τ ) = #{i : ti > τ}. The condition in Eq. (15) reads #{i : ti >
+τ} ≤ (n + 1)α − 1, i.e. at most j = ⌊(n + 1)α − 1⌋ calibration subjects exceed. The count is a non-increasing
+step function of τ that drops by one at each t(r)
+, so the infimum is attained at τ = t(n−j) = t(k)
+. For a new
+subject independent of the calibration set, P[tn+1 > t(k)
+| t1:n] = 1 − F(t(k)). By the probability integral transform
+Ui = F(ti) are i.i.d. uniform, F(t(k)) = U(k) ∼ Beta(k, n + 1 − k), and therefore 1 − U(k) ∼ Beta(n + 1 − k, k), with
+mean (n + 1 − k)/(n + 1) = (j + 1)/(n + 1) ≤ α. ⊓⊔
+Remarks. (i) With n = 24 and α = 0.10, (n + 1)α − 1 = 1.5, j = 1, k = 23, and ρ ∼ Beta(2, 23): Eρ = 0.080,
+P[ρ ≤ 0.10] = 0.708, ρ0.975 = 0.211. For n = 50: j = 4, Beta(5, 46), mean 0.098, P[ρ ≤ α] = 0.569; for n = 100:
+j = 9, Beta(10, 91), mean 0.099, 0.549. (ii) The share of calibration sets that achieve exceedance ≤ α tends to 1
+2
+as n grows, because the Beta law concentrates at its mean, which approaches α from below; a per-set guarantee
+requires RCPS [8] or Learn-then-Test [2], at the price of a stricter threshold. (iii) Our random splits draw calibration
+and evaluation sets without replacement from 312 subjects and use a threshold grid, so they approximate the i.i.d.
+continuous setting; Table 5 shows the approximation is close.
+Identity 2. Dpool = 2P
+i TPi/
+P
+k
+(pk + Gk) and 2TPi = Di(pi + Gi). ⊓⊔
+Identity 3. The partition below is that of Obuchowski’s clustered-ROC estimator [52]. The pooled AUROC is the
+Mann–Whitney statistic over all N +N − pairs of a positive and a negative voxel from the pooled set. Partition the
+pairs by the subjects (i, j) of the positive and the negative voxel; there are n
++
+i n
+−
+j
+pairs in block (i, j), whose average
+indicator is Aij , and Aii = AUROCi
+. ⊓⊔
+Remark. If scores are only ordinal within subjects (an arbitrary strictly increasing transform hi per subject leaves
+every AUROCi unchanged), the diagonal term of Eq. (19) is invariant but the off-diagonal term is not. The pooled
+AUROC thus measures within-subject ranking and between-subject calibration, whereas the subject mean measures
+only the former. Per-subject min–max normalisation (Eq. 1) is one such hi
+.
+Identity 4. ∆D > 0 ⇐⇒ (T −t
+′
+)(p+G) > T(p−p
+′+G) ⇐⇒ T p′ > t′
+(p+G) ⇐⇒ t
+′/p′ < T /(p+G) = D/2. Adding
+a region of q
+′ voxels containing t
+′′ true positives: ∆D > 0 ⇐⇒ (T +t
+′′)(p+G) > T(p+q
+′+G) ⇐⇒ t
+′′/q′ > D/2. ⊓⊔
+Identity 5. Add and subtract D¯
+g(τ ). ⊓⊔
+The Jaccard bound and the triangle inequality. The Jaccard distance is a metric on finite sets (it is the Steinhaus
+transform of the symmetric-difference metric). For any P, dJ (P, RA) ≤ dJ (P, RB) + dJ (RB, RA) and symmetrically,
+which gives Eq. (9).
+Coverage-only “matched Dice”. If P ⊆ C then TP = |P| and D = 2|P|/(|P| + |C|) = 2r/(1 + r) with r = |P|/|C|, a
+strictly increasing function of coverage alone that is blind to false positives.
+Lesion-definition invariance of the hit count. Let L0 be all reference components and Lf ⊆ L0 those above the floor.
+If no component of L0 \ Lf is hit, the pooled sensitivities satisfy S0/Sf = |Lf |/|L0| for every method, which is what
+we observe (472/5,473).
+Bootstrap p-value floors. With the add-one two-sided p-value the smallest attainable value is 2/(B + 1). Holm
+multiplies the smallest of K raw p-values by K, so the floor of pH is 2K/(B + 1): 0.0048 for K = 24, 0.0032 for
+K = 16, 0.0064 for K = 32 at B = 104
+.

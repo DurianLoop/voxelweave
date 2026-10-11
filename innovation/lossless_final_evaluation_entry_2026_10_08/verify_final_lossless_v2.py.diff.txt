@@ -1,0 +1,20 @@
+--- verify_mc_rc_3d_19series_common_init_final_2026_10_07.py
++++ verify_final_lossless_v2.py
+@@ -1,7 +1,7 @@
+ """Complete functional FOV/coordinate/count verification; no new updates and no confirmation."""
+ import gc,itertools,json,math,sys,time,traceback
+ from fractions import Fraction
+-from mc_rc_3d_19series_final_eval_2026_10_07 import *
++from final_eval_lossless_v2 import *
+ from mc_rc_3d_independent_replay_2026_10_07 import functional_forward,independent_starts,independent_weight,independent_native_resample
+ from torch.nn import functional as F
+ 
+@@ -106,7 +106,7 @@
+     dump_new(path,r)
+     try:
+         guard(started);checkpoints,sources=frozen_training();sources.extend((source,EVAL_EXIT,Path(__file__),
+-            ROOT/'experiments/mc_rc_3d_independent_replay_2026_10_07.py',ROOT/'experiments/mc_rc_3d_19series_final_eval_2026_10_07.py'))
++            ROOT/'experiments/mc_rc_3d_independent_replay_2026_10_07.py',HERE/'final_eval_lossless_v2.py'))
+         for b in q['source_bindings']:assert sha(ROOT/b['path'])==b['sha256']
+         cases=roles()
+         for qa,checkpoint in zip(q['arms'],checkpoints):

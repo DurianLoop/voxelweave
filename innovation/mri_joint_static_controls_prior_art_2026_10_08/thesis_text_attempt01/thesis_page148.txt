@@ -1,0 +1,39 @@
+A.2. FURTHER EXPERIMENTS AND RESULTS ON BAKKER’S
+SETTING
+A.2 Further experiments and results on Bakker’s setting
+A.2.1 Data processing differences
+In section 6.3, we mentioned that we slightly deviated from the setting of Bakker et al.
+(2020). We now detail these changes and show that they do not change therelative
+performance of the different methods.
+1. Train-test split:we used a different train-test split than Bakker et al. (2020),
+as we randomly split10% of the training set as a test set, and used the fastMRI
+validation set for test. We used the50% more central slices, resulting in15599
+training slices, 1743 validation slices and3564 test slices.
+2. Complex data undersampling: Bakker et al. (2020) use magnitude ground
+truth images as the reference that is undersampled. We discussed in Section 6.2 the
+issue with this approach. We chose to use complex preprocessing of data, followed
+by taking magnitude of the observation obtainedafter undersampling.
+3. Data range: PSNR and SSIM need to be provided with a maximal data range in
+their computation: Bakker et al. (2020) used the maximal intensity in the ground
+truth volume, while we used the maximal intensity of each ground truthslice or
+image.
+4. Data standardization: Bakker et al. (2020) used a unique data standardization,
+where observations and ground truth data are standardized using their respective
+statistics, but denormalized, after reconstruction, using only the ground truth
+statistics. While this ensures a more closely matching data range, this introduces
+a mismatching data range that biases models leveraging data consistency, used
+in most state-of-the-art models. We performedmatched data normalization and
+denormalization using the observation statistics for the observation, and the ground
+truth ones for the ground truth.
+The third and fourth changes are related to postprocessing, and donot require retraining
+a model. We see on the three first columns of Table A.1 that these changes do not alter
+the relative ordering of the methods. However, in absolute numbers, the worse performing
+method in the initial setting outperforms the best method the best performing one after
+these changes (highlighted in italic on Table A.1). While comparing these numbers would
+be a mistake, this highlights the impact of subtle postprocessing changes and the need
+for care in comparing methods, especially across different papers.
+Ablation over Magnitude vs Complex data.We first illustrate the impact of doing
+the appropriate preprocessing by evaluating the model of Bakker et al. (2020) using
+their data processing pipeline against a pipeline with complex preprocessing. The SSIM
+performance AUC is reported in Table A.1.
+135

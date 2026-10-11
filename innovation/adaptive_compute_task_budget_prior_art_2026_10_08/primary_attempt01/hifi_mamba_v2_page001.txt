@@ -1,0 +1,81 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+HiFi-MambaV2: Hierarchical Shared-Routed MoE
+for High-Fidelity MRI Reconstruction
+Pengcheng Fang∗
+, Hongli Chen∗
+, Guangzhen Yao, Jian Shi, Fangfang Tang, Xiaohao Cai, Shanshan Shan†
+, Feng
+Liu
+Abstract—Reconstructing high-fidelity MR images from un￾dersampled k-space data requires recovering high-frequency
+details while maintaining anatomical coherence. We present
+HiFi-MambaV2, a hierarchical shared-routed Mixture-of-Experts
+(MoE) Mamba architecture that couples frequency decomposition
+with content-adaptive computation. The model comprises two
+core components: (i) a separable frequency-consistent Laplacian
+pyramid (SF-Lap) that delivers alias-resistant, stable low- and
+high-frequency streams; and (ii) a hierarchical shared-routed
+MoE that performs per-pixel top-1 sparse dispatch to shared
+experts and local routers, enabling effective specialization with
+stable cross-depth behavior. A lightweight global context path
+is fused into an unrolled, data-consistency-regularized back￾bone to reinforce long-range reasoning and preserve anatomi￾cal coherence. Evaluated on fastMRI, CC359, ACDC, M4Raw,
+and Prostate158, HiFi-MambaV2 consistently outperforms CNN-
+, Transformer-, and prior Mamba-based baselines in PSNR,
+SSIM, and NMSE across single- and multi-coil settings and
+multiple acceleration factors, consistently surpassing consistent
+improvements in high-frequency detail and overall structural
+fidelity. These results demonstrate that HiFi-MambaV2 enables
+reliable and robust MRI reconstruction.
+I. INTRODUCTION
+Magnetic resonance imaging (MRI) is clinically indispens￾able for its non-invasive nature and superior soft-tissue con￾trast, but its long acquisition time increases patient discom￾fort and constrains clinical throughput [1], [2]. Performing
+reconstruction from undersampled k-space is an acceleration
+strategy, yet undersampling introduces aliasing artifacts [3].
+This necessitates reconstruction methods that recover fine
+high-frequency details while preserving global anatomical
+coherence.
+Deep learning has advanced MRI reconstruction by learning
+data-driven priors from large-scale datasets. Early works pri￾marily utilized convolutional neural networks (CNNs) as the
+backbone [4]–[7]. However, CNNs are limited in modeling
+long-range dependencies, which are essential for preserving
+global anatomical consistency. Vision Transformers [8] later
+gained popularity for undersampled MRI reconstruction due
+to their ability to model long-range dependencies, but the
+quadratic complexity of self-attention hinders scaling to high￾resolution clinical inputs and large fields of view [9], [10].
+More recently, the selective state-space model (Mamba) [11]
+provides linear-time long-range modeling via input-dependent
+state transitions and gating, and has been adapted to vision
+tasks. However, direct application to MRI remains challenged
+by (i) redundant multi-directional scanning, (ii) local state
+∗ Equal Contribution.
+† Corresponding author.
+Before Conv
+After Conv
+Before Pure Mamba
+After Pure Mamba
+Before HiFi-Mamba
+After HiFi-Mamba
+Channel-wise 2D Log-Frequency Magnitude Visualization
+Fig. 1: Each panel visualizes channel-wise 2D log-magnitude
+Fourier spectra (14×14 thumbnails) of intermediate feature
+maps; top row is before the block and bottom row is af￾ter. Conv Block preserves pronounced cross-shaped high￾frequency responses, reflecting strong sensitivity to local edges
+and textures. Pure Mamba suppresses mid/high frequencies
+and concentrates energy near the DC component, evidencing
+a low-pass, global-context behavior. Our HiFi–Mamba block
+produces a balanced spectrum: low frequencies dominate
+(global consistency) while moderate high-frequency energy
+is retained (local detail). This frequency-domain complemen￾tarity explains the downstream gains we report—integrating
+Mamba with convolution unifies global semantics and local
+precision.
+parameterization that weakens anatomical coherence, and (iii)
+the lack of explicit frequency control. Our previous HiFi￾Mamba [12] adopted an undirectional scanning dual-stream
+Mamba design. While effective, strict decoupling reduced
+cross-frequency interaction and global aggregation. In ad￾dition, static routing with a w-Laplacian transform offered
+limited frequency adaptivity (see the motivation in Section III).
+To further analyze these behaviors, we visualize in Figure 1
+the frequency-domain spectra of intermediate features before
+and after each block. Conv block emphasizes high-frequency
+energy, pure Mamba block suppresses it, and the HiFi-Mamba
+block structure achieves a balanced spectrum. This observation
+motivates our new design that unifies frequency control and
+dynamic expert routing.
+To address these limitations, we propose HiFi-MambaV2, a
+hierarchical shared-routed MoE-Mamba architecture that cou￾arXiv:2511.18534v1 [cs.CV] 23 Nov 2025

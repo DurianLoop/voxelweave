@@ -1,0 +1,30 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+23
+Epochs 100 100
+Ponder weight 𝜆 0.01 0.01
+Dropout 0.1 0.1
+Drop path 0.1 0.1
+Gradient clip 1.0 1.0
+Random seed 42 42
+Appendix B: Reproducibility
+All code is available in the companion GitHub repository. Three Colab notebooks reproduce every table and figure: 
+NB1 (ACDC data loading and main training with training curves, depth extrapolation, ACT maps, and data efficiency), 
+NB3 (ablation study across seven configurations including MoE, with expert utilization analysis). The ACDC dataset 
+is automatically downloaded from HuggingFace (mathpluscode/ACDC). Package versions are pinned in 
+requirements.txt. Every number in the results section traces to a specific notebook cell and is saved as a JSON file in 
+the Drive output directory.
+Appendix C: Per-Class Results
+Table C1: Per-class Dice scores for 3D RD-ViT Tiny at full training data.
+Structure Dice Clinical significance
+RV (right ventricle) 0.753 Complex crescent geometry
+MYO (myocardium) 0.673 Thin wall, partial volume
+LV (left ventricle) 0.875 Regular elliptical shape
+Mean (excl. BG) 0.767 —
+LV achieves the highest Dice (0.875) due to its regular elliptical shape and high contrast. MYO has the lowest Dice 
+(0.673) because the myocardial wall is thin and subject to partial volume effects. RV performance (0.753) is 
+intermediate, reflecting its complex crescent geometry. These per-class patterns are consistent with the broader ACDC 
+literature.
+The MYO-LV gap (0.673 vs 0.875) reflects myocardial wall thinness: the wall may be only 1-2 voxels 
+thick at 128×128×16 resolution, making boundary delineation fundamentally resolution-limited.
+RV (0.753) is challenged by its crescent shape with complex, patient-variable geometry and trabeculated 
+inner surfaces. Global attention helps capture overall shape despite ambiguous local boundaries.

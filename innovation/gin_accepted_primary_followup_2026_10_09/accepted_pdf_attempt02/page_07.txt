@@ -1,0 +1,149 @@
+, VOL. XX, NO. XX, XXXX 2020 7
+to be spatially variable to simulate our causal intervention.
+Pseudo-correlation maps: As shown in Fig. 5-B, we config￾ure pseudo-correlation maps as a field of continuous randomly￾valued scalars with a low spatial frequency. They are in￾terpolated from a lattice of randomly-valued control points,
+using cubic B-spline kernels [61], based on the efficient
+implementation from [63]. The spacing between two neigh￾boring control points is empirically set to be 1/4 of image
+length to avoid introducing unnaturally large image gradients.
+This configuration features the following advantages: 1) It
+allows spatially-variable intensity transformation while does
+not severely distort shape information due to its low spatial
+frequency. 2) It further increases diversities of appearances by
+interpolating between two appearances.
+D. Training objective
+Algorithm 1 End-to-end training with causality-inspired data
+augmentation
+Require: Training dataset {(x, y)} from the source domain,
+segmentation network fϕ(·), global intensity non-linear
+augmentaton (GIN), interventional pseudo-correlation
+augmentation (IPA), number of iterations N, learning rate
+l
+(t)
+r at iteration t.
+1: for t = 1 ... N do
+2: Sample an image-label pair (x
+(t)
+, y
+(t)
+) from {(x, y)}.
+3: Sample intensity/texture transformations g
+(t)
+θ1
+(·), g
+(t)
+θ2
+(·)
+using GIN.
+4: Apply g
+(t)
+θ1
+(·), g
+(t)
+θ2
+(·) as described in Eq. 4 to x
+(t)
+and
+obtain g
+(t)
+θ1
+(x
+(t)
+), g
+(t)
+θ2
+(x
+(t)
+).
+5: Compute a pseudo-correlation map b
+(t) by interpolating
+along randomly valued control points as in Fig. 5-B.
+6: Compute augmented images T
+(t)
+1
+(x
+(t)
+), T
+(t)
+2
+(x
+(t)
+) us￾ing IPA, as described in Eq. 6.
+7: Compute training loss L
+(t)
+(ϕ) using Eq. 3.
+8: Update parameters of the segmentation network fϕ(·):
+ϕ
+(t+1) := ϕ
+(t) − l
+(t)
+r
+∂L
+(t)
+(ϕ)
+∂ϕ .
+9: end for
+The overall training is end-to-end using the loss function
+described in Eq. 3. For the ease of implementation we let
+the output of fϕ(·) to be in the form of raw logits, and let
+p(y|fϕ(·)) to be the probabilities obtained by passing the
+output of fϕ(·) to a softmax function. For Lseg, we employ a
+sum of multi-class cross-entropy loss and soft Dice loss. We
+set the weighting coefficient λdiv in Eq. 3 to be 10.0, same
+as in [40]. After training, the segmentation network fϕ(·) is
+ready to be directly applied to unseen testing domains. The
+overall algorithm flow is summarized in Algorithm 1.
+IV. EXPERIMENTS
+A. Datasets and evaluation protocols
+The proposed approach is evaluated in three cross-domain
+settings: 1) cross-modality abdominal segmentation between
+CT and T2-SPIR MRI (Abdominal Cross-modality), 2) cross￾sequence cardiac segmentation from bSSFP MRI to LGE
+MRI (Cardiac Cross-sequence), and 3) prostate segmentation
+on MRI across six sites (Prostate Cross-site). Details of the
+datasets and the source-target splits are summarized in Table
+I. All these datasets are originally in 3-D and have been
+reformatted to 2-D, then resized to 192×192, and padded
+along the channel dimension to fit into the network. For the
+abdominal CT dataset, we applied a window of [-125, 275]
+[70] in Housefield values. For all MRI images, we clipped the
+top 0.5% of the histograms. We normalized all the 3-D scans to
+have zero mean and unit variance. For fairness of comparisons,
+for all the methods evaluated (including ERM), conventional
+geometric augmentations: affine transformations and elastic
+transformations; and intensity augmentations: brightness, con￾trast, gamma transformations and additive Gaussian noises
+were applied by default.
+We employed the commonly-used Dice score (0-100) as
+the evaluation metric for measuring the overlap between the
+prediction and the ground truth. For abdominal and prostate
+segmentations, for the source domain, we used a 70%-10%-
+20% split for training, validation and testing sets; for the target
+domain(s), we used all the images for testing, same as in [30].
+For cross-site prostate segmentation, each time we took one
+domain as the source and the rest five domains as targets, and
+we computed Dice scores averaged by target domains. This
+1-versus-5 experiment is repeated for each of all six domains.
+For cardiac segmentation, we employed the same data split as
+in the cross-sequence segmentation challenge [66].
+B. Network architecture and training configurations
+We configured the segmentation network fϕ(·) as a U-Net
+[1], the most commonly used network architecture for medical
+image segmentation, with an EfficientNet-b2 backbone [71].
+For our proposed method, we trained the segmentation net￾work using an Adam optimizer [72] with an initial learning
+rate of 3 × 10−4 with learning rate decay. We evaluated our
+method at the 2k-th epoch where the learning rate decays to
+zero.
+C. Quantitative and qualitative results
+We compared our method with the empirical risk minimiza￾tion (ERM) baseline and several recent single-source domain
+generalization methods. Among them Cutout [37] enforces the
+model to be robust to corruptions by deliberately removing
+patches from training images. RSC [33] defines features that
+lead to the largest gradients as non-robust features and removes
+them in training. MixStyle [26] synthesizes novel domains by
+mixing instance-level feature statistics [35]. AdvBias [50] is
+designed for medical images. It augments images using adver￾sarial perturbations. Closely related to our work is RandConv
+[40], which employs a random linear intensity transformation
+model to synthesize novel domains.
+Table II summarizes performances on three cross-domain
+segmentation scenarios, where a network is trained on the
+source domain and evaluated on the target domain(s). The
+proposed approach in general outperforms peer methods. In
+particular, the performance gains of our method compared with
+the closely-related RandConv [40] suggest that our approach

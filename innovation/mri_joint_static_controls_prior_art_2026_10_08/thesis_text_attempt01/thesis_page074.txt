@@ -1,0 +1,47 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+5.4.3 Single coil results
+Main results. We see on Figures 5.6 and 5.7 that the SG-v2 brings a consistent
+improvement over all baselines considered, even though some variable-density techniques
+are able to provide good results for some sampling rates and algorithms. Compared to
+Coherence-VD, there is always at least1 dB improvement at any sampling rate, and it
+can be as much as6.7 dB at5% sampling rate for ALOHA. For the rest, the improvement
+is over0.5 dB. Figure 5.6 also clearly indicates that the benefits of our learning-based
+framework become more apparent towards higher sampling rates, where the performance
+improvement over LB-VD reaches up to1 dB. Towards lower sampling rates, with much
+fewer degrees of freedom to achieve good mask designs, the greedy method and LB-VD
+yield similar performance, which is expected2.
+0.05 0.15 0.25
+28
+31
+34
+37
+40
+Sampling rate
+PSNR
+KTF
+0.05 0.15 0.25
+Sampling rate
+ALOHA
+Coherence-VD
+LB-VD
+SGv2-KTF
+SGv2-ALOHA
+Figure 5.6: PSNR as a function of sampling rate, evaluating the different masks (Coherence-VD,
+LB-VD, SG-v2-KTF, SG-v2-ALOHA) on both reconstruction methods (KTF and ALOHA). The
+results are averaged over4 images.
+Focusing on Figure 5.7, we observe that comparing reconstruction algorithms using
+the model-based, model-driven approach Coherence-VD does not allow for a faithful
+comparison of their performance. In this case, the performance difference between
+KTH and ALOHA is marginal. However, when moving to the model-based, data-driven
+approach LB-VD, the difference becomes quantitatively clearer. Moving to the learning-
+based, data-driven approach SG-v2 makes the difference even more noticeable: ALOHA
+with its corresponding mask clearly outperforms KTF, and this conclusion could not
+be made by looking solely at reconstructions with VD-based masks. This trend is also
+reflected on Figure 5.6.
+This is an important observation, as most works have developed new reconstruction
+algorithms that were then tested using random masks designed with criteria such as
+minimal coherence. However, our results suggest that this approach does not reflect the
+true performance of a reconstruction method, and that one should look to optimize the
+2At low sampling rates, learning-based approaches will prioritize low-frequency phase encoding lines,
+as those contain most of the energy at a given frame.
+61

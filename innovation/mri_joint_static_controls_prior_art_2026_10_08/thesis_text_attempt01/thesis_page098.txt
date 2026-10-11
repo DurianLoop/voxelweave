@@ -1,0 +1,36 @@
+6.1. REINFORCEMENT LEARNING TO OPTIMIZE SAMPLING
+TRAJECTORIES
+We can then use the return to define formally the value function
+Vπ(s)≜ Eπ[Gt|St =s] (6.1)
+which means that the value of the states is the expected return given that we currently
+are in the stateSt =s. A related important quantity is thestate-action function
+Qπ(s,a )≜ Eπ[Gt|St =s,At =a] (6.2)
+which is similar to the value function except that it considers a state-action pair(s,a ).
+The two can be related as
+Vπ(s) =
+∑
+a∈A
+Qπ(s,a )π(a|s) (6.3)
+Markov Decision Processes.Most RL problems can be expressed as Markov Decision
+Processes (MDPs). This implies in particular that the current stateSt and actionAt
+contain all the necessary information to future decisions, i.e.
+P(St+1|St,At) = P(St+1|S1,A 1...,S t,At).
+In other words, this means that the futureSt+1 is conditionally independent of the past
+(S1,A 1...,S t−1,At−1) given the presentSt, At. An MDP consists of five elements that
+we already encountered, namelyM =⟨S,A,P,R,γ ⟩. We have a set of states, a set of
+actions, the transition probability, the reward function and the discount factor. This
+description comprises everything that we need to tackle a RL problem.
+6.1.2 The special case of MRI
+The problem of optimizing the sampling mask of Cartesian MRI fits the description of
+RL well, but is not exactly described by an MDP. If we look to learn a sampling pattern
+on an imagex, we can start from an empty mask and gradually make observations,
+trying to learn which are the best locations to acquire. It is natural to view the current
+mask ωt as the current statest, and interpret the actionat as the next location that we
+seek to acquire. The reward is easily quantified as the improvement in reconstruction
+obtained by adding to the sampling mask the location corresponding toat:
+r(st,at) =η(x, ˆxθ;ωt+1)−η(x, ˆxθ;ωt) (6.4)
+whereωt+1 =ωt∪at and ˆxθ;ωt+1 = ˆxθ(Pωt+1Fx )2. Recall also thatη(·,·) : CP× CP→ R
+is a performance metric. In the sequel, to avoid unnecessary clutter, we refer to the
+2Note that we slightly abuse notation here and use the actionat to also refer to its corresponding
+sampling location.
+85

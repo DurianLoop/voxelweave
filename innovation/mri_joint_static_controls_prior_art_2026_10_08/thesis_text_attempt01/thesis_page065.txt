@@ -1,0 +1,35 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+and 5.3.2.
+Remark (Submodular optimization under noise). Although the cases so far mostly
+discussed optimizing submodular functions without measurement noise, such a setting
+is not realistic in the case of prospective MRI acquisitions, where repeated lines will
+have a different noise, and resampling can improve the average signal. Nonetheless,
+submodular optimization under noise has been studied, and algorithms that adapt
+to such settings have been proposed (Singla et al., 2016; Hassidim and Singer, 2017).
+5.3 Scaling up LBCS
+5.3.1 Limitations of LBCS
+As we have hinted above, in many practical scenarios, evaluatingO(P 2) configurations
+remains very expensive. This is also due to the fact that each configuration requires
+reconstructing m data points. In particular, the LBCS approach becomes prohibitively
+expensive when either of the following occurs:
+1. When the number of candidate locations grows significantly. This is particularly
+the case, in 3D MRI, where one needs to undersample entire volumes, or dynamic
+MRI, where one undersamples multiple frames for a single 2D image.
+2. When the size of the dataset grows, it becomes impractical to evaluate LBCS on
+the whole testing set at once.
+3. When the running time of the reconstruction method becomes large. This is
+particularly the case for multi-coil MRI, which is the setting most commonly used
+in practice. This issue also occurs when dealing with larger data, from 3D or
+dynamic MRI.
+As a result, we wish to develop variants of LBCS that allow to tackle these different
+settings, while retaining the performance of LBCS as much as possible. We will discuss
+two variants of LBCS that were respectively proposed in Gözcü et al. (2019) and Sanchez
+et al. (2020a), and that aim at tackling mostly the issues of multi-coil and 3D MRI as
+well as dynamic MRI. We start by explaining how they differ from LBCS.
+5.3.2 Stochastic LBCS
+With stochastic LBCS (sLBCS), we aim at addressing two fundamental drawbacks of
+the approach of Gözcü et al. (2018), namely that1. its scaling is quadratic with respect
+to the total number of readout lines,2. its scaling is linearly with respect to the size
+of the dataset. With this approach, we also aim at integrating a specific constraint of
+52

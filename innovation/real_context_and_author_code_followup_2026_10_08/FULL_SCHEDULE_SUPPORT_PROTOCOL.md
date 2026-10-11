@@ -1,0 +1,11 @@
+# 全2992步训练分布的几何支持资格（运行前）
+
+76真实MRI字段已真正563565 exit0，数值/上下文/原label资格通过，但38stress几何不足以冻结训练policy。本轮开始单独CPU几何任务：按原完成19998训练的固定schedule前2992步重建每步两个crop，合计5984不同训练曝光geometry。两输入共用同geometry，不重复模拟成11968独立patch。使用spatial_transform.primitives(step)原seed/p=.3/angles±15°/scale.85–1.15，作为**待用图像往返**的固定候选分布；这不是当前四臂单次空间变换的实际支持结果，也不改当前训练。
+
+只读19开发reference labels和metadata，不读MRI/model/验证/确认/lockedIXI，不评分分割效益。GT仅重放合法原训练采样：forced-FG crop和pivot本来由GT确定；support仅在给定这些冻结训练geometry后计算，不额外查看GT定阈值、挑augmentation或筛患者。此前“GT-free mask”都应理解为此条件语义，不能称geometry完全独立于训练GT。未来部署收益特征必须使用GT-free定位和geometry。
+
+新增独立label-only crop RNG按原sample_batch随机调用顺序生成，先与旧19series/38patch的geometry和母label SHA匹配；原全physical_label SHA及19source bindings必须匹配。只读原完成训练schedule/frozen_config与当前immutable frozen_config，prefix SHA严格匹配，每患者272step；不读当前rolling journal/checkpoint。按series处理但每个step/patch唯一无损写gzip journal。
+
+所有active往返几何逐目标体素Torch支持与独立SciPy重算，原坐标3e-12/support3e-6/binary0、阈值1−1e-9保持。inactive=identity，直接按未padding影像域三轴合法整数区间组合mask；两种独立构造全体素逐位一致，零插值。记录所有FG/BG支持缺失、大小、mask哈希、全部patient/series曝光，保留空patch。GT不决定启用/禁用或支持阈值。此全分布资格也不证明InstanceNorm后输出安全、raw-PCHIP信息真实或增强分割收益。
+
+CPU1/低优先级、wall5400秒、整个本stage5MB及磁盘/RAM各8GB储备，不操作其他PID。原训练仍需真实轮询；新qualification也保存工具handle持续轮询，不能由部分日志/经过时间当完成。滚动full_schedule_attempt01除immutable frozen_config外不得先归档；真实exit0后另外audit5984journal和全部计数，才可称完整资格。任何失败保留，不降门槛、不挑subset代替全schedule。

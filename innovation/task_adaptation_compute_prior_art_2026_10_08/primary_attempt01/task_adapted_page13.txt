@@ -1,0 +1,87 @@
+and note that z = (z1,z 2)∈∆ and x = (x1,x 2)∈ X. The corresponding empirical risk
+minimization in (11) is
+(14) ϑ∗∈ arg min
+ϑ∈RN
+{ 1
+m
+m∑
+i=1
+‖‖‖(xi
+1−xi
+2)−Tϑ(xi
+1,xi
+2)
+‖‖‖
+2
+D
+}
+where (xi
+1,xi
+2)∈X is the supervised training data. One may here use a (deep) convolutional
+neural net to parametrize the decision rules in D ={Tϑ}ϑ∈RN .
+6.2.4. Caption generation. Caption generation refers to the task of associating an image
+to an appropriate sentence, or paragraph, that describes its content. More precisely, deﬁneW
+to be the set of words in a chosen language, enlarged by a “stop word” wstop that marks the
+end of the caption. Next, let C denote the set of captions, which are ﬁnite sequences made
+up of elements from W where each sequence contains wstop exactly once as its last element.
+Then, caption generation is the task of mapping an image to a sequence in C.
+This task becomes a non-randomized decision rule in a statistical estimation problem
+where∆ :=C is the set of captions, so Pz is the probability of a caption z. The decision space
+is D := PC, i.e., probability distributions over set of captions C, and the task adapted loss
+function is given by (9) with
+𝓁D(d,d′) :=−
+∑
+c∈C
+d(c) logd′(c) for d,d′∈D,
+τ(z) :=δz∈ PC for a caption z∈∆ .
+To express Bayes risk that is to be minimized when computing the optimal decision rule,
+consider an element z∈∆ =C (caption) and let zi∈W denote its i:th word. Next, let
+Wn⊂W denote the set of sequences of n words that do not contain the stop word wstop
+(unﬁnished sentences), i.e.,
+Wn :=
+{
+(wi)n
+i=1⊂W| wi⁄=wstop for i = 1,...,n
+}
+.
+Since an element in the decision space d∈D := P∆ is a probability measure on sequences of
+words (captions), it will in particular yield the following probability measure on Wn:
+dn
+(
+(wi)n
+i=1
+)
+:=d
+(
+{z∈∆| zi =wi for i = 1,...,n }
+)
+for (wi)n
+i=1∈W n.
+We now consider the measure for n + 1 sequences that are conditioned on its ﬁrst n terms,
+i.e., let (wi)n
+i=1∈W n be ﬁxed with dn
+(
+(wi)n
+i=1
+)
+> 0. Then, d induces to a probability measure
+πd∈ PW on the set of words W via
+πd
+(
+w| (wi)n
+i=1
+)
+:= dn+1(w1,...,w n,w )
+dn(w1,...,w n) for w∈W and (wi)n
+i=1∈W n.
+With this notation, one can identify an elementd∈ P∆ with its corresponding representation
+in×n PW(·|W n) by the identity
+d(z) =
+∏
+i
+πd
+(
+z| (z1,...,z n−1)
+)
+.
+13

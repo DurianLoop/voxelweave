@@ -1,0 +1,103 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+MoEDiff-SR: Mixture of Experts-Guided Diffusion Model for
+Region-Adaptive MRI Super-Resolution
+Zhe Wang, Yuhua Ru, Aladine Chetouani, Fang Chen, Fabian Bauer, Liping Zhang, Didier Hans∗
+, Rachid Jennane∗
+,
+Mohamed Jarraya∗
+, Yung Hsin Chen∗
+Abstract—Magnetic Resonance Imaging (MRI) at lower field
+strengths (e.g., 3T) suffers from limited spatial resolution, making
+it challenging to capture fine anatomical details essential for
+clinical diagnosis and neuroimaging research. To overcome
+this limitation, we propose MoEDiff-SR, a Mixture of Experts
+(MoE)-guided diffusion model for region-adaptive MRI Super￾Resolution (SR). Unlike conventional diffusion-based SR models
+that apply a uniform denoising process across the entire image,
+MoEDiff-SR dynamically selects specialized denoising experts at
+a fine-grained token level, ensuring region-specific adaptation
+and enhanced SR performance. Specifically, our approach first
+employs a Transformer-based feature extractor to compute
+multi-scale patch embeddings, capturing both global structural
+information and local texture details. The extracted feature
+embeddings are then fed into an MoE gating network, which
+assigns adaptive weights to multiple diffusion-based denoisers,
+each specializing in different brain MRI characteristics, such as
+centrum semiovale, sulcal and gyral cortex, and grey–white matter
+junction. The final output is produced by aggregating the denoised
+results from these specialized experts according to dynamically
+assigned gating probabilities. Experimental results demonstrate
+that MoEDiff-SR outperforms existing state-of-the-art methods in
+terms of quantitative image quality metrics, perceptual fidelity, and
+computational efficiency. Difference maps from each expert further
+highlight their distinct specializations, confirming the effective
+region-specific denoising capability and the interpretability of
+expert contributions. Additionally, clinical evaluation validates its
+superior diagnostic capability in identifying subtle pathological fea￾tures, emphasizing its practical relevance in clinical neuroimaging.
+Our code is available at https://github.com/ZWang78/MoEDiff-SR.
+Index Terms—Magnetic resonance imaging, Super resolution,
+Mixture of experts, Region-adaptive
+I. INTRODUCTION
+Zhe Wang, Yung Hsin Chen and Mohamed Jarraya are with Department of
+Radiology, Massachusetts General Hospital, Harvard Medical School, Boston,
+02114, USA (e-mail: zwang78@mgh.harvard.edu; ychen4@mgh.harvard.edu;
+mjarraya@mgh.harvard.edu).
+Yuhua Ru is with Jiangsu Institute of Hematology, The First Affili￾ated Hospital of Soochow University, Suzhou, 215006, China. (e-mail:
+ruyuhua@suda.edu.cn).
+Aladine Chetouani is with L2TI Laboratory, University Sorbonne Paris Nord,
+Villetaneuse, 93430, France (e-mail: aladine.chetouani@univ-paris13.fr).
+Fang Chen is with department of Medical School, Henan Univer￾sity of Chinese Medicine, Zhengzhou, 450046, China. (e-mail: chen￾fangyxy@hactcm.edu.cn).
+Fabian Bauer is with Division of Radiology, German Cancer Research Center,
+Heidelberg, 69120, Germany (e-mail: fabian.bauer@dkfz-heidelberg.de).
+Liping Zhang is with Athinoula A. Martinos Centre for Biomedical Imaging,
+Massachusetts General Hospital, Harvard Medical School, Boston, 02114,
+USA. (e-mail: lzhang90@mgh.harvard.edu).
+Didier Hans is with Nuclear Medicine Division, Geneva University Hospital,
+Geneva, 1205, Switzerland. (e-mail: didier.hans@chuv.ch).
+Rachid Jennane is with IDP Institute, UMR CNRS 7013, University of
+Orleans, Orleans, 45067, France (e-mail: rachid.jennane@univ-orleans.fr).
+MAGNETIC resonance imaging (MRI) is a fundamental
+and versatile medical imaging modality that provides
+detailed and high-resolution visualization of soft tissues by
+leveraging the interaction between strong magnetic fields, ra￾diofrequency pulses, and the intrinsic magnetic properties of bi￾ological tissues [1]. Unlike ionizing radiation-based techniques
+such as Computed Tomography (CT) or X-ray imaging, MRI
+offers a non-invasive and radiation-free approach, making it
+particularly suitable for repeated examinations and longitudinal
+studies [2]. Its exceptional ability to generate high-contrast
+images with superior tissue differentiation has positioned it
+as an indispensable tool in the diagnosis, monitoring, and
+treatment planning of a wide spectrum of neurological disorders.
+These include neurodegenerative diseases such as Alzheimer’s
+and Parkinson’s, where MRI aids in detecting brain atrophy,
+white matter changes, and abnormal protein aggregations;
+demyelinating disorders like multiple sclerosis (MS), where it
+facilitates the visualization of plaques and disease progression;
+and acute cerebrovascular conditions such as ischemic stroke,
+where MRI enables the timely identification of infarcts and
+haemorrhages. As medical imaging continues to evolve, the
+reliance on MRI has grown substantially, driven by its ability
+to capture a broad spectrum of structural, functional, and
+biochemical changes that are crucial for both early diagnosis
+and prognostic evaluations [3].
+Over the past few decades, field strengths have evolved
+from sub-0.5T systems to the widespread adoption of 1.5/3T
+scanners, and more recently, to the cutting-edge development of
+ultra-high-field (UHF) 7T MRI [4]. These improvements have
+significantly enhanced image clarity, enabling the detection
+of finer anatomical structures and subtle pathological markers
+that remain elusive in lower-field scans [5]. In conditions such
+as epilepsy, 7T MRI has demonstrated unparalleled precision
+in identifying small cortical lesions, thereby refining surgical
+planning [6]. Similarly, it has also improved the visualization of
+cortical demyelination for MS, which is often underrepresented
+at conventional field strengths [7]. Despite its diagnostic
+superiority, 7T MRI faces substantial barriers to widespread
+clinical implementation. The high cost of procurement, instal￾lation, and maintenance poses a significant financial challenge,
+limiting its availability to select research institutions and
+specialized medical centres [8]. Additionally, the operational
+complexities associated with ultra-high-field imaging, such as
+increased susceptibility artefacts, specific absorption rate (SAR)
+limitations, and the necessity for advanced RF coil technology,
+further hinder its routine clinical adoption [9].
+The evolution of Super-Resolution (SR) techniques in MRI
+has undergone a paradigm shift with the emergence of deep
+arXiv:2504.07308v1 [eess.IV] 9 Apr 2025

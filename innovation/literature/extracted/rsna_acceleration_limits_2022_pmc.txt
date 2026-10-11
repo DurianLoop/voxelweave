@@ -1,0 +1,1596 @@
+Radiol Artif Intell. 2022 Nov 2;4(6):e210313. doi: 10.1148/ryai.210313
+Search in PMC
+Search in PubMed
+View in NLM Catalog
+Add to search
+Exploring the Acceleration Limits of Deep Learning Variational
+Network–based Two-dimensional Brain MRI
+Alireza Radmanesh
+Alireza Radmanesh, MD
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Alireza Radmanesh
+1, Matthew J Muckley
+Matthew J Muckley, PhD
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Matthew J Muckley
+1,✉, Tullie Murrell
+Tullie Murrell, BS
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Tullie Murrell
+1, Emma Lindsey
+Emma Lindsey, MD
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Emma Lindsey
+1, Anuroop Sriram
+Anuroop Sriram, MS
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Anuroop Sriram
+1, Florian Knoll
+Florian Knoll, PhD
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Florian Knoll
+1, Daniel K Sodickson
+Daniel K Sodickson, MD, PhD
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Daniel K Sodickson
+1, Yvonne W Lui
+Yvonne W Lui, MD
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+Find articles by Yvonne W Lui
+1
+Author information
+Article notes
+Copyright and License information
+1From the Department of Radiology, NYU School of Medicine–NYU Langone Health, New York, NY (A.R., E.L., D.K.S., Y.W.L.); Meta AI, Facebook, 770 Broadway, 2nd Floor, New York, NY 10003 (M.J.M.); Stealth, New York, NY (T.M.); Department of Artificial Intelligence Research, Meta AI, Facebook, Menlo Park, Calif (A.S.); and Department Artificial Intelligence in Biomedical Engineering, Friedrich-Alexander Universität Erlangen-Nürnberg, Erlangen, Germany (F.K.).
+✉
+Address correspondence to M.J.M. (email:
+mmuckley@meta.com).
+Author contributions: Guarantors of integrity of entire study,
+A.R., M.J.M., T.M., Y.W.L.; study concepts/study design or
+data acquisition or data analysis/interpretation, all authors; manuscript
+drafting or manuscript revision for important intellectual content, all
+authors; approval of final version of submitted manuscript, all authors;
+agrees to ensure any questions related to the work are appropriately
+resolved, all authors; literature research, A.R., M.J.M., T.M., F.K.,
+D.K.S., Y.W.L.; clinical studies, A.R., M.J.M., E.L.,
+Y.W.L.; experimental studies, A.R., M.J.M., T.M.;
+statistical analysis, M.J.M., T.M.; and manuscript editing, all
+authors
+✉
+Corresponding author.
+Received 2021 Dec 21; Revision requested 2022 Feb 15; Revised 2022 Oct 5; Accepted 2022 Oct 18; Collection date 2022 Nov.
+© 2022 by the Radiological Society of North America,
+Inc.
+PMC Copyright notice
+PMCID: PMC9745443 PMID: 36523647
+Abstract
+Purpose
+To explore the limits of deep learning–based brain MRI
+reconstruction and identify useful acceleration ranges for
+general-purpose imaging and potential screening.
+Materials and Methods
+In this retrospective study conducted from 2019 through 2021, a model was
+trained for reconstruction on 5847 brain MR images. Performance was
+evaluated across a wide range of accelerations (up to 100-fold along a
+single phase-encoded direction for two-dimensional [2D] sections) on the
+fastMRI test set collected at New York University, consisting of 558
+image volumes. In a sample of 69 volumes, reconstructions were
+classified by radiologists for identification of two clinical
+thresholds: (a) general-purpose diagnostic imaging and
+(b) potential use in a screening protocol. A Monte
+Carlo procedure was developed to estimate reconstruction error with only
+undersampled data. The model was evaluated on both in-domain and
+out-of-domain data. The 95% CIs were calculated using the percentile
+bootstrap method.
+Results
+Radiologists rated 100% of 69 volumes as having sufficient image quality
+for general-purpose imaging at up to 4× acceleration and 65 of 69
+volumes (94%) as having sufficient image quality for screening at up to
+14× acceleration. The Monte Carlo procedure estimated ground
+truth peak signal-to-noise ratio and mean squared error with
+coefficients of determination greater than 0.5 at 2× to
+20× acceleration levels. Out-of-distribution experiments
+demonstrated the model’s ability to produce images substantially
+distinct from the training set, even at 100× acceleration.
+Conclusion
+For 2D brain images using deep learning–based reconstruction,
+maximum acceleration for potential screening was three to four times
+higher than that for diagnostic general-purpose imaging.
+Keywords: MRI Reconstruction, High Acceleration, Deep
+Learning, Screening, Out of Distribution
+Supplemental material is available for this
+article.
+© RSNA, 2022
+Keywords: MRI Reconstruction, High Acceleration, Deep Learning, Screening, Out of Distribution
+Open in a new tab
+Summary
+Evaluation of a two-dimensional brain MRI reconstruction neural network suggested
+that maximum possible acceleration was three to four times higher than that for
+diagnostic general-purpose imaging when the purpose is restricted to screening
+for major disease or structural abnormality.
+Key Points
+■ In a sample of two-dimensional T1-weighted fast spin-echo,
+T2-weighted, and T2 fluid-attenuated inversion recovery brain MRI scans
+from 69 patients, 69 scans (100%) were deemed acceptable for
+general-purpose imaging at up to 4× acceleration; if the purpose
+of imaging was narrowed to screening, 65 of 69 scans (94%) were deemed
+acceptable at up to 14× acceleration.
+■ The Monte Carlo procedure was used to estimate ground truth
+metrics of peak signal-to-noise ratio and mean squared error with
+coefficients of determination greater than 0.5 at 2× to
+20× acceleration levels using only undersampled data.
+■ In an experiment on dataset diversity and out-of-distribution
+samples, the trained model provided reconstructions distinct from the
+training data, suggesting that the models act as complex projectors
+rather than as memorizers of the training set, even at acceleration
+factors up to 100×.
+Introduction
+Over the past several years, there has been a growing interest in using deep
+learning–based reconstruction to accelerate MRI acquisition (1–4). Reducing acquisition time provides many potential benefits: maximizing
+patient comfort, increasing access, improving scan quality in children and other
+individuals for whom holding still for a long time is difficult, minimizing sedation
+and anesthesia (5), reducing motion-related
+artifacts, and providing overall higher-quality diagnostic images. Many approaches
+have been developed over the past few decades, including novel acquisition
+strategies (6,7), parallel imaging (8–10), and compressed
+sensing (11). Commercial prototypes and
+products using deep learning for reconstruction are currently under development and
+are available in the market across the industry. To date, investigations using deep
+neural network (DNN)–based image reconstruction have applied advanced models
+and substantial computational power to achieve modest gains in acceleration (eg,
+moving from twofold accelerations commonly afforded by parallel imaging to fourfold
+accelerations with DNNs).
+Here, we studied the limits of deep learning–based reconstruction by examining
+reconstructions across a broad range of accelerations using both quantitative
+metrics and qualitative expert assessments. Specifically, we enlarged and adapted
+the End-to-End Variational Network (12) to
+reconstruct standard clinical two-dimensional (2D) spin-echo brain MR images (fast
+spin-echo T1-weighted, fast spin-echo T2-weighted, and T2 fluid-attenuated inversion
+recovery [FLAIR] images) over a range of undersampling rates at up to 1/100 of fully
+sampled levels. We restricted our investigation to accelerations along a single
+phase-encoding direction, for which image quality is known to degrade rapidly with
+conventional techniques even at modest acceleration levels. Our goal was to explore
+the properties of deep learning–based reconstructions throughout the regimen;
+identify potential use cases, such as short-scan diagnosis screening beyond general
+imaging; and expose points of fallibility.
+Materials and Methods
+Dataset
+This was a retrospective study performed with local institutional review board
+approval. Written informed consent was waived owing to the minimal risk and
+retrospective nature of the study and the use of de-identified data. The data
+used in this study are the brain subset of the fastMRI dataset collected at New
+York University in 2018; data were de-identified by New York University (13,14). In the current study, analysis was performed on the test set,
+whereas previous analysis was performed on the challenge set (14). Following standard machine learning
+practice, models were not applied on the test set until all model development
+was complete. The dataset includes raw k-space data from 6405 fully sampled
+clinical brain MR images (including normal and abnormal clinical studies)
+obtained using standard 2D imaging sequences on multiple imagers at multiple
+imaging sites within the one contributing academic center. Imagers include 3-T
+(Magnetom Prisma, Magnetom Skyra, Biograph mMR, Magnetom Tim Trio; Siemens
+Healthcare) and 1.5-T (Magnetom Avanto, Magnetom Aera; Siemens Healthcare)
+units. Axial 2D fast spin-echo T1-weighted (both noncontrast and
+contrast-enhanced), 2D fast spin-echo T2-weighted, and 2D T2 FLAIR images were
+used. Imaging parameters varied depending on the imager but followed standard
+clinical protocols in all cases. Imaging parameters (repetition time msec/echo
+time msec) for T1-weighted, T2-weighted, and T2 FLAIR imaging were 250/2.43,
+6000/113, and 9000/81, respectively, for 3-T MRI, and 461/9.4, 5120/102, and
+9000/86, respectively, for 1.5-T MRI. Section thickness was 3–5 mm, and
+field of view range was 200–220 mm, depending on patient head size. We
+used the standard fastMRI brain data splits, which include a training set (4469
+volumes), validation set (1378 volumes), and test set (558 volumes), with no
+patient overlap between the splits. We tuned model parameters on the validation
+set. After standard machine learning practice, we used a fully sampled version
+of the test set for our evaluations.
+Model Architecture and Training
+To improve performance, we introduced several changes to the End-to-End
+Variational Network (12), enlarging it
+from 29.5 million to 231 million parameters. Architectural modifications
+included the following: (a) using all k-space data instead of
+only the densely sampled center to estimate coil sensitivities;
+(b) using a DenseNet-inspired (15) skipped connection to the image reconstructed from
+zero-filled k-space for all layers in the cascade; (c)
+increasing the number of cascades to 18 and increasing the size of each cascade
+U-Net to have 20 channels with five pooling layers; and (d)
+using a residual U-Net (16) rather than a
+standard U-Net in each layer. We call this model a zero-filled skipped
+connection network (ZSNET). A block diagram of the model is shown in
+Figure
+E1 (supplement). We trained for
+accelerations at 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32, 48, 64, and 100
+times. The training procedure is described in Appendix
+E1 (supplement).
+Quantitative and Qualitative Evaluation
+We evaluated the models by calculating the structural similarity index (SSIM)
+(17) and peak signal-to-noise ratio
+(PSNR) between the images reconstructed by fine-tuned models and the ground
+truth images in the fastMRI test set. We used the volume variants of both
+metrics as implemented in the fastMRI GitHub repository. To further evaluate
+whether the model was merely memorizing training data at high accelerations, we
+performed a separate analysis in which we ran our model on out-of-distribution
+data, including a sample from the validation set of the fastMRI knee data (18) and a sample of pure noise.
+Radiologist Evaluation
+For radiologist evaluation, we reviewed a subgroup of 69 volumes (29 T2-weighted,
+20 T2 FLAIR, and 20 T1-weighted examinations) from the test set with a balance
+of normal and abnormal cases for each contrast type. Volumes were classified as
+normal if either no abnormality was present or if white matter changes
+consistent with mild microvascular change were present on the imaging volume.
+Abnormal volumes were selected from the larger pool to include a broad variety
+of abnormal conditions, including acute and chronic ischemia, hemorrhage, intra-
+and extra-axial masses, extra-axial collections, hydrocephalus, postoperative
+change, white matter disease more severe than mild microvascular change,
+leptomeningeal disease, vascular malformation, and mass effect. Abnormal cases
+included both low- and high-contrast lesions. Two neuroradiologists with 20
+(Y.W.L.) and 5 (E.L.) years of experience independently reviewed ground truth
+reconstruction and deep learning reconstructions at all accelerations. In deep
+learning reconstructions, dithering (ie, addition of low levels of noise) was
+applied prior to presentation; this has been shown to be helpful for radiologist
+evaluation (19).
+Radiologists used a modified simultaneous double stimulus presentation method
+previously described for the evaluation of a continuum of image examples for
+threshold determination of image quality (20) to categorize reconstructions into one of three levels separated
+by two thresholds. Level 1 was the highest acceleration level with acceptable
+clinical diagnostic quality, defined as image quality undifferentiable from
+state-of-the-art routine clinical diagnostic imaging currently obtained at an
+academic tertiary care center based on subspecialist neuroradiology review.
+Features include preserved tissue contrast appropriate to each pulse sequence;
+accuracy of anatomic detail of both intra- and extracranial features, including
+faithful rendering of any abnormalities present; preserved gray-white
+differentiation; and lack of any major artifacts, such as the introduction of
+any hallucinatory features or noticeable blurring. Level 2 was the highest
+acceleration acceptable if the images were to be used as a screening method to
+identify major intracranial disease or structural abnormality, such as mass,
+herniation, or hydrocephalus. Level 2 screening would need to avoid gross
+pseudonormalization of any abnormalities present, establish sufficient concern
+about any abnormalities to refer patients appropriately for further imaging, and
+avoid the introduction of any problematic hallucinations or oversimplification
+of the gyral pattern. Level 3 included all other reconstructions. Unless noted
+otherwise, disagreements between radiologists concerning threshold accelerations
+were resolved by choosing the more conservative acceleration.
+Monte Carlo Metric Estimation
+We developed a Monte Carlo procedure to estimate reconstruction error using only
+undersampled data to address the limitations of quantitative image quality
+assessment without ground truth available in clinical scenarios. At a high
+level, our procedure assumes that the real-valued DNN reconstruction is the
+ground truth image and simulates the forward sampling and reconstruction process
+to estimate the variation between estimates produced by the DNN model and the
+actual ground truth. This forward simulation is repeated several times with
+different sampling patterns and noise realizations. Using the multiple
+simulations, it is possible to compute estimates of ground truth reconstruction
+statistics. Because the simulation is nonideal, we estimate correction factors
+for the metrics estimation using hold-out validation data. The procedure is
+described in detail in a diagram (Fig
+E2 [supplement]).
+Statistical Analysis
+For the quantitative evaluation, we calculated mean metrics for each acceleration
+and contrast. We also calculated 95% CIs on the mean using the percentile
+bootstrap method (21) with 10 000
+bootstrap iterations. We chose to use the percentile bootstrap owing to the
+nonnormal distribution of SSIM scores and intuitive relationship between the
+percentile bootstrap and patient selection. Processing was performed using a
+custom script in Python (version 3.8; Python Software Foundation;
+https://www.python.org/). For the radiologist
+evaluation, intraclass correlation coefficient and mean absolute deviation of
+scores between readers were calculated to measure interreader variability. For
+the radiologist evaluation, statistical analysis was performed using R software
+(version 3.6.0; The R Project for Statistical Computing).
+Results
+Qualitative Image Overview
+Reconstructed images decayed in quality as the acceleration rate increased, as
+shown in Figure 1, which includes
+examples of a normal case and two abnormal cases. The degree of image quality
+degradation was dependent on image content. For the normal case, T2-weighted
+image quality is relatively stable throughout the acceleration regimen, with
+blurring gradually introduced at very high accelerations (Fig 1A). Similar behavior is observed in one of the
+abnormal cases, with a large amount of vasogenic edema observed on the
+T2-weighted images (Fig 1B); however,
+there is some pseudonormalization of mass effect at very high acceleration
+levels. Pseudonormalization indicates an effect of the model that makes an
+abnormal brain appear normal. In the abnormal case with a complex ring-enhancing
+mass (Fig 1C), the abnormality appears to
+be gradually erased with increasingly accelerated T1-weighted reconstructions,
+becoming more pseudonormalized by 100-fold acceleration.
+Figure 1:
+Open in a new tab
+Sample reconstructed brain MR images at various acceleration levels,
+showing (A) normal and (B, C) abnormal
+examples. In each panel, deep neural network (DNN)–based
+reconstructions are shown above corresponding baseline reconstructions
+using simple zero-filling and Fourier inverse transformation, and an
+unaccelerated ground truth (GT) image is shown at the far left.
+(A) Reconstruction quality is steady in axial
+T2-weighted images throughout the acceleration range, with gradual
+blurring introduced as the acceleration rate reaches 100.
+(B) Gross features of vasogenic edema are also
+relatively well maintained in axial T2-weighted images across
+accelerations, with some loss of mass effect visualization at higher
+accelerations. (C) For some cases, abnormal features can be
+lost as acceleration increases, as in the axial T1-weighted images with
+a complex peripherally enhancing mass that begins to disappear at
+24×.
+We observed that reconstructions could exhibit complex interactions with image
+features depending on contrast and acceleration rate (Fig 2). Other examples are shown in
+Figure
+E6 (supplement). A T2 FLAIR example in Figure 2A shows blurring and, at high
+acceleration levels, a simplification of the gyral and sulcal contours of the
+brain, giving this normal brain a pseudolissencephalic appearance. A T2-weighted
+example in Figure 2B also shows
+smoothing, in this case in a patient with vasogenic edema from multiple masses,
+with masses replaced by hallucinatory prominent sulci along the medial margin of
+the superior frontal gyrus at high acceleration. In another T2-weighted example
+(Fig 2C), multiple faint white matter
+lesions are blurred into horizontal bands at 20× and are completely lost
+by 100×. All cases with the described problematic features were excluded
+by radiologists from both level 1 and level 2.
+Figure 2:
+Open in a new tab
+Axial brain MR images of feature alteration across increasing
+acceleration. (A) A normal T2 fluid-attenuated inversion
+recovery image with increasing blurring at higher accelerations, with a
+final simplification of the sulcal and gyral pattern creating a
+pseudolissencephalic appearance of the brain at 100×
+acceleration. (B) A T2-weighted image with two T2
+hyperintense lesions in the left superior frontal gyrus that become
+incorporated into left frontal paramedian sulci by 100×.
+(C) A T2-weighted image with many faint hyperintense
+lesions in the corona radiata white matter bilaterally that are smoothed
+at higher acceleration levels so that they are imperceptible by
+20× acceleration. GT = ground truth.
+Quantitative Evaluation
+When fine-tuned for standard equispaced sampling patterns, ZSNET achieved 0.9595
+SSIM at 4× and 0.9433 SSIM at 8× on the fastMRI public leaderboard
+(versus 0.9591 and 0.9426 for the original End-to-End Variational Network [12]), placing it in second place for both
+accelerations at the time of upload.
+Figure 3 shows quantitative metrics
+calculated on the test set broken down by contrast with 95% CIs. Image quality
+decayed monotonically with increasing acceleration, although the pace of image
+quality decay shifted between 18× and 20× acceleration, which
+corresponds to the point at which no outer k-space lines remained in the sampled
+data. The 95% CIs were concentrated tightly around the mean, with the largest
+spread occurring with T2 FLAIR images, likely owing to the smaller number of T2
+FLAIR cases.
+Figure 3:
+Open in a new tab
+Average (A) structural similarity index (SSIM) and
+(B) peak signal-to-noise ratio (PSNR) across
+accelerations as calculated on the test set. The 95% CIs of the mean
+were calculated using the percentile bootstrap method. Metrics decay
+monotonically with increasing acceleration in two distinct regimens. The
+transition between standard acceleration and superresolution regimens
+can be observed around 18×–20× acceleration. Mean
+SSIM and PSNR exhibit tight CIs, but variation can be larger on a
+case-by-case basis. Tabular data for SSIM and PSNR results are shown in
+Tables E2 and
+E3 (supplement). FLAIR =
+fluid-attenuated inversion recovery.
+Radiologist Evaluation
+An overview of images at different threshold accelerations is shown in Figure 4, with an extended version shown as
+Figure
+E4 (supplement). Threshold levels are
+defined as the maximum acceleration rate before an image is no longer classified
+at the given level, with level 1 being appropriate for general purpose
+diagnostic imaging and level 2 having screening potential. The images exhibited
+great diversity in their qualitative properties depending on the contrast and
+pathologic feature of concern. Some abnormalities, such as the occipital lobe
+mass in Figure 4D, were observable even
+at reconstructions up to 64× acceleration. In other cases, deep
+learning–based reconstruction with undersampled data seemed to improve
+image quality over ground truth at modest acceleration rates, as illustrated in
+Figure 4B, in which motion artifacts
+present in the ground truth image are reduced at 6× acceleration.
+Figure 4:
+Open in a new tab
+Examples of axial reconstructed brain MR images at threshold levels, that
+is, the upper-bound accelerations at which images were felt to be
+satisfactory for general-purpose diagnostic imaging (level 1) and
+potential screening (level 2) as determined by consensus review of two
+neuroimaging experts. (A) A T1-weighted postcontrast image
+with a cavitary area in the right frontal subcortical white matter that
+is reasonably rendered at 4× acceleration and would certainly be
+detected as abnormal at 18× acceleration. (B) A T2
+fluid-attenuated inversion recovery (FLAIR) image showing mild
+ventriculomegaly and nonspecific patchy periventricular white matter
+T2-weighted hyperintensities with motion artifact present in the ground
+truth (GT). Motion artifact is reduced at 6× with arguably
+improved overall clinical image quality, but at even higher
+accelerations, unacceptable blurring occurs. (C) A T2 FLAIR
+image showing a large right frontal convexity meningioma with mass
+effect effacing the right lateral ventricle and midline shift. At
+6× acceleration, the heterogeneity and overall signal of the mass
+is well observed, as are the cerebrospinal fluid cleft and displaced
+surface veins, characteristic of an extra-axial mass, and the midline
+shift and mass effect. (D) A T2-weighted image with a
+complex cystic occipital lobe mass is accurately rendered at
+accelerations up to 10× and clearly present at accelerations up
+to 64×, which would trigger further investigation in any
+potential screening scenario.
+Table 1 shows the percentage of MR
+images classified to each clinical level across accelerations (level 2 inclusive
+of level 1). Radiologists found all images through 4× acceleration to be
+of sufficient quality for general-purpose diagnostic imaging. Above 4×
+acceleration, radiologist scores of the images decreased; no images at
+14× acceleration or above for any contrast were deemed sufficient for
+general diagnostic imaging. Radiologists did, however, rate all images through
+6× acceleration sufficient for potential screening purposes, and 65 of 69
+volumes (94%) were deemed sufficient for screening up to 14×
+acceleration. Some images were rated sufficient for screening at accelerations
+up to 100×. Interreader variability measurements showed an intraclass
+correlation coefficient of 0.875 and mean absolute difference of 0.7 for level 1
+and 5.4 for level 2.
+Table 1:
+Study Results for Classifying MR Images Appropriate for General-Purpose
+Imaging (Level 1) or Potential Screening (Level 2)
+Open in a new tab
+Table 2 shows average threshold
+accelerations for general-purpose diagnostic quality images (level 1), as well
+as potential screening use (level 2) for normal and abnormal cases considered in
+the study; in cases of disagreement between radiologists, an average score was
+calculated. Maximum accelerations were highest for T2-weighted images for both
+level 1 and level 2.
+Table 2:
+Threshold Accelerations Appropriate for Diagnostic Imaging (Level 1) and
+Potential Screening (Level 2) Obtained from Radiologist Evaluation,
+Separated into Normal and Abnormal Studies
+Open in a new tab
+Quantitative metrics were cross tabulated with the threshold levels for levels 1
+and 2 (taking the minimum from disagreeing radiologists) and are shown in
+Figure
+E3 (supplement). Metrics trended higher with
+more stringent diagnostic thresholds (ie, SSIM was higher for level 1
+T2-weighted scans than for level 2 T2-weighted scans), but there was substantial
+overlap between groups at many accelerations.
+Monte Carlo Estimation
+Results of the Monte Carlo procedure to estimate degree of reconstruction error
+are shown in Figure 5. Monte Carlo
+estimates correlated with ground truth metrics computed from fully sampled data.
+Overall, R2 for both PSNR and mean squared error
+(MSE) were above 0.5 across all accelerations. Monte Carlo estimates were most
+accurate for MSE at accelerations above 2× with
+R2 of 0.8 up to 10× acceleration.
+Estimates were least accurate for SSIM, but even SSIM estimates had
+R2 values above 0.2 throughout the acceleration
+range.
+Figure 5:
+Open in a new tab
+Results of Monte Carlo reconstruction error estimation showing identity
+lines for (A) structural similarity index (SSIM),
+(B) peak signal-to-noise ratio (PSNR), and
+(C) mean squared error (MSE). Each dot represents an
+individual volume from the test set, color-coded based on acceleration
+level (A [up to 18]). (D) The Monte Carlo procedure
+provided relatively high-quality estimates of ground truth PSNR and MSE
+using only undersampled data, with R2 above
+0.5 for the entire range. Monte Carlo estimates were most accurate for
+MSE for the majority of accelerations. Monte Carlo estimates of SSIM
+decayed with increasing acceleration, exhibiting wide tails at high
+accelerations. In principle, such an approach could be used to evaluate
+the quality of reconstructed images; however, results shown in
+Figure E3 (supplement) suggest that
+further work is necessary to relate quantitative metrics to clinical use
+thresholds.
+Handling Anatomic Diversity and Out-of-Distribution Testing
+Despite the extremely high accelerations, ZSNET was able to retain coarse
+morphologic features unique to an individual across a variety of brains. Figure 6 includes a sample of images from
+three different individuals representing a spectrum of different brain
+morphology. An extended version of Figure
+6 is shown as Figure
+E5 (supplement). Major individual variations
+are generally preserved, even out to 100× acceleration.
+Figure 6:
+Open in a new tab
+MRI reconstructions from applying the zero-filled skipped connection
+network (ZSNET) to in-distribution and out-of-distribution cases. Rows
+1-3: Axial T2-weighted images from brain samples of the fastMRI dataset.
+Even out to 100× acceleration, ZSNET retains the gross
+morphologic features unique to each individual brain, accurately
+capturing variations in anatomy, including volume loss and asymmetry of
+the calvarium. Row 4: Coronal T1-weighted images from knee samples of
+the fastMRI dataset. When applied out-of-distribution on knees, ZSNET
+gives recognizable reconstructions at initial low accelerations. At high
+acceleration levels, ZSNET reconstructs some gross coarse features, but
+with increasing alteration to texture. Bottom image: When applied to
+pure noise, ZSNET removes the noise.
+Out-of-distribution results are also shown in Figure 6. Although the model was trained on only brain data, it was
+able to reconstruct knees at low accelerations, retaining at least the overall
+morphology of the original input image. However, higher accelerations resulted
+in altered texture. In terms of quantitative performance, running ZSNET on the
+fastMRI knee test set, ZSNET showed an expected decrease in performance compared
+with the End-to-End Variational Network trained on appropriate knee MR images,
+with SSIM of 0.8942 at 4× acceleration and 0.8436 at 8×
+acceleration (compared with 0.9302 and 0.8920, respectively, for the End-to-End
+Variational Network [12]).
+Discussion
+We examined the capabilities of a deep learning–based MR image reconstruction
+model, ZSNET, at acceleration levels from 2× to 100×, and evaluated
+image quality at two levels: (a) acceptable image quality for
+diagnostic imaging and (b) potential screening applications for
+fast MRI. Our examination found that 65 of 69 cases (94%) were acceptable at
+14× acceleration to identify gross pathologic features and flag them in a
+clinical setting for return and diagnostic imaging. The expert evaluation portion of
+the study was enriched to include over 50% abnormal cases.
+Our study design was motivated by insights obtained from the 2019 (22) and 2020 (14) fastMRI reconstruction challenges. These challenges found that at
+high acceleration rates, deep learning compressed sensing reconstruction methods
+could reconstruct images that were visually indistinguishable from unaccelerated
+data acquisitions and achieved high ratings of quantitative metrics, such as root
+MSE to the ground truth or SSIM, but suffered from missing pathologic features, as
+illustrated by the pseudonormalization effect in this study. Pseudonormalization was
+more severe for subtle abnormalities. This has become a known concern in the broader
+field of deep learning compressed sensing reconstruction.
+In our study, acceleration was surprisingly advantageous in some scenarios in which
+the ground truth, fully sampled reconstruction, was afflicted by motion artifacts.
+In such cases, modest acceleration rates up to approximately 6× improved
+image quality from a clinical perspective. At extreme acceleration rates, however,
+the pseudonormalization property of the model began to take effect, as observed in
+abnormal cases. This led to radiologists down-rating cases at these levels. For
+diagnostic quality–level imaging, our investigation confirms previous studies
+that images from 2D acquisitions are acceptable up to approximately 4×
+acceleration (14,19,22), and moving
+beyond this acceleration level likely requires advances in 2D reconstruction
+performance or alternative acquisition strategies. In practice, this translates to
+reduced scan time for axial T2-weighted, axial T2 FLAIR, and axial T1-weighted brain
+imaging performed with a 3-T MRI machine from 2 minutes 47 seconds, 4 minutes 31
+seconds, and 1 minute 21 seconds with a fully sampled k-space to 42 seconds, 1
+minute 8 seconds, and 20 seconds with 4× acceleration, respectively.
+Our study shows that even for extreme acceleration rates, our model was able to
+reconstruct the coarse morphologic features of ground truth images. This could raise
+concern that some form of memorization is taking place at these accelerations.
+However, the preservation of anatomic features unique to each individual brain as
+well as the comparatively faithful reconstruction of knee and noise images in Figure 6 suggest an alternative perspective:
+that variational networks are complex projectors of the input data, corroborating
+other studies on transfer learning (23) and
+studies claiming that neural networks are extrapolators (24). One form of this projection appears to be
+pseudonormalization. Pseudonormalization has also been observed in other studies on
+self-supervised learning and applied to the task of anomaly detection (25). Further understanding of this phenomenon
+is a topic for future research.
+From a practical perspective, screening 2D fast spin-echo acquisitions through the
+brain at 16× acceleration could be accomplished in 8–22 seconds per
+sequence; 2D fast spin-echo fully sampled acquisition times for brain imaging vary
+from approximately 2 to 6 minutes depending on contrast, magnet strength, and
+platform. This suggests that a three-to-four series protocol could be obtained for
+screening in approximately 1 minute, within the timescale of CT while providing the
+multiple soft-tissue contrasts of MRI, a potentially valuable contribution.
+Ultimately, extreme acceleration such as 100× may not add clinical value as
+gains in time become incremental; however, rapid imaging approaches do have the
+potential to facilitate new modes for dynamic imaging. Here, we isolated the effect
+of undersampling in the context of a deep learning–based reconstruction
+model; thus, the study uniquely examined one approach to a faster MRI protocol.
+Other methods explored for screening-type studies include abbreviated protocols
+(26,27), which typically remove a subset of pulse sequences. The approach
+described here could be applied to cases for which it is desirable to preserve image
+contrasts. Alternatively, our approach could be combined with others for further
+acceleration. To facilitate reproducibility, our open-source code is available in
+GitHub (https://github.com/facebookresearch/fastMRI).
+Our study had some limitations. The dataset was from one institution and one vendor
+with no external testing and included limited sequences (ie, T2 weighted, T2 FLAIR,
+and T1 weighted). The data came from limited section thickness (3–5 mm).
+Additionally, our sampling pattern was retrospective; therefore, we were unable to
+measure potential alterations in spin-echo sequence contrast found in prospectively
+obtained images. However, it is important to note that although undersampling was
+performed retrospectively, it was performed on actual raw, multireceiver channel
+k-space data provided in the fastMRI dataset, which was obtained directly from MRI
+scanners. Therefore, in contrast to retrospective studies that simulate k-space data
+from already reconstructed images, the image data that are considered ground truth
+in the fastMRI dataset (used in our study) are not precompressed or filtered (28). Another limitation was that despite the
+higher screening threshold, we found that metrics were generally not discriminative
+between potential screening and general-purpose imaging.
+In conclusion, we investigated DNN-based reconstructions across a broad range of
+accelerations, including an extremely high acceleration regimen. We identified a gap
+between acceleration thresholds acceptable for general-purpose diagnostic imaging
+and acceleration thresholds considered acceptable for potential screening. In a
+potential screening or fastMRI protocol setting, we found an additional three- to
+fourfold acceleration increase over DNN-based acceleration suitable for
+diagnostic-quality images. We presented a procedure used to estimate reconstruction
+error using only subsampled data and found that it produced reasonable estimates of
+PSNR and MSE. Further work is necessary to develop metrics that capture all features
+of interest to radiologists. Recent progress has been made using pixelwise error
+bars (29) and neural networks (30–32) that may have the potential to fulfill this task, and our Monte
+Carlo procedure could be complementary to such efforts. Last, we observed that
+throughout the high-acceleration regimen, the variational network under
+consideration did not output samples from the training distribution but rather
+applied complex projections on the input data.
+Acknowledgments
+Acknowledgments
+We thank Mark Tygert and Zhengnan Huang for providing valuable feedback on the
+project.
+*
+A.R. and M.J.M. contributed equally to this work.
+Supported by the National Institutes of Health (R01EB024532, P41EB017183).
+Disclosures of conflicts of interest: A.R. Payment for expert testimony (medicolegal).
+M.J.M. Employed by NYU and Facebook. T.M. No
+relevant relationships. E.L. Support from NYU Langone Health,
+Department of Radiology (neuroradiology fellowship) and GME for registration
+fee for ASNR ($950) where author gave a 5-minute oral presentation of a
+portion of this research. A.S. No relevant relationships.
+F.K. NIH (NIBIB) grant; NIH grants R01EB024532 and
+P41EB017183; U.S. patent US20170309019A1; Subtle Medical stock options.
+D.K.S. Royalties for intellectual property portfolio on
+parallel MRI (concluded 2021) from GE and Bruker; fees for service as
+scientific advisor (Q.Bio 2020–2021, Ezra 2022), in the general area
+of accelerated imaging but not directly related to this manuscript; U.S.
+patent 10671939, “System, method and computer-accessible medium for
+learning an optimized variational network for medical imaging
+reconstruction;” stock options in Ezra for service as scientific
+advisor, in the general area of accelerated imaging but not directly related
+to this manuscript; NIH grant P41EB017183. Y.W.L. NIH grant
+P41EB017183.
+Abbreviations:
+DNN
+deep neural network
+FLAIR
+fluid-attenuated inversion recovery
+MSE
+mean squared error
+PSNR
+peak signal-to-noise ratio
+SSIM
+structural similarity index
+2D
+two-dimensional
+ZSNET
+zero-filled skipped connection network
+References
+1.
+Schlemper
+J
+,
+Caballero
+J
+,
+Hajnal
+JV
+,
+Price
+AN
+,
+Rueckert
+D
+.
+A
+Deep Cascade of Convolutional Neural Networks for Dynamic MR Image
+Reconstruction
+.
+IEEE Trans Med
+Imaging
+2018.
+;
+37
+(
+2
+):
+491
+–
+503
+.
+[DOI] [PubMed] [Google Scholar]
+2.
+Aggarwal
+HK
+,
+Mani
+MP
+,
+Jacob
+M
+.
+MoDL:
+Model-Based Deep Learning Architecture for Inverse
+Problems
+.
+IEEE Trans Med
+Imaging
+2019.
+;
+38
+(
+2
+):
+394
+–
+405
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+3.
+Zhu
+B
+,
+Liu
+JZ
+,
+Cauley
+SF
+,
+Rosen
+BR
+,
+Rosen
+MS
+.
+Image
+reconstruction by domain-transform manifold
+learning
+.
+Nature
+2018.
+;
+555
+(
+7697
+):
+487
+–
+492
+.
+[DOI] [PubMed] [Google Scholar]
+4.
+Pezzotti
+N
+,
+Yousefi
+S
+,
+Elmahdy
+MS
+, et al
+.
+An Adaptive Intelligence
+Algorithm for Undersampled Knee MRI
+Reconstruction
+.
+IEEE
+Access
+2020.
+;
+8
+:
+204825
+–
+204838
+.
+[Google Scholar]
+5.
+Kozak
+BM
+,
+Jaimes
+C
+,
+Kirsch
+J
+,
+Gee
+MS
+.
+MRI
+Techniques to Decrease Imaging Times in
+Children
+.
+RadioGraphics
+2020.
+;
+40
+(
+2
+):
+485
+–
+502
+.
+[DOI] [PubMed] [Google Scholar]
+6.
+Semelka
+RC
+,
+Kelekis
+NL
+,
+Thomasson
+D
+,
+Brown
+MA
+,
+Laub
+GA
+.
+HASTE
+MR imaging: description of technique and preliminary results in the
+abdomen
+.
+J Magn Reson
+Imaging
+1996.
+;
+6
+(
+4
+):
+698
+–
+699
+.
+[DOI] [PubMed] [Google Scholar]
+7.
+Bilgic
+B
+,
+Gagoski
+BA
+,
+Cauley
+SF
+, et al
+.
+Wave-CAIPI for highly
+accelerated 3D imaging
+.
+Magn Reson
+Med
+2015.
+;
+73
+(
+6
+):
+2152
+–
+2162
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+8.
+Sodickson
+DK
+,
+Manning
+WJ
+.
+Simultaneous
+acquisition of spatial harmonics (SMASH): fast imaging with radiofrequency
+coil arrays
+.
+Magn Reson
+Med
+1997.
+;
+38
+(
+4
+):
+591
+–
+603
+.
+[DOI] [PubMed] [Google Scholar]
+9.
+Pruessmann
+KP
+,
+Weiger
+M
+,
+Scheidegger
+MB
+,
+Boesiger
+P
+.
+SENSE:
+sensitivity encoding for fast MRI
+.
+Magn Reson
+Med
+1999.
+;
+42
+(
+5
+):
+952
+–
+962
+.
+[PubMed] [Google Scholar]
+10.
+Griswold
+MA
+,
+Jakob
+PM
+,
+Heidemann
+RM
+, et al
+.
+Generalized
+autocalibrating partially parallel acquisitions
+(GRAPPA)
+.
+Magn Reson
+Med
+2002.
+;
+47
+(
+6
+):
+1202
+–
+1210
+.
+[DOI] [PubMed] [Google Scholar]
+11.
+Lustig
+M
+,
+Donoho
+D
+,
+Pauly
+JM
+.
+Sparse
+MRI: The application of compressed sensing for rapid MR
+imaging
+.
+Magn Reson
+Med
+2007.
+;
+58
+(
+6
+):
+1182
+–
+1195
+.
+[DOI] [PubMed] [Google Scholar]
+12.
+Sriram
+A
+,
+Zbontar
+J
+,
+Murrell
+T
+, et al
+.
+End-to-End Variational
+Networks for Accelerated MRI
+Reconstruction
+. In:
+Martel
+AL
+,
+Abolmaesumi
+P
+,
+Stoyanov
+D
+, et al.
+, eds.
+Medical Image Computing
+and Computer Assisted Intervention – MICCAI 2020. MICCAI 2020.
+Lecture Notes in Computer Science, vol
+12262
+.
+Cham,
+Switzerland:
+:
+Springer;
+,
+2020.
+;
+64
+–
+73
+.
+[Google Scholar]
+13.
+Zbontar
+J
+,
+Knoll
+F
+,
+Sriram
+A
+, et al
+.
+fastMRI: An open dataset
+and benchmarks for accelerated MRI
+.
+arXiv
+1811.08839 [preprint] https://arxiv.org/abs/1811.08839. Posted November 21, 2018.
+Accessed December 21, 2021
+.
+14.
+Muckley
+MJ
+,
+Riemenschneider
+B
+,
+Radmanesh
+A
+, et al
+.
+Results of the 2020
+fastMRI Challenge for Machine Learning MR Image
+Reconstruction
+.
+IEEE Trans Med
+Imaging
+2021.
+;
+40
+(
+9
+):
+2306
+–
+2317
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+15.
+Huang
+G
+,
+Liu
+Z
+,
+Van
+Der
+Maaten
+L
+,
+Weinberger
+KQ
+.
+Densely
+Connected Convolutional Networks
+. In:
+2017
+IEEE Conference on Computer Vision and Pattern Recognition
+(CVPR)
+,
+Honolulu,
+HI
+,
+July 21–26,
+2017
+.
+Piscataway,
+NJ:
+:
+IEEE;
+,
+2017.
+;
+2261
+–
+2269
+.
+[Google Scholar]
+16.
+Zhang
+Z
+,
+Liu
+Q
+,
+Wang
+Y
+.
+Road
+Extraction by Deep Residual U-Net
+.
+IEEE
+Geosci Remote Sens
+Lett
+2018.
+;
+15
+(
+5
+):
+749
+–
+753
+.
+[Google Scholar]
+17.
+Wang
+Z
+,
+Bovik
+AC
+,
+Sheikh
+HR
+,
+Simoncelli
+EP
+.
+Image
+quality assessment: from error visibility to structural
+similarity
+.
+IEEE Trans Image
+Process
+2004.
+;
+13
+(
+4
+):
+600
+–
+612
+.
+[DOI] [PubMed] [Google Scholar]
+18.
+Knoll
+F
+,
+Zbontar
+J
+,
+Sriram
+A
+, et al
+.
+fastMRI: A Publicly
+Available Raw k-Space and DICOM Dataset of Knee Images for Accelerated MR
+Image Reconstruction Using Machine
+Learning
+.
+Radiol Artif
+Intell
+2020.
+;
+2
+(
+1
+):
+e190007
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+19.
+Recht
+MP
+,
+Zbontar
+J
+,
+Sodickson
+DK
+, et al
+.
+Using Deep Learning to
+Accelerate Knee MRI at 3 T: Results of an Interchangeability
+Study
+.
+AJR Am J
+Roentgenol
+2020.
+;
+215
+(
+6
+):
+1421
+–
+1429
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+20.
+De
+Angelis
+A
+,
+Moschitta
+A
+,
+Russo
+F
+,
+Carbone
+P
+.
+Image
+Quality Assessment: an Overview and some Metrological
+Considerations
+. In:
+2007 IEEE
+International Workshop on Advanced Methods for Uncertainty Estimation in
+Measurement
+,
+Sardinia,
+Italy
+,
+July 16–18,
+2007
+.
+Piscataway,
+NJ:
+:
+IEEE;
+,
+2007.
+;
+47
+–
+52
+.
+[Google Scholar]
+21.
+Efron
+B
+,
+Tibshirani
+RJ
+.
+Confidence
+intervals based on bootstrap percentiles
+.
+In:
+An introduction to the bootstrap
+.
+New York,
+NY:
+:
+Chapman &
+Hall/CRC;
+,
+1994.
+;
+168
+–
+178
+.
+[Google Scholar]
+22.
+Knoll
+F
+,
+Murrell
+T
+,
+Sriram
+A
+, et al
+.
+Advancing machine
+learning for MR image reconstruction with an open competition: Overview of
+the 2019 fastMRI challenge
+.
+Magn Reson
+Med
+2020.
+;
+84
+(
+6
+):
+3054
+–
+3070
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+23.
+Knoll
+F
+,
+Hammernik
+K
+,
+Kobler
+E
+,
+Pock
+T
+,
+Recht
+MP
+,
+Sodickson
+DK
+.
+Assessment
+of the generalization of learned image reconstruction and the potential for
+transfer learning
+.
+Magn Reson
+Med
+2019.
+;
+81
+(
+1
+):
+116
+–
+128
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+24.
+Balestriero
+R
+,
+Pesenti
+J
+,
+LeCun
+Y
+.
+Learning
+in High Dimension Always Amounts to
+Extrapolation
+.
+arXiv 2110.09485 [preprint]
+https://arxiv.org/abs/2110.09485. Posted October 18, 2021.
+Accessed October 18, 2021
+.
+25.
+Baur
+C
+,
+Wiestler
+B
+,
+Muehlau
+M
+,
+Zimmer
+C
+,
+Navab
+N
+,
+Albarqouni
+S
+.
+Modeling
+Healthy Anatomy with Artificial Intelligence for Unsupervised Anomaly
+Detection in Brain MRI
+.
+Radiol Artif
+Intell
+2021.
+;
+3
+(
+3
+):
+e190169
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+26.
+Kuhl
+CK
+,
+Schrading
+S
+,
+Strobel
+K
+,
+Schild
+HH
+,
+Hilgers
+RD
+,
+Bieling
+HB
+.
+Abbreviated
+breast magnetic resonance imaging (MRI): first postcontrast subtracted
+images and maximum-intensity projection-a novel approach to breast cancer
+screening with MRI
+.
+J Clin
+Oncol
+2014.
+;
+32
+(
+22
+):
+2304
+–
+2310
+.
+[DOI] [PubMed] [Google Scholar]
+27.
+Lee
+JY
+,
+Huo
+EJ
+,
+Weinstein
+S
+, et al
+.
+Evaluation of an
+abbreviated screening MRI protocol for patients at risk for hepatocellular
+carcinoma
+.
+Abdom Radiol
+(NY)
+2018.
+;
+43
+(
+7
+):
+1627
+–
+1633
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+28.
+Shimron
+E
+,
+Tamir
+JI
+,
+Wang
+K
+,
+Lustig
+M
+.
+Implicit
+data crimes: Machine learning bias arising from misuse of public
+data
+.
+Proc Natl Acad Sci U S
+A
+2022.
+;
+119
+(
+13
+):
+e2117203119
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+29.
+Defazio
+A
+,
+Tygert
+M
+,
+Ward
+R
+,
+Zbontar
+J
+.
+Compressed
+sensing with a Jackknife, a bootstrap, and
+visualization
+.
+J Data Sci Stat
+Vis
+.
+2022.
+;
+2
+(
+4
+).
+[Google Scholar]
+30.
+Edupuganti
+V
+,
+Mardani
+M
+,
+Vasanawala
+S
+,
+Pauly
+J
+.
+Uncertainty
+Quantification in Deep MRI
+Reconstruction
+.
+IEEE Trans Med
+Imaging
+2021.
+;
+40
+(
+1
+):
+239
+–
+250
+.
+[DOI] [PMC free article] [PubMed] [Google Scholar]
+31.
+Hu
+S
+,
+Pezzotti
+N
+,
+Welling
+M
+.
+Learning
+to Predict Error for MRI
+Reconstruction
+. In:
+de
+Bruijne
+M
+,
+Cattin
+PC
+,
+Cotin
+S
+, et al.
+, eds.
+Medical Image Computing
+and Computer Assisted Intervention – MICCAI 2021. MICCAI 2021.
+Lecture Notes in Computer Science, vol
+12903
+.
+Cham,
+Switzerland:
+:
+Springer;
+,
+2021.
+;
+604
+–
+613
+.
+[Google Scholar]
+32.
+Jalal
+A
+,
+Arvinte
+M
+,
+Daras
+G
+,
+Price
+E
+,
+Dimakis
+A
+,
+Tamir
+JI
+.
+Robust
+compressed sensing MRI with deep generative
+priors
+. In:
+Advances in Neural Information
+Processing
+Systems
+,
+2021.
+;
+14938
+–
+14954
+.
+https://proceedings.neurips.cc/paper/2021/hash/7d6044e95a16761171b130dcb476a43e-Abstract.html
+.
+[Google Scholar]
+Articles from Radiology: Artificial Intelligence are provided here courtesy of Radiological Society of North America

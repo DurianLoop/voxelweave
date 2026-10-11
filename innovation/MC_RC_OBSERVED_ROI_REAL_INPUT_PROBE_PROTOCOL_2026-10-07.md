@@ -1,0 +1,13 @@
+# 冻结观测 ROI 的真实输入探针：事前协议
+
+在本次真实像素加载和结果观察前固定：沿已独立核验的全部16开发series/8患者、4既有ROI方法。joint_QDA仍为主，其他方法逐项保留。011/012/013没有旧预测，沿用not_available；不补零、不外推。所有posterior、2mm扩张、physical_mr网格及原64×128×128窗口/batch2保持原定义。
+
+只读已认证observed-only NPZ，重建原raw_PCHIP及raw_linear，核两者原SHA及observed统计；不解码完整native MR、不读GT、checkpoint或中间训练结果。固定探针在每个ROI的内部缺层像素上**直接赋值**raw_linear，区域外/anchors/tail保留raw_PCHIP；用同observed均值/标准差对全体候选归一化。这个探针用于检查真实值和舍入后的输入差分，不代表已选定SR、修复成功或任务收益。两份全图插值及每个候选全图重采样的本轮CPU准备开销必须列出，不声称已经实现局部候选生成。
+
+每series/method记录原MRI/归一化数组和候选SHA、native及physical实际changed mask SHA/体素数；存只含bool差分的压缩NPZ。必须断言候选raw/normalized差分在原ROI内、observed/tail逐位不变，physical差分在先前几何正支持内。完整逐tile比较输入数组的np.array_equal结果，再核其与actual mask的any完全一致；按原batch组合形成实际重算ID。报告N/k、原几何k、实际k、无改动、同支持5候选条件计数；空ROI或未产生改变不构成有益动作。
+
+独立实现再次读取全部16观测包及64预测数组，自行重建PCHIP/linear、显式物理disk扩张、同归一化，再直接调用固定torch trilinear原算子重采样。独立计算实际差分、逐window相等及Fraction费用，并比较冻结bool包和全部SHA。此实现独立于生产的候选构造、ROI生成、cost和汇总；双方共享SciPy PCHIP数学算子、Torch trilinear算子和原观测来源，不能叫独立库复现或临床独立确认。几何正支持的独立Fraction核验已另完成。
+
+权限审计只允许列明源代码、metadata及开发observed/prediction NPZ；访问未列明工作区输入立即失败并记录。CUDA对自身不可见，torch CPU4/interop1，自身below-normal，RAM/磁盘8GB储备，每次900秒/输出50MB。既有session99542和用户终端训练继续；GPU授权保留，未满足8GB显存余量先不新增GPU工作。任何失败版本、工具真实exit及修改原因都保存。
+
+这里没有model forward、完整FOV输出等价验证、GT端点评分、计时benchmark或部署controller成本。原ROI覆盖失败保留，不从本探针推导其可用性。任务收益和最终checkpoint能力仍由原56FOV/全部6gates及strict流程决定。

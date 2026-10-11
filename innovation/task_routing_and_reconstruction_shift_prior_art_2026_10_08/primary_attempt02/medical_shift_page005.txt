@@ -1,0 +1,40 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+X-Ray:Standard-dose images are Radon-projected to sinogram space, bow-tie filtered,
+and corrupted with Poisson noise parameterized by photon count (100,000, 10,000, 3,000),
+with lower photon count yielding more noise (Gibson et al., 2023).
+These ranges approximate realistic acquisition conditions, with examples in the Ap-
+pendix (Figures 6, 7, 8, and 9).
+3.3. Models
+We employ three reconstruction models alongside task-specific diagnostic models. Addi-
+tional information on the compute infrastructure and model hyperparameters can be found
+in the Appendix.
+Reconstruction:To cover deterministic, adversarial, and diffusion regimes, we train from
+scratch a standard U-Net (Ronneberger et al., 2015) with MSE loss, a Pix2Pix GAN (Isola
+et al., 2017), and a Stochastic Differential Equations (SDE)-based diffusion model (Luo
+et al., 2023) for each dataset. We note that the GAN and diffusion models also use a U-Net
+as the model architecture, but are based on a different training paradigm.
+Diagnostic:For classification on UCSF-PDGM, an ImageNet-initialized ResNet50 (He
+et al., 2015) was trained separately to predict WHO grade and tumor type. The model is
+trained at the slice-level, and at testing, volume-level predictions are performed individually
+on each slice and then aggregated using the median. For CheXpert classification, a single
+ImageNet-initialized DenseNet model (Huang et al., 2017) was trained to jointly predict the
+12 findings following Cohen et al. (2021). For segmentation on UCSF-PDGM, we use an
+ImageNet-initialized U-Net. Segmentation is not evaluated on CheXpert due to the absence
+of masks. All downstream models are trained on the original, non-degraded images.
+3.4. Performance and Fairness Evaluation
+Reconstruction quality is measured by PSNR. Downstream performance uses AUROC for
+classification and Dice for segmentation. For classification fairness, we report the worst-case
+Equalized Odds (EODD) (Hardt et al., 2016) difference between groups:
+maxi,j|P( ˆY= 1|Y=y,A=a i)
+−P( ˆY= 1|Y=y,A=a j)|,∀y∈{0,1},
+∀attribute A∈A,subgroupsa i.
+To compute this metric, model predictions are binarized using a balanced threshold selected
+to achieve approximately equal sensitivity and specificity in the validation split. Equality
+of Opportunity (EOP) results are also reported in the Appendix (Figures 14 and 15).
+For segmentation fairness, we adapt the Skewed-Error Ratio (SER) (Siddiqui et al.,
+2024) to Dice:
+SERA = maxi(1−Dice ai)
+minj(1−Dice aj), a i∈A,A∈A
+Results using an unnormalized Dice difference are also provided in the Appendix (Figure
+15).
+5

@@ -1,0 +1,1 @@
+首跑352291实际exit1：已有MRI环境没有requests，发生于import、attempt创建及网络请求前。原脚本保留，没有安装依赖。V2仅把传输换成标准库urllib.request且保留同样的三DOI、单次GET、直接Session级代理策略、TLS校验、HTTP timeout30s、wall180s及全部文件/RAM/磁盘预算；不改变来源选择或数值/医学门槛。收到HTTP error时保存真实响应体/状态，不绕过订阅。

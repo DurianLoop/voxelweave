@@ -1,0 +1,179 @@
+AUTHOR et al.: PREPARATION OF PAPERS FOR IEEE TRANSACTIONS ON MEDICAL IMAGING 3
+high acceleration factors, the recovered images often exhibit
+significant artifacts, including aliasing artifacts and blurring.
+The direct application of the above segmentation algorithms
+to these images may result in segmentation errors. Recently,
+some researchers have looked into minimizing these errors by
+coupling image denoising or reconstruction tasks with seg￾mentation, thus improving both tasks [25]. [21] considers the
+cascade of reconstruction and segmentation networks, which
+are trained end-to-end, while [22] introduces an architecture
+as shown in Fig. 3.(b) in the single-channel MRI setting.
+Similar multi-task learning strategies are also used in the
+MRI setting [26]; these studies show that when the tasks
+are complementary, the joint learning of them using a single
+network can facilitate the exploitation of the synergies.
+D. Semi-supervised learning
+The scarcity of labelled segmentation datasets has prompted
+some researchers to introduce semi-supervised learning strate￾gies. A recent work proposes a few-shot learning approach
+for segmentation, which couples the segmentation task with
+few labelled datasets, with an image denoising task [27].
+The segmentation and denoising tasks share the encoder;
+the training of the shared encoder-denoising decoder on all
+the datasets allows them to keep the generalization error of
+the segmentation task low, even though few segmentation
+labels were used for training. Another work proposes few-shot
+learning for an image classification task, which is coupled with
+a self-supervised auxiliary task [28].
+III. PROPOSED FRAMEWORK
+We will first introduce the image domain deep-SLR (ID￾SLR) scheme, which offers improved recovery over the k￾space deep-SLR in [17]. We will then combine the reconstruc￾tion scheme with a semi-supervised segmentation scheme to
+reduce the sensitivity to alias artifacts and blurring associated
+with high acceleration factors.
+A. Image-Domain Deep-SLR
+We describe the CLEAR approach and an IRLS algorithm
+to solve it. Subsequently, we will propose an alternating min￾imization strategy, which culminates into an IDSLR network.
+1) Spatial Domain Annihilation Relations in CLEAR: Con￾sider a patch extraction operator Pc, which extracts M × M
+patches centered at c from the multi-channel data γi(r) =
+si(r)γ(r), where r denotes spatial coordinates. The coil
+sensitivity functions si(r) are smooth functions and hence
+can be safely approximated as si(r) ≈ si(c); ∀r within the
+M × M patch neighborhood. The CLEAR approach relies on
+this approximation to show that the patch matrices
+Γc =
+
+Pc(γ1), . . . , PN (γN )
+
+(2)
+≈ Pc(γ)
+
+s1(c), s2(c), . . . , sN (c)
+
+(3)
+can be approximated as rank 1 matrices [18]. The dimensions
+of Γc are M2 × N with N < M2
+. We note that when the
+size of the patches increases, the approximation si(r) ≈ si(c)
+breaks down. However, the coil sensitivities still may be well
+approximated as the sum of few principal components within
+the patches; the matrices Γc will be low-rank even in those
+cases. CLEAR solves for 3-D multi-channel volume γ by
+minimizing the nuclear norm optimization problem [18]:
+γ = arg min
+γ
+kA(γ) − bk
+2
+2 + λ
+X
+c
+kΓck∗ (4)
+If the rank of Γc is r < N, there are N − r null space
+vectors uc,j and vc,j such that
+uc,j Γc = Γc vc,j = 0; j = 0, .., N − r (5)
+If we consider the vertical concatenation of the patches de￾noted by the vector pc, we can express the relation in (5)
+compactly as
+
+
+
+
+
+
+
+
+
+
+
+
+uc,j . . . 0
+.
+.
+.
+.
+.
+.
+.
+.
+.
+0 0 uc,j
+vc,j (1)e0 . . . vc,j (M2
+)e0
+.
+.
+.
+.
+.
+.
+.
+.
+.
+vc,j (1)eM2 . . . vc,j (M2
+)eM2
+
+
+
+
+
+
+
+
+
+
+
+
+| {z }
+Qc
+
+
+
+Pc(γ1)
+.
+.
+.
+Pc(γN )
+
+
+
+| {z }
+pc
+= 0 (6)
+Here, ei denotes the canonical basis vectors of the patches.
+The top set of N relations indicate intra-channel annihilation
+relations that work independently on the patch from each
+channel, while the bottom set of M2
+relations correspond
+to inter-channel annihilation relations. Unlike the setting in
+k-space based SLR methods, these annihilation relations are
+spatially varying. These relations can be can be viewed as the
+convolution of the 3D multi-channel volume γ(r), whose third
+dimension is the channels γ1(r), .., γN (r), with flipped filters
+of size M × M × N that are spatially varying, evaluated at c:
+γ(r) ∗ qc,j,i(r)
+
+
+
+c
+= 0; i = 0, . . . , N + M2
+(7)
+are multi-channel filters corresponding to the rows of Qc in
+(6).
+2) Iterative Re-weighted Least Squares (IRLS) Formulation:
+An IRLS approach to (4) results in an alternating minimization
+algorithm that alternates between the solution of the images:
+arg min
+γ
+kA(γ) − bk
+2
+2 + λ
+X
+c,i,j
+k(qc,j,i ∗ γ)|ck
+2
+F (8)
+and deriving the spatially varying multichannel filters qc,j,i
+of size M × M × N in (7). These filters are estimated from
+the signal patch matrices Γc. The regularization term in (8)
+minimizes the projection of the signal energy to the null-space.
+3) Image domain Deep-SLR formulation: Similar to [17],
+an alternating minimization scheme is derived to obtain a
+recursive network architecture that iterates between a data
+consistency enforcement (DC) and a denoising step. Motivated
+by our k-space DL framework [17], we replace the linear null￾space projection step with a non-linear spatial domain CNN
+that can learn a set of non-linear spatially varying annihilating

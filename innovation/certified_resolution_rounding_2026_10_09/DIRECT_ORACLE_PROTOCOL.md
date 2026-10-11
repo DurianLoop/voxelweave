@@ -1,0 +1,9 @@
+# 从逐点Fraction向真实全patch独立oracle扩展
+
+ca838f实际exit0：144完整小fixture、4428 exact点/区间包含、355独立nearest/tie与9次正规/动态范围点通过。仅小fixture，不代真实MRI、271stress或35904资格。候选/小oracle已runtime绑定，不编辑；新增direct_interval_reference.py使用已有独立combined_weights/point定义。
+
+新oracle把两级每轴权重先以Fraction合并成至多4个fine节点，再直接tensor-product求和，不生成coarse图像、不调用候选interval/fallback。每轴有理权重先独立以Fraction确认float64相邻包围；非负权重乘积与signed源值乘加均向外nextafter，累加所有source贡献。稳定float32桶直接输出，剩余节点用独立exact point+binary-search nearest（不使用候选rounder）。计全部回退费用。
+
+先重新运行新attempt全部原144fixture，不继承旧小测试为新oracle通过，逐点Fraction检查新direct区间。再另协议真实开发field，既有cache哈希不变、padding和inactive逐位不变、support二值0差、原3e-6/3e-12不降。new oracle必须符合相同数学意图的独立exact证据，不能因为与新生产接近就宣称正确。保留旧SciPy/Torch差异，不能倒写旧失败为通过。
+
+CPU1/below-normal、900秒，本stage2MB/磁盘RAM8GB和原预留不变；不读验证/确认/模型、不安装、不查控其他PID、不委派、不删历史。后续fullMRI训练准备仍false。

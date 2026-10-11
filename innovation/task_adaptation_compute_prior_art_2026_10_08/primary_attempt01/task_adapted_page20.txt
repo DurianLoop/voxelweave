@@ -1,0 +1,20 @@
+proach results in classiﬁcation probabilities that deviates from this intuitive observation. We
+also see that in both cases, the classiﬁcation probabilities are unnaturally concentrated on a
+single label, but this is a know phenomena also for regular for MNIST classiﬁcation [33].
+Approach Accuracy L2-loss Cross entropy
+Pre-training 93.61% 9.0 0.643
+Sequential 96.01% 9.0 0.124
+End-to-end 96.70% 19.7 0.118
+Joint with C = 0.01 96.74% 12.8 0.108
+Joint with C = 0.5 97.00% 9.2 0.100
+Joint with C = 0.999 96.61% 9.0 0.108
+Classiﬁcation on true images 97.76% 0.088
+Table 1: In both the pre-training and sequential approaches, the reconstruction and task
+operators are trained separately. In the sequential approach, the task operator is then further
+trained on the output of the trained reconstruction operator. In the end-to-end approach,
+which corresponds to C = 0 in (20), the reconstruction operator is pre-trained with L2-loss.
+Finally, the joint approach uses the full loss (20). We see that the classiﬁcation accuracy
+(explained in “Decision space” in section 7.3.1) improves when using a joint approach. In
+fact, using a “suitable” C (Figure 2(a)) yields an accuracy of 97.00% that is quite close to the
+upper limit of 97.76%, which is the accuracy of the classiﬁer when trained on true images.
+20

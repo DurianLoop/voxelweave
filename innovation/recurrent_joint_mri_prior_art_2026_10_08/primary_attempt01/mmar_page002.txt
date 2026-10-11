@@ -1,0 +1,33 @@
+more, models trained under this second split successfully perform inference
+on unseen combinations of modalities. Yet, while standard hetero-modal
+networks handle missing sequences, clinical deployment introduces the ad￾ditional challenge of silent data degradation—where modalities are present
+but severely corrupted. To bridge this gap, we introduce the Multimodal
+Attention Router (MMAR) block. Our experiments demonstrate that, when
+trained with a “corruption augmentation” strategy, the MMAR effectively dy￾namically weights the encoded features of each modality, maintaining strong
+performance during hetero-modal inference even in the presence of unflagged
+catastrophically corrupted modalities.
+Keywords: Hetero-modal learning, corrupted data, small vessel disease
+1. Introduction
+White matter hyperintensities (WMH) and ischaemic stroke lesions (ISL)
+are pathological features often visible on magnetic resonance imaging (MRI)
+scans of individuals with cerebral small vessel disease (SVD) (Duering et al.,
+2023), a vascular disease affecting the small blood vessels. Their automatic
+segmentation and differentiation is inherently challenging due to their sim￾ilar visual appearance in most MRI sequences: both lesion types present
+as hypointense on T1-weighted (T1w) MRI sequences and hyperintense on
+T2-weighted (T2w) MRI sequences, including the fluid-attenuated inversion
+recovery (FLAIR) sequence. Although diffusion-weighted images (DWI) can
+sometimes distinguish ISL from WMH, this is typically only effective when
+ISL is acute and, as apparent diffusion coefficients vary with age, body
+temperature, scanning settings, and tissue specific characteristics, this MRI
+modality is not always a reliable way to identify ISL (Edlow et al., 2017).
+While visually differentiating these confounding lesions is difficult, it is
+a task well suited to deep learning, as neural networks excel at uncovering
+highly complex patterns. To achieve robust performance, however, these
+models must be trained on as much expertly annotated data as possible, and
+this data should ideally originate from a large variety of sources (i.e., imaging
+acquisition protocols and MRI scanners). Beyond a general scarcity of such
+data, model development is hindered by two main factors: 1) not all datasets
+with WMH or ISL annotations have them for both lesion types; and 2) clinical
+datasets rarely provide a complete, pristine set of MRI sequences: sequences
+are frequently missing, or present but severely degraded by artefacts. The
+2

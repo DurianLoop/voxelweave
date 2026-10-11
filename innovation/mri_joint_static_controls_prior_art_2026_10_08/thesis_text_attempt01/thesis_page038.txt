@@ -1,0 +1,37 @@
+3.2. DATA-DRIVEN APPROACHES
+(a)
+ (b)
+ (c)
+(d)
+ (e)
+ (f)
+Figure 3.1: Random (a) and regular (d) sampling masks, acquiring25% of the total locations,
+and their corresponding point spread functions (PSF) in (b) and (e). The convolution of the
+PSF with the Shepp–Logan phantom is shown respectively in figures (c) and (f). We see that
+the random undersampling produces incoherent or noise-like aliasing, which still allows us to
+distinguish the original image. On the other hand, the aliasing produced by regular, grid-based
+sampling (known as fold-over artifacts) yields a low-intensity result where the original image
+cannot be distinguished.
+3.2 Data-driven approaches
+Many approaches tried to learn their model directly from data, and in this Section, we
+survey a couple of the most significant representatives of data-driven methods.
+3.2.1 Dictionary learning
+Dictionary learning approaches rely on the assumption that an image can be represented
+as a sparse combination of atoms from a dictionary, i.e.x =Dz whereD is a dictionary
+and zthe sparse coefficient vector. This is sometimes referred to as a synthesis formulation,
+as opposed to 3.1, which shows an analysis formulation. Synthesis models are often
+applied patch-wise to images, and they aim at simultaneously learning a reconstruction
+x, a dictionaryD and an encodingZ (Ravishankar and Bresler, 2011b; Caballero et al.,
+2014)
+min
+x,D,Z
+1
+2∥Aωx−yω∥2
+2 +β
+N∑
+j=1
+∥Pjx−Dzj∥2
+2
+s.t. ∥zj∥0≤s,∥di∥2 = 1,∀i,j
+(3.2)
+25

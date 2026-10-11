@@ -1,0 +1,57 @@
+6 IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2020
+Fig. 2. Proposed reconstruction-segmentation architecture. It consists of a K-iteration IDSLR network with the residual CNN DI. We choose
+a UNET with skipped connections between encoder NIE and decoder NID. We connect the output of NIE from the Kth iteration to the
+segmentation decoder SID. There are skipped connections between NIE and SID, thus forming a UNET architecture for segmentation. The
+CNN weights are shared across iterations. It is trained end-to-end with a linear combination of reconstruction and segmentation losses.
+(a) Cascade architecture
+(b) JRS architecture
+Fig. 3. Architecture of joint reconstruction-segmentation frameworks
+that the proposed algorithm is compared against: (a) is a cascade
+of segmentation UNET to the proposed IDSLR framework; the joint
+network is trained end-to-end. A key difference with the proposed
+method is the segmentation encoder SIE for segmentation, which is
+unshared and results in the network having more parameters; (b) is an
+illustration of JRS [22] framework where weights are unshared across
+the K iterations of reconstruction network. The reconstruction encoders
+and decoders are denoted by NIE1, .., NIEK and NID1, .., NIDK
+respectively since the parameters are unshared. Here DI is a residual
+autoencoder instead of a UNET as in IDSLR. The segmentation weights
+are shared among the decoders SID.
+2) Combination of image recovery and segmentation: We
+cascade a UNET-based segmentation network SEG, which
+is pre-trained on fully sampled images, with the above￾mentioned recovery methods to study the effect of reconstruc￾tion on segmentation quality. KDSLR+SEG, IDSLR+SEG,
+K-UNET+SEG and KIKI-Net+SEG thus denote the direct
+cascade of the segmentation network SEG to these recovery
+methods without any end-to-end training.
+We also consider the joint end-to-end training strategies
+with the cascade model and the JRS scheme [22], shown
+in Fig. 3. The architecture in Fig. 3.(a) is the cascade of a
+segmentation UNET to the IDSLR network, similar to [21],
+which is trained end-to-end with the loss function specified by
+(14). For fair comparison, we match the number of learnable
+parameters of this approach with that of the proposed scheme.
+The JRS scheme [22] was originally introduced for single￾channel MRI. We extended the above framework to the multi￾channel setting by replacing the single-channel autoencoders
+with multi-channel ones and a DC block in (11). The JRS
+architecture is shown in Fig. 3.(b). The key distinction of JRS
+with our setting is that the parameters of the autoencoders
+at each iteration are not shared. The latent variables at each
+iteration are fed to a segmentation network, and the combina￾tion of the segmentation losses at each iteration is used as the
+segmentation loss. Because we use the same network at each
+iteration, we only need to connect the segmentation network
+to the final layer; the sharing of the parameters will ensure that
+the segmentation task will regularize the projection networks
+at all iterations.
+V. EXPERIMENTS AND RESULTS
+We now compare the proposed framework against state￾of-the-art parallel MRI as well as joint reconstruction￾segmentation algorithms on brain MRI data using six- and
+eight-fold retrospective undersampling.
+A. Calibration-free PMRI
+We report the results of the comparison of the proposed
+spatial domain deep-SLR scheme (IDSLR) against other cal￾ibrationless methods in Table I and Fig. 4, respectively. All
+the schemes were tested on 12-channel brain images obtained
+from 15 subjects. Comparisons have been made for both six￾and eight-fold undersampling. We observe that the KDSLR
+scheme, which uses interleaved data consistency steps along
+with the k-space annihilation relations used in K-UNET, can
+offer improved performance over K-UNET. The table shows
+that KIKI-Net offers a marginally improved performance over
+KDSLR, while IDSLR offers more than 1 dB improvement
+over all of the other methods. As shown in Fig. 4, IDSLR is

@@ -1,0 +1,61 @@
+{
+  "scope": "selector_only_LOPO_historical_validation",
+  "patients": 23,
+  "slices": 207,
+  "patch_size": 32,
+  "stride": 16,
+  "features": [
+    "phase",
+    "gap_mm",
+    "x_y",
+    "base_mean_std",
+    "delta_mean_rms",
+    "base_edge",
+    "delta_edge"
+  ],
+  "learner": "weighted ridge, penalty 100, target m/d, weight d, clipped alpha",
+  "source_sha256": {
+    "innovation/experiments/local_oracle_paired_arrays_val23/paired_predictions.npz": "de8fa2986f732b5b5ad6db7914d1bc57fbf796404d6b575989499c2b268db2b1",
+    "innovation/experiments/local_oracle_paired_arrays_val23/manifest.json": "b7ff52c6bd1d0c6376f7737d6199b8c2d1aa6ca5264b8a7a5502955e8c60ad2c",
+    "design/pastnet_v2/manifests/fastmri/fold_00.json": "ee471bd92e48696050a694f371a86483f86f832c5b26571c81137b5dcc6ad4df",
+    "innovation/experiments/scalar_selector_per_slice.csv": "3c39d84e4df024e45f021c811ccc65e12304e139cfb72bbbf1a9d8bae57ef5b4"
+  },
+  "summary": {
+    "loo_fixed": {
+      "psnr": 25.675684309200253,
+      "ssim": 0.8356097150857286,
+      "mae": 0.02448740193227137,
+      "mse": 0.0030108030025158224,
+      "ncc": 0.9411428751848038,
+      "dice_proxy": 0.9772781761283242,
+      "hd95_proxy": 5.5572028755819725,
+      "tail10_mse": 0.026073237749471175
+    },
+    "ridge_patch": {
+      "psnr": 25.689502033838473,
+      "ssim": 0.8357766350090756,
+      "mae": 0.024462470983010725,
+      "mse": 0.0030008611151881286,
+      "ncc": 0.9413232787477032,
+      "dice_proxy": 0.9772828616981069,
+      "hd95_proxy": 5.562936532194079,
+      "tail10_mse": 0.025971395020155046
+    }
+  },
+  "patient_wins": {
+    "psnr": 20,
+    "ssim": 18,
+    "mae": 18,
+    "mse": 21,
+    "ncc": 21,
+    "dice_proxy": 13,
+    "hd95_proxy": 9,
+    "tail10_mse": 20
+  },
+  "limitations": [
+    "Only the selector excludes held-out patient labels; base and candidate checkpoints used this validation cohort for selection.",
+    "Oracle targets train the ridge but never enter held-out feature construction.",
+    "All results are developmental and cannot establish independent clinical safety.",
+    "HD95 and Dice are intensity-threshold proxies."
+  ]
+}

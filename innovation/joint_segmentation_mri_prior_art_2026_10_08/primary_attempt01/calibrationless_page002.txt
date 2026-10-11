@@ -1,0 +1,109 @@
+2 IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2020
+To make the segmentation scheme robust to blurring and
+aliasing artifacts at high acceleration rates, we propose an
+integrated framework for the joint segmentation and recon￾struction. In particular, we attach a segmentation-dedicated
+decoder to the encoder of the projection CNN at the final
+iteration of the unrolled reconstruction network. Please see
+Fig. 2. The shared architecture, which uses the common latent
+representation for both the segmentation and denoising at
+all the iterations, facilitates the exploitation of the synergies
+between the tasks. More importantly, this approach enables
+a semi-supervised training strategy that significantly reduces
+the number of segmented datasets that are needed to train the
+joint reconstruction-segmentation framework. We also expect
+the reconstruction task to benefit from the addition of the
+segmentation task, which emphasizes the accuracy of the
+edge locations. In the fully supervised setting, the multi-task
+architecture is trained end-to-end; the loss is the weighted lin￾ear combination of mean squared reconstruction error (MSE)
+and multi-class cross entropy segmentation loss. We also
+introduce a semi-supervised setting to reduce the number of
+segmented datasets. In this setting, we use a weighted linear
+combination of reconstruction and segmentation losses for the
+datasets with segmentation labels. By contrast, we only use
+the reconstruction MSE loss to train the network for datasets
+without segmentation labels. The shared encoder, which is
+trained in the reconstruction task on all subjects, enables us
+to keep the generalization error for segmentation low, even
+when few labelled segmentation datasets are used. This semi￾supervised approach is an attractive option, especially since
+there are not many large publicly available datasets with both
+raw k-space data and segmentation labels.
+The proposed work has conceptual similarities to the cas￾cade of reconstruction and segmentation networks [21] and
+the recent JRS [22]. The use of the same latent spaces in our
+approach facilitates the improved exploitation of the synergies,
+which offers improved performance and enables the semi￾supervised approach rather than the cascade approach [21].
+In addition to being restricted to the single-channel MRI
+setting, the JRS framework has some important distinctions
+from the proposed approach. The parameters of the auto￾encoders at each iteration are not shared in [22]. To constrain
+the latent variables at each iteration, they are each fed to
+a segmentation network; the segmentation errors from each
+iteration are combined linearly to define the segmentation
+loss. Unlike [22], we use the same reconstruction network at
+each iteration and only connect the segmentation network to
+the latent variables in the final iteration. The sharing of the
+parameters in our setting ensures that the segmentation task
+will regularize the projection networks at all iterations, thus
+facilitating the semi-supervised training strategy.
+II. BACKGROUND
+A. Forward Model
+Parallel MRI acquisition of γ can be modelled as
+bi = U(F(si γ
+|{z}
+γi
+)) + ηi
+, i = 1, . . . , N (1)
+where N is the number of receiver coils, si
+is the sensitivity
+of the i
+th coil, bi represents the undersampled measurements
+corresponding to the i
+th coil, and ηi
+is zero mean additive
+white Gaussian noise. Here, F is a 2D fast Fourier transform
+(FFT) operator that transforms the spatial domain signal γi
+to
+its k-space, which is sampled at the locations defined by the
+undersampling operator U.
+The model can be compactly represented as b = A(γ)+n,
+where γ is a 3D volume obtained by stacking the coil images
+γ1, .., γN in the spatial domain, b is a concatenation of corre￾sponding noisy undersampled Fourier measurements b1, .., bN
+across channels and n is a concatenation of corresponding
+noise η1, .., ηN for the N channels. Here, γb = F(γ) is multi￾channel data in the Fourier domain and, similarly, the Fourier
+domain image γbi = F(γi) for i
+th channel.
+B. Calibrationless PMRI Recovery
+Parallel MRI recovery methods can be broadly classified
+into calibrated and calibrationless approaches. Calibrated ap￾proaches such as SENSE [8], GRAPPA [9], and ESPiRIT [23]
+have a separate coil sensitivity estimation step, either through
+additional calibration scans or from self-calibration data. Re￾cently, MoDL methods have been used to further improve the
+performance of the above calibrated PMRI schemes [15], [16].
+These methods pose the recovery as an optimization problem,
+which minimizes the sum of a DC term and a deep-learned
+CNN prior. An alternating minimization scheme to solve the
+above problem is unrolled for a finite number of iterations
+and trained in an end-to-end fashion [16]. These approaches
+offer improved performance over classical calibrated PMRI
+schemes. A challenge with the above calibrated schemes is
+their sensitivity to the estimated sensitivity maps; any im￾perfections in the estimated sensitivities introduces error in
+reconstructions.
+Calibrationless recovery methods were introduced to min￾imize the above model mismatch. These approaches, often
+termed as structured low-rank (SLR) methods, exploit the
+low-rank property of multi-channel k-space patches to recover
+the multi-channel images from undersampled data [10]–[12].
+Another SLR method, CLEAR [18], was introduced to recover
+PMRI by utilizing relations in the spatial domain instead of
+k-space. It works on a locally low-rank assumption where a
+matrix containing patches extracted from images across the
+coils is low-rank. The spatial relations are obtained based
+on the smoothness of coil sensitivities. While these methods
+are powerful, the main challenge is their high computational
+complexity; it often takes several minutes to recover slices of
+a subject. Recently, DL methods were introduced for faster
+calibrationless recovery. For example, K-UNET [24] is a
+multi-channel UNET used to map undersampled coil images
+directly to their corresponding fully sampled ones. A similar
+approach, called Deep-SLR, is used in the model-based setting
+and offers improved performance over the data-driven method
+[24].
+C. End-to-end Multi-task Training Approaches
+Most of the MRI segmentation algorithms are designed
+for fully sampled data. When the images are acquired with

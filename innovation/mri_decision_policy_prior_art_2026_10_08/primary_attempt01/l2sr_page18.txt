@@ -1,0 +1,49 @@
+Learning to Sample and Reconstruct for Accelerated MRI 18
+T able 3. Comparison of inference costs of different methods. We calculate the
+computational complexity of sampling and reconstruction required to an MRI
+scanning. Cπ andCR denote the computational complexity of taking one sample
+and one reconstruction individually. We also test the average inference time over
+knee dataset.
+Computational
+Complexity
+A verage Inference Time (s)
+×4-accelration ×8-accelration
+Base Long Base Long
+Random & LOUPE CR 0.0040
+PG-MRI TCπ + (T + 1)CR 0.0843 0.1423 0.0444 0.0727
+Greedy Oracle T (N− T−1
+2 )CR 1.2134 2.0440 0.7071 1.1824
+L2S & L2SR (Ours) TCπ +CR 0.0201 0.0325 0.0126 0.0190
+τ -Step Seq τCπ + (τ + 1)CR 0.0225(τ = 2), 0.0321(τ = 4)
+T able 4. Empirically searching the best acceleration factors in terms of SSIM
+values for L2SR. We consider different settings: ×4 acceleration factor for knee
+dataset,×8 acceleration factor for knee dataset, ×8 acceleration factor for brain
+dataset and×16 acceleration factor for brain dataset. The best results for each
+settings are shown in bold numbers.
+initial
+acceleration
+factor
+knee brain
+×4-acceleration ×8-acceleration ×8-acceleration ×16-acceleration
+N/1 0 .8055± 0.0327 0 .6418± 0.0456 0 .8862± 0.0469 0 .8385± 0.069
+N/2 0.8171 ± 0.0316 0 .6712 ± 0.0511 0.8911± 0.0452 0 .8456± 0.0652
+N/4 0 .8097± 0.0333 0 .658± 0.0529 0.8969 ± 0.0417 0 .8468 ± 0.0655
+N/8 0 .7999± 0.036 0 .6332± 0.053 0 .893± 0.043 0 .8404± 0.066
+N/16 0 .7681± 0.0416 — 0 .8899± 0.043 —
+T able 5. Influence of discount factor to the proposed sparse-reward POMDP. We
+show SSIM values of L2S with respect to discount factors under ×4-acceleration
+on the knee test dataset.
+Base-horizon Long-horizon
+γ = 0.5 0 .7129± 0.0372 0 .7065± 0.0298
+γ = 0.9 0 .7528± 0.0363 0 .7826± 0.0264
+γ = 1.0 0.7543 ± 0.0372 0 .7838 ± 0.0286
+5.4.2. Discount Factor In table 5, we present the impact of the discount factor on
+L2S. Our proposed L2S method achieves the best reconstruction performance when
+γ = 1. In contrast, previous dynamic sampling methods with dense-reward POMDP,
+as described in [12] and [11], have shown their optimal performance at discount factors
+of 0.5 and 0.9, respectively. The contrastive results make sense as the proposed sparse-
+reward POMDP is explicitly designed to get the reward at the end of the trajectory,
+thereby learning a long-sighted policy.
+5.4.3. Number of Alternation The L2SR uses a fixed number of alternations as
+its stopping condition. The reconstruction performance over rounds of alternating
+training is depicted in figure 5. Typically, the algorithm converges within L = 5.

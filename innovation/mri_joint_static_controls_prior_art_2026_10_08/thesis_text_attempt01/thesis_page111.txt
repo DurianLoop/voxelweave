@@ -1,0 +1,39 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+Experimental setting. We used the pretrained checkpoints from Pineda et al. (2020)6,
+and compared to their Subject-Specific DDQN (SS-DDQN) as well as their Dataset-
+Specific DDQN (DS-DDQN).
+This work uses a small discount factor ofγ = 0.5 and operates on the full fastMRI image
+of size 640× 332, meaning it is both trained for a longer time horizon as well as having a
+lot more leeway for decision making.
+We replicated the extreme setting which starts with 2 center frequencies (0.6% un-
+dersampling rate or166× acceleration) and is evaluated up to100 frequencies (30.1%
+undersampling rate or3.32× acceleration)7. As can be seen in Table 6.4, the LBCS mask
+is very close to the performance of both the data and sample specific DDQN policies
+provided by Pineda et al. (2020).
+Results. We see on Table 6.4 and Figure 6.3 other instances of reversals. On Table 6.4,
+for a given metric, different ways of aggregating the results give rise toreversals in
+interpretation. This is also the case when moving from SSIM to PSNR. Although there
+is a clear performance gain over Random and LtH masks, the gain from LBCS to DDQN
+is not consistent.
+This discrepancy can be explained by the fact that, as displayed on Figure 6.3, the
+acceleration factor puts more emphasis on the sub 5% range (i.e. below 17 lines)
+where LBCS has not yet caught up on DDQN. This results in the AUC weighting
+disproportionately high acceleration factors:∼ 90% of the plot and of the corresponding
+AUC consists of20 lines out of the100 acquired. Similarly, considering the final sampling
+rate ignores the performance of the method throughout the acquisition procedure.
+We also performed a more detailed comparison of the masks given by the policies, using
+a subset of the first 200 test set images, keeping the order fixed in across methods, which
+can be found in Appendix A.3. They can be summarized as follows:i) the adaptivity
+of SS-DDQN mainly affects the ordering of frequencies, a large section of acquired
+frequencies being shared across samples and in similar regions to the LBCS mask at the
+final sampling rate, andii) it confirms that the adaptive masks have a small edge only
+until about a sampling rate of5%, after which LBCS catches up and overtakes the RL
+policy.
+6.4 Discussion
+As we have seen in Section 6.3.2 and Section 6.3.3, the fixed mask of LBCS is competitive
+with or outperforms both the greedy policy gradient methods of Bakker et al. (2020) and
+6The models can be found at https://facebookresearch.github.io/active-mri-acquisition/misc.html
+7We thank the authors for providing us with the original scores and general responsiveness and
+helpfulness during this replication.
+98

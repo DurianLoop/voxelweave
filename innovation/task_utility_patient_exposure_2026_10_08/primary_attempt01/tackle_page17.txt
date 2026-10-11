@@ -1,0 +1,64 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 17
+Ground Truth
+0.8985 0.9291 0.9365 0.9461 Dice score
+Background:  
+g.t. image
+Predictor inputPredicted seg. map
+PSNR (dB)27.71 31.82 36.77 ——
+Tackleseg.LOUPErecon.PD+UNrecon. Tacklerecon.
+T est_50
+Fig. 12. Comparison of segmentation results under 16 × acceleration on one sample from the OASIS dataset. Similar to the knee segmentation results,
+TACKLE seg. circumvents the typical “reconstruction” in terms of pixel-wise similarity with the ground truth image. Instead, it learns an anatomically accurate
+feature map, which enables better segmentation prediction than other baselines both for this sample and on average over the test set (Table VII). The zoom-in
+panels highlight a region where TACKLE seg. more accurately predicts the outline of white matter (in yellow) than other methods. This improvement leads to a
+more precise estimation of the thickness of the cortex (in orange), an important task for studying human cognition and neurodegeneration [77].
+Given the ACS, we estimate coil sensitivity maps using the
+Sensitivity Map Estimation (SME) module introduced in [43].
+In contrast to the ESPIRiT algorithm [84], SME estimates
+the sensitivity maps with a CNN applied to each coil image
+independently. The architecture of the CNN in SME is the
+same as the U-Net in each E2E-VarNet cascade, except with
+an 8-channel output instead of an 18-channel output for the
+input layer.
+D. Further details on the implementation of SemuNet [56]
+For the brain and knee segmentation tasks, we compare the
+proposed method with SemuNet [56]. Originally demonstrated
+for a brain segmentation task, it also aims to jointly optimize a
+subsampling mask, a reconstructor, and a task predictor for the
+downstream accuracy. SemuNet uses a hybrid of ℓ1 loss for
+reconstruction and cross-entropy loss for segmentation. Since
+the code of SemuNet is not released, we have tried to reproduce
+the results in the original paper to our best efforts. Specifically,
+we follow their proposed loss function and architecture of
+the sampler, the residual U-Net reconstructor, and a U-Net
+predictor. We follow the original paper to use an Adam
+optimizer [80] and not pre-select low-frequency measurements.
+However, since our tasks and datasets are different from those
+in [56], we empirically find that the learning rate and the
+parameterλ that adjusts the trade off between the two losses are
+suboptimal for our settings. Therefore, we conduct a grid search
+on the learning rate in {0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5}
+and λ ∈ {0.0001, 0.001, 0.01}. For both 16× and 64×
+accelerations, we choose the best combination of parameters
+based on the performance on the validation set, and report the
+Dice score on the test set.
+<latexit sha1_base64="Oj0xAAhAA0FXJMsuYCk8mgzKWts=">AAACKXicbVDJTsMwEHXKVsrWwpGLRYXEqUoQ27GCC8ciaKnURpXjTlqrthNsBxFF/QSu8BF8DTfgyo/gLge6PGmkN+/NSDMviDnTxnW/ndzK6tr6Rn6zsLW9s7tXLO03dJQoCnUa8Ug1A6KBMwl1wwyHZqyAiIDDYzC4GfmPz6A0i+SDSWPwBelJFjJKjJXuB52XTrHsVtwx8CLxpqSMpqh1Sk6x3Y1oIkAayonWLc+NjZ8RZRjlMCy0Ew0xoQPSg5alkgjQfja+dYiPrdLFYaRsSYPH6v+NjAitUxHYSUFMX897I3GpB0+SKEXSpWYghrP9nNBKTHjlZ0zGiQFJJ2eGCccmwqPYcJcpoIanlhCqmP0U0z5RhBobbsFm6M0ntkgapxXvonJ+d1auXk/TzKNDdIROkIcuURXdohqqI4p66BW9oXfnw/l0vpyfyWjOme4coBk4v3/MJaaJ</latexit>
+kx
+<latexit sha1_base64="+AEj9Deg7gkzcQwiZe9109+Z2D4=">AAACKXicbVDJTsMwELXLVsrWwpFLRIXEqUoQ27GCC8ci6CK1UeW4k9aq7QTbQYqqfgJX+Ai+hhtw5Udw2xzo8qSR3rw3I828IOZMG9f9xrm19Y3Nrfx2YWd3b/+gWDps6ChRFOo04pFqBUQDZxLqhhkOrVgBEQGHZjC8m/jNF1CaRfLJpDH4gvQlCxklxkqPw27aLZbdijuFs0y8jJRRhlq3hIudXkQTAdJQTrRue25s/BFRhlEO40In0RATOiR9aFsqiQDtj6a3jp1Tq/ScMFK2pHGm6v+NERFapyKwk4KYgV70JuJKD54lUYqkK81AjOf7BaGdmPDGHzEZJwYknZ0ZJtwxkTOJzekxBdTw1BJCFbOfOnRAFKHGhluwGXqLiS2TxnnFu6pcPlyUq7dZmnl0jE7QGfLQNaqie1RDdURRH72iN/SOP/An/sI/s9EcznaO0Bzw7x/N6KaK</latexit>
+ky
+<latexit sha1_base64="liwQ68ktjtzoZopy27b+sQe4b28=">AAACKXicbVDLTgJBEJzFF+IL9OhlIjHxRHaNryPRi0eMgiSwIb3DLEyYmV1nZk1wwyd41Y/wa7ypV3/EAfYgj0o6qa7qTroriDnTxnW/ndzK6tr6Rn6zsLW9s7tXLO03dJQoQusk4pFqBqApZ5LWDTOcNmNFQQScPgaDm7H/+EyVZpF8MMOY+gJ6koWMgLHS/aDz0imW3Yo7AV4kXkbKKEOtU3KK7W5EEkGlIRy0bnlubPwUlGGE01GhnWgaAxlAj7YslSCo9tPJrSN8bJUuDiNlSxo8Uf9vpCC0HorATgowfT3vjcWlHn2SoBQMl5qBGM32c0IrMeGVnzIZJ4ZKMj0zTDg2ER7HhrtMUWL40BIgitlPMemDAmJsuAWboTef2CJpnFa8i8r53Vm5ep2lmUeH6AidIA9doiq6RTVURwT10Ct6Q+/Oh/PpfDk/09Gck+0coBk4v3/Pq6aL</latexit>
+kz
+<latexit sha1_base64="fmViNNZAH/JPjC2rh0PDQYdZ3TQ=">AAACZXicbVHJTsMwEHXDXrYWEBcORBQkTlVSie2AhODCESRakNqqctxJsWo7wZ4goihfw9dwhRNfwG/gLgdaOpKt5/dmPJ7nIBbcoOd9F5y5+YXFpeWV4ura+sZmqbzVMFGiGdRZJCL9FFADgiuoI0cBT7EGKgMBj0H/ZqA/voI2PFIPmMbQlrSneMgZRUt1SpetLoS2dnhTJtOepmmejXavenGRF1sIbzgpH7YCmcn8MO+UKl7VG4b7H/hjUCHjuOuUC6VWN2KJBIVMUGOavhdjO6MaORNguyUGYsr6tAdNCxWVYNrZsH3uHlmm64aRtkuhO2T/VmRUGpPKwGZKis9mWhuQMzV4UVQPRpslBjKfPE8RzQTD83bGVZwgKDZ6ZpgIFyN3YLnb5RoYitQCyjS3k7rsmWrK0H5M0XroTzv2HzRqVf+0enJfq1xdj91cJnvkgBwTn5yRK3JL7kidMPJOPsgn+Sr8OOvOjrM7SnUK45ptMhHO/i9dy7xT</latexit>
+m
+Fig. 13. Conceptual illustration of the subsampling setup with a knee example.
+The back dots on the ky-kz plane represents k-space trajectories along kx,
+which are illustrated by the black arrows. We consider subsampling in the two
+phase-encoding dimensions ( ky and kz) of a 3D Cartesian sequence, where
+the subsampling pattern m is learned from data for some specific downstream
+task.
+SUPPLEMENT C
+SUBSAMPLING SETUP AND IMPLEMENTATION
+In this work, we optimize the subsampling mask m over
+all 2D subsampling patterns. We implement 2D subsampling
+patterns in practice by subsampling in the two phase encoding
+dimensions of a 3D Cartesian sequence based on the 2D pattern,

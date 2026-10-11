@@ -1,0 +1,86 @@
+16 N. K. Hernashki and S. Chatterjee
+−0.2 −0.1 0.0
+difference in Dice (95% CI)
+REFLECT − UCCD, 5 cm³
+REFLECT − UCCD, 10 cm³
+REFLECT − UCCD, 20 cm³
+REFLECT − UCCD, 40 cm³
+REFLECT − cDDPM, 5 cm³
+REFLECT − cDDPM, 10 cm³
+REFLECT − cDDPM, 20 cm³
+REFLECT − cDDPM, 40 cm³
+UCCD − cDDPM, 5 cm³
+UCCD − cDDPM, 10 cm³
+UCCD − cDDPM, 20 cm³
+UCCD − cDDPM, 40 cm³
+subject mean
+−0.2 −0.1 0.0
+difference in Dice (95% CI)
+subject median
+−0.1 0.0 0.1
+difference in Dice (95% CI)
+pooled
+filled: Holm-adjusted p < 0.05 within the declared family; open: not significant
+validation threshold equal realised FP
+Fig. 8. Paired Dice contrasts between residual models at the validation threshold (black) and at equal realised burden
+(orange), by budget and aggregation. Filled markers: Holm-adjusted p < 0.05 in the declared 24-contrast family. The UCCD
+− cDDPM advantage at validation thresholds disappears at equal burden; REFLECT − UCCD changes sign with budget and
+aggregation.
+5 10 20 40
+budget (cm³)
+0.0
+0.1
+gain in Dice at equal FP
+REFLECT
+5 10 20 40
+budget (cm³)
+UCCD
+5 10 20 40
+budget (cm³)
+cDDPM
+5 10 20 40
+budget (cm³)
+AnomalyDINO
+total threshold relaxation post-processing at fixed threshold
+thresholding hysteresis
++ pruning
+0.2
+0.4
+0.6
+lesion sensitivity, 20 cm³
+REFLECT
+UCCD
+cDDPM
+AnomalyDINO
+Fig. 9. Post-processing at equal burden. (a) Gain of hysteresis with pruning over plain thresholding, split into the fixed￾threshold effect and the threshold relaxation (Identity 5). (b) Above-floor lesion sensitivity at 20 cm3
+falls with post-processing
+for every method.
+Table 7. Exact decomposition (Eq. 22) of the gain from hys￾teresis with pruning at equal realised burden, b = 20 cm3
+, and
+above-floor lesion sensitivity with plain thresholding and with
+post-processing.
+total fixed-τ effect relaxation sens. global→pp
+REFLECT +0.034 −0.013 [−0.022, −0.005] +0.046 [0.042, 0.050] 0.608→0.549
+UCCD +0.085 +0.006 [−0.004, 0.016] +0.078 [0.073, 0.083] 0.674→0.629
+cDDPM +0.116 −0.002 [−0.012, 0.008] +0.117 [0.110, 0.125] 0.665→0.619
+AnomalyDINO −0.001 −0.044 [−0.055, −0.035] +0.044 [0.036, 0.051] 0.210→0.121
+sees only brain area obtains a matched AROC within
+0.50 ± 0.02. A secondary hypothesis predicts that UCCD
+and AnomalyDINO retain subject-specific information,
+with observed minus borrowed-map AROC above zero.
+A scorer that knows only how much brain a
+slice contains reached a marginal slice AUROC of
+0.884 [0.869, 0.897], within 0.025 of every residual model
+(0.887 to 0.907; Table 8, Fig. 10). Covariate adjust￾ment lowered the residual models to 0.73–0.77, but it
+did not remove anatomy entirely: at the primary caliper
+of 0.2 standard deviations the brain-area control still
+scored 0.668 [0.654, 0.682], so H9 was not supported,
+and 0.560 at 0.05. The spline-regression estimator also
+failed its own control (0.626 with 5 degrees of freedom,
+0.719 with 8). The obstacle is positivity: tumour slices
+sit in large mid-brain slices, so within a subject there
+are few negative slices of comparable area, and match￾ing kept only 59% of positives at 0.2 SD and 46% at
+0.05 SD. The borrowed-map contrast avoids the prob￾lem by changing the scores rather than the compari￾son set: every model retained subject-specific informa￾tion, observed minus borrowed AROC being +0.229 (RE￾FLECT), +0.266 (UCCD), +0.271 (cDDPM) and +0.124
+(AnomalyDINO), all intervals excluding zero, so the sec￾ondary hypothesis held, for the other two models as well.
+The marginal order (UCCD > cDDPM > REFLECT)
+also differs from the voxel-AUROC order. Intervals for

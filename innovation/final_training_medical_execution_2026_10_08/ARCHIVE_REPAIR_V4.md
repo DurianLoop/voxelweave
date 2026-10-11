@@ -1,0 +1,5 @@
+# 输出名称精确匹配
+
+V3在执行归档main前实际exit1，chunkb88cb9：APPEND_INDEX_V2.json字面量还出现在旧MoEDiff链中，替换计数断言失败。无index/proof生成，无证据修改。
+
+V4仅精确匹配本阶段indexpath/proofpath赋值，保留旧MoEDiff来源名称和SHA。历史观察语义修复与严格前5535/新source核验范围同V3说明，输出另存APPEND_INDEX_V4/APPEND_PROOF_V4。不会把既有文档的历史live观察重新绑定到当前训练文件。

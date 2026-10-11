@@ -1,0 +1,13 @@
+# 新精度分支的完整19-series真实资格
+
+前置必须真实完成 compact_norm_fullpatch_independent_attempt03 两步，原3e-6/binary0、54参数/162state全部通过，并完成independent_round52_audit_attempt01。full35904真实终态和独立审核也必须存在。该协议不认证原FP32 production，不启动正式训练或score医学效果。
+
+保留原 gin19_metadata_preparation_attempt01 11开发患者19series、两inputkind、每case两个原scheduled step/geometry/motherGT、三view参数seed、同cold-init seed20261009和完整patch。GPU model=compact_norm_task_model_v3（FP64graph/54FP32trainable leaves）；独立CPU=high_precision_cpu_reference_v1 explicit norm/nativepool；两种loss均FP64且保持监督与attachedKL定义、原AdamW/lr/eps。
+
+每case×kind reset冷启动，两个持续更新；完整分母GPU76/CPU76更新，GPU228/CPU228whole-modelforward，152个model+optimizer BytesIO序列化/恢复、54参数NumPy AdamW更新校验、76步全部概率/gradient/parameter/162state3e-6及binary0。不用GT生成GIN，全部原母GT与坐标不变。错误原样保留prefix立即停，不挑case、不降gate，不加载parent，不开4已见验证/8未见确认/lockedIXI。
+
+GPU按已核验hooks保存CPU副本和逐位恢复；医学journal记录真实pack/unpack累计数量与CPU逻辑peak/费用，逐tensor原值不落盘，不能称离线原payload重放。CPU reference诊断成本和in-memory捕获全部记入资格总wall，生产预算另用实测组件；19series不能以单人工case估计认证。
+
+资源：CPU1/interop1/below-normal，RAM/disk十进制8GB；GPUaggregate启动8192MiB，allocator min(10%,2.4GB/total)，peak2.5GB/runtimefree4GB，strictdeterministic/TF32off。wall21600s。新目录分配在原FOV20MB cap尚未花费余量内，outputs最多1800000bytes（journal1200000/receipt350000/config250000各另限）；现有prep7MB/FOV20MB/accepted6MB/adaptive2MB/other22.8MB cap不增加，原六臂104156359预算不借用为新分支成本。所有前置和fresh guard实际通过后才启动；本协议本身不是用户审批请求。
+
+不修改原训练进程、已执行脚本和冻结证据；只读取冻结开发数据，医学效果与正式六臂还需fullFOV/atomic capture/19-series成本与完整预算依赖。失败保留、成功后独立审计真实journal与终态。

@@ -1,0 +1,47 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+30
+35
+40
+Sampling rate
+PSNR
+A) KTSS PSNR
+Coherence-VD
+Golden
+LB-VD
+SGv1-KTSS
+SGv1-ALOHA
+0.05 0.15 0.25
+Sampling rate
+B) ALOHA PSNR
+0.21 0.23 0.25 0.27
+41
+42
+43
+Figure 5.17: PSNR as a function of sampling rate for KTSS (Otazo et al., 2010) and ALOHA
+(Jin et al., 2016) in the multicoil setting, comparing SG-v1 with the coherence-VD (Lustig et al.,
+2007), LB-VD and golden ratio Cartesian sampling (Li et al., 2018), averaged on 4 testing images
+of size 256×256×12 with 4 coils.
+coils that cover the region of interest. Each image was then normalized in order for the
+resulting sum-of-squares image to have at most unit intensity. When required, the coil
+sensitivities were self-calibrated according to the idea proposed by Feng et al. (2013),
+which averages the signal acquired over time in the k-space and subsequently performs
+adaptive coil combination (Walsh et al., 2000; Griswold et al., 2002b).
+The advantage of using self-calibration is that the greedy optimization procedure can
+simultaneously take into account the need for accurate coil estimation as well as accurate
+reconstruction, thus potentially eliminating the need for a calibration scan prior to the
+acquisition. A more complete discussion of the accuracy of self-calibrated coil sensitivities
+is presented in Feng et al. (2013).
+We used k-t SPARSE-SENSE (Otazo et al., 2010) and ALOHA (Jin et al., 2016) for
+reconstruction. While the first requires coil sensitivities, the second reconstructs the
+images directly in k-space before combining the reconstructed data.
+5.4.5 Large scale static results
+This last experiment shows the scalability of our method to very large datasets. We
+used the fastMRI dataset (Zbontar et al., 2019) consisting of knee volumes and trained
+the mask for reconstructing the13 most central slices of size320× 320, which yielded a
+training set containing 12649 slices. For the sake of brevity, we only report computations
+performed using total variation (TV) minimization with NESTA (Becker et al., 2011). For
+mask design, we used the SG-v2 method withk = 80 andl = 20 (2500 fewer computations
+compared to G-v1). The LB-VD method was trained using 80 representative slices and
+optimizing the parameters with a similar computational budget as SG-v2. The result on
+Figure 5.18 shows a uniform improvement of our method over the LB-VD approach.
+71

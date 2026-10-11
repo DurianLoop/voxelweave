@@ -1,0 +1,46 @@
+5.4. EXPERIMENTS - STOCHASTIC LBCS
+0.05 0.15 0.25
+25
+30
+35
+Sampling rate
+PSNR
+KTF
+0.24 0.26 0.28 0.3
+33.5
+33.75
+34
+0.05 0.15 0.25
+Sampling rate
+ALOHA
+Coherence-VD
+LB-VD
+Golden
+SGv1-KTF
+SGv1-ALOHA
+Figure 5.14: PSNR as a function of sampling rate for both reconstruction algorithms considered,
+comparing SG-v1 with the three baselines, averaged on4 noisy testing images of size 152×152×17.
+The PSNR is computed between the denoised reconstructed image and the original (not noisy)
+ground truth.
+respectively to the real and the imaginary parts of the result of the reconstruction. The
+results that we obtain are presented on the Figures 5.14 and 5.15.
+It is interesting to notice on Figure 5.15 that the sLBCS framework outperforms the
+baselines that are not data-driven by a larger margin than in the noiseless case, and
+this is again especially true at low sampling rates. In this case however, the difference
+between SG-v1 and LB-VD methods is much smaller, and this might be explained by
+the fact that noise corrupts the high frequency samples, and thus the masks concentrate
+more around low-frequencies, leaving less room for designs that substantially differ.
+We see a clear adaptation of the resulting learning-based mask, as shown by comparing
+Figures 5.7 and 5.15: the masks SGv1-KTF and SGv1-ALOHA, which are trained on
+the noisy data, are closer to low-pass masks, due to the high-frequency details being lost
+to noise, and hence, no very high frequency samples are added to the mask.
+Also, notice than even if the discrepancy in PSNR is only around0.8− 1 dB between the
+golden ratio sampling and the optimized one, the temporal details are much more faithfully
+preserved by the learning-based approach, which is crucial in dynamic applications. The
+inadequacy of coherence-based sampling is highlighted in this case, as very little temporal
+information is captured in the reconstruction with both decoders. Also, for both decoders,
+there is a clear improvement on the preservation of the temporal profile when using
+learning-based masks compared to the baselines; the improvement of the SGv1-ALOHA
+mask of around3dB also shows how well our framework is able to adapt to this noisy
+situation, whereas Coherence-VD yields results of unacceptable quality.
+69

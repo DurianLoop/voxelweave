@@ -1,0 +1,44 @@
+Learning to Sample and Reconstruct for Accelerated MRI 15
+models. The usage of the U-Net model serves as an illustrative example.
+Computational Resources: All experiments were conducted using a dedicated
+computational cluster equipped with NVIDIA Tesla V100 GPUs, each with 16 GB of
+memory. Our training and inference processes are performed on individual GPUs.
+5.2. Algorithm Comparisons
+In the ‘Fixed Reconstructor’ setting, we evaluate the L2S against three baseline
+methods: (1) Random: randomly selecting 1-d lines from a uniform distribution;
+(2) PG-MRI [11]: solving the dense-reward POMDP by policy gradient (which is one
+of the state-of-the-art dynamic sampling methods); (3) Greedy Oracle: a one-step
+oracle policy that has access to ground truth at test time. We pre-train the dense-
+reward reconstructorRdense with a mixture heuristic sampling policy for PG-MRI and
+Greedy Oracle, and pre-train the sparse-reward reconstructor Rsparse with a terminal
+heuristic sampling policy for Random and L2S.
+In the ‘Joint Training’ setting, we evaluate the L2SR against two baseline
+methods: (1) LOUPE [25]: jointly training a learnable non-sequential sampler and
+a reconstructor; (2) τ-Step Seq. [35]: an advanced end-to-end sequential sampling and
+reconstruction method, where τ indicates the number of sampling steps, typically set
+to either 2 or 4 (and we report the best results obtained with either 2 or 4).
+Additional details regarding all methods can be found in Appendix C.
+5.3. Main Results
+5.3.1. Reconstruction Performance The reconstruction results of all compared
+accelerated MRI methods are quantified through SSIM and PSNR values, as detailed
+in table 2, with more granular histograms presented in figure 4. The outcomes can be
+understood in two key aspects. First, under the ’Fixed Reconstructor’ scenario, L2S
+consistently outperforms other methods in most cases, signifying the importance of
+addressing the distributional mismatch issue in enhancing reconstruction performance.
+Secondly, L2SR emerges as the superior method in most cases across both settings.
+This underlines the effectiveness of solving the overall joint optimization problem
+compared to merely focusing on weakened forms or suboptimization issues.
+5.3.2. Inference Complexity The computational complexities and corresponding
+inference times of trained models are presented in table 3. Both L2S and L2SR
+exhibit lower complexity and faster inference times compared to previous methods
+such as PG-MRI and Greedy Oracle. This empirically substantiates our claim that
+the proposed sparse-reward POMDP enhances efficiency by eliminating the need for
+intermediate reconstructions.
+While the utilization of sparse rewards may raise concerns regarding increased
+training difficulty, the gains in inference efficiency make it a valuable tradeoff in
+practical applications, especially in the field of medical imaging. The focus of our
+experiments has been on assessing inference times, reflecting the emphasis on test
+efficiency in real-world deployment scenarios.
+5.4. Ablations and Further Discussions
+5.4.1. The Best Initial Acceleration Factor In medical imaging, the primary objective
+is often to attain the finest possible reconstruction for a pre-established acceleration

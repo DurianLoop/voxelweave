@@ -1,0 +1,1462 @@
+=== PDF PAGE 1 ===
+                                        CRIS: Cross-Plane Self-Supervised Isotropic Restoration for Anisotropic
+                                        Volumetric Imaging Across Modalities
+                                        Adi Ahituva,∗ , Anat Ilivitzkib and Moti Freimanc,d
+                                        a Faculty of Data and Decision Sciences, Technion – Israel Institute of Technology, Haifa, 3200003, Israel
+                                        b Rambam Health Care Campus, Haifa, 3109601, Israel
+                                        c Faculty of Biomedical Engineering, Technion – Israel Institute of Technology, Haifa, 3200003, Israel
+                                        d The May-Blum-Dahl MRI Research Center, Technion – Israel Institute of Technology, Haifa, 3200003, Israel
+
+
+
+                                        ARTICLE INFO                                          ABSTRACT
+                                        Keywords:                                             Anisotropic volumetric acquisitions are common in clinical MRI and volume electron microscopy
+                                        Isotropic restoration                                 (vEM), where sparse through-plane sampling creates thick slices or sections that degrade orthogonal
+                                        anisotropic volumes                                   reformats and downstream analysis.
+                                        self-supervised learning                                  We present CRIS, a cross-plane self-supervised framework for isotropic restoration without paired
+                                        super-resolution                                      isotropic ground truth. CRIS casts 3D restoration as 2D stripe completion on orthogonal reformats of
+                                        MRI                                                   an isotropic grid: high-resolution in-plane slices are synthetically degraded and periodically masked
+                                        volume electron microscopy                            for training, while at inference blank slices define the isotropic grid, two orthogonal reformats are
+                                        image restoration                                     restored, and predictions are fused by multi-view averaging.
+                                                                                                  We evaluate CRIS on two MRI cohorts and two microscopy benchmarks up to 8× anisotropy.
+                                                                                              On brain MRI, CRIS achieves 32.921 ± 0.436 dB PSNR and 0.963 ± 0.003 SSIM, outperforming
+arXiv:2606.15967v2 [cs.CV] 8 Jul 2026
+
+
+
+
+                                                                                              interpolation, ECLARE, SMORE4, SIMPLE, SA-INR, and ATME, and gives the best segmentation
+                                                                                              consistency (Dice 0.940±0.004, ASSD 0.245±0.014 mm, HD99 1.275±0.061 mm). On reference-free
+                                                                                              abdominal MRI, CRIS reduces FID/KID to 48.71/0.023, outperforming interpolation, ECLARE,
+                                                                                              SMORE4, and SIMPLE. On vEM, CRIS achieves 29.100 dB/0.830 3D PSNR/SSIM at 4× and
+                                                                                              26.874 dB/0.722 at 8× on EPFL, and 21.935±0.437 dB/0.696±0.024 on noisy hemibrain data. In
+                                                                                              a dedicated robustness experiment, one variable-gap CRIS model evaluated across gap factors 3–7
+                                                                                              and coronal, axial, and sagittal degradations maintained higher PSNR/SSIM than interpolation (36.36–
+                                                                                              31.14 dB and 0.977–0.932 vs. 33.07–27.85 dB and 0.951–0.853). These results support CRIS as a
+                                                                                              modality-flexible route to isotropic restoration without paired isotropic targets or configuration-specific
+                                                                                              retraining. Code is available at https://github.com/adi-hatav/CRIS.
+
+
+
+                                        1. Introduction                                                                  acquisition plane itself. Large public repositories and multi-
+                                                                                                                         site studies further exacerbate the problem because real-
+                                            High-quality 3D imaging is foundational to modern                            world datasets often combine scans acquired with different
+                                        medical image analysis and computational microscopy, yet                         through-plane spacings, slice thicknesses, and orientations
+                                        the acquisition process frequently produces anisotropic vol-                     (Di Martino et al., 2014, 2017).
+                                        umes: lateral (in-plane) sampling is substantially denser than                       Analogous constraints appear at the nanoscale in vol-
+                                        sampling along the through-plane direction. In MRI, this
+                                                                                                                         ume electron microscopy (vEM), which is central to con-
+                                        imbalance is often an intentional compromise to reduce scan
+                                                                                                                         nectomics and ultrastructural analysis. In serial imaging
+                                        time, since acquiring thinner and denser slices generally                        pipelines, section thickness limitations and throughput/cost
+                                        requires longer acquisitions, while also mitigating motion                       constraints yield markedly lower through-plane resolution
+                                        artifacts and maintaining adequate signal-to-noise ratio and                     than in-plane resolution, especially for large volumes (Peddie
+                                        clinical coverage (Khateri et al., 2025; Jack et al., 2008).                     and Collinson, 2014; Peddie et al., 2022). In this setting,
+                                        However, thick slices and inter-slice gaps can introduce
+                                                                                                                         isotropic volumes are particularly important because many
+                                        partial-volume effects and slice-to-slice discontinuities that
+                                                                                                                         biological structures of interest, including membranes, neu-
+                                        degrade orthogonal reformats and can impair downstream                           rites, synapses, and vesicular boundaries, extend in arbitrary
+                                        tasks such as registration, quantitative morphometry, and                        3D orientations. When the through-plane axis is sparsely
+                                        segmentation (Zhao et al., 2021; Remedios et al., 2023; Song                     sampled, these structures can appear fragmented, blurred, or
+                                        et al., 2024). They also limit one of the main advantages                        topologically ambiguous in orthogonal views, complicating
+                                        of volumetric imaging: the ability to inspect anatomy from
+                                                                                                                         visual interpretation, tracing, proofreading, and downstream
+                                        alternative viewing directions, where clinically relevant
+                                                                                                                         analysis. This is consequential in modern connectomics
+                                        structural relationships may become clearer than in the                          where datasets routinely reach terabyte scale and beyond,
+                                            ∗ Corresponding author                                                       making re-acquisition at truly isotropic resolution expensive
+                                                adihat3554@gmail.com (A. Ahituv)                                         or infeasible at scale (Scheffer et al., 2020; Shapson-Coe
+                                             ORCID (s): 0009-0009-6332-7442 (A. Ahituv); 0000-0001-7770-4194 (A.         et al., 2024). Computational isotropic restoration is there-
+                                        Ilivitzki); 0000-0003-1083-1548 (M. Freiman)
+                                                                                                                         fore an increasingly important post-acquisition step across
+                                                                                                                         modalities.
+
+
+
+                                        A. Ahituv et al.: Preprint                                                                                                                             Page 1
+
+=== PDF PAGE 2 ===
+                                      CRIS: cross-plane self-supervised isotropic restoration
+
+
+
+
+Figure 1: CRIS overview during training and inference. Training: high-resolution in-plane slices are extracted and transformed into
+self-supervised input–target pairs through modality-specific degradation and periodic masking. Inference: blank slices are inserted
+to define the isotropic grid, orthogonal reformats are restored independently by the trained model, and the results are fused via
+multi-view averaging to obtain the final isotropic volume.
+
+
+
+    A classical response to anisotropy is interpolation along      including scanner slice profiles, section integration, and
+the low-resolution direction (e.g., linear/cubic), including       modality-specific noise, can lead to artifacts and degraded
+motion-aware or optical-flow variants for microscopy stacks        generalization (Remedios et al., 2023; Khateri et al., 2025).
+(González-Ruiz et al., 2022). While interpolation is compu-        These challenges are especially important in cross-modality
+tationally attractive, it tends to oversmooth high-frequency       settings, where the degradation process is not only unknown
+boundaries and can introduce implausible structures when           a priori, but can differ fundamentally between imaging
+sampling is sparse. Classical work also extended beyond            technologies. A useful restoration framework must therefore
+direct interpolation. In MRI, early super-resolution meth-         exploit the internal structure of anisotropic volumes, remain
+ods combined repeated anisotropic acquisitions with sub-           effective without paired isotropic targets, and retain the same
+voxel shifts (Greenspan et al., 2002) and explicit multi-          central learning principle across modalities rather than being
+plane acquisition models (Gholipour et al., 2010, 2015) to         tied to MRI-specific or microscopy-specific assumptions.
+improve through-plane resolution. Later model- and prior-              We address these challenges with CRIS, a cross-plane
+based methods exploited patch recurrence, non-local self-          self-supervised isotropic restoration framework designed to
+similarity, sparse dictionaries, and auxiliary priors to recover   leverage a defining property of anisotropic volumes: in the
+missing high-frequency detail from low-resolution scans            original acquisition plane, the observed slices retain high
+(Manjón et al., 2010; Rousseau, 2010; Rueda et al., 2013).         in-plane resolution that can supervise restoration along the
+These approaches established the importance of acquisition-        under-sampled direction. CRIS is motivated by the observa-
+aware reconstruction and image priors, but their performance       tion that complementary structural cues become visible when
+is often limited when only a single anisotropic volume is          the volume is examined from multiple orientations, and that
+available or when priors do not transfer well across datasets      these cues can be exploited even when the target isotropic
+and modalities. Supervised deep-learning approaches can            volume is never observed during training. Fig. 1 illustrates
+improve fidelity, but they typically require paired isotropic      how CRIS reformulates isotropic restoration as a 2D stripe-
+ground truth (or carefully curated reference datasets) that are    completion task on orthogonal reformats of an isotropic grid.
+scarce in routine clinical imaging and in large-scale vEM          This yields a simple learning signal: predict the missing
+(Peng et al., 2020; Song et al., 2024; Iglesias et al., 2023;      periodic stripes from the observed content, using only the
+Khateri et al., 2025). Moreover, even when self-supervision        data itself. Importantly for cross-modality deployment, CRIS
+is used, mismatches between assumed and true degradations,
+
+A. Ahituv et al.: Preprint                                                                                                 Page 2
+
+=== PDF PAGE 3 ===
+                                      CRIS: cross-plane self-supervised isotropic restoration
+
+does not require paired isotropic ground truth, and its cen-           Self-supervised approaches alleviate the need for paired
+tral self-supervised stripe-completion formulation remains         isotropic targets by exploiting internal redundancy. SMORE
+unchanged even when modality-specific degradation models           introduced a self-supervised framework for MRI super-
+or additional loss terms are introduced. The framework             resolution by synthesizing training pairs from the data itself
+can therefore be adapted to modality-specific degradations         and learning a slice-wise mapping from interpolated low-
+without changing its core stripe-completion formulation.           resolution inputs to high-resolution outputs (Zhao et al.,
+     Unlike prior self-supervised MRI super-resolution meth-       2021). Subsequent work highlighted the importance of accu-
+ods such as SMORE (Zhao et al., 2021; Remedios et al.,             rately modeling slice gaps and acquisition physics, showing
+2023), our primary novelty lies in the pipeline design and         that mismatched degradations can significantly degrade
+the reformulation of the restoration problem into a 2D stripe-     reconstruction realism and downstream utility (Remedios
+completion task on orthogonal reformats of an isotropic grid.      et al., 2023; Lu et al., 2023). ECLARE is another closely
+By explicitly inserting blank slices, we represent observed        related self-supervised MRI super-resolution method. It
+and unobserved locations directly during degradation model-        estimates the slice profile from the input anisotropic MR
+ing rather than hiding missing locations behind interpolation-     volume, trains on low- and high-resolution in-plane patch
+derived proxies. This forces the network to learn conditional      pairs from the same image, and uses field-of-view-aware
+completion under a known geometric sampling pattern                resampling with anti-aliasing (Remedios et al., 2026). We
+directly from the observed in-plane structure. Additionally,       therefore include ECLARE as an additional MRI baseline
+CRIS enforces cross-plane consistency through multi-view           in both the public brain MRI and private abdominal MRI
+restoration and fusion, targeting volumetric fidelity rather       experiments.
+than only slice-wise appearance.                                       A key distinction lies in how unobserved through-plane
+     Contributions. This manuscript makes four contribu-           information is represented and learned at inference. In
+tions. First, we introduce a cross-plane self-supervised           SMORE, the anisotropic volume is first interpolated onto
+formulation for isotropic restoration that trains directly on      the target isotropic grid, producing a fully populated but
+anisotropic volumes without paired isotropic ground truth.         blurred proxy volume; the network then operates slice-wise
+Second, we present CRIS as a shared cross-plane learning           to refine this interpolated estimate (Zhao et al., 2021). In
+framework with modality-specific degradation modeling              contrast, CRIS avoids introducing interpolated intensities as
+and loss instantiation for both MRI and vEM, using slice-          pseudo-observations. Instead, it explicitly models missing
+profile blur in MRI and section-integration average pooling        data by inserting blank slices at unobserved locations, yield-
+in vEM under the same stripe-completion learning principle.        ing orthogonal reformats with structured, periodic missing
+Third, we demonstrate a practical robustness advantage: a          stripes. A corresponding validity mask indicates which pixels
+single CRIS model trained with variable gap factors gener-         are observed versus missing, and the network is trained
+alizes across multiple anisotropy severities and degradation       to perform conditional completion rather than deblurring.
+planes, reducing the need for configuration-specific retraining.   This shift changes the learning problem from interpolation
+Fourth, we validate the approach on two MRI cohorts and two        refinement to reconstruction under a known sampling pattern,
+vEM benchmarks (EPFL FIB-SEM and FlyEM hemibrain                   where the network must infer missing through-plane content
+subvolumes), reporting comprehensive quantitative metrics,         directly from observed in-plane structure.
+qualitative orthogonal-view restorations, and downstream
+segmentation consistency.                                          2.2. Isotropic reconstruction in microscopy and
+                                                                        vEM
+                                                                       Microscopy and vEM face severe anisotropy due to
+2. Related Work                                                    physical sectioning and depth integration (Peddie et al., 2022).
+2.1. MRI slice synthesis and volumetric                            Early learning-based methods explored supervised or semi-
+     super-resolution                                              supervised isotropic reconstruction from non-isotropic EM
+    Deep learning for MRI super-resolution and slice syn-          data (Heinrich et al., 2017). More recent work investigates
+thesis has progressed rapidly, spanning supervised, weakly         self-supervised or unsupervised degradation learning to better
+supervised, and self-supervised formulations (Khateri et al.,      match realistic low-resolution formation (Deng et al., 2020).
+2025). Supervised approaches such as SAINT and I3 Net learn            Generative priors and continuous representations have
+to map low-resolution inputs to high-resolution targets using      become prominent. Diffusion-based approaches model a
+paired supervision (Peng et al., 2020; Song et al., 2024). Other   distribution over plausible reconstructions but can be compu-
+tools (e.g., SynthSR) aim to harmonize heterogeneous clinical      tationally expensive at inference (Ho et al., 2020; Song et al.,
+scans into a common high-resolution representation, often          2020; Pan et al., 2023). Neural implicit representations and
+enabling downstream morphometry (Iglesias et al., 2023).           neural fields provide resolution-agnostic decoding and can
+While effective, supervised approaches are constrained by the      support fast inference and continuous resampling (Sitzmann
+availability of paired isotropic ground truth or representative    et al., 2020; Chen et al., 2021; Yang et al., 2026; Troidl
+high-resolution datasets, which is often unrealistic in routine    et al., 2026a). However, implicit models can exhibit view-
+clinical protocols (Khateri et al., 2025).                         dependent artifacts or hallucinations under severe information
+
+
+
+A. Ahituv et al.: Preprint                                                                                                 Page 3
+
+=== PDF PAGE 4 ===
+                                        CRIS: cross-plane self-supervised isotropic restoration
+
+loss, motivating complementary strategies that explicitly              and the in-plane spacing is 𝑟in with 𝑟in < 𝑟th . The goal is to
+enforce cross-plane consistency.                                       estimate an isotropic reconstruction 𝑉̂ sampled at 𝑟in along
+    CRIS differs in two ways that are central to this paper.           all directions.
+First, CRIS does not require isotropic ground truth; it learns              Formally, CRIS learns parameters 𝜃 by minimizing a
+stripe completion purely from in-plane information within              self-supervised reconstruction objective over high-resolution
+the same anisotropic volumes. Second, rather than decoding a           in-plane slices:
+continuous representation or relying on generative sampling,                                 [ ( (         (         )      )      )]
+CRIS enforces cross-plane consistency through explicit stripe          𝜃 ∗ = arg min 𝔼𝑆HR , 𝜙  𝑓𝜃 𝑔,𝜙 (𝑆HR ) , 𝑀 , 𝑆HR ,
+                                                                                  𝜃
+completion on orthogonal reformats followed by multi-view
+                                                                                                                                   (1)
+fusion.
+                                                                       where  is a modality-specific degradation operator, 𝑔,𝜙
+2.3. Self-supervision and internal learning without                    is the periodic masking operator with gap factor 𝑔 and
+     paired ground truth                                               randomized phase 𝜙, 𝑀 is the corresponding validity mask,
+     Related ideas appear in internal learning and architec-           and  is the reconstruction loss defined below. At inference,
+tural priors. Deep Image Prior shows that the structure of             the learned model is applied to orthogonal reformats of the
+convolutional networks itself can act as a prior for restoration       isotropic grid and the resulting predictions are fused to obtain
+from a single observation (Ulyanov et al., 2018). ZSSR                 𝑉̂ .
+demonstrates zero-shot super-resolution by optimizing on the                Training-pair construction in CRIS has three components:
+test image itself using synthetic downsampling (Shocher et al.,        (i) a modality-specific degradation operator , (ii) periodic
+2018). Blind-spot self-supervision (Noise2Void / Noise2Self)           masking via 𝑔,𝜙 to create the striped input, and (iii)
+further shows how networks can learn from single noisy                 modality-dependent intensity handling when needed to better
+images under conditional independence assumptions (Krull               match the target restoration distribution. We first describe the
+et al., 2019; Batson and Royer, 2019). CRIS is related to this         shared formulation and then detail the MRI- and microscopy-
+family of methods in that it does not require paired isotropic         specific instantiations.
+supervision. However, unlike architectural-prior or image-
+specific internal-learning methods, CRIS is a data-driven              3.2. From 3D isotropic reconstruction to 2D stripe
+model trained across anisotropic volumes. It specifically                   completion
+leverages the cross-plane structure induced by anisotropy                 We begin by mapping the anisotropic volume onto
+(periodic stripes in orthogonal reformats) and uses multi-view         an isotropic grid via explicit insertion of blank slices at
+fusion to suppress view-specific artifacts.                            unobserved locations. Let the integer gap factor be defined
+                                                                       as
+2.4. Cross-plane and multi-view consistency                                            ( )
+                                                                                         𝑟
+    Exploiting multiple orientations can reduce ambiguities                  𝑔 = round th                                       (2)
+inherent to single-plane learning. Simultaneous multi-plane                              𝑟in
+self-supervision has been shown effective for isotropic MRI            where 𝑟th and 𝑟in denote the through-plane and in-plane
+restoration (Benisty et al., 2026). Recent single-subject              resolutions, respectively. We define an insertion operator
+multi-view MRI super-resolution with implicit neural rep-              𝑔(⋅) that places (𝑔 − 1) blank slices between consecutive
+resentations further highlights the value of jointly using             acquired slices along the through-plane axis:
+complementary anisotropic views together with inter-view
+alignment for isotropic reconstruction (Kim et al., 2026).                   𝑉 pad = 𝑔 (𝑉 ).                                      (3)
+In microscopy, related multi-view strategies reconstruct
+                                                                           From 𝑉pad , we construct two orthogonal reformats, de-
+orthogonal planes independently and combine predictions
+(e.g., via averaging) to reduce view-specific errors (Yang             noted 𝑋 (1) and 𝑋 (2) . In these views, the inserted blanks
+et al., 2026). CRIS adopts this principle through an explicit          appear as structured, periodic missing stripes within each 2D
+stripe-completion formulation: it reconstructs two orthogonal          slice. This transforms the original 3D reconstruction problem
+reformats and fuses them by multi-view averaging, yielding a           into a 2D conditional completion task: given a striped slice
+consensus isotropic volume that is typically more consistent           and a corresponding binary validity mask indicating observed
+across orientations than a single-view reconstruction.                 pixels, the model is trained to predict the missing stripe
+                                                                       content.
+                                                                           For non-integer spacing ratios, we use the closest integer
+3. Method                                                              gap factor for blank-slice insertion and then resample the
+3.1. Problem definition                                                restored volume to the requested isotropic grid to account
+     Let 𝑉 ∈ ℝ𝐻×𝑊 ×𝐷 be an acquired anisotropic volume.                for the residual spacing difference. This practical handling is
+Let (𝑟𝑥 , 𝑟𝑦 , 𝑟𝑧 ) denote the voxel spacing along the three axes in   used for clinical abdominal MRI, where the through-plane-
+a fixed scanner/sample coordinate system, with one direction           to-in-plane spacing ratio is approximately, but not exactly,
+being under-sampled (the through-plane direction). Without             6–7.
+loss of generality, assume the through-plane spacing is 𝑟th                This representation departs fundamentally from
+                                                                       interpolation-based approaches, where missing voxels are
+
+A. Ahituv et al.: Preprint                                                                                                     Page 4
+
+=== PDF PAGE 5 ===
+                                      CRIS: cross-plane self-supervised isotropic restoration
+
+first filled using heuristic estimates and subsequently refined.   MRI-specific degradation. For MRI,  approximates
+By contrast, CRIS preserves unobserved locations as explicit       slice-profile integration by applying directional 1D Gaussian
+blanks and exposes the sampling pattern through a validity         blurring along a single axis, followed by periodic masking.
+mask. As a result, the network learns to infer missing             This closely matches common synthetic anisotropy genera-
+through-plane information directly from observed in-plane          tion protocols in MRI super-resolution studies (Khateri et al.,
+structure, rather than relying on interpolation-derived            2025; Zhao et al., 2021; Remedios et al., 2023).
+proxies.
+                                                                   Microscopy-specific degradation. For microscopy and
+Acquisition planes versus restoration views. Throughout            vEM, the physical mechanism is closer to section integration
+the paper, we distinguish between the acquisition or simulated     than optical blurring. We therefore use average pooling to
+degradation plane, which defines the direction along which         simulate the loss of through-plane information:
+slices are sparse, and the restoration views, which are the
+two orthogonal 2D reformats processed by CRIS after blank-                 vEM (𝐺𝑇 ) = AvgPool(𝐺𝑇 ; 𝑔),                        (6)
+slice insertion. The two CRIS restoration views do not
+require two separate acquired scans at test time. They are         implemented as 1D average pooling along the axis corre-
+generated from the same padded isotropic grid and provide          sponding to the simulated anisotropy during training or the
+complementary 2D contexts for completing the missing               true under-sampled axis during inference. This is aligned
+stripes. When multiple native acquisitions are available,          with recent vEM restoration protocols that model anisotropy
+as in the abdominal MRI cohort, they are used to enrich            through pooling-based degradation (Yang et al., 2026; Troidl
+self-supervised training and validation; the reported test         et al., 2026a).
+reconstruction is still produced from the specified anisotropic
+                                                                   MRI intensity handling during training. For MRI train-
+source volume.
+                                                                   ing, we apply a random intensity normalization to each
+                                                                   sampled training slice after masking and before it is passed to
+3.3. Self-supervised training pair construction
+                                                                   the network. Specifically, we identify valid non-background
+    CRIS trains a 2D completion network 𝑓𝜃 using only high-
+                                                                   pixels, randomly choose a lower clipping percentile in the
+resolution in-plane slices as targets. For a sampled in-plane
+                                                                   range 0–12%, clamp intensities below this percentile, and
+slice 𝑆HR , we define the self-supervised target as
+                                                                   then linearly rescale the remaining range to [−1, 1]. This acts
+      𝐺𝑇 = 𝑆HR .                                            (4)    as a simple contrast augmentation by simulating variability in
+                                                                   low-intensity suppression and overall dynamic range. Unless
+We then simulate through-plane information loss by applying        stated otherwise, this normalization is applied independently
+a modality-specific degradation operator  followed by a           to each training batch element.
+periodic masking operator 𝑔,𝜙 :
+                                                                   3.4. Network architecture
+      𝑆masked = 𝑔,𝜙 ((𝐺𝑇 )) .                             (5)        CRIS uses a 2D encoder–decoder with long-range context
+                                                                   aggregation to bridge wide missing stripes. In this work, we
+Here, 𝑔,𝜙 retains every 𝑔-th row or column and masks              instantiate 𝑓𝜃 as a Swin-UNet-style architecture that com-
+intermediate entries; 𝜙 is a randomized phase offset to prevent    bines local convolutions with a Swin Transformer bottleneck
+periodic bias. The direction of degradation and masking            (Liu et al., 2021; Cao et al., 2021). This hybrid design is well-
+(rows versus columns) is randomized per iteration so the           suited to stripe completion because attention can propagate
+model learns to complete stripes along both axes, matching         information across the stripe width while retaining local
+the inference-time orthogonal reformat setting.                    texture fidelity. The model is trained as a two-channel input
+    The network is trained to predict 𝑆̂ = 𝑓𝜃 (𝑆masked , 𝑀),       network, where the first channel contains the degraded and
+where 𝑀 is the binary validity mask (𝑀 = 1 for observed            masked image and the second channel contains the binary
+pixels and 𝑀 = 0 for masked pixels). Training minimizes an         validity mask. Dataset-specific patch sizes and optimization
+image-domain objective between 𝑆̂ and 𝐺𝑇 , with optional           hyperparameters are summarized in Supplementary Table S2,
+modality-specific terms added when beneficial. In the MRI          and the released code provides the exact layer configuration
+experiments, these include structure- and frequency-aware          used for all reported experiments.
+components such as SSIM, edge-aware loss, and focal
+frequency loss, whereas the microscopy setting uses a lighter      3.5. Objective function
+objective matched to its degradation characteristics.                 CRIS is trained with a composite reconstruction objective
+                                                                   whose active terms can vary by modality:
+Generic degradation model. The operator  models the
+modality-specific mechanism by which information is lost                   (𝜃) = 𝛼 L2 + 𝛽 SSIM + 𝛾 Sobel + 𝛿 FFL ,         (7)
+along the through-plane direction before periodic masking.
+Its form depends on the imaging physics: in MRI it approxi-        where
+mates slice-profile blurring, whereas in microscopy/vEM it
+approximates section-integration effects.                                  L2 = ‖𝑆̂ − 𝐺𝑇 ‖22                                   (8)
+
+
+A. Ahituv et al.: Preprint                                                                                                  Page 5
+
+=== PDF PAGE 6 ===
+                                     CRIS: cross-plane self-supervised isotropic restoration
+
+enforces pointwise fidelity,                                      patch size, we apply the model in an overlapping sliding-
+                                                                  window manner and average the overlapping predictions to
+                       ̂ 𝐺𝑇 )
+      SSIM = 1 − SSIM(𝑆,                                  (9)    avoid seams. When a slice is smaller, we embed it into a larger
+                                                                  canvas before inference and crop the restored result back
+encourages structural consistency (Wang et al., 2004),
+                                                                  afterward. This strategy allows CRIS to operate on arbitrarily
+      Sobel = ‖∇Sobel 𝑆̂ − ∇Sobel 𝐺𝑇 ‖1                  (10)    sized reformatted slices while preserving the patch-based
+                                                                  training regime.
+encourages agreement of edge magnitude maps, and FFL                 The padding strategy is modality dependent. In MRI,
+denotes focal frequency loss, which emphasizes discrepancies      constant padding with background values is usually accept-
+in the frequency spectrum and is useful for suppressing           able because MRI training patches often contain substantial
+periodic stripe-like artifacts (Jiang et al., 2021).              background regions outside the anatomy, so the padded
+     The objective is instantiated differently by modality. In    intensities remain statistically plausible. In microscopy, this
+MRI, all four terms are used, with the Sobel and focal-           assumption does not hold: fields of view are densely occupied
+frequency components introduced later in training to sharpen      by tissue, organelles, and membranes, and artificial constant
+restored boundaries and suppress stripe-related periodic          padding introduces unrealistic boundaries and distribution
+artifacts. In microscopy, we retain the same general objective    shifts. For this reason, microscopy inference uses reflection-
+template but disable the higher-order terms by setting            style boundary handling and patterned padding that preserves
+                                                                  the stripe geometry instead of padding with empty back-
+      𝛾vEM = 0,        𝛿vEM = 0,                          (11)    ground.
+                                                                      Crucially, CRIS operates as an amortized inference frame-
+so optimization is driven primarily by L2 and a reduced          work. Unlike alternative self-supervised or internal-learning
+SSIM contribution. This choice reflects the denser texture,       paradigms (such as SMORE4 or SA-INR) that require subject-
+stochastic high-frequency noise, and staining-related fluctu-     specific optimization or fine-tuning directly on the target test
+ations in vEM, where explicitly matching gradient maps or         volume, CRIS parameters 𝜃 are fully optimized offline. At
+frequency spectra can encourage reproduction of nuisance          test time, restoring an unseen anisotropic scan requires only
+high-frequency content rather than biologically meaningful        a direct forward pass through the trained network, entirely
+structure.                                                        removing the computational overhead of test-time training
+                                                                  loops.
+3.6. Inference and multi-view fusion
+    At inference, we apply the same insertion operator to         3.7. Modality-specific implementation details
+construct an isotropic grid, reformat into two orthogonal             The CRIS formulation is shared across modalities, but
+planes, and run the 2D completion model slice-wise. This          several implementation choices depend on the imaging
+yields two restored volumes 𝑉̂ (1) and 𝑉̂ (2) after inverse       regime. We therefore summarize below the main MRI-
+reformatting back into the common 3D frame. The final             specific and microscopy/vEM-specific details used in our
+isotropic volume is obtained by voxel-wise averaging:             experiments.
+           1 ( ̂ (1) ̂ (2) )
+      𝑉̂ =    𝑉 +𝑉           .                            (12)    MRI-specific implementation details. For MRI, through-
+           2
+                                                                  plane degradation is modeled with directional 1D Gaussian
+This fusion acts as a simple consensus mechanism that             blurring, training uses random intensity normalization, and
+suppresses view-specific artifacts while preserving structures    inference uses constant-value padding because many MRI
+supported by both orthogonal contexts.                            slices contain plausible background regions outside the
+    It is important to distinguish between the two single-        anatomy. MRI also uses the full four-term objective with
+view reconstructions and the fused output. The single-view        staged activation of SSIM, focal-frequency, and Sobel losses.
+reconstructions can retain mild orientation-specific advan-
+tages when inspected in the same viewing direction in which       Microscopy rotations, and training schedule. These
+they were restored, especially for perceptual slice-based         choices are specific to vEM. Unlike MRI, where orientation
+metrics. By contrast, the fused volume 𝑉̂ is typically the most   carries anatomical meaning and arbitrary rotations may be
+stable choice for volumetric fidelity, cross-view consistency,    less natural, microscopy textures are much more orientation-
+and downstream quantitative analysis, because it combines         agnostic at the patch level. Therefore, we augment microscopy
+complementary evidence from both restored orientations and        patches with additional 90◦ , 180◦ , and 270◦ rotations, which
+reduces directional bias.                                         increases effective data diversity without violating a canoni-
+    CRIS is trained on fixed-size 𝐻 × 𝑊 slices, implemented       cal anatomical orientation.
+here as square training patches. At inference, however, slices        Training also uses multiple inner optimization loops per
+extracted from the isotropic grid may be larger or smaller        epoch rather than a single pass through the loader. This re-
+than the training patch size along one or both dimensions.        peated cycling improves stability under strong anisotropy and
+To handle this mismatch, we center-pad or crop each slice to      noisy supervision and is particularly useful for microscopy,
+the model input size and then restore the output back to the      where the degraded input-target gap is larger and the local
+original slice geometry. When a slice exceeds the training        appearance statistics are more variable.
+
+A. Ahituv et al.: Preprint                                                                                                Page 6
+
+=== PDF PAGE 7 ===
+                                     CRIS: cross-plane self-supervised isotropic restoration
+
+vEM loss schedule and optimization. We use a staged               contains 63 volumes originally acquired in the coronal plane
+training schedule to stabilize optimization. The L2 term is      at near-isotropic resolution (1 × 1 × 1 mm or 1 × 1.25 × 1 mm).
+active from the start of training. The SSIM term is activated     For scans with a 1.25 mm axis, that axis was interpolated
+after an initial warm-up period, and the higher-order terms       to 1 mm to define an isotropic reference. In the primary
+are introduced only later for MRI. In the MRI configuration,      brain MRI benchmark, anisotropic inputs were generated
+the loss weights follow                                           by simulating coronal through-plane degradation: we applied
+                                                                  directional 1D Gaussian blurring along the acquisition axis
+      𝛼 = 10,       𝛽 = 5,      𝛾 = 5,      𝛿 = 10,       (13)    with 𝜎 = 5∕3 and retained one slice every five, yielding a
+                                                                  gap factor of 𝑔 = 5. The dataset was split into 48 training
+with staged activation of SSIM from epoch 3, FFL from
+                                                                  volumes, 7 validation volumes, and 8 test volumes. The exact
+epoch 5, and Sobel from epoch 10. In microscopy, we retain
+                                                                  subject identifiers used for training, validation, and testing
+the same schedule for the base terms, but set
+                                                                  are provided in Supplementary Table S4.
+      𝛾 = 0,       𝛿 = 0,                                 (14)         In addition, we performed a dedicated robustness experi-
+                                                                  ment on the same cohort. For this experiment, a single CRIS
+so Sobel and focal-frequency losses are excluded entirely.        model was trained once using the same coronal training
+The SSIM contribution is also down-weighted relative to           setup, but with randomized training-time gap factors 𝑔 ∈
+MRI. Optimization uses Adam with a step-based learning-           {3, 4, 5, 6, 7} (i.e., 5 ± 2) in the self-supervised degradation
+rate decay factor of 0.9, gradient clipping, and repeated sub-    process. This model was then evaluated under synthetic
+iterations within each epoch to improve convergence stability     degradations with gap factors 3–7 across all three degradation
+under noisy microscopy targets.                                   planes (coronal, axial, and sagittal). Unless stated otherwise,
+                                                                  all other brain MRI experiments used the fixed-𝑔 = 5 setting.
+Padding and boundary handling. When mapping be-
+tween degraded slices, masked isotropic grids, and fixed-         Private abdominal MRI. After Institutional Review Board
+size model inputs, boundary artifacts can arise if padding        (IRB) approval, we assembled a private clinical abdominal
+introduces values or structures absent from the training          MRI cohort from Rambam Health Care Campus comprising
+distribution. This issue is modest in MRI because many            115 FIESTA volumes acquired on a GE 3T scanner. The
+slices naturally contain extensive background. In microscopy,     cohort contains routine thick-slice clinical acquisitions in
+however, constant padding creates unrealistic borders and         both coronal and axial orientations. Average spacing is
+may shift the input distribution toward artificial background     approximately 0.76×0.76×4.97 mm for axial acquisitions and
+values. When boundary handling is required, microscopy            0.78×5.02×0.78 mm for coronal acquisitions, corresponding
+inference uses reflection-aware and stripe-preserving padding     in practice to through-plane gap factors that were mainly
+rather than constant padding. In the EPFL and hemibrain           6 or 7 across the cohort. We used both native coronal and
+experiments reported here, no explicit padding was required       axial acquisitions from the training subjects to form self-
+because all inference slice dimensions were at least 128×128.     supervised training samples, and both orientations from
+                                                                  validation subjects for model selection. For the held-out
+                                                                  test subjects, inference and reporting were performed from
+4. Datasets and Experimental Setup
+                                                                  the coronal anisotropic volumes only, so that the evaluation
+4.1. Plane protocol                                               reflects restoration from a single clinical source orientation
+     For datasets with isotropic references, namely the public    rather than fusion of two separately acquired test scans.
+brain MRI cohort, EPFL FIB-SEM, and FlyEM hemibrain,              The available native axial test acquisition was used only as
+anisotropic inputs were synthetically generated from the          an in-plane comparator for reference-free evaluation, not
+isotropic volumes. Therefore, coronal, axial, and sagittal        as an input to the reconstruction. To accommodate mild
+in these experiments denote simulated degradation planes          spacing heterogeneity, CRIS was trained with a variable-
+rather than separately acquired scans. Training and validation    gap degradation setting using 𝑔 ∈ {6, 7} rather than with a
+used anisotropic volumes generated from the corresponding         single fixed gap factor. At inference, each volume used the
+train and validation splits, and all reported test metrics were   closest integer gap factor for blank-slice insertion, followed
+computed on held-out test volumes. The primary brain MRI          by resampling of the residual spacing difference to obtain
+benchmark uses a coronal anisotropic source volume at infer-      the final isotropic grid. Since isotropic reference volumes are
+ence, whereas the vEM benchmarks use axial through-plane          unavailable for this cohort, the evaluation is reference-free.
+degradation. The dedicated brain MRI robustness experiment        The split is 70% training, 15% validation, and 15% test.
+is the only experiment in which the same trained CRIS model
+is evaluated across all three simulated degradation planes and    4.3. Microscopy and vEM datasets
+gap factors 3–7.                                                  EPFL FIB-SEM subvolumes. We evaluate CRIS on the
+                                                                  public EPFL CVLab FIB-SEM benchmark and its standard
+4.2. MRI datasets                                                 train/test subvolumes (CVLab, EPFL, 2025; Lucchi et al.,
+Public multi-site brain MRI. We use a public multi-               2013). The data originates from an isotropic mouse-brain
+site T1-weighted brain MRI cohort drawn from ABIDE                FIB-SEM stack with approximately 5×5×5 nm voxel spacing.
+and ABIDE-II (Di Martino et al., 2014, 2017). The cohort          Following the standard subvolume protocol, both the train
+
+A. Ahituv et al.: Preprint                                                                                                Page 7
+
+=== PDF PAGE 8 ===
+                                     CRIS: cross-plane self-supervised isotropic restoration
+
+and test volumes have dimensions 165 × 768 × 1024. We             2023). For abdominal MRI, we compare against interpolation,
+simulate anisotropy by degrading the isotropic volume along       ECLARE, SMORE4, and SIMPLE. SMORE4 was run using
+the through-plane axis using average pooling, and evaluate        its supplied implementation and optimized separately for
+both a moderate 4× setting and a more severe 8× setting.          each held-out coronal test volume. SIMPLE was run with the
+                                                                  supplied code and data configuration for abdominal MRI, and
+FlyEM hemibrain noisy subvolumes. We additionally                 with a minor configuration adaptation for brain MRI, which
+evaluate on noisy isotropic subvolumes derived from the           is outside the original target domain of SIMPLE. SA-INR
+Janelia FlyEM hemibrain project (Janelia Research Campus,         was included as an adapted implicit-representation baseline:
+HHMI, 2026; Scheffer et al., 2020). Native data are isotropic     because paired isotropic supervision is unavailable in our self-
+at approximately 8 × 8 × 8 nm resolution. Following the pro-      supervised setting, the training and validation data supplied to
+tocol used by NIIV, 400 randomly sampled subvolumes are           SA-INR were anisotropic coronal brain MRI volumes rather
+constructed, each of size 1283 , with simulated 8× anisotropy     than paired isotropic ground-truth volumes, and a separate
+induced by average pooling along the through-plane axis. The      SA-INR network was trained for each test case. ATME
+original protocol uses 350 subvolumes for training and 50         was trained separately for each acquisition or degradation
+for testing. In our experiments, we held out cases 301–350        plane using paired 2D samples derived from the anisotropic
+from the hemibrain-volume-noisy-large training portion for        training volumes. Its input was generated from the anisotropic
+validation, yielding 300 training, 50 validation, and 50 test     volume by linear resampling or interpolation to the target
+subvolumes.                                                       grid together with the plane-dependent stride pattern, and
+                                                                  the target was the corresponding real acquired slice from the
+4.4. Baselines and evaluation metrics                             original anisotropic volume. The model was optimized as
+     For both MRI and microscopy evaluations, FID and KID         a conditional image-to-image translation baseline using an
+were computed using a pre-trained Inception-V3 backbone           adversarial loss with a PatchGAN discriminator and an L1
+(Szegedy et al., 2016) with the final classification head         reconstruction loss. Brain MRI metrics are PSNR, SSIM, FID,
+replaced by an identity mapping to extract feature representa-    KID, GMSD, Edges 3D, and downstream brain segmentation
+tions. Because FID and KID rely on feature representations        Dice using SynthSeg robust inference (Wang et al., 2004;
+learned from natural images, we use them here only as             Xue et al., 2014; Billot et al., 2023a,b). On the abdominal
+complementary perceptual-distribution metrics rather than         cohort, because isotropic reference volumes are unavailable,
+as direct measures of anatomical or biological validity. For      we report FID and KID by comparing restored coronal and
+the abdominal MRI cohort, where isotropic references are          axial slices to the corresponding original in-plane slices.
+unavailable, FID/KID should therefore be interpreted as
+reference-free distributional evidence rather than proof of       Microscopy/vEM baselines. For EPFL, we compare
+anatomical correctness. Prior to quantitative evaluation, MRI     against bicubic interpolation, NIIV (Troidl et al., 2026a), and
+volumes were clipped at the 99.9th percentile to remove           vEMINR (Yang et al., 2026). For the EPFL 4× setting only,
+extreme intensity outliers and subsequently normalized to the     because the available training data were limited, the degraded
+[0, 1] range via min-max scaling to prevent massive contrast      anisotropic axial input volume was also included as an
+fluctuations. This evaluation-time normalization is separate      additional self-supervised training volume, without using the
+from the random training-time intensity normalization used        isotropic test reference. For the hemibrain noisy benchmark,
+as augmentation during CRIS training. Microscopy data were        we compare against NIIV, nearest-neighbor interpolation,
+similarly normalized using min-max scaling before all metric      and bilinear interpolation, following the evaluation style used
+calculations.                                                     in the NIIV work. NIIV and vEMINR were run using the
+                                                                  authors’ supplied implementations. For EPFL, the standard
+Baseline protocol. All learning-based baselines were              degraded training and testing volumes were converted into
+trained and selected without using the held-out isotropic         the data format expected by NIIV, and the patch-wise NIIV
+test references for optimization or hyperparameter selection.     outputs were reassembled into full volumes before evaluation.
+When official implementations were available, we used the         vEMINR was trained using the supplied implementation on
+authors’ supplied code and adapted only the data interface,       the degraded EPFL volume, and we report both directional
+spacing or gap configuration, and evaluation input/output         reconstructions (XZ and YZ) as well as their final merged
+needed to match our train, validation, and test splits. Methods   volume. This ensures that each baseline is evaluated under
+that are normally optimized per subject were run per test         its intended training and inference pipeline while using the
+case, whereas dataset-level methods were trained on the           same held-out test volumes as CRIS. For EPFL, we report 3D
+corresponding training split and selected on validation data.     PSNR, 3D SSIM, GMSD, FID, and KID in the main tables;
+The same source orientation used for CRIS test inference was      for the noisy hemibrain benchmark we additionally report CF-
+used for the corresponding baseline comparison.                   PSNR following NIIV (Troidl et al., 2026a). Lower FID/KID
+                                                                  and GMSD indicate better restoration quality. Detailed
+MRI baselines. For brain MRI, we compare against in-              baseline implementation notes, including the adaptations
+terpolation, ECLARE (Remedios et al., 2026), SMORE4               used for SMORE4, SIMPLE, SA-INR, ATME, NIIV, and
+(Zhao et al., 2021), SIMPLE (Benisty et al., 2026), SA-
+INR (Wang et al., 2024), and ATME (Solano-Carrillo et al.,
+
+A. Ahituv et al.: Preprint                                                                                                Page 8
+
+=== PDF PAGE 9 ===
+                                       CRIS: cross-plane self-supervised isotropic restoration
+
+vEMINR, are provided in the Supplementary Material under            within each metric, all CRIS-versus-baseline differences
+“Baseline implementation details”.                                  in case-level image-quality metrics remained statistically
+                                                                    significant (𝑝adj = 0.039). Given the small paired test set
+4.5. Statistical analysis                                           (𝑛 = 8), these significance results should be interpreted
+     For metrics available at the case level, statistical sig-      cautiously and primarily as support for the consistent paired
+nificance was assessed using paired two-sided Wilcoxon              effect sizes; nevertheless, CRIS outperformed each baseline
+signed-rank tests comparing CRIS with each baseline on              on every matched test case for the reported case-level image-
+matched test cases. The paired difference was defined so that       quality metrics. In downstream analysis, CRIS also achieved
+positive values indicate better CRIS performance, according         the strongest segmentation consistency, with the best mean
+to the metric direction: higher is better for PSNR, CF-             Dice, ASSD, and HD99 across 32 anatomical structures.
+PSNR, SSIM, and Edges 3D, whereas lower is better for               These volume-averaged segmentation improvements over
+GMSD, ASSD, HD99, and related error or distance metrics.            both SMORE4 and interpolation were statistically significant
+Holm–Bonferroni correction was applied separately within            across all three metrics (𝑝adj = 0.008, using paired Wilcoxon
+each metric across the CRIS-versus-baseline comparisons.            signed-rank tests with Holm–Bonferroni correction). Further-
+Distribution-level metrics such as FID and KID were reported        more, at the individual structure level (corrected for multiple
+descriptively and were not included in paired significance          comparisons using the Benjamini-Hochberg False Discovery
+testing. For downstream segmentation, statistical significance      Rate), CRIS yielded significantly better Dice scores than
+was evaluated at both the volume-averaged level and the             SMORE4 in 29 out of 32 evaluated anatomical regions.
+per-structure level using paired two-sided Wilcoxon signed-              To better understand the role of fusion, we separately
+rank tests. Volume-averaged metrics were corrected using the        evaluated the two single-view reconstructions and the fused
+Holm–Bonferroni method, while per-structure comparisons             output. The fused output achieved the best mean PSNR and
+across the 32 anatomical labels were corrected using the            SSIM across the three evaluation directions, supporting its
+Benjamini-Hochberg False Discovery Rate (FDR) procedure             use as the default volume for quantitative 3D analysis. The
+to account for multiple anatomical comparisons.                     single-view reconstructions, however, remained slightly more
+                                                                    favorable in some view-matched perceptual comparisons,
+4.6. Implementation notes and sigma calibration                     indicating mild orientation-specific specialization. This be-
+    For MRI, the slice-select blur parameter 𝜎 was selected         havior is consistent with the design of CRIS: single-view
+using validation-set experiments, with the selection cri-           restoration can be visually sharp in a matched viewing direc-
+terion matched to the available reference information in            tion, whereas fusion provides the strongest overall volumetric
+each cohort. In the public brain MRI benchmark, where               consistency. Table 2 summarizes the comparison between
+isotropic validation references are available, validation-set       the single-view reconstructions and the fused output. Overall,
+GT-referenced FID and PSNR identify an optimum near                 fusion provided the strongest voxel-space fidelity, whereas
+𝜎 ≈ 1.67, whereas in-plane-referenced FID misleadingly              single-view reconstructions retained minor advantages in a
+favors 𝜎 =√0. We therefore use the physics-informed setting         few plane-matched perceptual comparisons.
+𝜎 = 0.75 𝑔 for the public brain MRI experiments, which                   Figure 2 summarizes the validation-set MRI blur-
+gives 𝜎 ≈ 1.67 for 𝑔 = 5. In the private abdominal MRI              calibration analysis used for selecting 𝜎.
+cohort, isotropic references are unavailable and validation is           Figure 3 shows qualitative brain MRI results across
+necessarily reference-free; the reported abdominal results use      sagittal and axial views. CRIS reduces staircase artifacts
+𝜎 = 0, because this setting maximized the available in-plane        and yields more anatomically coherent orthogonal reformats
+validation metrics. This difference reflects the dataset-specific   than interpolation, ECLARE, and SMORE4, while better
+validation criterion rather than a change in the CRIS for-          approaching the isotropic reference. This qualitative improve-
+mulation. Supplementary Table S2 summarizes the dataset-            ment is consistent with the gains in PSNR, perceptual metrics,
+specific CRIS configurations and selected hyperparameters           and segmentation Dice reported in Table 1.
+across the four datasets.                                                Beyond image fidelity, we evaluated downstream seg-
+                                                                    mentation consistency across 32 anatomical structures. We
+5. Results                                                          first segmented the isotropic reference volume and then
+                                                                    applied the same segmentation pipeline to each reconstructed
+5.1. Brain MRI results                                              anisotropic-to-isotropic volume, followed by structure-wise
+    Table 1 reports reference-based quantitative evaluation         comparison using Dice, ASSD, and HD99. As summarized
+on the public brain MRI cohort. CRIS achieves the best per-         in Table 3, CRIS achieved the best mean segmentation
+formance across all reported fidelity and perceptual metrics,       performance, reaching 0.940±0.004 Dice, 0.245±0.014 mm
+with 32.921±0.436 dB PSNR, 0.963±0.003 SSIM, 35.039                 ASSD, and 1.275 ± 0.061 mm HD99, compared with 0.923 ±
+FID, 0.013 KID, and 0.015±0.001 GMSD. It improves over              0.005 / 0.311 ± 0.019 mm / 1.550 ± 0.090 mm for SMORE4
+interpolation, ECLARE, SMORE4, SIMPLE, SA-INR, and                  and 0.911 ± 0.004 / 0.364 ± 0.022 mm / 1.825 ± 0.098 mm
+ATME. For all case-level metrics reported with SD, CRIS was         for interpolation. The gains were especially pronounced
+better than every baseline on all eight matched test volumes.       in representative structures such as cerebral white matter,
+Using two-sided paired Wilcoxon signed-rank tests with
+Holm–Bonferroni correction across baseline comparisons
+
+A. Ahituv et al.: Preprint                                                                                                 Page 9
+
+=== PDF PAGE 10 ===
+                                                    CRIS: cross-plane self-supervised isotropic restoration
+
+Table 1
+Brain MRI quantitative image-quality results on the public multi-site cohort with simulated through-plane gap factor 𝑔 = 5. PSNR,
+SSIM, GMSD, and Edges 3D are reported as mean ± SD over the eight test volumes. FID and KID are distribution-level metrics
+and are reported without SD. Higher is better for PSNR, SSIM, and Edges 3D; lower is better for FID, KID, and GMSD.
+Method                          PSNR ↑                          SSIM ↑                     FID ↓                KID ↓                    GMSD ↓                        Edges 3D ↑
+CRIS                       32.921 ± 0.436                  0.963 ± 0.003                  35.04                 0.013                0.0152 ± 0.001                   0.949 ± 0.004
+SMORE4                     31.963 ± 0.455                  0.953 ± 0.004                  45.59                 0.020                 0.0210 ± 0.001                  0.934 ± 0.005
+ECLARE                     31.364 ± 0.522                  0.946 ± 0.005                   51.46                0.026                 0.0235 ± 0.002                  0.926 ± 0.007
+ATME                       25.685 ± 0.702                  0.877 ± 0.008                   91.58                0.059                0.0620 ± 0.0040                  0.843 ± 0.009
+SIMPLE                     20.192 ± 0.423                  0.706 ± 0.010                  126.27                0.084                0.0890 ± 0.0030                  0.691 ± 0.013
+SA-INR                     20.703 ± 0.963                  0.750 ± 0.019                  101.78                0.066                0.1000 ± 0.0060                  0.704 ± 0.019
+Interpolation              28.784 ± 0.467                  0.908 ± 0.007                  102.07                0.067                0.0440 ± 0.0020                  0.867 ± 0.009
+
+
+
+Table 2
+Plane-specific analysis of the brain MRI CRIS outputs. “Fused” denotes the voxel-wise average of the two single-view reconstructions.
+PSNR and SSIM are reported as mean ± SD across test cases. Higher is better for PSNR and SSIM; lower is better for FID and
+KID.
+                          Coronal plane                               Axial plane                              Sagittal plane                           Mean over planes
+Output          PSNR ↑        SSIM ↑      FID ↓ KID ↓    PSNR ↑         SSIM ↑      FID ↓ KID ↓     PSNR ↑         SSIM ↑       FID ↓ KID ↓    PSNR ↑        SSIM ↑        FID ↓ KID ↓
+Fused         33.032 ± 0.555 0.967 ± 0.003 17.71 0.001 32.262 ± 0.601 0.965 ± 0.002 35.87 0.012 33.470 ± 0.567 0.957 ± 0.003 51.53 0.026 32.921 ± 0.436 0.963 ± 0.003 35.04 0.013
+Axial-view    32.526 ± 0.594 0.964 ± 0.004 17.800 0.001 31.777 ± 0.590 0.962 ± 0.002 33.941 0.010 33.047 ± 0.555 0.953 ± 0.004 60.274 0.035 32.450 ± 0.437 0.959 ± 0.003 37.338 0.016
+Sagittal-view 32.587 ± 0.522 0.964 ± 0.003 18.140 0.002 31.793 ± 0.588 0.962 ± 0.002 38.718 0.014 33.042 ± 0.581 0.953 ± 0.003 47.786 0.020 32.474 ± 0.432 0.960 ± 0.003 34.882 0.012
+
+
+
+
+inferior lateral ventricles, and the 4th ventricle, indicat-                                  Table 3
+ing that improved restoration fidelity translates into more                                   Brain MRI downstream segmentation summary over 32 anatom-
+anatomically consistent downstream analysis. Supplementary                                    ical structures. Values are reported as mean ± SD over the eight
+Table S1 summarizes the per-structure Dice, ASSD, and                                         test volumes after averaging each metric across the 32 structures
+HD99 results across all 32 anatomical labels.                                                 within each volume. The isotropic reference volume was
+    For example, CRIS improved Dice over interpola-                                           segmented first, and the resulting segmentations were compared
+tion in left/right cerebral white matter (0.953/0.952 vs.                                     against segmentations obtained from the reconstructed volumes.
+                                                                                              Higher is better for Dice; lower is better for ASSD and HD99.
+0.926/0.926), left/right inferior lateral ventricles (0.837/0.845
+                                                                                              Volume-averaged improvements of CRIS over both baselines
+vs. 0.771/0.762), and the 4th ventricle (0.928 vs. 0.872).
+                                                                                              are statistically significant across all three metrics (𝑝adj < 0.01).
+Computational efficiency and runtime analysis. Offline                                        Method                        Dice ↑                ASSD ↓                     HD99 ↓
+training of the baseline brain-MRI CRIS model was per-
+                                                                                              CRIS                  0.940 ± 0.004             0.245 ± 0.014            1.275 ± 0.061
+formed on a single NVIDIA RTX A6000 GPU. A full training
+                                                                                              SMORE4                0.923 ± 0.005             0.311 ± 0.019            1.550 ± 0.090
+epoch with the complete objective required approximately
+                                                                                              Interpolation         0.911 ± 0.004             0.364 ± 0.022            1.825 ± 0.098
+477 s, with only a minor reduction of several seconds when
+optimizing with the 2 term alone. To evaluate inference
+efficiency, the trained model was deployed on the same GPU
+                                                                                              (𝑔 = 5) to 256 × 221 × 256 voxels after blank-slice insertion.
+and applied to the public brain MRI test set. Each anisotropic
+                                                                                              The resulting axial and sagittal reformatted slices were
+input volume, with native dimensions of 256 × 45 × 256
+                                                                                              center-padded to 256 × 256 pixels and processed slice-wise.
+voxels, was expanded along the coronal acquisition axis
+
+
+
+
+Figure 2: Validation-set 𝜎 calibration for MRI slice-select simulation. (A) On the brain MRI validation set, GT-referenced FID
+attains its best value near 𝜎 ≈ 1.67, whereas in-plane-referenced FID misleadingly favors 𝜎 = 0. (B) Brain test-set PSNR also
+peaks near 𝜎 ≈ 1.67. (C) On the abdominal MRI validation set, in-plane-referenced FID again favors 𝜎 = 0, showing the same bias.
+These validation trends motivate the physics-informed choice of 𝜎 and illustrate the sigma paradox: purely in-plane evaluation can
+prefer unrealistic degradations that do not yield the most anatomically plausible restored volumes.
+
+
+A. Ahituv et al.: Preprint                                                                                                                                                  Page 10
+
+=== PDF PAGE 11 ===
+                                     CRIS: cross-plane self-supervised isotropic restoration
+
+
+
+
+Figure 3: Brain MRI qualitative comparison showing zoomed-in regions of interest across sagittal and axial planes from an
+anisotropic coronal source volume with gap factor 𝑔 = 5. Columns are ordered left-to-right as Interpolation, ECLARE, SMORE4,
+CRIS, and isotropic ground truth (GT).
+
+
+
+Structural validity masks were used to skip empty imputed             This experiment is intentionally compared only against
+slices, thereby avoiding redundant network evaluations. GPU-      interpolation. Unlike interpolation, each additional learning-
+only inference averaged 8.1 ± 0.4 s per volume. Including         based baseline would require separate retraining, degradation
+disk I/O, structural padding, orthogonal reformatting, and        calibration, and hyperparameter tuning for each gap factor and
+voxel-wise consensus fusion, end-to-end restoration required      degradation plane to ensure a fair comparison. The purpose of
+14.8 ± 0.5 s per volume and processed the full eight-subject      this experiment is therefore not to repeat the full benchmark
+test set in under 2 min.                                          comparison from Table 1, but to test a distinct practical
+                                                                  question: whether a single CRIS model can generalize across
+5.2. Brain MRI robustness across gap factors and                  anisotropy severities and acquisition orientations without
+     degradation planes                                           per-configuration retraining.
+     To assess robustness beyond the primary coronal 𝑔 = 5            Averaged across degradation planes, CRIS consistently
+benchmark, we trained a single additional CRIS model on the       outperformed interpolation at every gap factor. PSNR de-
+public brain MRI cohort using coronal synthetic degradation       creased gradually from 36.36 dB at 𝑔 = 3 to 31.14 dB at
+with randomized training-time gap factors 𝑔 ∈ {3, 4, 5, 6, 7}     𝑔 = 7, whereas interpolation decreased from 33.07 dB to
+in the self-supervised degradation process. We then evaluated     27.85 dB. Similarly, 3D SSIM decreased from 0.977 to 0.932
+this same trained model, without retraining or configuration-     for CRIS versus 0.951 to 0.853 for interpolation, and Edges
+specific tuning, on test volumes synthetically degraded with      3D decreased from 0.973 to 0.904 for CRIS versus 0.926 to
+gap factors 𝑔 ∈ {3, 4, 5, 6, 7} in each of the coronal, axial,    0.804 for interpolation. Although performance declined as the
+and sagittal planes. Figure 4 summarizes the results.             gap increased, CRIS degraded gracefully and maintained a
+
+
+A. Ahituv et al.: Preprint                                                                                             Page 11
+
+=== PDF PAGE 12 ===
+                                      CRIS: cross-plane self-supervised isotropic restoration
+
+
+
+
+Figure 4: Brain MRI robustness across anisotropy severity and degradation orientation. A single CRIS model was trained once
+using coronal synthetic degradation with randomized training-time gap factors 𝑔 ∈ {3, 4, 5, 6, 7} in the self-supervised degradation
+process. The trained model was then evaluated under synthetic degradations with gap factors 3–7 across coronal, axial, and sagittal
+degradation planes. (A) Quantitative metrics averaged across the three degradation planes. (B) Representative sagittal-view slices
+under coronal degradation for selected gap factors. CRIS consistently outperforms interpolation and degrades gracefully as the gap
+increases.
+
+
+clear margin over interpolation, supporting the claim that          loss, removing both Sobel and focal-frequency losses, and
+its learned cross-plane completion prior is not restricted          training with only the L2 loss). We also evaluated the removal
+to a single acquisition geometry. FID likewise remained             of the validity-mask input channel and random intensity
+substantially lower across the full range, increasing from          normalization, altering the dimensionality of the degradation
+29.48 to 59.41 for CRIS compared with 63.59 to 139.89 for           kernel, and the application of spatial rotation augmentations
+interpolation.                                                      (0◦ , 90◦ , 180◦ , and 270◦ ) during training. Gap randomization
+    Representative qualitative results show the same trend:         is analyzed separately in the dedicated robustness experiment
+CRIS better preserves anatomical continuity and suppresses          because it changes the training distribution and is intended to
+cross-plane blurring and staircasing artifacts across all three     test single-model generalization across anisotropy severities
+degradation planes, even at the more challenging gap factors.       and degradation planes. Table 4 summarizes the results.
+Full per-configuration quantitative results, including GMSD              The baseline configuration (with staged loss scheduling)
+and KID, are reported in Supplementary Table S3, and                achieved the best case-level fidelity and structural consistency
+expanded qualitative cross-plane comparisons are provided           on the held-out brain MRI test set, yielding the highest
+in Supplementary Fig. S1. Importantly, these results were           PSNR, SSIM, and Edges 3D, alongside the lowest GMSD.
+obtained with one trained CRIS model rather than separate           Activating all losses from the start reduced performance
+models for each gap factor or degradation plane.                    relative to the staged schedule, supporting the use of a
+                                                                    warm-up period before the higher-order losses are introduced.
+5.3. Brain MRI component ablation study                             Removing the Sobel loss, removing both Sobel and focal-
+    Separate from the robustness experiment above, we               frequency losses, or relying only on the L2 loss reduced
+performed a component ablation study on the main brain              structural fidelity and edge preservation. Removing the focal-
+MRI setting to assess the contribution of key design choices.       frequency loss individually produced a small distribution-
+Starting from the baseline CRIS configuration, we varied            level improvement in FID and KID, but reduced voxel-based
+components to assess their individual contributions. This           fidelity and structural metrics, indicating a trade-off between
+included ablating individual and combined loss terms (train-        distributional alignment and anatomical consistency. Adding
+ing with all losses active from the start, removing the Sobel       rotation augmentation also reduced performance, consistent
+
+A. Ahituv et al.: Preprint                                                                                                 Page 12
+
+=== PDF PAGE 13 ===
+                                       CRIS: cross-plane self-supervised isotropic restoration
+
+Table 4
+Brain MRI component ablation study on the held-out brain MRI test set of the public multi-site cohort. Starting from the baseline
+CRIS configuration, we modify selected design choices or training schedules. PSNR, SSIM, GMSD, and Edges 3D are reported as
+mean ± SD over the eight test volumes. FID and KID are distribution-level metrics and are reported without SD. FID is rounded
+to two decimal places; GMSD is rounded to four decimal places; PSNR, SSIM, KID, and Edges 3D are rounded to three decimal
+places. Higher is better for PSNR, SSIM, and Edges 3D; lower is better for FID, KID, and GMSD. Best values in each column are
+shown in bold.
+ Variant                                    PSNR ↑             SSIM ↑        FID ↓ KID ↓          GMSD ↓            Edges 3D ↑
+ Baseline model                    32.921 ± 0.436 0.963 ± 0.003              35.04   0.013 0.0152 ± 0.0007 0.950 ± 0.004
+ No focal-frequency loss           32.767 ± 0.440 0.963 ± 0.003              34.77   0.013 0.0157 ± 0.0008 0.949 ± 0.004
+ All losses from start             32.746 ± 0.431 0.962 ± 0.003              36.05   0.013 0.0156 ± 0.0007 0.947 ± 0.004
+ No Sobel loss                     32.646 ± 0.434 0.962 ± 0.003              37.26   0.014 0.0156 ± 0.0007 0.947 ± 0.004
+ No Sobel or focal-frequency loss  32.746 ± 0.445 0.962 ± 0.003              37.02   0.014 0.0157 ± 0.0007 0.947 ± 0.004
+ Only L2 loss                      32.681 ± 0.418 0.958 ± 0.003              39.08   0.016 0.0160 ± 0.0007 0.943 ± 0.005
+ Add rotation augmentation         32.790 ± 0.445 0.963 ± 0.003              36.51   0.014 0.0159 ± 0.0008 0.949 ± 0.004
+ No random intensity normalization 32.616 ± 0.442 0.962 ± 0.003              38.23   0.016 0.0167 ± 0.0008 0.947 ± 0.004
+ No extra mask channel             32.715 ± 0.429 0.963 ± 0.003              36.10   0.014 0.0158 ± 0.0008 0.949 ± 0.004
+ 2D kernel                         27.300 ± 0.427 0.918 ± 0.006              66.07   0.035 0.0324 ± 0.0011 0.895 ± 0.008
+
+
+
+Table 5                                                             Table 6
+Reference-free abdominal MRI results on the private Rambam          EPFL FIB-SEM average-plane results under simulated 4×
+FIESTA cohort with typical through-plane gap factor 𝑔 ≈ 6.          through-plane anisotropy (𝑔 = 4). Both train and test
+Evaluation compares restored orthogonal slices against the          subvolumes have dimensions 165 × 768 × 1024. Higher is better
+corresponding original in-plane slices. Lower is better.            for 3D PSNR and 3D SSIM; lower is better for GMSD, FID,
+                                                                    and KID.
+Method                         FID ↓                     KID ↓
+                                                                    Method           3D PSNR ↑ 3D SSIM ↑ GMSD ↓ FID ↓ KID ↓
+CRIS                           48.71                      0.023
+SMORE4                         66.53                      0.041     CRIS                29.100      0.830     0.0056 37.20 0.033
+ECLARE                         72.14                      0.046     vEMINR (Final)      29.099      0.826     0.0060 38.28 0.035
+SIMPLE                         84.24                      0.047     vEMINR (XZ)         29.064      0.825     0.0060 38.17 0.034
+Interpolation                  87.87                      0.068     vEMINR (YZ)         29.069      0.825     0.0060 37.66 0.034
+                                                                    NIIV                24.824      0.664     0.0262 108.65 0.130
+                                                                    Interpolation       28.853      0.812     0.0078 40.09 0.037
+with the strongly canonical orientation of brain anatomy.
+Disabling random training-time intensity normalization de-
+creased performance across all metrics, and replacing the           directional artifacts in sagittal and axial reformats, consistent
+1D degradation kernel with a 2D Gaussian kernel caused the          with the reduction in FID and KID in Table 5.
+largest degradation, supporting the use of direction-specific
+slice-profile simulation in MRI.                                    5.5. EPFL FIB-SEM results
+                                                                        Table 6 summarizes average-plane results on the EPFL
+5.4. Abdominal MRI results                                          FIB-SEM benchmark under 4× through-plane anisotropy.
+    Table 5 reports reference-free evaluation on the private        CRIS achieves the best performance across all reported
+abdominal MRI cohort. For the held-out test subjects, the           metrics, including 3D PSNR, 3D SSIM, GMSD, FID, and
+input to CRIS and all baselines was the coronal anisotropic         KID. It outperforms bicubic interpolation, NIIV, both di-
+volume. The native axial acquisition was not used as an input       rectional vEMINR reconstructions (XZ and YZ), and the
+for reconstruction; it was used only as an additional in-plane      final merged vEMINR volume, indicating that the cross-
+comparator for reference-free evaluation. Since no isotropic        plane restoration strategy transfers effectively to microscopy
+reference is available, evaluation compares restored coronal        when combined with the microscopy-specific degradation
+and axial slices against the corresponding original in-plane        and loss design described in Sec. 3.7. The EPFL train and
+slices using perceptual feature-space metrics. CRIS achieves        test volumes used in this benchmark each have dimensions
+the best performance, reducing FID to 48.71 and KID to              165 × 768 × 1024. Figure 6 presents a qualitative comparison
+0.023, substantially outperforming interpolation, ECLARE,           on the EPFL benchmark in the sagittal view under both 4×
+SIMPLE, and SMORE4. These gains indicate improved                   and 8× anisotropy. CRIS yields sharper and more continu-
+cross-plane anatomical consistency and fewer view-specific          ous ultrastructural boundaries than interpolation and NIIV,
+artifacts in the restored volume.                                   and appears visually more consistent than both directional
+    Figure 5 shows qualitative abdominal MRI results. Com-          vEMINR variants, particularly in the more challenging 8×
+pared with interpolation, SIMPLE, ECLARE, and SMORE4,               setting.
+CRIS produces more continuous organ boundaries and fewer
+
+A. Ahituv et al.: Preprint                                                                                                  Page 13
+
+=== PDF PAGE 14 ===
+                                    CRIS: cross-plane self-supervised isotropic restoration
+
+
+
+
+Figure 5: Abdominal MRI qualitative comparison showing zoomed-in regions of interest across sagittal and axial planes from
+a held-out coronal anisotropic source volume with typical gap factor 𝑔 ≈ 6. Columns are ordered left-to-right as Interpolation,
+SIMPLE, ECLARE, SMORE4, and CRIS.
+
+
+
+    Table 7 reports the more challenging EPFL setting            Table 7
+with 8× through-plane anisotropy. Under this severe gap,         EPFL FIB-SEM average-plane results under simulated 8×
+CRIS achieves the best performance across all reported           through-plane anisotropy (𝑔 = 8). Higher is better for 3D
+metrics among the evaluated baselines, with 26.874 dB 3D         PSNR and 3D SSIM; lower is better for GMSD, FID, and KID.
+PSNR, 0.722 3D SSIM, and the lowest GMSD, FID, and               Method           3D PSNR ↑ 3D SSIM ↑ GMSD ↓ FID ↓ KID ↓
+KID. This setting is particularly informative because the
+larger missing regions amplify hallucination and structural-     CRIS                26.874     0.722    0.0219 58.09 0.058
+discontinuity errors, and CRIS remains robust under this         vEMINR (Final)      26.660     0.704    0.0249 66.75 0.070
+                                                                 vEMINR (XZ)         26.616     0.702    0.0249 65.57 0.068
+stronger anisotropy.
+                                                                 vEMINR (YZ)         26.607     0.702    0.0250 64.30 0.067
+                                                                 Interpolation       26.293     0.685    0.0308 79.17 0.085
+5.6. FlyEM hemibrain noisy results                               NIIV                22.819     0.489    0.0517 135.85 0.161
+    Table 9 reports results on the noisy hemibrain benchmark
+under simulated 8× anisotropy. CRIS improves over NIIV
+and both interpolation variants across all reported metrics,     especially notable because NIIV is a strong self-supervised
+including CF-PSNR, PSNR, 3D SSIM, GMSD, FID, and                 neural implicit baseline specifically designed for isotropic
+KID. For the case-level metrics reported with SD, two-sided      volume restoration.
+paired Wilcoxon signed-rank tests with Holm–Bonferroni cor-
+rection showed statistically significant CRIS-versus-baseline    5.7. Microscopy component ablation study
+improvements across all tested comparisons (𝑝adj < 0.001).           We further evaluated microscopy-specific CRIS variants
+The improvement over NIIV under the same protocol is             on EPFL and FlyEM hemibrain to assess the effect of the loss
+
+A. Ahituv et al.: Preprint                                                                                            Page 14
+
+=== PDF PAGE 15 ===
+                                           CRIS: cross-plane self-supervised isotropic restoration
+      Interpolation   NIIV   vEMINR XZ vEMINR YZ   CRIS      GT
+                                                                        degradation protocols. Taken together, these results support
+                                                                        the CRIS formulation as a practical route to modality-
+                                                                        flexible isotropic restoration through explicit missing-slice
+                                                                        modeling, orthogonal stripe completion, and modality-aware
+                                                                        self-supervised degradation.
+
+
+
+
+ 4×
+
+
+
+
+ 8×
+
+Figure 6: Qualitative comparison on the EPFL FIB-SEM dataset
+in the sagittal view under simulated 4× and 8× through-plane
+anisotropy. Columns are ordered left-to-right as interpolation,
+NIIV, vEMINR XZ, vEMINR YZ, CRIS, and isotropic ground
+truth. CRIS preserves ultrastructural continuity more faithfully
+under both anisotropy levels, with the advantage becoming
+more pronounced in the more challenging 8× setting.
+
+
+
+configuration, rotation augmentation, and adding MRI-style
+random intensity normalization to the microscopy training
+pipeline. The ablation results show that no single variant
+dominates every metric: the final CRIS configuration gives
+the best or most balanced fidelity and distribution-level
+performance, while isolated variants can improve individual
+metrics such as SSIM, GMSD, or KID. Removing microscopy
+augmentations consistently reduces performance, particularly
+on hemibrain, whereas adding random intensity normaliza-
+tion is not part of the final microscopy configuration and
+substantially degrades EPFL 8× fidelity.
+
+5.8. Summary across modalities
+    Across both MRI and microscopy, CRIS consistently
+improves isotropic restoration quality under self-supervised
+training without paired isotropic targets. In MRI, the strongest
+gains appear in volumetric fidelity, perceptual quality, and
+downstream segmentation. In microscopy, CRIS remains
+robust under both moderate and severe anisotropy and
+outperforms strong neural implicit baselines under matched
+
+
+A. Ahituv et al.: Preprint                                                                                                  Page 15
+
+=== PDF PAGE 16 ===
+                                     CRIS: cross-plane self-supervised isotropic restoration
+
+Table 8
+Microscopy component ablation study. EPFL results are full-volume average-plane metrics. FlyEM hemibrain PSNR, 3D SSIM,
+and GMSD are reported as mean ± SD over 50 test subvolumes; FID and KID are distribution-level metrics and are reported
+without SD. Higher is better for PSNR and 3D SSIM; lower is better for GMSD, FID, and KID. “Added random normalization”
+denotes a microscopy variant in which MRI-style random intensity normalization was added during training; it is not part of the
+final microscopy configuration. Bold indicates the best value within each dataset block among CRIS variants.
+
+ Dataset                Variant                             PSNR ↑           3D SSIM ↑            GMSD ↓          FID ↓ KID ↓
+ EPFL 4×                CRIS                                29.100              0.830             0.0056          37.20 0.033
+                        All-loss objective                  28.918              0.827             0.0063          41.07 0.038
+                        No augmentations                    28.944              0.825             0.0065          38.74 0.036
+ EPFL 8×                CRIS                                26.874              0.722             0.0219          58.09    0.058
+                        All-loss objective                  26.800              0.731             0.0202          60.54    0.061
+                        No augmentations                    26.760              0.720             0.0224          59.11    0.058
+                        Added random normalization          23.405              0.657             0.0380          60.02    0.056
+ FlyEM hemibrain 8× CRIS                       21.935 ± 0.437 0.696 ± 0.024 0.0447 ± 0.0048                       46.12    0.055
+                    All-loss objective         21.922 ± 0.438 0.699 ± 0.024 0.0439 ± 0.0047                       46.33    0.056
+                    No augmentations           21.794 ± 0.434 0.675 ± 0.026 0.0472 ± 0.0050                       50.23    0.061
+                    Added random normalization 21.876 ± 0.435 0.702 ± 0.023 0.0440 ± 0.0046                       46.53    0.056
+
+
+Table 9
+FlyEM hemibrain noisy subvolume results under simulated 8× through-plane anisotropy (𝑔 = 8). The benchmark uses 400
+subvolumes total, split in our experiments as 300 training, 50 validation, and 50 test subvolumes; cases 301–350 from the
+hemibrain-volume-noisy-large training portion were allocated to validation. PSNR, CF-PSNR, 3D SSIM, and GMSD are reported as
+mean ± SD over the 50 test subvolumes using the average-plane evaluation. FID and KID are distribution-level metrics and are
+reported without SD. Higher is better for PSNR, CF-PSNR, and 3D SSIM; lower is better for GMSD, FID, and KID. NN denotes
+nearest-neighbor interpolation, and Bilinear denotes bilinear interpolation.
+
+ Method            PSNR ↑               CF-PSNR ↑                3D SSIM ↑               GMSD ↓               FID ↓ KID ↓
+ CRIS     21.935 ± 0.437 25.162 ± 0.680 0.696 ± 0.024 0.0447 ± 0.0048                                         46.12       0.055
+ NIIV     21.610 ± 0.459 24.575 ± 0.717 0.677 ± 0.025 0.0501 ± 0.0055                                         48.00       0.059
+ NN       20.510 ± 0.501 22.976 ± 0.722 0.626 ± 0.024 0.0758 ± 0.0078                                         85.11       0.109
+ Bilinear 20.960 ± 0.500 23.379 ± 0.756 0.633 ± 0.027 0.0638 ± 0.0068                                         61.80       0.077
+
+
+6. Discussion                                                     This difference shifts the learning objective from deblurring
+                                                                  to reconstruction, which we find leads to improved volumetric
+    CRIS addresses isotropic restoration from anisotropic         consistency and robustness across acquisition settings.
+volumetric imaging without requiring paired isotropic ground           The results indicate that the proposed cross-plane formu-
+truth, a setting that is common in both clinical MRI and vol-
+                                                                  lation and the multi-view fusion strategy are complemen-
+umetric microscopy. By reformulating the problem as cross-
+                                                                  tary. Independent reconstruction of orthogonal reformats
+plane self-supervised stripe completion, the method leverages     captures plane-specific structure effectively, while voxel-wise
+the high-resolution in-plane content already available in         fusion reduces view-specific artifacts and improves three-
+routine acquisitions and avoids dependence on external            dimensional continuity. This is consistent with the qualitative
+supervision. This makes the framework attractive in realistic     observation that each single-view reconstruction tends to be
+scenarios where fully isotropic reference data are unavailable
+                                                                  strongest in its native reconstruction plane, whereas the fused
+or impractical to acquire. In this respect, CRIS extends the
+                                                                  volume provides a better balance for volumetric analysis.
+practical advantages of self-supervised restoration beyond        More broadly, this supports the idea that explicit cross-plane
+single-plane formulations previously explored in MRI and          consistency is a useful inductive bias for isotropic restoration,
+microscopy (Zhao et al., 2021; Remedios et al., 2023; Yang        complementing prior multi-plane and multi-view approaches
+et al., 2026; Troidl et al., 2026a).                              (Benisty et al., 2026; Yang et al., 2026).
+    A central distinction from prior self-supervised MRI
+                                                                       The dedicated brain MRI robustness study further shows
+super-resolution methods is the explicit modeling of missing
+                                                                  that the learned restoration prior is not tightly tied to a single
+data. Whereas methods such as SMORE (Zhao et al., 2021;           anisotropy severity or acquisition orientation, as the same
+Remedios et al., 2023) rely on interpolated inputs and            trained model remained effective across gap factors 3–7 and
+learn refinement mappings, CRIS formulates the problem            across coronal, axial, and sagittal degradations. This is a
+as conditional completion under a known sampling pattern.         practical advantage over many learning-based restoration
+
+A. Ahituv et al.: Preprint                                                                                                 Page 16
+
+=== PDF PAGE 17 ===
+                                       CRIS: cross-plane self-supervised isotropic restoration
+
+pipelines, where the degradation setting is often baked into        Declaration of generative AI and AI-assisted
+the training protocol and fair deployment across different gap      technologies in the manuscript preparation
+factors or acquisition orientations would require additional
+retraining and tuning. In contrast, CRIS can be trained with        process
+a variable-gap self-supervised degradation process and then             During the preparation of this manuscript, the authors
+applied across a range of anisotropy configurations.                used ChatGPT to assist with drafting parts of the manuscript
+     A central finding of this study is that a common restora-      and writing several code functions used in the research
+tion framework can generalize across modalities when paired         workflow. The tool was not used to generate, alter, or interpret
+with degradation models that reflect the relevant acquisition       experimental data, results, or figures. All AI-assisted outputs
+physics. In MRI, directional Gaussian degradation provides a        were carefully reviewed, edited, validated, and approved by
+more suitable approximation of through-plane slice blurring         the authors, who take full responsibility for the final content
+and partial-volume effects, whereas in microscopy, average-         of the manuscript.
+pooling-based degradation better matches anisotropic section
+integration. Thus, the framework is shared, but its degradation
+operator and loss design remain modality-aware. This dis-
+                                                                    Data availability
+tinction appears important for stable self-supervision, since             The public brain MRI data used in this study were drawn
+physically mismatched degradations are known to reduce              from ABIDE and ABIDE-II (Di Martino et al., 2014, 2017)
+realism and downstream utility in anisotropic restoration           and are available through the LONI Image and Data Archive
+pipelines (Remedios et al., 2023; Khateri et al., 2025).            (IDA): https://ida.loni.usc.edu/login.jsp, subject to
+     The segmentation results further suggest that the benefits     the repository’s access and data-use requirements. The exact
+of CRIS extend beyond image appearance. The consistent              subject identifiers and train/validation/test split used in this
+gains across anatomical structures indicate improved preser-        work are provided in Supplementary Table S4.
+vation of biologically meaningful morphology, which is                    The EPFL FIB-SEM data are publicly available from
+critical for downstream medical image analysis. This is             the EPFL CVLab Electron Microscopy Dataset page: https:
+especially important because improvements in perceptual             / / w w w . e p f l . c h / l a b s / c v l a b / d a t a / d a t a - e m/. We used
+or pixel-wise metrics do not necessarily translate into better      the standard train and test subvolumes described in the
+analysis performance.                                               manuscript (CVLab, EPFL, 2025; Lucchi et al., 2013).
+     Several limitations should be noted. The public brain                The FlyEM hemibrain noisy subvolume data used for
+MRI benchmark is based on synthetic anisotropy, which does          the microscopy benchmark can be accessed through the data
+not capture all real acquisition artifacts. The abdominal MRI       download link provided in the NIIV GitHub repository: https:
+setting is more realistic, but lacks isotropic ground truth for     //github.com/jakobtroidl/niiv-miccai. In our experiments,
+direct full-reference evaluation. In addition, the current fusion   cases 301–350 from the hemibrain-volume-noisy-large train-
+stage is deliberately simple and may be suboptimal in regions       ing portion were allocated to validation, yielding 300 training,
+where the confidence of the orthogonal reconstructions              50 validation, and 50 test subvolumes (Troidl et al., 2026a,b).
+differs substantially. The microscopy experiments, while                  The private abdominal MRI cohort cannot be made
+encouraging, also remain restricted to two benchmark settings       publicly available because it contains clinical imaging data
+and do not yet cover the full diversity of acquisition protocols    collected under institutional approval and subject to patient
+encountered in large-scale biological imaging.                      privacy and institutional data-use restrictions. Access to these
+     Future work should investigate adaptive or uncertainty-        data may be considered by the corresponding author upon
+weighted fusion to reduce the influence of unreliable view-         reasonable request and subject to institutional approval and
+specific predictions, as well as tighter integration with down-     data-sharing agreements.
+stream tasks. Broader evaluation across scanners, protocols,
+anatomies, anisotropy factors, and additional microscopy
+                                                                    Code availability
+settings will also be important for establishing the robustness
+and translational utility of the framework.                             The code used to train and evaluate CRIS is publicly
+     Overall, CRIS shows that anisotropic-to-isotropic restora-     available at: https://github.com/adi-hatav/CRIS.
+tion can be approached as a cross-plane completion problem
+that reuses a common architecture while adapting the degra-         Funding
+dation model and training schedule to the imaging modality.
+Across two MRI cohorts and two microscopy benchmarks,                    This work was supported by the Israel Innovation Author-
+the method consistently improves restoration quality over           ity [grant number 90044/90045].
+interpolation and strong self-supervised baselines, while
+remaining trainable without paired isotropic targets. These         Declaration of competing interest
+findings support cross-plane self-supervision as a practical
+and modality-flexible strategy for recovering isotropic struc-          The authors declare that they have no known competing
+ture from routine anisotropic volumetric acquisitions.              financial interests or personal relationships that could have
+                                                                    appeared to influence the work reported in this paper.
+
+
+A. Ahituv et al.: Preprint                                                                                                                 Page 17
+
+=== PDF PAGE 18 ===
+                                              CRIS: cross-plane self-supervised isotropic restoration
+
+CRediT authorship contribution statement                                         González-Ruiz, V., García-Ortiz, J.P., Fernández-Fernández, M.R., Fernán-
+                                                                                    dez, J.J., 2022. Optical flow driven interpolation for isotropic fib-sem
+    Adi Ahituv: Conceptualization, Methodology, Software,                           reconstructions. Computer Methods and Programs in Biomedicine 221,
+Formal analysis, Investigation, Visualization, Writing - origi-                     106856. doi:10.1016/j.cmpb.2022.106856.
+nal draft. Anat Ilivitzki: Data curation, Validation, Investiga-                 Greenspan, H., Oz, G., Kiryati, N., Peled, S., 2002. Mri inter-slice
+                                                                                    reconstruction using super-resolution. Magnetic Resonance Imaging
+tion, Writing - review & editing. Moti Freiman: Supervision,                        20, 437–446. doi:10.1016/S0730-725X(02)00511-8.
+Project administration, Funding acquisition, Writing - review                    Heinrich, L., Bogovic, J.A., Saalfeld, S., 2017. Deep learning for isotropic
+& editing.                                                                          super-resolution from non-isotropic 3d electron microscopy, in: Medical
+                                                                                    Image Computing and Computer-Assisted Intervention – MICCAI 2017,
+                                                                                    pp. 135–143. doi:10.1007/978-3-319-66185-8_16.
+References                                                                       Ho, J., Jain, A., Abbeel, P., 2020. Denoising diffusion probabilistic models.
+                                                                                    arXiv preprint arXiv:2006.11239 doi:10.48550/arXiv.2006.11239.
+Batson, J., Royer, L., 2019. Noise2self: Blind denoising by self-supervision,
+                                                                                 Iglesias, J.E., Billot, B., Balbastre, Y., Magdamo, C., Arnold, S.E., Das, S.,
+   in: Proceedings of the 36th International Conference on Machine
+                                                                                    Edlow, B.L., Alexander, D.C., Golland, P., Fischl, B., 2023. Synthsr:
+   Learning (ICML), pp. 524–533.
+                                                                                    A public ai tool to turn heterogeneous clinical brain scans into high-
+Benisty, R., Shteynman, Y., Porat, M., Ilivitzki, A., Freiman, M., 2026.
+                                                                                    resolution t1-weighted images for 3d morphometry. Science Advances 9,
+   Simple: Simultaneous multi-plane self-supervised learning for isotropic
+                                                                                    eadd3607. doi:10.1126/sciadv.add3607.
+   mri restoration from anisotropic data, in: Medical Image Computing
+                                                                                 Jack, C.R., Bernstein, M.A., Fox, N.C., Thompson, P., Alexander, G.,
+   and Computer Assisted Intervention – MICCAI 2025, Proceedings, pp.
+                                                                                    Harvey, D., Borowski, B., Britson, P.J., Whitwell, J.L., Ward, C., Dale,
+   551–561. doi:10.1007/978-3-032-05169-1_53.
+                                                                                    A.M., Felmlee, J.P., Gunter, J.L., Hill, D.L.G., Killiany, R., Schuff, N.,
+Billot, B., Greve, D.N., Puonti, O., Thielscher, A., Van Leemput, K., Fischl,
+                                                                                    Fox-Bosetti, S., Lin, C., Studholme, C., DeCarli, C.S., Krueger, G.,
+   B., Dalca, A.V., Iglesias, J.E., 2023a. Synthseg: Segmentation of brain
+                                                                                    Ward, H.A., Metzger, G.J., Scott, K.T., Mallozzi, R., Blezek, D., Levy,
+   mri scans of any contrast and resolution without retraining. Medical
+                                                                                    J., Debbins, J.P., Fleisher, A.S., Albert, M., Green, R., Bartzokis, G.,
+   Image Analysis 86, 102789. doi:10.1016/j.media.2023.102789.
+                                                                                    Glover, G., Mugler, J., Weiner, M.W., 2008. The alzheimer’s disease
+Billot, B., Magdamo, C., Arnold, S.E., Das, S., Iglesias, J.E., 2023b. Robust
+                                                                                    neuroimaging initiative (adni): Mri methods. Journal of Magnetic
+   machine learning segmentation for large-scale analysis of heterogeneous
+                                                                                    Resonance Imaging 27, 685–691. doi:10.1002/jmri.21049.
+   clinical brain mri datasets. Proceedings of the National Academy of
+                                                                                 Janelia Research Campus, HHMI, 2026. Flyem hemibrain project. https:
+   Sciences 120, e2216399120. doi:10.1073/pnas.2216399120.
+                                                                                    //www.janelia.org/project-team/flyem/hemibrain. Accessed 2026-04-
+Cao, H., Wang, Y., Chen, J., Jiang, D., Zhang, X., Tian, Q., Wang, M., 2021.
+                                                                                    04.
+   Swin-unet: Unet-like pure transformer for medical image segmentation.
+                                                                                 Jiang, L., Dai, B., Wu, W., Loy, C.C., 2021. Focal frequency loss for
+   arXiv preprint arXiv:2105.05537 doi:10.48550/arXiv.2105.05537.
+                                                                                    image reconstruction and synthesis, in: Proceedings of the IEEE/CVF
+Chen, Y., Liu, S., Wang, X., 2021. Learning continuous image representation
+                                                                                    International Conference on Computer Vision (ICCV), pp. 13899–13909.
+   with local implicit image function, in: Proceedings of the IEEE/CVF
+                                                                                    doi:10.1109/ICCV48922.2021.01366.
+   Conference on Computer Vision and Pattern Recognition (CVPR), pp.
+                                                                                 Khateri, M., Vasylechko, S., Ghahremani, M., Timms, L., Kocanaogullari,
+   8628–8638. doi:10.1109/CVPR46437.2021.00852.
+                                                                                    D., Warfield, S.K., Jaimes, C., Karimi, D., Sierra, A., Tohka, J., Kurugol,
+CVLab, EPFL, 2025. Electron microscopy dataset (ca1 hippocampus fib-sem
+                                                                                    S., Afacan, O., 2025. Mri super-resolution with deep learning: A
+   subvolumes). https://www.epfl.ch/labs/cvlab/data/data-em/. Accessed
+                                                                                    comprehensive survey. arXiv preprint arXiv:2511.16854 doi:10.485
+   2026-04-04.
+                                                                                    50/arXiv.2511.16854.
+Deng, S., Fu, X., Xiong, Z., Chen, C., Liu, D., Chen, X., Ling, Q., Wu,
+                                                                                 Kim, H., Thanki, A., van Herten, R., Margolis, D., Sabuncu, M.R., 2026.
+   F., 2020. Isotropic reconstruction of 3d em images with unsupervised
+                                                                                    Single-subject multi-view mri super-resolution via implicit neural repre-
+   degradation learning, in: Medical Image Computing and Computer-
+                                                                                    sentations. arXiv preprint arXiv:2603.22627 .
+   Assisted Intervention – MICCAI 2020, pp. 163–173. doi:10.1007/97
+                                                                                 Krull, A., Buchholz, T.O., Jug, F., 2019. Noise2void – learning denoising
+   8-3-030-59722-1_16.
+                                                                                    from single noisy images, in: Proceedings of the IEEE/CVF Conference
+Di Martino, A., O’Connor, D., Chen, B., Alaerts, K., Anderson, J.S., Assaf,
+                                                                                    on Computer Vision and Pattern Recognition (CVPR), pp. 2124–2132.
+   M., et al., 2017. Enhancing studies of the connectome in autism using
+                                                                                    doi:10.1109/CVPR.2019.00223.
+   the autism brain imaging data exchange ii. Scientific Data 4, 170010.
+                                                                                 Liu, Z., Lin, Y., Cao, Y., Hu, H., Wei, Y., Zhang, Z., Lin, S., Guo, B., 2021.
+   doi:10.1038/sdata.2017.10.
+                                                                                    Swin transformer: Hierarchical vision transformer using shifted windows,
+Di Martino, A., Yan, C.G., Li, Q., Denio, E., Castellanos, F.X., Alaerts, K.,
+                                                                                    in: Proceedings of the IEEE/CVF International Conference on Computer
+   Anderson, J.S., Assaf, M., Bookheimer, S.Y., Dapretto, M., Deen, B.,
+                                                                                    Vision (ICCV), pp. 10012–10022.
+   Delmonte, S., Dinstein, I., Ertl-Wagner, B., Fair, D.A., Gallagher, L.,
+                                                                                 Lu, Z., Wang, J., Li, Z., Ying, S., Wang, J., Shi, J., Shen, D., 2023. Two-stage
+   Kennedy, D.P., Keown, C.L., Keysers, C., Lainhart, J.E., Lord, C., Luna,
+                                                                                    self-supervised cycle-consistency transformer network for reducing slice
+   B., Menon, V., Minshew, N.J., Monk, C.S., Mueller, S., Müller, R.A.,
+                                                                                    gap in mr images. IEEE Journal of Biomedical and Health Informatics
+   Nebel, M.B., Nigg, J.T., O’Hearn, K., Pelphrey, K.A., Peltier, S.J., Rudie,
+                                                                                    27, 3337–3348. doi:10.1109/JBHI.2023.3271815.
+   J.D., Sunaert, S., Thioux, M., Tyszka, J.M., Uddin, L.Q., Verhoeven, J.S.,
+                                                                                 Lucchi, A., Li, Y., Fua, P., 2013. Learning for structured prediction using
+   Wenderoth, N., Wiggins, J.L., Mostofsky, S.H., Milham, M.P., 2014. The
+                                                                                    approximate subgradient descent with working sets, in: Proceedings of the
+   autism brain imaging data exchange: Towards a large-scale evaluation
+                                                                                    IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+   of the intrinsic brain architecture in autism. Molecular Psychiatry 19,
+                                                                                    pp. 1987–1994. doi:10.1109/CVPR.2013.259.
+   659–667. doi:10.1038/mp.2013.78.
+                                                                                 Manjón, J.V., Coupé, P., Buades, A., Fonov, V., Collins, D.L., Robles, M.,
+Gholipour, A., Estroff, J.A., Barnewolt, C.E., Connolly, S.A., Warfield, S.K.,
+                                                                                    2010. Non-local mri upsampling. Medical Image Analysis 14, 784–792.
+   2015. Super-resolution reconstruction in frequency, image and wavelet
+                                                                                    doi:10.1016/j.media.2010.05.010.
+   domains to reduce through-plane partial voluming in mri, in: Medical
+                                                                                 Pan, M., Gan, Y., Zhou, F., Liu, J., Zhang, Y., Wang, A., Zhang, S., Li,
+   Image Computing and Computer-Assisted Intervention – MICCAI 2015.
+                                                                                    D., 2023. Diffuseir: Diffusion models for isotropic reconstruction of
+   Springer, pp. 411–418. doi:10.1007/978-3-319-24574-4_49.
+                                                                                    3d microscopic images, in: Medical Image Computing and Computer
+Gholipour, A., Estroff, J.A., Sahin, M., Prabhu, S.P., Warfield, S.K., 2010.
+                                                                                    Assisted Intervention – MICCAI 2023, pp. 323–332. doi:10.1007/978-3
+   Maximum a posteriori estimation of isotropic high-resolution volumetric
+                                                                                    -031-43999-5_31.
+   mri from orthogonal thick-slice scans, in: Medical Image Computing and
+                                                                                 Peddie, C.J., Collinson, L.M., 2014. Exploring the third dimension: Volume
+   Computer-Assisted Intervention – MICCAI 2010. Springer, pp. 109–116.
+                                                                                    electron microscopy comes of age. Micron 61, 9–19. doi:10.1016/j.micr
+   doi:10.1007/978-3-642-15745-5_14.
+
+
+A. Ahituv et al.: Preprint                                                                                                                            Page 18
+
+=== PDF PAGE 19 ===
+                                              CRIS: cross-plane self-supervised isotropic restoration
+
+   on.2014.01.009.                                                               Wang, X., Wang, S., Xiong, H., Xuan, K., Zhuang, Z., Liu, M., Shen, Z.,
+Peddie, C.J., Genoud, C., Kreshuk, A., Meechan, K., Micheva, K.D., Narayan,        Zhao, X., Zhang, L., Wang, Q., 2024. Spatial attention-based implicit
+   K., Pape, C., Parton, R.G., Schieber, N.L., Schwab, Y., Titze, B., Verkade,     neural representation for arbitrary reduction of mri slice spacing. Medical
+   P., Collinson, L.M., 2022. Volume electron microscopy. Nature Reviews           Image Analysis 94, 103158. doi:10.1016/j.media.2024.103158.
+   Methods Primers 2, 51. doi:10.1038/s43586-022-00131-9.                        Wang, Z., Bovik, A.C., Sheikh, H.R., Simoncelli, E.P., 2004. Image
+Peng, C., Lin, W.A., Liao, H., Chellappa, R., Zhou, S.K., 2020. Saint:             quality assessment: From error visibility to structural similarity. IEEE
+   Spatially aware interpolation network for medical slice synthesis, in:          Transactions on Image Processing 13, 600–612. doi:10.1109/TIP.2003.8
+   Proceedings of the IEEE/CVF Conference on Computer Vision and                   19861.
+   Pattern Recognition (CVPR), pp. 7750–7759. doi:10.1109/CVPR4260               Xue, W., Zhang, L., Mou, X., Bovik, A.C., 2014. Gradient magnitude
+   0.2020.00777.                                                                   similarity deviation: A highly efficient perceptual image quality index.
+Remedios, S.W., Han, S., Zuo, L., Carass, A., Pham, D.L., Prince, J.L.,            IEEE Transactions on Image Processing 23, 684–695. doi:10.1109/TIP.
+   Dewey, B.E., 2023. Self-supervised super-resolution for anisotropic             2013.2293423.
+   mr images with and without slice gap, in: Simulation and Synthesis            Yang, J., Huo, J., Liu, M., Feng, C., Zhang, Y., Pan, G., Meng, W., Han,
+   in Medical Imaging (SASHIMI), MICCAI Workshop, pp. 118–128.                     R., 2026. veminr: Ultra-fast isotropic reconstruction for volume electron
+   doi:10.1007/978-3-031-44689-4_12.                                               microscopy with implicit neural representation. Advanced Science 13,
+Remedios, S.W., Wei, S., Han, S., Zhang, J., Carass, A., Schilling, K.G.,          e11922. doi:10.1002/advs.202511922.
+   Pham, D.L., Prince, J.L., Dewey, B.E., 2026. Eclare: Efficient cross-planar   Zhao, C., Dewey, B.E., Pham, D.L., Calabresi, P.A., Reich, D.S., Prince,
+   learning for anisotropic resolution enhancement. Journal of Medical             J.L., 2021. Smore: A self-supervised anti-aliasing and super-resolution
+   Imaging 13, 024001. doi:10.1117/1.JMI.13.2.024001.                              algorithm for mri using deep learning. IEEE Transactions on Medical
+Rousseau, F., 2010. A non-local approach for image super-resolution                Imaging 40, 805–817. doi:10.1109/TMI.2020.3037187.
+   using intermodality priors. Medical Image Analysis 14, 594–605.
+   doi:10.1016/j.media.2010.04.005.
+Rueda, A., Malpica, N., Romero, E., 2013. Single-image super-resolution
+   of brain mr images using overcomplete dictionaries. Medical Image
+   Analysis 17, 113–132. doi:10.1016/j.media.2012.09.003.
+Scheffer, L.K., Xu, C.S., Januszewski, M., Lu, Z., Takemura, S.Y., Hayworth,
+   K.J., et al., 2020. A connectome and analysis of the adult drosophila
+   central brain. eLife 9, e57443. doi:10.7554/eLife.57443.
+Shapson-Coe, A., Januszewski, M., Berger, D.R., Pope, A., Wu, Y., Blakely,
+   T., et al., 2024. A petavoxel fragment of human cerebral cortex
+   reconstructed at nanoscale resolution. Science 384, eadk4858. doi:10.1
+   126/science.adk4858.
+Shocher, A., Cohen, N., Irani, M., 2018. “zero-shot” super-resolution
+   using deep internal learning, in: Proceedings of the IEEE Conference
+   on Computer Vision and Pattern Recognition (CVPR), pp. 3118–3126.
+   doi:10.1109/CVPR.2018.00329.
+Sitzmann, V., Martel, J.N.P., Bergman, A.W., Lindell, D.B., Wetzstein, G.,
+   2020. Implicit neural representations with periodic activation functions,
+   in: Advances in Neural Information Processing Systems, pp. 7462–7473.
+Solano-Carrillo, E., Rodriguez, A.B., Carrillo-Perez, B., Steiniger, Y.,
+   Stoppe, J., 2023. Look atme: The discriminator mean entropy needs
+   attention, in: Proceedings of the IEEE/CVF Conference on Computer
+   Vision and Pattern Recognition Workshops, pp. 787–796.
+Song, H., Mao, X., Yu, J., Li, Q., Wang, Y., 2024. I3 net: Inter-intra-slice
+   interpolation network for medical slice synthesis. IEEE Transactions on
+   Medical Imaging 43, 3306–3318. doi:10.1109/TMI.2024.3394033.
+Song, Y., Sohl-Dickstein, J., Kingma, D.P., Kumar, A., Ermon, S., Poole, B.,
+   2020. Score-based generative modeling through stochastic differential
+   equations. arXiv preprint arXiv:2011.13456 doi:10.48550/arXiv.2011.13
+   456.
+Szegedy, C., Vanhoucke, V., Ioffe, S., Shlens, J., Wojna, Z., 2016. Rethinking
+   the inception architecture for computer vision, in: Proceedings of the
+   IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+   pp. 2818–2826. doi:10.1109/CVPR.2016.308.
+Troidl, J., Liang, Y., Beyer, J., Tavakoli, M., Danzl, J.G., Hadwiger, M.,
+   Pfister, H., Tompkin, J., 2026a. niiv: Interactive self-supervised neural
+   implicit isotropic volume reconstruction, in: Efficient Medical Artificial
+   Intelligence (EMA), MICCAI Workshop, pp. 257–267. doi:10.1007/97
+   8-3-032-13961-0_26.
+Troidl, J., Liang, Y., Beyer, J., Tavakoli, M., Danzl, J.G., Hadwiger, M.,
+   Pfister, H., Tompkin, J., 2026b. niiv-miccai: Interactive self-supervised
+   neural implicit isotropic volume reconstruction. https://github.com/jak
+   obtroidl/niiv-miccai. GitHub repository; includes data download links
+   for the hemibrain noisy benchmark. Accessed 2026-05-03.
+Ulyanov, D., Vedaldi, A., Lempitsky, V., 2018. Deep image prior, in:
+   Proceedings of the IEEE Conference on Computer Vision and Pattern
+   Recognition (CVPR), pp. 9446–9454. doi:10.1109/CVPR.2018.00984.
+
+
+
+
+A. Ahituv et al.: Preprint                                                                                                                         Page 19
+
+=== PDF PAGE 20 ===
+                                                   CRIS: cross-plane self-supervised isotropic restoration
+
+Supplementary Material
+S1. Per-structure downstream segmentation results
+Table S1.
+Per-structure downstream segmentation consistency across 32 anatomical brain labels on the public brain MRI cohort. Values are reported as mean ± SD over
+the eight test volumes for each anatomical label, method, and metric. Higher Dice indicates better overlap, whereas lower ASSD and HD99 indicate better
+surface agreement. Bold indicates the best value within each anatomical structure and metric group.
+
+                                                    Dice ↑                                    ASSD (mm) ↓                                     HD99 (mm) ↓
+Label name
+                                      CRIS        SMORE4        Interpolation       CRIS         SMORE4          Interpolation     CRIS          SMORE4      Interpolation
+
+left cerebral white matter       0.953 ± 0.009 0.940 ± 0.010 0.926 ± 0.008 0.267 ± 0.038 0.332 ± 0.040 0.412 ± 0.033 1.421 ± 0.110 1.637 ± 0.269 2.069 ± 0.123
+left cerebral cortex             0.930 ± 0.008 0.913 ± 0.009 0.894 ± 0.007 0.336 ± 0.035 0.404 ± 0.034 0.475 ± 0.029 1.421 ± 0.110 1.725 ± 0.093 2.012 ± 0.107
+left lateral ventricle           0.973 ± 0.006 0.964 ± 0.008 0.948 ± 0.013 0.106 ± 0.017 0.146 ± 0.030 0.228 ± 0.060 0.977 ± 0.000 1.028 ± 0.143 2.664 ± 2.387
+left inferior lateral ventricle 0.837 ± 0.050 0.794 ± 0.057 0.771 ± 0.036 0.256 ± 0.079 0.369 ± 0.121 0.407 ± 0.083 1.677 ± 0.557 2.861 ± 1.415 2.772 ± 0.629
+left cerebellum white matter 0.929 ± 0.008 0.904 ± 0.014 0.894 ± 0.014 0.280 ± 0.029 0.384 ± 0.041 0.451 ± 0.051 1.907 ± 0.263 2.740 ± 0.383 3.383 ± 0.534
+left cerebellum cortex           0.958 ± 0.005 0.945 ± 0.005 0.936 ± 0.005 0.341 ± 0.033 0.442 ± 0.029 0.519 ± 0.032 1.943 ± 0.430 2.309 ± 0.206 2.692 ± 0.193
+left thalamus                    0.968 ± 0.005 0.965 ± 0.002 0.951 ± 0.004 0.235 ± 0.033 0.263 ± 0.021 0.355 ± 0.027 1.129 ± 0.209 1.054 ± 0.152 1.531 ± 0.221
+left caudate                     0.972 ± 0.005 0.963 ± 0.004 0.948 ± 0.007 0.133 ± 0.024 0.172 ± 0.016 0.243 ± 0.032 0.977 ± 0.000 0.977 ± 0.000 1.078 ± 0.187
+left putamen                     0.972 ± 0.002 0.966 ± 0.003 0.956 ± 0.004 0.169 ± 0.016 0.208 ± 0.018 0.266 ± 0.026 0.977 ± 0.000 1.028 ± 0.143 1.078 ± 0.187
+left pallidum                    0.933 ± 0.018 0.923 ± 0.017 0.907 ± 0.023 0.313 ± 0.083 0.355 ± 0.065 0.421 ± 0.099 1.129 ± 0.209 1.301 ± 0.331 1.498 ± 0.161
+3rd ventricle                    0.943 ± 0.012 0.920 ± 0.014 0.915 ± 0.012 0.123 ± 0.025 0.167 ± 0.026 0.174 ± 0.028 0.977 ± 0.000 0.977 ± 0.000 1.028 ± 0.143
+4th ventricle                    0.928 ± 0.016 0.896 ± 0.025 0.872 ± 0.034 0.229 ± 0.044 0.365 ± 0.087 0.438 ± 0.114 1.258 ± 0.184 2.352 ± 1.941 3.236 ± 2.320
+brain-stem                       0.975 ± 0.004 0.966 ± 0.004 0.961 ± 0.004 0.225 ± 0.031 0.300 ± 0.035 0.347 ± 0.034 1.028 ± 0.143 1.168 ± 0.280 1.453 ± 0.202
+left hippocampus                 0.950 ± 0.007 0.936 ± 0.009 0.933 ± 0.004 0.229 ± 0.027 0.287 ± 0.045 0.304 ± 0.026 1.028 ± 0.143 1.319 ± 0.237 1.179 ± 0.216
+left amygdala                    0.928 ± 0.009 0.905 ± 0.022 0.908 ± 0.018 0.338 ± 0.035 0.436 ± 0.097 0.430 ± 0.077 1.179 ± 0.216 1.319 ± 0.237 1.358 ± 0.271
+CSF                              0.846 ± 0.010 0.808 ± 0.014 0.767 ± 0.016 0.358 ± 0.025 0.446 ± 0.028 0.530 ± 0.035 2.012 ± 0.107 2.355 ± 0.262 2.660 ± 0.307
+left accumbens area              0.932 ± 0.009 0.923 ± 0.014 0.911 ± 0.018 0.220 ± 0.028 0.250 ± 0.049 0.284 ± 0.056 1.078 ± 0.187 1.117 ± 0.272 1.078 ± 0.187
+left ventral DC                  0.946 ± 0.006 0.936 ± 0.005 0.930 ± 0.004 0.256 ± 0.025 0.303 ± 0.021 0.331 ± 0.020 0.977 ± 0.000 1.179 ± 0.216 1.230 ± 0.209
+right cerebral white matter      0.952 ± 0.008 0.940 ± 0.008 0.926 ± 0.009 0.266 ± 0.034 0.330 ± 0.035 0.407 ± 0.036 1.370 ± 0.192 1.599 ± 0.282 2.153 ± 0.142
+right cerebral cortex            0.930 ± 0.007 0.912 ± 0.007 0.894 ± 0.008 0.336 ± 0.033 0.406 ± 0.032 0.479 ± 0.032 1.459 ± 0.144 1.647 ± 0.187 1.917 ± 0.160
+right lateral ventricle          0.974 ± 0.010 0.966 ± 0.011 0.951 ± 0.015 0.105 ± 0.026 0.135 ± 0.022 0.197 ± 0.029 1.028 ± 0.143 1.104 ± 0.348 1.206 ± 0.331
+right inferior lateral ventricle 0.845 ± 0.030 0.776 ± 0.056 0.762 ± 0.061 0.260 ± 0.037 0.385 ± 0.075 0.421 ± 0.074 1.463 ± 0.399 2.130 ± 0.989 2.458 ± 0.680
+right cerebellum white matter 0.932 ± 0.007 0.907 ± 0.011 0.893 ± 0.016 0.272 ± 0.029 0.398 ± 0.053 0.474 ± 0.080 1.997 ± 0.594 3.357 ± 0.693 3.886 ± 0.821
+right cerebellum cortex          0.960 ± 0.004 0.947 ± 0.005 0.939 ± 0.006 0.328 ± 0.036 0.433 ± 0.037 0.498 ± 0.044 1.770 ± 0.316 2.291 ± 0.371 2.703 ± 0.328
+right thalamus                   0.970 ± 0.005 0.963 ± 0.005 0.949 ± 0.006 0.229 ± 0.031 0.282 ± 0.036 0.381 ± 0.038 1.028 ± 0.143 1.129 ± 0.209 1.459 ± 0.144
+right caudate                    0.973 ± 0.004 0.964 ± 0.005 0.950 ± 0.005 0.132 ± 0.023 0.171 ± 0.022 0.243 ± 0.033 0.977 ± 0.000 0.977 ± 0.000 1.118 ± 0.197
+right putamen                    0.974 ± 0.004 0.968 ± 0.003 0.961 ± 0.004 0.163 ± 0.030 0.202 ± 0.022 0.248 ± 0.028 0.977 ± 0.000 0.977 ± 0.000 1.028 ± 0.143
+right pallidum                   0.939 ± 0.022 0.932 ± 0.015 0.926 ± 0.015 0.286 ± 0.093 0.325 ± 0.068 0.348 ± 0.064 1.078 ± 0.187 1.078 ± 0.187 1.331 ± 0.308
+right hippocampus                0.942 ± 0.017 0.926 ± 0.020 0.922 ± 0.023 0.260 ± 0.076 0.325 ± 0.081 0.343 ± 0.095 1.078 ± 0.187 1.257 ± 0.321 1.356 ± 0.464
+right amygdala                   0.923 ± 0.018 0.915 ± 0.015 0.915 ± 0.013 0.371 ± 0.081 0.408 ± 0.071 0.407 ± 0.052 1.542 ± 0.440 1.409 ± 0.224 1.430 ± 0.344
+right accumbens area             0.943 ± 0.009 0.926 ± 0.012 0.916 ± 0.014 0.186 ± 0.028 0.239 ± 0.033 0.279 ± 0.046 0.977 ± 0.000 1.028 ± 0.143 1.129 ± 0.209
+right ventral DC                 0.946 ± 0.005 0.936 ± 0.007 0.933 ± 0.009 0.249 ± 0.021 0.293 ± 0.034 0.309 ± 0.039 0.977 ± 0.000 1.179 ± 0.216 1.230 ± 0.209
+
+
+
+
+S2. Dataset-specific CRIS configurations and selected hyperparameters
+Table S2 reports the dataset-specific CRIS configurations and selected hyperparameter values for the four datasets used in the
+manuscript.
+Table S2.
+Dataset-specific CRIS configurations and selected hyperparameters.
+
+Hyperparameter                               Brain MRI                          Abdominal MRI                       EPFL FIB-SEM                     FlyEM hemibrain noisy
+Gap used during training                     5                                  6 with optional variation to 7      Separate runs for gaps 4 and 8   8
+Patch dimensions (Y × X)                     256 × 256                          512 × 512                           128 × 128                        128 × 128
+Learning rate                                1 × 10−4                           5 × 10−5                            5 × 10−5                         5 × 10−5
+Batch size                                   24                                 16                                  24                               64
+Base filters                                 118                                96                                  118                              118
+Patience                                     15                                 15                                  15                               15
+Degradation operator                         Directional 1D Gaussian blur +     Directional 1D Gaussian blur +      Average pooling + periodic       Average pooling +
+                                                 √ masking
+                                             periodic                           periodic masking                    masking                          periodic masking
+Gaussian 𝜎 / average-pooling kernel          0.75 gap                           0                                   gap                              gap
+SSIM weight                                  5                                  5                                   0.5                              0.5
+Sobel weight                                 5                                  5                                   Not used                         Not used
+Focal-frequency weight                       10                                 10                                  Not used                         Not used
+
+
+
+
+A. Ahituv et al.: Preprint                                                                                                                                      Page 20
+
+=== PDF PAGE 21 ===
+                                     CRIS: cross-plane self-supervised isotropic restoration
+
+S3. Baseline implementation details
+All baseline methods were evaluated using the same train, validation, and test partitions described in the manuscript. Held-out
+isotropic test references were used only for final evaluation in datasets where such references exist, and were not used for
+training, validation, hyperparameter selection, or model selection. When official implementations were available, we used
+the supplied code and changed only the data-format interface, path configuration, spacing or gap-factor settings, and output
+conversion required to evaluate the method on our datasets.
+
+SMORE4. SMORE4 was run using the supplied implementation. In the brain MRI benchmark, it was optimized separately
+for each held-out coronal test volume, following the internal-learning setting of the method. The input to SMORE4 was the
+same anisotropic coronal source volume used for CRIS inference. This setting ensures that the comparison uses the same
+held-out source orientation and that no held-out isotropic test reference is used during optimization.
+
+ECLARE. ECLARE was evaluated using the authors’ supplied implementation (https://github.com/sremedios/eclare). It
+was run on the identical held-out anisotropic test volumes matching our exact data partitions and evaluation inputs to ensure a
+fair comparison.
+
+SIMPLE. For abdominal MRI, SIMPLE was evaluated using the supplied code and data configuration. For the public brain
+MRI cohort, we used the supplied SIMPLE implementation with minor configuration adaptations required for the brain MRI
+data format and spacing. Brain MRI is not the original target domain of SIMPLE, and the corresponding results should
+therefore be interpreted as a cross-domain application of the supplied method rather than as an optimized domain-specific
+SIMPLE model.
+
+SA-INR. SA-INR is originally formulated for a supervised or paired reconstruction setting. Because paired isotropic ground-
+truth volumes are not available during training in our self-supervised task, we used the supplied SA-INR code in an adapted
+setting. The training and validation data supplied to SA-INR were anisotropic coronal brain MRI volumes rather than paired
+isotropic target volumes. A separate SA-INR network was trained for each held-out test case. No held-out isotropic test
+reference was used during SA-INR optimization.
+
+ATME. ATME was trained separately for each degradation plane using paired 2D samples derived from the anisotropic
+training volumes. The input was not an isotropic ground-truth volume. Instead, it was generated from the anisotropic volume
+by linear resampling or interpolation to the target grid and by applying the plane-dependent stride pattern. The target for
+each training pair was the corresponding real acquired slice from the original anisotropic volume. The model was optimized
+as a conditional image-to-image translation baseline using an adversarial loss with a PatchGAN discriminator and an L1
+reconstruction loss.
+
+NIIV. NIIV was run using the authors’ supplied implementation. For the EPFL FIB-SEM benchmark, the degraded training
+and testing TIFF volumes were converted into the NumPy directory structure expected by the NIIV code. The model code
+was not modified. During reconstruction, NIIV produced patch-wise outputs. These outputs were loaded from the evaluation
+directories, the padded through-plane slices were removed according to the detected output-to-input depth ratio, and the 48
+spatial patches were tiled back into the full 𝑍 × 768 × 1024 EPFL volume before evaluation. This reconstruction step was
+used only to convert NIIV’s patch outputs into the full-volume format required by our metric pipeline.
+
+vEMINR. vEMINR was evaluated using the authors’ supplied implementation on the degraded EPFL volumes. We report
+the directional XZ and YZ reconstructions as well as the merged output when provided by the method. This preserves the
+intended directional reconstruction behavior of vEMINR while allowing comparison against the fused CRIS output on the
+same held-out EPFL test volume.
+
+
+
+
+A. Ahituv et al.: Preprint                                                                                             Page 21
+
+=== PDF PAGE 22 ===
+                                            CRIS: cross-plane self-supervised isotropic restoration
+
+S4. Brain MRI robustness across gap factors and degradation planes
+To complement the main brain MRI benchmark, we trained one additional CRIS model using the public brain MRI training split
+with randomized training-time gap factors 𝑔 ∈ {3, 4, 5, 6, 7} in the self-supervised degradation process. This single model was
+then evaluated, without retraining or configuration-specific tuning, across synthetic gap factors 𝑔 ∈ {3, 4, 5, 6, 7} and across
+coronal, axial, and sagittal degradation planes. Supplementary Table S3 reports the quantitative results for each configuration
+using plane-averaged metrics, and Supplementary Fig. S1 shows representative qualitative cross-plane comparisons for a test
+case.
+Table S3.
+Brain MRI robustness results across degradation planes and gap factors for the public multi-site cohort. PSNR, SSIM 3D, GMSD, and Edges 3D are reported
+as mean ± SD over the eight test cases, after averaging the three evaluation planes within each case. Higher is better for PSNR, SSIM 3D, and Edges 3D;
+lower is better for GMSD, FID, and KID. Bold indicates the best mean value within each configuration.
+
+                           Config plane Gap Method         PSNR ↑       SSIM 3D ↑       GMSD ↓        Edges 3D ↑   FID ↓ KID ↓
+                           coronal     3   CRIS          37.584 ± 0.429 0.984 ± 0.001 0.0051 ± 0.0003 0.982 ± 0.001 21.28 0.0048
+                           coronal     3   Interpolation 33.710 ± 0.495 0.962 ± 0.003 0.0175 ± 0.0010 0.942 ± 0.004 51.73 0.0272
+                           coronal     4   CRIS          35.238 ± 0.434 0.974 ± 0.002 0.0102 ± 0.0005 0.966 ± 0.003 28.38 0.0095
+                           coronal     4   Interpolation 31.180 ± 0.493 0.935 ± 0.005 0.0312 ± 0.0015 0.903 ± 0.006 77.83 0.0474
+                           coronal     5   CRIS          33.547 ± 0.441 0.962 ± 0.003 0.0154 ± 0.0007 0.948 ± 0.004 36.16 0.0141
+                           coronal     5   Interpolation 29.488 ± 0.469 0.908 ± 0.007 0.0429 ± 0.0019 0.867 ± 0.009 102.06 0.0671
+                           coronal     6   CRIS          32.580 ± 0.455 0.953 ± 0.004 0.0201 ± 0.0009 0.933 ± 0.005 43.24 0.0193
+                           coronal     6   Interpolation 28.753 ± 0.511 0.887 ± 0.008 0.0522 ± 0.0025 0.841 ± 0.010 119.03 0.0816
+                           coronal     7   CRIS          31.266 ± 0.478 0.940 ± 0.005 0.0257 ± 0.0011 0.915 ± 0.007 47.89 0.0199
+                           coronal     7   Interpolation 27.664 ± 0.513 0.865 ± 0.009 0.0612 ± 0.0032 0.815 ± 0.011 119.65 0.0756
+                           axial       3   CRIS          35.968 ± 0.427 0.976 ± 0.002 0.0081 ± 0.0004 0.971 ± 0.002 31.15 0.0115
+                           axial       3   Interpolation 33.114 ± 0.485 0.949 ± 0.004 0.0213 ± 0.0016 0.926 ± 0.006 61.14 0.0345
+                           axial       4   CRIS          34.323 ± 0.434 0.964 ± 0.003 0.0140 ± 0.0007 0.952 ± 0.004 35.08 0.0148
+                           axial       4   Interpolation 31.169 ± 0.480 0.921 ± 0.005 0.0347 ± 0.0025 0.886 ± 0.009 73.66 0.0449
+                           axial       5   CRIS          32.933 ± 0.403 0.952 ± 0.003 0.0194 ± 0.0008 0.934 ± 0.006 46.23 0.0211
+                           axial       5   Interpolation 29.767 ± 0.445 0.894 ± 0.007 0.0448 ± 0.0027 0.854 ± 0.010 106.57 0.0700
+                           axial       6   CRIS          32.022 ± 0.424 0.941 ± 0.004 0.0246 ± 0.0012 0.917 ± 0.007 44.85 0.0208
+                           axial       6   Interpolation 29.059 ± 0.454 0.876 ± 0.008 0.0532 ± 0.0030 0.830 ± 0.012 106.42 0.0699
+                           axial       7   CRIS          31.203 ± 0.404 0.930 ± 0.006 0.0296 ± 0.0014 0.900 ± 0.008 50.10 0.0242
+                           axial       7   Interpolation 28.410 ± 0.441 0.858 ± 0.009 0.0601 ± 0.0031 0.812 ± 0.012 117.53 0.0792
+                           sagittal    3   CRIS          35.513 ± 0.405 0.972 ± 0.002 0.0093 ± 0.0005 0.965 ± 0.003 36.01 0.0132
+                           sagittal    3   Interpolation 32.391 ± 0.469 0.942 ± 0.004 0.0228 ± 0.0013 0.911 ± 0.005 77.91 0.0434
+                           sagittal    4   CRIS          33.843 ± 0.439 0.960 ± 0.003 0.0150 ± 0.0009 0.946 ± 0.005 54.53 0.0256
+                           sagittal    4   Interpolation 30.496 ± 0.482 0.911 ± 0.006 0.0368 ± 0.0020 0.868 ± 0.008 124.78 0.0825
+                           sagittal    5   CRIS          32.629 ± 0.435 0.948 ± 0.004 0.0202 ± 0.0009 0.928 ± 0.006 52.68 0.0238
+                           sagittal    5   Interpolation 29.120 ± 0.452 0.883 ± 0.008 0.0485 ± 0.0026 0.833 ± 0.011 119.95 0.0765
+                           sagittal    6   CRIS          31.776 ± 0.464 0.937 ± 0.005 0.0253 ± 0.0011 0.911 ± 0.007 71.84 0.0380
+                           sagittal    6   Interpolation 28.187 ± 0.492 0.859 ± 0.008 0.0584 ± 0.0034 0.806 ± 0.011 168.09 0.1211
+                           sagittal    7   CRIS          30.965 ± 0.456 0.926 ± 0.005 0.0297 ± 0.0011 0.896 ± 0.008 80.24 0.0441
+                           sagittal    7   Interpolation 27.491 ± 0.486 0.837 ± 0.009 0.0665 ± 0.0036 0.785 ± 0.013 182.48 0.1357
+
+
+
+
+A. Ahituv et al.: Preprint                                                                                                                   Page 22
+
+=== PDF PAGE 23 ===
+                                             CRIS: cross-plane self-supervised isotropic restoration
+
+
+
+
+Figure S1.
+Representative qualitative comparison of CRIS and interpolation across gap factors and degradation directions on the public brain MRI cohort. Rows correspond
+to gap factors 𝑔 = 3 to 𝑔 = 7. Columns show representative orthogonal cross-plane views for coronal-degraded, axial-degraded, and sagittal-degraded inputs,
+each reconstructed by CRIS and interpolation. For coronal and axial degradations, sagittal views are shown; for sagittal degradation, coronal views are shown.
+CRIS more effectively suppresses through-plane blur and staircasing artifacts across all tested configurations.
+
+
+
+
+S5. Brain MRI subject split
+Supplementary Table S4 lists the 63 ABIDE/ABIDE-II subject identifiers used for the public brain MRI dataset split. The raw
+imaging data are available through the LONI Image and Data Archive (IDA), subject to the repository’s access and data-use
+requirements.
+
+
+
+
+A. Ahituv et al.: Preprint                                                                                                                         Page 23
+
+=== PDF PAGE 24 ===
+                                                  CRIS: cross-plane self-supervised isotropic restoration
+
+Table S4.
+Subject identifiers used for the public brain MRI dataset split. 𝑛 = 63 total: 48 training, 7 validation, and 8 testing.
+
+Dataset split   𝑛   Subject IDs
+Training        48 50682, 50683, 50685, 50689, 50690, 50691, 50692, 50693, 50694, 50695, 50696, 50697, 50698, 50699, 50700, 50701, 50702, 50703, 50704, 50707, 50709,
+                   50710, 50711, 50725, 50726, 50727, 50728, 50730, 50732, 50733, 50734, 50735, 50736, 50738, 50739, 50740, 50741, 50745, 50746, 50747, 50748, 50749,
+                   50750, 50751, 50752, 50753, 50754, 50755
+Validation       7 50686, 50688, 50705, 50708, 50737, 50742, 50756
+Test             8 50687, 50722, 50723, 50724, 50731, 50743, 50744, 50757
+
+
+
+
+A. Ahituv et al.: Preprint                                                                                                                                 Page 24
+
+=== PDF PAGE 25 ===

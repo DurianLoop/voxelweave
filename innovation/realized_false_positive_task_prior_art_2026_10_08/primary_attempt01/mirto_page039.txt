@@ -1,0 +1,61 @@
+MIRTO 39
+Table 52. Score rules at their own validation thresholds (0.01 grid), REFLECT trained on IXI-HH+Guys.
+Score rule b (cm3
+) own validation τ Test Dice, mean [95 % CI] Test Dice, median [95 % CI] Test FP mean (cm3
+) Above-floor sensitivity
+published map 5 0.93 0.241 [0.223, 0.260] 0.235 [0.207, 0.256] 3.3 [1.5, 6.0] 0.394
+published map 20 0.79 0.492 [0.468, 0.516] 0.542 [0.510, 0.569] 15.7 [11.6, 21.2] 0.606
+published map 40 0.69 0.553 [0.530, 0.576] 0.604 [0.577, 0.628] 33.9 [28.3, 41.3] 0.644
+MAD (L2) 5 0.70 0.364 [0.344, 0.384] 0.385 [0.353, 0.411] 4.5 [3.0, 6.6] 0.521
+MAD (L2) 20 0.57 0.544 [0.521, 0.566] 0.597 [0.570, 0.624] 15.3 [11.5, 20.2] 0.631
+MAD (L2) 40 0.47 0.599 [0.577, 0.621] 0.653 [0.626, 0.680] 33.3 [27.8, 40.3] 0.655
+robust max (L4) 5 0.70 0.405 [0.383, 0.427] 0.438 [0.406, 0.467] 6.9 [5.0, 9.5] 0.557
+robust max (L4) 20 0.59 0.539 [0.516, 0.562] 0.599 [0.565, 0.621] 18.7 [14.7, 23.9] 0.623
+robust max (L4) 40 0.51 0.580 [0.556, 0.603] 0.633 [0.612, 0.660] 34.5 [29.1, 41.5] 0.648
+mean (L1) 5 0.70 0.418 [0.396, 0.440] 0.453 [0.424, 0.482] 7.2 [5.5, 9.5] 0.564
+mean (L1) 20 0.60 0.537 [0.513, 0.560] 0.598 [0.562, 0.627] 18.4 [14.8, 23.1] 0.623
+mean (L1) 40 0.52 0.577 [0.553, 0.600] 0.631 [0.608, 0.652] 34.5 [29.4, 40.9] 0.650
+image only 5 none infeasible on validation
+image only 20 0.83 0.508 [0.483, 0.533] 0.559 [0.528, 0.587] 16.0 [12.0, 21.3] 0.600
+image only 40 0.70 0.562 [0.539, 0.585] 0.611 [0.587, 0.634] 33.5 [27.9, 40.7] 0.646
+latent only 5 0.55 0.342 [0.322, 0.361] 0.357 [0.325, 0.379] 7.7 [6.5, 9.0] 0.530
+latent only 20 0.43 0.480 [0.457, 0.501] 0.516 [0.483, 0.558] 25.1 [22.0, 28.5] 0.617
+latent only 40 0.37 0.519 [0.496, 0.541] 0.566 [0.539, 0.587] 45.7 [40.5, 51.3] 0.631
+Table 53. Retention criterion for MAD (REFLECT, IXI-HH+Guys): MAD is retained only if its interval does not overlap
+that of the best other aggregation. Growth: 1 with hysteresis, 0 without.
+Matching Growth b (cm3
+) MAD − published Best other family member Best other − published Verdict
+cohort 0 5 +0.068 [0.056, 0.079] whitened mean (L5) +0.073 [0.062, 0.085] MAD demoted
+cohort 0 10 +0.048 [0.039, 0.058] whitened mean (L5) +0.040 [0.031, 0.049] MAD demoted
+cohort 0 20 +0.052 [0.045, 0.058] robust max (L4) +0.030 [0.024, 0.035] MAD retained
+cohort 0 40 +0.046 [0.042, 0.051] robust max (L4) +0.027 [0.023, 0.030] MAD retained
+cohort 1 5 +0.057 [0.043, 0.070] Euclidean norm (L3) +0.059 [0.045, 0.072] MAD demoted
+cohort 1 10 +0.034 [0.023, 0.046] whitened mean (L5) +0.010 [−0.000, 0.021] MAD retained
+cohort 1 20 +0.051 [0.044, 0.057] whitened mean (L5) +0.028 [0.022, 0.034] MAD retained
+cohort 1 40 +0.047 [0.042, 0.052] robust max (L4) +0.028 [0.024, 0.032] MAD retained
+subject 0 5 +0.026 [0.010, 0.042] Euclidean norm (L3) +0.005 [−0.010, 0.019] MAD demoted
+subject 0 10 +0.042 [0.028, 0.055] Euclidean norm (L3) +0.006 [−0.007, 0.017] MAD retained
+subject 0 20 +0.053 [0.046, 0.060] Euclidean norm (L3) +0.023 [0.018, 0.028] MAD retained
+subject 0 40 +0.045 [0.041, 0.049] robust max (L4) +0.024 [0.021, 0.027] MAD retained
+subject 1 5 +0.000 [−0.016, 0.017] Euclidean norm (L3) +0.008 [−0.006, 0.022] MAD demoted
+subject 1 10 −0.007 [−0.023, 0.010] published map +0.000 [0.000, 0.000] MAD demoted
+subject 1 20 +0.035 [0.026, 0.045] Euclidean norm (L3) +0.008 [0.000, 0.016] MAD retained
+subject 1 40 +0.044 [0.039, 0.048] robust max (L4) +0.023 [0.020, 0.026] MAD retained
+On maps produced with the uncorrected mapping, each small lesion was compared with an equal-area region of
+healthy-appearing tissue around it (Table 54). Local AUPRC was weakly above chance for REFLECT trained on
+MOOD+IXI and cDDPM trained on IXI-HH+Guys, and indistinguishable from chance for UCCD trained on IXI-HH
+when small lesions were defined in pixels; cDDPM’s local AUROC interval included 0.5. Because these maps predate
+the corrected geometry, the analysis is descriptive only.
+Table 54. Local contrast of small lesions against an equal-area surrounding region (maps produced with the uncorrected
+mapping; chance level 0.5). Small lesions defined in pixels or in physical volume.
+Model (training set) Small-lesion definition Lesions Subjects Local AUPRC [95 % CI] (chance 0.5) Local AUROC [95 % CI]
+REFLECT (MOOD+IXI) pixel 122 71 0.531 [0.511, 0.554] 0.537 [0.516, 0.558]
+REFLECT (MOOD+IXI) physical 133 77 0.557 [0.533, 0.584] 0.561 [0.538, 0.587]
+cDDPM (IXI-HH+Guys) pixel 100 62 0.535 [0.504, 0.567] 0.484 [0.432, 0.536]
+cDDPM (IXI-HH+Guys) physical 127 81 0.584 [0.552, 0.617] 0.538 [0.491, 0.584]
+UCCD (IXI-HH) pixel 120 74 0.509 [0.484, 0.536] 0.495 [0.462, 0.528]
+UCCD (IXI-HH) physical 136 85 0.544 [0.514, 0.575] 0.527 [0.493, 0.562]
+D.10 Computational cost
+Table 55 gives the recorded wall-clock and GPU time on Tesla V100 GPUs, including two methods that were also
+trained but not carried forward (IterMask3D [43] and Dinomaly2 [30]). Training times for UCCD and cDDPM could
+not be verified from the surviving records and are omitted, and the REFLECT training run listed predates the

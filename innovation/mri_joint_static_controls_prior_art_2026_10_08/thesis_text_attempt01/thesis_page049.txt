@@ -1,0 +1,37 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+rejection of already acquired locations (Puy et al., 2011) and minimizes coherence, while
+the polynomial was tuned on the data using directly the final evaluation metric, namely
+PSNR. The authors conclude that the theory would need to capture additional structure
+of real-world images for sampling patterns obtaining better practical performance.
+The article of Zijlstra et al. (2016) compares the performance of coherence-based VDS
+using Equation 4.3, of Knoll et al. (2011b), of Liu et al. (2012) and of VDS optimized
+to minimize normalized root mean squared error (NRMSE). The results show that
+coherence-based VDS is generally outperformed by Knoll et al. (2011b), which is matched
+by the optimized VDS. Both are outperformed by the method of Liu et al. (2012). The
+conclusion is however careful:
+When putting the presented results in perspective, it is important, to remember
+that data-driven optimization of an undersampling pattern for CS is just one
+aspect of the CS implementation. Data-driven approaches should be taken to
+optimize other aspects of the CS implementation, such as the sparse domain
+and the reconstruction algorithm.
+Overall, while these works do not exhaustively compare the existing methods in the
+literature, they give us reasons to view learning-based, data-driven methods as the most
+direct avenue towards improvement in mask design optimization.
+4.5 The advent of deep learning: Learning-based, data-
+driven approaches
+Interest for learning-based, data-driven approaches to mask optimization was renewed
+around 2018, with the advent of the first deep learning-based reconstruction methods
+applied to MRI (Sun et al., 2016; Schlemper et al., 2017; Mardani et al., 2018). This
+enabled the possibility to scale up the complexity of mask design methods, as deep learning
+methods enable fast reconstruction times, which was not the case for CS methods.
+The first work that we discuss in this section comes slightly before this time and is the one
+of Baldassarre et al. (2016), where the authors propose a first principled, learning-based
+approach to optimizing a deterministic sampling pattern given a set of training signals.
+Note that in our taxonomy, their approach is both learning-basedand data-driven. While
+the optimization only considers the energy of the signal in the case of Fourier sampling,
+and while the paper onlinear reconstruction, the authors show improvement about the
+sampling patterns prescribed in Lustig et al. (2007); Roman et al. (2014). However, as
+they optimize only the sampling pattern to capture theenergy of the signal and do not
+include the reconstruction algorithm in their optimization procedure, they fail to obtain
+significant improvement by turning to non-linear reconstruction methods.
+36

@@ -1,0 +1,123 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 4
+strategy as the element-wise Bernoulli distribution with a
+probability vectorp∈ [0, 1]n, i.e.mi∼ Bern(pi). To learn the
+optimal sampling probabilities, we follow the sampler design
+of [9]. We optimize a set of parameters qi that first give us a
+set of probabilities epi := Sigmoid(qi). We then rescale ep to
+obtain a probabilistic sampling mask p that would result in b
+measurements in expectation via Bernoulli sampling:
+p =
+(
+α
+βep if β≥α
+1− 1−α
+1−β (1−ep) otherwise
+where α := b
+n, β := ∥ ep∥1
+n , and 1 is the all-one vector.
+During training, the sampler draws a k-space sampling mask
+m by sampling mi∼ Bern(pi). We repeatedly sample m
+until ∥m∥1 ≈ b under a small tolerance. This sampling
+process encourages exploration of different patterns and en-
+sures the sampling patterns approximately satisfy the budget
+constraint. Since the sampling process is not differentiable,
+we use a straight-through estimator to overcome the non-
+differentiability [59]. During testing, we set the top b indices of
+p with the highest probabilities to 1 (to sample) and others to 0
+(not to sample). This binarization guarantees that the sampling
+mask strictly satisfies the sampling budget constraint and all
+slices of a volume share the same sampling mask. We also
+allocate 1/8 of the sampling budget for the low-frequency region
+around the DC component, which we refer to as the pre-select
+region. The pre-selected measurements provide auto-calibration
+signals (ACS) for multi-coil reconstruction and stabilize the
+training of some baselines. Therefore, we include the pre-select
+region for all experiments for consistency. More discussion on
+this can be found in Supplement II.C. We denote the sampler
+as Sq whereq is the vector of learnable parameters.
+B. Retriever
+After acquiring measurements, we employ a retriever to
+extract visual information from noisy and subsampled k-space
+measurements. We note that we name the module “retriever”
+instead of “reconstructor” because it is jointly optimized with
+the downstream predictor for non-reconstruction tasks. Hence,
+the retriever should not be interpreted as a reconstructor as
+its output may not be a typical “reconstruction” in terms of
+pixel-wise accuracy. We denote the retriever as Rθ where
+θ is its weights. We select the E2E-VarNet [43] since it is a
+model-based DU architecture that combines forward model and
+learning prior, and achieves excellent performance on CS-MRI
+reconstruction [49]. E2E-VarNet also accommodates multi-coil
+k-space data with its ability to estimate coil sensitivity maps.
+Specifically, our E2E-VarNet retriever operates in k-space and
+consists of 12 refinement steps, each of which includes a U-
+Net [60] with independent weights from each other. For each
+U-Net, we use the standard architecture with the following
+parameters: 2 input and output channels, 18 channels after the
+first convolution filter, 4 average down-pooling layers, and 4
+up-pooling layers. The final output layer of the retriever is
+an inverse Fourier transform followed by a root-sum-squares
+reduction for each pixel over all coils. The output of the
+retriever is a batch of magnitude images. For reconstruction
+tasks, a loss function will be directly applied to the output.
+For non-reconstruction tasks, the output will be fed into an
+additional predictor module described in the next section.
+C. Task-specific design: predictor and loss function
+We demonstrate TACKLE on three tasks that together repre-
+sent a gradual progression from generic full-FOV reconstruction
+to clinically relevant tasks.
+1) ROI-oriented reconstruction: For many MRI scans, only
+a small region of the FOV is relevant to the reader, so we
+define a task where we aim to maximize reconstruction quality
+around that region. In contrast to the full-FOV reconstruction
+task, the reconstruction accuracy in this task is only measured
+over the region-of-interest (ROI) of each image instead of the
+entire FOV . We hereafter refer to this task as ROI-oriented
+reconstruction. This task is a first step from generic full-FOV
+reconstruction to more specific downstream tasks in CS-MRI.
+There is no predictor for this reconstruction task, and the
+output of the retriever will directly be used for evaluation. The
+evaluation metric we use is the local peak signal-to-noise ratio
+(PSNR), which is the PSNR within the ROI of an underlying
+imagex. LetRx be the set of indices i that are within the
+ROI of x. Note that Rx varies from one image x to another.
+We define the local PSNR within the ROI as
+LocalPSNR(bx,x;Rx) := 10 log 10
+max(x)2
+LocalMSE(bx,x;Rx)
+(3)
+where LocalMSE(bx,x;Rx) := 1
+|Rx|
+P
+i∈Rx(bxi−xi)2 and
+max(x) is the largest pixel value of x. We optimize our
+model for the local reconstruction quality using LROI(bx,x) :=
+−LocalPSNR(bx,x;Rx) as the training loss.
+2) Tissue segmentation: For this task, we aim to predict
+segmentation maps of different body tissues. Accurately
+segmenting a tissue from the rest of the organ provides
+important anatomical and pathological information [61]–[63].
+Conventional segmentation workflow involves human eval-
+uation and traditional algorithms, which often require stan-
+dard reconstructions of certain contrasts as input [64]. On
+the contrary, TACKLE does not require reconstruction as a
+necessary intermediate step, and is optimized for segmentation
+performance in an end-to-end fashion.
+We include an additional predictor Pϕ with weights ϕ
+subsequent to the retriever. We choose the U-Net architecture
+due to its ability of solving medical image analysis tasks [60],
+[65], [66]. The specific parameters are: 1 input channel,c output
+channels (where c is the number of segmentation classes), 64
+channels after the first convolution filter, 4 average down-
+pooling layers, and 4 up-pooling layers.
+We use the Dice score [67]–[69] as the evaluation metric.
+The Dice score measures the degree of overlap between two
+segmentation maps and takes a value between 0 (no overlap)
+and 1 (perfect overlap). During training, we employ the Dice
+lossLseg.(bz,z) := 1− DiceScore(bz,z). For both training and
+evaluation, we apply a Softmax function across all the classes
+for each pixel and then calculate the Dice loss/score. During
+the evaluation, we apply an additional binarization step where
+we set the class with highest value after Softmax as 1 and
+others as 0. In this way, we assign each pixel of the predicted
+segmentation map bz to exactly one class.

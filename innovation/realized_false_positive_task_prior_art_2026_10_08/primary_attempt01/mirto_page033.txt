@@ -1,0 +1,55 @@
+MIRTO 33
+Table 32. CRC (α = 0.10, 20 cm3
+) over 1,000 random calibration/evaluation splits of the 312 test subjects, per method and
+calibration size.
+Method Calibration n Mean exceedance 2.5th to 97.5th percentile over splits Splits with exceedance ≤ α Infeasible splits
+REFLECT 24 0.078 [0.007, 0.212] 69.5 % 0
+REFLECT 50 0.097 [0.031, 0.206] 59.3 % 0
+REFLECT 100 0.099 [0.042, 0.175] 54.9 % 0
+UCCD 24 0.079 [0.007, 0.215] 70.1 % 0
+UCCD 50 0.099 [0.031, 0.206] 55.6 % 0
+UCCD 100 0.098 [0.038, 0.175] 57.7 % 0
+cDDPM 24 0.082 [0.007, 0.222] 71.2 % 0
+cDDPM 50 0.098 [0.027, 0.191] 55.6 % 0
+cDDPM 100 0.100 [0.042, 0.179] 53.7 % 0
+AnomalyDINO 24 0.081 [0.007, 0.205] 70.5 % 0
+AnomalyDINO 50 0.097 [0.027, 0.202] 57.0 % 0
+AnomalyDINO 100 0.096 [0.038, 0.170] 56.6 % 0
+D.4 Comparison of methods: further contrasts
+Table 33 gives every paired Dice contrast between the residual models, including 10 cm3
+, and Table 34 every paired
+voxel-metric contrast, including those with AnomalyDINO. In voxel AUROC every residual model exceeds Anoma￾lyDINO and REFLECT exceeds both diffusion models under every aggregation; UCCD and cDDPM differ by less
+than 0.011. In voxel AUPRC the order of the residual models depends on the aggregation: UCCD is below cDDPM
+in the subject mean and median (pH < 0.005), and REFLECT is above UCCD only when voxels are pooled (+0.062,
+pH = 0.016). Table 35 summarises how many contrasts of each declared family have Holm-adjusted p < 0.05: at
+validation thresholds 20 to 22 of the 24 model-pair Dice contrasts do, at equal realised burden only 12 to 16. The
+slice-level score also depends on how a slice is summarised (Table 36): taking the slice mean instead of the maximum
+lowers marginal slice AUROC by 0.04 to 0.24 and puts AnomalyDINO below chance (0.425).
+Table 33. Paired Dice contrasts between residual models at every budget, Holm-adjusted within each 24-contrast family. Val:
+validation threshold; matched: equal realised burden (interpolated).
+Contrast Operating point Budget (cm3
+) Subject mean Subject median Pooled
+REFLECT − UCCD validation τ 5 −0.200 [−0.219, −0.180], p_H < 0.005 −0.205 [−0.235, −0.180], p_H < 0.005 −0.137 [−0.161, −0.113], p_H < 0.005
+REFLECT − UCCD validation τ 10 −0.115 [−0.135, −0.095], p_H < 0.005 −0.097 [−0.136, −0.057], p_H < 0.005 −0.046 [−0.069, −0.025], p_H < 0.005
+REFLECT − UCCD validation τ 20 −0.042 [−0.060, −0.025], p_H < 0.005 −0.008 [−0.040, 0.015], p_H 0.74 +0.020 [0.001, 0.039], p_H 0.070
+REFLECT − UCCD validation τ 40 +0.003 [−0.012, 0.018], p_H 0.72 +0.024 [0.001, 0.048], p_H 0.14 +0.056 [0.038, 0.073], p_H < 0.005
+REFLECT − UCCD matched realised FP 5 −0.118 [−0.209, −0.048], p_H < 0.005 −0.100 [−0.225, −0.014], p_H 0.23 −0.049 [−0.147, 0.023], p_H 0.79
+REFLECT − UCCD matched realised FP 10 −0.067 [−0.129, −0.026], p_H < 0.005 −0.046 [−0.121, 0.017], p_H 1.00 +0.001 [−0.061, 0.043], p_H 1.00
+REFLECT − UCCD matched realised FP 20 −0.024 [−0.056, −0.000], p_H 0.33 +0.011 [−0.031, 0.040], p_H 1.00 +0.036 [0.002, 0.062], p_H 0.38
+REFLECT − UCCD matched realised FP 40 +0.008 [−0.009, 0.023], p_H 1.00 +0.018 [0.001, 0.047], p_H 0.46 +0.060 [0.041, 0.077], p_H < 0.005
+REFLECT − cDDPM validation τ 5 −0.155 [−0.175, −0.135], p_H < 0.005 −0.164 [−0.194, −0.133], p_H < 0.005 −0.098 [−0.121, −0.074], p_H < 0.005
+REFLECT − cDDPM validation τ 10 −0.080 [−0.102, −0.058], p_H < 0.005 −0.065 [−0.106, −0.023], p_H 0.007 −0.019 [−0.042, 0.004], p_H 0.11
+REFLECT − cDDPM validation τ 20 −0.022 [−0.042, −0.002], p_H 0.062 +0.016 [−0.019, 0.040], p_H 0.74 +0.032 [0.011, 0.053], p_H 0.016
+REFLECT − cDDPM validation τ 40 +0.025 [0.006, 0.043], p_H 0.021 +0.055 [0.029, 0.079], p_H < 0.005 +0.069 [0.048, 0.090], p_H < 0.005
+REFLECT − cDDPM matched realised FP 5 −0.128 [−0.223, −0.056], p_H < 0.005 −0.124 [−0.247, −0.030], p_H 0.055 −0.067 [−0.168, 0.008], p_H 0.70
+REFLECT − cDDPM matched realised FP 10 −0.069 [−0.134, −0.027], p_H < 0.005 −0.047 [−0.129, 0.013], p_H 1.00 −0.010 [−0.075, 0.034], p_H 1.00
+REFLECT − cDDPM matched realised FP 20 −0.025 [−0.057, −0.002], p_H 0.30 +0.002 [−0.038, 0.030], p_H 1.00 +0.028 [−0.007, 0.055], p_H 0.70
+REFLECT − cDDPM matched realised FP 40 +0.001 [−0.016, 0.016], p_H 1.00 +0.003 [−0.020, 0.039], p_H 1.00 +0.052 [0.032, 0.069], p_H < 0.005
+UCCD − cDDPM validation τ 5 +0.044 [0.034, 0.055], p_H < 0.005 +0.041 [0.026, 0.061], p_H < 0.005 +0.039 [0.029, 0.050], p_H < 0.005
+UCCD − cDDPM validation τ 10 +0.035 [0.025, 0.045], p_H < 0.005 +0.032 [0.014, 0.051], p_H < 0.005 +0.028 [0.018, 0.038], p_H < 0.005
+UCCD − cDDPM validation τ 20 +0.020 [0.011, 0.029], p_H < 0.005 +0.024 [0.006, 0.040], p_H 0.032 +0.012 [0.002, 0.022], p_H 0.054
+UCCD − cDDPM validation τ 40 +0.022 [0.012, 0.032], p_H < 0.005 +0.030 [0.012, 0.048], p_H 0.007 +0.013 [0.002, 0.024], p_H 0.070
+UCCD − cDDPM matched realised FP 5 −0.010 [−0.031, 0.010], p_H 1.00 −0.023 [−0.047, 0.006], p_H 1.00 −0.018 [−0.039, 0.002], p_H 0.70
+UCCD − cDDPM matched realised FP 10 −0.002 [−0.017, 0.012], p_H 1.00 −0.001 [−0.030, 0.018], p_H 1.00 −0.011 [−0.027, 0.004], p_H 0.79
+UCCD − cDDPM matched realised FP 20 −0.001 [−0.012, 0.009], p_H 1.00 −0.009 [−0.025, 0.009], p_H 1.00 −0.008 [−0.020, 0.003], p_H 0.79
+UCCD − cDDPM matched realised FP 40 −0.007 [−0.015, 0.001], p_H 0.43 −0.015 [−0.037, 0.012], p_H 1.00 −0.009 [−0.017, −0.000], p_H 0.44

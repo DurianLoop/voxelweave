@@ -1,0 +1,58 @@
+, VOL. XX, NO. XX, XXXX 2020 8
+TABLE I
+DETAILS OF CROSS-DOMAIN SEGMENTATION DATASETS USED IN THIS STUDY.
+Name Label(s) View Split Domain(s) No. of 3-D scans Origin
+Abdominal Cross-modality Liver, L-kidney,
+R-kidney, Spleen Axial Source/Target Computed tomography (CT) 30 [64]
+Target/Source T2 spectral presaturation with inversion recovery (SPIR) MRI 20 [65]
+Cardiac Cross-sequence L-ventricle, Myocardium,
+R-ventricle Short-axis Source Balanced steady-state free precession (bSSFP) MRI 45 [66]
+Target Late gadolinium enhanced (LGE) MRI 45
+Prostate Cross-site Prostate Axial 1 Source Prostate MRI from 6 sites 30, 30, 19 [30]
+5 Targets 13, 12, 12 [67]–[69]
+TABLE II
+SEGMENTATION RESULTS ON THREE CROSS-DOMAIN SCENARIOS, WHERE A MODEL IS TRAINED ON THE SOURCE DOMAIN AND TESTED ON THE TARGET
+DOMAIN(S). DICE SCORE IS USED AS THE EVALUATION METRIC. THE HIGHEST SCORES ARE IN RED, THE SECOND-HIGHEST SCORES ARE IN BLUE.
+Method Abdominal Cross-modality Cardiac Cross-sequence Prostate Cross-site
+CT to MRI MRI to CT bSSFP to LGE A to Rest B to Rest C to Rest D to Rest E to Rest F to Rest Overall
+Upper bound 90.85 91.76 88.15 83.75 84.78 84.92 84.98 86.68 84.92 85.01
+ERM 77.31 67.59 75.99 71.81 65.56 43.98 71.97 48.39 37.82 56.59
+Cutout [37] 80.12 74.84 78.87 78.36 69.08 63.45 66.39 61.88 60.19 66.56
+RSC [33] 74.09 71.50 77.51 72.81 70.18 49.18 74.11 54.73 43.69 60.78
+MixStyle [26] 77.80 69.62 75.21 73.24 58.06 44.75 66.78 49.81 49.73 57.06
+AdvBias [50] 80.17 75.00 79.62 78.15 62.24 54.73 72.65 53.14 51.00 61.98
+RandConv [40] 80.66 74.69 83.73 77.28 60.77 53.54 66.21 52.12 36.52 57.74
+Proposed 86.31 79.62 85.01∗ 82.14 67.21 59.11 73.16 67.38 73.23 70.37
+Improve. over baseline +9.01 +12.04 +9.02 +10.33 +1.66 +15.13 +1.20 +18.99 +35.40 +13.79
+Single-sided Wilcoxon singed-rank tests are performed when the performance gains of the proposed method are below 2% in Dice score, compared with the second-highest
+method(s). ∗
+:p-value ≪ 1 × 10−4
+.
+Fig. 6. Qualitative results on cross-domain segmentation under three scenarios: cross-modality segmentation for abdominal CT and MRI (the first and the
+second row), cross-sequence segmentation for cardiac MRI (the third row) and cross-site segmentation for prostate MRI (the fourth row). Examples of source
+domain (training dataset) images are shown in the rightmost column.
+simulates domain shifts in a more effective manner, leading to
+stronger robustness upon unseen domains. We also provide the
+upper bounds: i.e. training and testing in the target domain, in
+Table II. Qualitative examples are shown in Fig. 6.
+To visualize the feature spaces, in Fig. 7 we show t-SNE
+of the target domain features collected at the last hidden layer
+of abdominal segmentation networks. As can be seen, for our
+proposed method, for the same class, target domain features
+stay close to those of the source domain; while features of
+different classes are separated.
+D. Ablation studies
+TABLE III
+EFFECTS OF NUMBER OF CONVOLUTIONAL LAYERS (LEFT) AND NUMBER
+OF CHANNELS IN HIDDEN LAYERS (RIGHT) ON THE PERFORMANCE OF
+ABDOMINAL CT-MRI SEGMENTATION.
+No. of layers Average
+Dice Score
+No. of channels
+in hidden layers
+Average
+Dice Score
+2 84.26 2 (proposed) 86.04
+4 (proposed) 86.04 4 85.49
+8 85.66 8 83.21
+16 79.17 16 81.90

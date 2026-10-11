@@ -1,0 +1,40 @@
+CHAPTER 7. UNCERTAINTY DRIVEN ADAPTIVE SAMPLING VIA
+GANS
+as this reductive assumption does not allow the posterior to model multi-modal
+distributions.
+7.2 GAN based adaptive sampling
+The initial motivation of this work was a belief that the benefits of generative methods
+have not been fully exploited in the Compressed Sensing (CS) setting. Although GANs
+have been used as priors (Bora et al., 2017; Narnhofer et al., 2019), as reconstructors
+(Yang et al., 2018) and approximate posteriors for UQ (Adler and Öktem, 2018a), their
+ability to naturally provide an adaptive policy has not been explored.
+Although this connection between modeling the posterior and adaptive sampling was
+explored in the context of classical CS (Ji et al., 2008; Seeger et al., 2010), this has
+not been exploited in the context of GANs, even though they provide a very flexible,
+learning-based model of the posterior distribution.
+This is precisely out approach, which is in some sense very natural. Given an observation
+yω =PωAx +ϵ and a trained conditional GANgθ∗(·,yω) approximating the posterior
+p(x|yω), we can compute the estimated conditional pixel-wise variance in the transformed
+domain Var[Ax|yω] by taking several samples from the generator, transforming them to
+the observation domainA, and acquiring the location with the largest posterior variance,
+i.e.
+vt = arg max
+v:v∈[P ]
+PvVar[Ax|yωt]. (7.9)
+Departing from the idea of explicitly training a policy to guide adaptive sampling (Jin
+et al., 2019; Zhang et al., 2019b; Pineda et al., 2020; Bakker et al., 2020), our approach
+simply minimizes the variance of an approximate posterior. This turns out to yield a
+strong sampling policydespite the networks involved being trained solely for conditional
+generation.
+Remark. In order to perform adaptive sampling using Equation 7.9, the model
+must fulfill some requirements. First of all, one must be able tosample for the model,
+and secondly, sampling must be efficient.
+Although these requirements are readily filled by our approach, this is not the case
+of all models. In particular, this disqualifies methods that only learn the mean and
+pixel-wise variance of the posterior, by minimizing for instance the NLL (Equation
+7.8). Such statistics do not capture the complex, multi-modal distributions that arise
+inverse problem, and sampling from the Gaussian distribution resulting of minimizing
+Equation 7.8 will not work in practice, as the samples will not originate from the true
+posterior, which can be multi-modal, but rather from the Gaussian that simplifies
+the underlying distribution. We confirm in our experiments that sampling from the
+110

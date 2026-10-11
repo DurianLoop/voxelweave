@@ -1,0 +1,94 @@
+Tuning-free Plug-and-Play Proximal Algorithm for Inverse Imaging Problems
+Kaixuan Wei 1 Angelica Aviles-Rivero2 Jingwei Liang 3 Ying Fu 1 Carola-Bibiane Sch¨onlieb 3 Hua Huang 1
+Abstract
+Plug-and-play (PnP) is a non-convex framework
+that combines ADMM or other proximal algo-
+rithms with advanced denoiser priors. Recently,
+PnP has achieved great empirical success, espe-
+cially with the integration of deep learning-based
+denoisers. However, a key problem of PnP based
+approaches is that they require manual parameter
+tweaking. It is necessary to obtain high-quality
+results across the high discrepancy in terms of
+imaging conditions and varying scene content. In
+this work, we present a tuning-free PnP proximal
+algorithm, which can automatically determine the
+internal parameters including the penalty parame-
+ter, the denoising strength and the terminal time.
+A key part of our approach is to develop a pol-
+icy network for automatic search of parameters,
+which can be effectively learned via mixed model-
+free and model-based deep reinforcement learn-
+ing. We demonstrate, through numerical and vi-
+sual experiments, that the learned policy can cus-
+tomize different parameters for different states,
+and often more efﬁcient and effective than exist-
+ing handcrafted criteria. Moreover, we discuss
+the practical considerations of the plugged denois-
+ers, which together with our learned policy yield
+state-of-the-art results. This is prevalent on both
+linear and nonlinear exemplary inverse imaging
+problems, and in particular, we show promising
+results on Compressed Sensing MRI and phase
+retrieval.
+1. Introduction
+The problem of recovering an underlying unknown im-
+agex∈ RN from noisy and/or incomplete measured data
+y∈ RM is fundamental in computational imaging, in ap-
+plications including magnetic resonance imaging (MRI)
+1School of Computer Science and Technology, Beijing Institute
+of Technology, Beijing, China2DPMMS, University of Cambridge,
+Cambridge, United Kingdom 3DAMTP, University of Cambridge,
+Cambridge, United Kingdom. Correspondence to: Ying Fu<fuy-
+ing@bit.edu.cn>.
+(Fessler, 2010), computed tomography (CT) (Elbakri &
+Fessler, 2002), microscopy (Aguet et al., 2008; Zheng et al.,
+2013), and inverse scattering (Katz et al., 2014; Metzler
+et al., 2017b), to name a few. This image recovery task is
+often formulated as an optimization problem that minimizes
+a cost function, i.e.,
+minimize
+x∈RN
+D (x) +λR (x), (1)
+whereD is a data-ﬁdelity term that ensures consistency
+between the reconstructed image and measured data. R
+is a regularizer that imposes certain prior knowledge, e.g.
+smoothness (Osher et al., 2005; Ma et al., 2008), sparsity
+(Yang et al., 2010; Liao & Sapiro, 2008; Ravishankar &
+Bresler, 2010), low rank (Semerci et al., 2014; Gu et al.,
+2017) and nonlocal self-similarity (Mairal et al., 2009; Qu
+et al., 2014), regarding the unknown image. The problem in
+Eq. (1) is often solved by ﬁrst-order iterative proximal algo-
+rithms, e.g. fast iterative shrinkage/thresholding algorithm
+(FISTA) (Beck & Teboulle, 2009) and alternating direc-
+tion method of multipliers (ADMM) (Boyd et al., 2011), to
+tackle the nonsmoothness of the regularizers.
+To handle the nonsmoothness caused by regularizers, ﬁrst-
+order algorithms rely on the proximal operators (Beck &
+Teboulle, 2009; Boyd et al., 2011; Chambolle & Pock, 2011;
+Parikh et al., 2014; Geman, 1995; Esser et al., 2010) deﬁned
+by
+Proxσ2R(v) = argmin
+x
+(
+R(x) + 1
+2σ2‖x−v‖2
+2
+)
+. (2)
+Interestingly, given the mathematical equivalence of the
+proximal operator to the regularized denoising, the proximal
+operators Proxσ2R can be replaced by any off-the-shelf
+denoisersHσ with noise levelσ, yielding a new framework
+namely plug-and-play (PnP) prior (Venkatakrishnan et al.,
+2013). The resulting algorithms, e.g. PnP-ADMM, can be
+written as
+xk+1 = Proxσ2
+kR (zk−uk) =Hσk (zk−uk), (3)
+zk+1 = Prox 1
+µk
+D (xk+1 +uk), (4)
+uk+1 =uk +xk+1−zk+1, (5)
+wherek∈ [0,τ ) denotes thek-th iteration,τ is the terminal
+time, σk and µk indicate the denoising strength (of the
+arXiv:2002.09611v2  [eess.IV]  18 Nov 2020

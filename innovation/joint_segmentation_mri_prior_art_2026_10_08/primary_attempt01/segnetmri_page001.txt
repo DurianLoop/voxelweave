@@ -1,0 +1,67 @@
+Joint CS-MRI Reconstruction and Segmentation with a Unified Deep Network
+Liyan Sun †
+, Zhiwen Fan †
+, Yue Huang, Xinghao Ding ?
+, John Paisley ‡
+Fujian Key Laboratory of Sensing and Computing for Smart City, Xiamen University, Fujian, China
+† The co-first authors contributed equally.
+? Correspondence: dxh@xmu.edu.cn.
+‡Department of Electrical Engineering, Columbia University, New York, NY, USA
+Abstract
+The need for fast acquisition and automatic anal￾ysis of MRI data is growing in the age of big
+data. Although compressed sensing magnetic res￾onance imaging (CS-MRI) has been studied to ac￾celerate MRI by reducing k-space measurements,
+in current CS-MRI techniques MRI applications
+such as segmentation are overlooked when doing
+image reconstruction. In this paper, we test the
+utility of CS-MRI methods in automatic segmen￾tation models and propose a unified deep neural
+network architecture called SegNetMRI which we
+apply to the combined CS-MRI reconstruction and
+segmentation problem. SegNetMRI is built upon
+a MRI reconstruction network with multiple cas￾caded blocks each containing an encoder-decoder
+unit and a data fidelity unit, and MRI segmentation
+networks having the same encoder-decoder struc￾ture. The two subnetworks are pre-trained and fine￾tuned with shared reconstruction encoders. The
+outputs are merged into the final segmentation. Our
+experiments show that SegNetMRI can improve
+both the reconstruction and segmentation perfor￾mance when using compressive measurements.
+1 Introduction
+Magnetic resonance imaging (MRI) is an important technique
+for visualizing human tissue. The raw measurements come in
+the form of Fourier transform coefficients in “k-space” and
+the MRI can be viewed after an inverse 2D Fourier transform
+of the fully sampled k-space. Conventionally, radiologists
+view MRI for diagnosis. However, in areas where medical
+expertise may be lacking or not sufficient to meet demand, au￾tomated methods may also be useful. To this end, automatic
+MR image segmentation is essential because it allows for
+finer localization of focus. To take brain segmentation for ex￾ample, usually four structures emerge including background,
+gray matter (GM), white matter (WM) and cerebrospinal fluid
+(CSF). Lesions appearing in white matter are closely associ￾ated with various issues such as strokes and Alzheimer’s dis￾ease [Steenwijk et al., 2013].
+Although rich anatomical information can be provided by
+MRI, it is limited by a long imaging period. This can in￾troduce motion artifacts caused by movement of the patient
+[Atkinson et al., 1999] or induce psychological pressures
+brought by claustrophobia [Hricak and Amparo, 1984]. Thus
+accelerating imaging speed while maintaining high imaging
+quality is key for MRI. Compressed sensing (CS) theory
+[Donoho, 2006; Candes` et al., 2006], which shows the possi￾bility of recovering signals with sub-Nyquist sampling rates,
+has been introduced to the field of MRI to accelerate imag￾ing. In 2017, the US Food and Drug Administration (FDA)
+approved CS-MRI techniques for use by two major MRI ven￾dors: Siemens and GE [Fessler, 2017]. Thus, one can expect
+increasing deployment of CS-MRI technique in the future for
+real-world applications.
+To our knowledge, current segmentation algorithms for
+MRI assume a “clean” (i.e., fully-sampled) image as input
+and do not take CS-MRI scenarios into consideration. Like￾wise, CS-MRI reconstruction methods do not consider their
+output’s potential downstream segmentation. Although expe￾rienced human experts can make relatively robust decisions
+with CS-reconstructed images, the anticipated increase in the
+number of CS-reconstructed MRI for clinical application will
+call for automatic segmentation algorithms optimized for this
+type of data. Therefore, a unified approach to MRI recon￾struction/segmentation under the compressed sensing frame￾work is worthy of exploration.
+In this paper, we develop a unified deep neural network
+called SegNetMRI for joint MRI reconstruction and segmen￾tation with compressive measurements. We build SegNetMRI
+on two networks: an MRI reconstruction network (MRN) and
+MRI segmentation network (MSN). The MSN is an encoder￾decoder structure network and SegNetMRI is made up of ba￾sic blocks which consists of encoder-decoder and data fidelity
+units. The MRN is pre-trained with pairs of artificially under￾sampled and their corresponding fully-sampled MRI and the
+MSN with fully-sampled MRI and corresponding segmenta￾tion labels. We fine-tune the resulting unified network with
+MSN and MRN sharing the encoder component. With the ba￾sic features produced by the fine-tuned encoder, the MRI re￾construction and segmentation can regularize each other this
+way. The outputs are merged by 1 × 1 convolution.
+2 Background and Related Work
+MRI segmentation Broadly speaking, the research in MRI
+segmentation can be categorized into three classes: (1) atlas￾arXiv:1805.02165v1 [cs.CV] 6 May 2018

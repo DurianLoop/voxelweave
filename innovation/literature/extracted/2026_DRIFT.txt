@@ -1,0 +1,1369 @@
+
+=== PDF PAGE 1 ===
+DRIFT: Difficulty-aware Rectified Flows for
+Through-plane MRI Super-Resolution
+Yoonseok Choi1 , Eun-Gyu Ha1 , Daniel Kim1 , Mohammed A. Al-masni2 ,
+Ming-Hsuan Yang3 , and Dong-Hyun Kim1 ⋆
+1 Department of Electrical and Electronic Engineering, Yonsei University, Seoul,
+Republic of Korea
+2 Department of Bioengineering, King Fahd University of Petroleum &
+Minerals (KFUPM), Dhahran, Saudi Arabia
+3 Electrical Engineering and Computer Science, University of California at Merced,
+Merced, USA
+{yoonseokchoi, eungyuha9722, danny4159, donghyunkim}@yonsei.ac.kr
+m.almasani@sejong.ac.kr
+mhyang@ucmerced.edu
+Abstract.Magnetic Resonance Imaging (MRI) is often acquired with
+anisotropic resolution to reduce scan time, producing stair-step arti-
+facts along the through-plane direction. In through-plane MRI super-
+resolution, an efficiency–fidelity trade-off arises: feed-forward regressors
+are fast but oversmooth at large slice-thicknesses, while sampling-based
+methods improve fidelity at high inference cost. We propose DRIFT,
+a two-stage thickness-conditioned rectified flow framework for through-
+planeMRIsuper-resolutionwithcontinuousinputslice-thickness.Stage1
+employsanAnatomicalProjectionNetwork(APN)tomaplow-resolution
+patches to a coarse high-resolution manifold, providing a deterministic
+anatomical initialization that shortens the residual transport of Stage 2
+and stabilizes slice-wise refinement. Stage 2 refines details via rectified
+flow and introduces a Physics-Aware Difficulty (PAD) metric derived
+from slice-thickness induced through-plane bandwidth deficit to guide
+an Adaptive Integration Scheduler (AIS), allocating ODE steps by thick-
+ness. A Consistent Endpoint Trajectory Alignment (CETA) loss enforces
+thickness-consistentreconstructions.ExperimentsshowthatDRIFTout-
+performs super-resolution baselines while reducing inference cost. Code,
+models, and interactive demos are available athttps://yoonseokchoi-
+ai.github.io/drift-eccv2026/.
+Keywords:Super-Resolution·Rectified Flow·MRI
+1 Introduction
+High-resolution (HR) isotropic Magnetic Resonance Imaging (MRI) provides
+crucial anatomical details for precise clinical diagnosis and quantitative neu-
+roanatomical analysis. However, fundamental physical constraints such as the
+⋆ Corresponding author.
+arXiv:2607.16649v1  [cs.CV]  18 Jul 2026
+
+=== PDF PAGE 2 ===
+2 Y. Choi et al.
+signal-to-noise ratio (SNR) and acquisition time often necessitate anisotropic ac-
+quisition, resulting in thick-slice volumes with low through-plane resolution. To
+bridge this gap, through-plane super-resolution (SR) approaches have emerged
+as a vital task to reconstruct isotropic volumes from anisotropic inputs.
+Various approaches address through-plane SR under anisotropic acquisition,
+includingself-supervisionfromin-planeandthrough-planeasymmetry[38],alias-
+aware regression for thick-slice artifacts [25], and synthesis-driven training for
+heterogeneous clinical protocols [10]. While these pipelines mitigate stair-step
+artifacts and improve reconstruction quality, regression-style estimators often
+favor conservative predictions and tend to be optimized for discrete target scales
+or protocol settings, which can limit generalization under the continuous slice-
+thickness variation encountered in practice. More broadly, continuously varying
+slice-thickness motivates SR formulations that represent images as continuous
+functions rather than relying on discrete grid-to-grid regression.
+Implicit Neural Representations (INR) methods [6,12] represent images as
+continuous functions of spatial coordinates, with medical adaptations such as
+ArSSR [34] and SA-INR [32] extending this paradigm to 3D brain MRI. Despite
+their flexibility, these models face two challenges that matter for through-plane
+SR in MRI. First, they suffer from spectral bias [23], where Multi-Layer Per-
+ceptron (MLP)-based continuous functions prioritize low-frequency structural
+components, which tends to under-recover high-frequency textures essential for
+clinical fidelity. Second, most existing arbitrary-scale models are trained using
+isotropic downsampling, which may not reflect the unique physics of MRI slice
+acquisition, where degradation is dominated by slice-profile governed through-
+plane integration [21,22].
+Generativeapproaches,particularlydiffusion-basedframeworks,haverecently
+demonstrated superior performance in capturing complex textures. For instance,
+TPDM [14] utilizes pre-trained perpendicular 2D diffusion models to improve
+3D imaging quality. However, the prohibitive inference cost remains a signifi-
+cant bottleneck for real-time clinical use. While recent advancements such as
+ResShift [36] have reduced sampling steps by initiating the sampling process
+from the low-resolution (LR) image instead of noise, they utilize a fixed-step
+scheduler regardless of the degradation severity of the input. In contrast, AdaD-
+iffSR [8] introduces region-aware dynamic acceleration, but its image-dependent
+perception modules introduce non-negligible computational overhead and re-
+main fundamentally detached from the underlying physical degradation (i.e.,
+slice-thickness) inherent in MRI acquisition.
+WeproposeDifficulty-awareRectifIedFlowforThrough-planeSR(DRIFT),
+atwo-stageframeworkforreconstructingaspecifiedtargetresolutionfrominputs
+with continuous slice-thicknesses (Fig. 1). DRIFT conditions both stages on the
+inputandtargetslicethicknesses,allowingasinglemodeltoadaptitsreconstruc-
+tion process across different through-plane degradation levels. In Stage 1, DRIFT
+uses an Anatomical Projection Network (APN) to map LR patches to a coarse
+HR manifold, providing a structured initialization that shortens the subsequent
+refinement trajectory. In Stage 2, DRIFT refines high-frequency details using
+
+=== PDF PAGE 3 ===
+DRIFT for Through-plane MRI SR 3
+rectified flow, enabling deterministic inference with a reduced number of func-
+tion evaluations (NFEs) [17,18]. During training, DRIFT simulates thickness-
+diverse anisotropic inputs using a slice-profile model grounded in the Shinnar-Le
+Roux (SLR) algorithm [21] which mirrors the slice-selection process in MRI ac-
+quisition. We sample slice-thicknesses from common clinical ranges [10,11] and
+degradation axis, and apply an SLR-derived slice profile along the chosen axis to
+model through-plane signal integration. We then resample to the thick-slice grid
+and map the result back to the HR grid with nearest-neighbor interpolation to
+reproduce stair-step artifact morphology. To encourage thickness-consistent out-
+puts across conditions, we introduce the Consistent Endpoint Trajectory Align-
+ment (CETA) loss using proximal thickness pairs (Fig. 2).
+At test time, DRIFT uses a Physics-Aware Difficulty (PAD) metric com-
+puted from slice-thickness metadata to drive an Adaptive Integration Sched-
+uler (AIS), which allocates ordinary differential equation (ODE) steps without
+image-dependent decision modules [8] (Fig. 1). Our contributions are summa-
+rized as follows:
+–We formulate input slice-thickness-continuous through-plane MRI SR as a
+two-stage anatomical projection-to-transport problem, where a thickness-
+conditioned APN provides deterministic and spatially correlated slice-wise
+initialization that shortens the residual rectified-flow trajectory.
+–We introduce an MRI protocol-aware conditioning and inference mechanism:
+both stages are conditioned on input and target inverse thickness, while
+PAD/AIS maps slice-thickness-induced bandwidth deficit to adaptive ODE
+step budgets without auxiliary image-difficulty networks.
+–We propose CETA, a proximal-thickness endpoint alignment loss that regu-
+larizes rectified-flow trajectories across neighboring slice-thickness conditions
+and improves over naive random-pair consistency.
+–We validate DRIFT on public and real thick-slice MRI datasets with com-
+prehensivereconstruction,ablation,standardizedefficiency,zero-shotclinical
+transfer, and through-plane continuity analyses.
+2 Related Works
+Through-plane MRI SR.Through-plane MRI SR focuses on reconstructing
+isotropic volumes from anisotropic thick-slice scans, where the resolution is sig-
+nificantly lower along the slice-selection direction. Self-supervised frameworks
+such as SMORE [38] and SIMPLE [1] exploit the resolution asymmetry between
+in-plane and through-plane directions to learn reconstruction from the high-
+resolution in-plane data itself. To address aliasing artifacts inherent in thick-slice
+acquisition, AFCM [25] introduces an alias-free formulation using co-modulated
+generators. For clinically heterogeneous data, SynthSR [10] and the joint opti-
+mization framework by Iglesiaset al. [11] utilize synthetic data from segmenta-
+tion labels to ensure robustness. More recent methods explore generative priors.
+TPDM [14] leverages perpendicular 2D diffusion models for 3D reconstruction.
+Despite these advances, most methods assume discrete scale degradation models,
+
+=== PDF PAGE 4 ===
+4 Y. Choi et al.
+Fig. 1:Conceptual overview of DRIFT inference. (a) DRIFT initializes rectified flow
+from a coarse manifold estimatezrather than noise, shortening the residual transport
+trajectory. (b) AIS allocates ODE steps using the PAD metric, assigning more steps
+to thick-slice hard cases and fewer steps to thin-slice easy cases.
+failing to generalize across the continuous slice-thickness manifold encountered
+in clinical practice.
+Arbitrary-Scale and INR-based SR.Arbitrary-scale SR eliminates the re-
+quirement for scale-specific models by treating images as continuous functions.
+Meta-SR [9] first achieves this via dynamic weight prediction, but INRs such as
+LIIF [6] have since become the standard paradigm. Subsequent developments,
+LTE [12] and CiaoSR [3] improve this by incorporating frequency-domain tex-
+ture estimation. In medical imaging, ArSSR [34] and SA-INR [32] adapt INRs to
+3D medical volumes, while SAINT [22] uses voxel-spacing-conditioned weights
+for spatially aware interpolation. Despite their flexibility, coordinate-based MLP
+inherently suffers from spectral bias [23], favoring low-frequency structural com-
+ponents over high-frequency details. Furthermore, most existing INR models fail
+to explicitly incorporate the directional physics of MRI slice acquisition [21].
+Generative models and adaptive inference.Diffusion-based SR methods
+such as SR3 [24] and SRDiff [15] improve perceptual quality but require costly
+iterative sampling. Acceleration methods such as ResShift [36] and AddSR [28]
+reduce sampling cost through residual shifting or distillation. Rectified Flow [18]
+and Flow Matching [17] learn straight-line ODE trajectories, with InstaFlow [19]
+and FlowSR [35] enabling few-step generation or restoration. Posterior-mean
+rectified flow (PMRF) [20] further formulates image restoration as a two-stage
+transport process, where a posterior-mean estimate is first obtained and then
+transported toward the clean image distribution by rectified flow. DRIFT shares
+this broad two-stage transport view, but specializes it for through-plane MRI
+SR by introducing acquisition-thickness conditioning, SLR-based slice-profile
+degradation, metadata-driven adaptive integration, and proximal-thickness tra-
+jectory regularization. Unlike image-dependent adaptive inference modules such
+as AdaDiffSR [8], DRIFT uses acquisition metadata to allocate computation
+
+=== PDF PAGE 5 ===
+DRIFT for Through-plane MRI SR 5
+Fig. 2:Training pipeline of DRIFT. Stage 1 uses an Anatomical Projection Net-
+work (APN) to project LR patches to a coarse HR manifold conditioned on inverse
+thicknessτ. Stage 2 refines textures via rectified flow by predicting a straight-line
+velocity field. We enforce Consistent Endpoint Trajectory Alignment (CETA) by reg-
+ularizing trajectories between proximal thickness pairs (Tj =T i−∆T,∆T= 1mm).
+Notation is summarized in the figure legend.
+without auxiliary difficulty networks, which is suitable for MRI protocols where
+slice thickness governs through-plane bandwidth loss.
+3 Method
+We propose DRIFT (Difficulty-aware RectifIed Flow for Through-plane SR), a
+two-stage, slice-thickness-conditioned framework for through-plane MRI SR. For
+thep-th training patch and a slice-thickness condition indexed byiwith input
+thicknessT i, DRIFT reconstructs an isotropic target at thicknessThr via
+xp,i
+APN
+−−−−→
+Stage 1
+zp,i
+Rectified Flow
+−−−−−−−−−→
+Stage 2
+˜yp,i. (1)
+Here,x p,i∈R H×W denotes the LR input patch under conditioni,yp∈R H×W
+denotes the corresponding HR target patch atThr,z p,i is a coarse anatomical
+estimate, and ˜yp,i is the final output. DRIFT is implemented as a 2D slice wise
+model. Each volume is reconstructed by applying the same thickness-conditioned
+operator to slices orthogonal to the degraded axis and then composing the pre-
+dicted slices back into a 3D volume. Therefore, DRIFT does not rely on explicit
+3D convolutions or cross-slice communication. Its volumetric continuity instead
+comes from deterministic APN initialization and shared deterministic rectified
+flow refinement across neighboring band limited slices.
+
+=== PDF PAGE 6 ===
+6 Y. Choi et al.
+3.1 Slice-profile based thick-slice simulation
+Through-plane degradation in thick-slice MRI is largely governed by slice-profile
+induced signal integration along the slice axis. To approximate clinical slice se-
+lection, we synthesize LR inputs of thicknessTi from HR scans at thicknessThr
+using an SLR-derived slice-profile model [21].
+Volume-level simulation.LetY∈R H×W×D denote an HR 3D volume sam-
+pled on an isotropic grid with spacingThr. At each iteration, we sample a degra-
+dation axisa∈{x,y,z}and apply a thickness-specific 1D slice-profile kernelh Ti
+by convolvingYonly along axisa(leaving the other axes unchanged), yield-
+ing a slice-profile integrated volumeY′. We then resample only along axisa
+from spacingT hr toT i (allowing non-integer factors), and represent the result-
+ing thick-slice volume on the HR grid to form paired training data withY.
+This procedure reproduces the characteristic stair-step morphology observed in
+reformatted thick-slice MRI. Implementation details are provided in the supple-
+mentary material (Sec. S1).
+Patch extraction.From the simulated thick-slice volume (represented on the
+HR grid) and the HR volumeY, we extract 2D slices orthogonal to the degraded
+axisaand crop aligned patch pairs, corresponding toxp,i andy p defined above.
+3.2 Slice-Thickness Conditioning
+We condition DRIFT on slice-thickness using the inverse thicknessτ= 1/T,
+which proxies the effective through-plane bandwidth under slice selection [2,21].
+For conditioni, we setτi = 1/Ti for the input thickness andτhr = 1/T hr for the
+target thickness. Usingτreduces the scale disparity between input and target
+thickness values over clinically common ranges and improves numerical condi-
+tioning. We embedτi andτ hr using two lightweight, unshared MLP encoders,
+concatenate their embeddings, and map the result to a thickness-conditioning
+vectorc i∈R dc (we usedc = 512):
+ci = MLP cond([MLPin(τi)∥MLP tgt(τhr)]), (2)
+where∥denotes concatenation,MLP in andMLP tgt encode the input and target
+inverse thickness, respectively, andMLPcond fuses the two embeddings into the
+final conditioning vectorci. In the main experiments,Thr is fixed to the native
+isotropic resolution of each dataset, while the architecture itself accepts both
+input and target thickness embeddings. Target-continuous operation therefore
+requires sampling target thicknesses during training, which we examine in the
+supplementary material. We injectci into APN residual blocks via Adaptive
+Group Normalization (AdaGN) [7]:
+AdaGN(h,c) =γ(c)⊙GN(h) +β(c), (3)
+whereh∈R C×H×W is a feature map,GNdenotes Group Normalization, and
+(γ(c),β(c))∈R 2×C are channel-wise scale and shift predicted fromcby a
+learned linear projection. Architectural details of the MLPs are provided in the
+supplementary material (Sec. S4.1).
+
+=== PDF PAGE 7 ===
+DRIFT for Through-plane MRI SR 7
+3.3 Stage 1: Structural Manifold Projection
+Stage 1 is designed to shorten the rectified-flow transport in Stage 2. Given an
+LR patchxp,i acquired under thickness conditioni(input thicknessTi) and the
+thickness-conditioning vectorci, the Anatomical Projection Network (APN)fϕ
+produces a coarse HR estimatezp,i at the target thicknessThr:
+zp,i =f ϕ(xp,i,ci). (4)
+We refer to this step as structural manifold projection because APN learns a
+thickness-conditioned mapping that projects samples from the thick-slice input
+space onto a coarse HR space anchored atThr. This projection reduces the re-
+maining distance to the target HR distribution, allowing Stage 2 to focus on
+refining residual high-frequency details with fewer ODE steps. Beyond reduc-
+ing the transport distance, APN also provides an image-conditioned initial state
+for slice-wise generative refinement. Because neighboring thick-slice inputs share
+anatomical content and are processed by the same deterministic APN, their
+coarse HR states remain spatially correlated before Stage 2. This differs from
+slice-wise stochastic generative reconstruction, where independent noise initial-
+ization can introduce slice-to-slice variations unless additional noise-correlation
+heuristics are used. Through-plane SR is ill-posed, and multiple HR solutions can
+explain the same thick-slice observation. Under pixel-wise regression, predictors
+tend to average over plausible solutions, resulting in smooth yet structurally con-
+sistent outputs. Accordingly, Stage 1 does not aim to recover the full HR texture
+distribution; instead, it provides a stable anatomical estimate close to the target
+HR manifold, which Stage 2 subsequently refines to recover sharp textures and
+boundaries. We train APN with a reconstruction objective that combines the
+Charbonnier penalty [4] and SSIM [33]:
+Lrecon =L Char(zp,i,yp) +λ ssimLSSIM(zp,i,yp), (5)
+whereλ ssim weights the SSIM term (we useλssim = 0.5).
+3.4 Stage 2: Difficulty-Aware Rectified Flow
+Stage 2 refines high-frequency details that are under-recovered by Stage 1 by
+learning a rectified-flow velocity field [17,18]. During Stage 2 training, we freeze
+the Stage 1 APN so that the velocity network learns to refine a stable coarse
+estimate rather than a moving target. The velocity network takes the interme-
+diate image statesp,i(t)as input, while timetand slice-thickness information
+modulate intermediate features via AdaGN (Sec. 3.2). For training, we sample a
+normalized timet∈[0,1]and define a straight path between the Stage 1 output
+zp,i and the HR targetyp:
+sp,i(t) = (1−t)z p,i +typ,u p,i =y p−zp,i, (6)
+whereu p,i is the constant target velocity along the path. Givensp,i(t), the veloc-
+itynetworkv θ predictstherectified-flowvelocity,withtandslice-thicknessenter-
+ing only through conditioning. Concretely, we compute a time embedding from
+
+=== PDF PAGE 8 ===
+8 Y. Choi et al.
+a sinusoidal time embedding [31], concatenate it with the thickness-conditioning
+vectorc i (Sec. 3.2), and map the concatenation to a joint time–thickness condi-
+tioning vector:
+et = MLP time(SinEmb(t)),c t,i = MLP tt([et∥c i]), (7)
+where∥denotesconcatenationandMLP time andMLP tt arelightweightMLPs(ar-
+chitectural details are provided in the supplementary material Sec. S4.1). The
+predicted velocity is
+vp,i(t) =v θ(sp,i(t);ct,i), (8)
+wheres p,i(t)is the only network input, andct,i is injected into residual blocks
+via AdaGN. We trainvθ to matchup,i using a Huber objective with threshold
+δ= 0.1and an endpoint-biased timestep distributionp α(t), inspired by the
+difficulty-aware timestep reweighting principle in RF++ [13]:
+LRF =E t∼pα(t) [Huberδ(vp,i(t),up,i)]. (9)
+To samplet, we drawr∼U(0,1)and apply
+t= 1
+2− 1
+2 sgn
+ 
+r− 1
+2
+
+|2r−1| 1/α, (10)
+wheresgn(·)is the sign function andαcontrols the degree of endpoint emphasis
+(we useα= 2.0; see Sec. S8 in the supplementary material). Here,pα(t)denotes
+the induced distribution oftunder Eq. 10. This sampling allocates more proba-
+bility mass tot≈0andt≈1, where refinement is most sensitive in our residual
+regime. Finally, we zero-initialize the output layer ofvθ so thatvp,i(t)≈0at the
+beginning of training, making Stage 2 initially behave as an identity refinement
+that preserveszp,i and then progressively learns residual high-frequency details.
+3.5 CETA: Consistent Endpoint Trajectory Alignment Loss
+CETA regularizes thickness-consistent reconstructions for the same underlying
+anatomy. For a proximal thickness pair(i,j)generated from the same HR patch
+yp, we setTj =T i−∆Twith∆T= 1mm. Here,z p,k denotes the Stage 1 APN
+output for conditionk(Eq. (4)), fork∈{i,j}. We form endpoint proxies
+˜yp,k(t) =z p,k +vp,k(t), k∈{i,j}, (11)
+wherev p,k(t)is the predicted rectified-flow velocity (Eq. (8)). CETA minimizes
+the squared L2 distance between proxies:
+LCETA =∥ ˜yp,i(t)− ˜yp,j(t)∥2
+2. (12)
+Using a fixed proximal gap yields a chain of local constraints across the sam-
+pled thickness range, which propagates consistency beyond a single pair (e.g.,
+T6 ↔T 5 ↔···↔T 1). A very small∆Tyields nearly identical targets and
+provides weak alignment signal, while a very large∆Tforces alignment between
+substantially different trajectories and can destabilize training. We therefore
+use∆T= 1mm as a practical balance. The Stage 2 objective isL Stage2 =
+LRF +λ cetaLCETA (we useλ ceta = 1.0. See Sec. S6 in the supplementary mate-
+rial).
+
+=== PDF PAGE 9 ===
+DRIFT for Through-plane MRI SR 9
+3.6 PAD and AIS: Physics-Aware Adaptive Inference
+Inference cost in Stage 2 is dominated by the number of velocity evaluations.
+Using a fixed step, therefore, wastes computation for thin-slice inputs and can
+under-refine thick-slice inputs. DRIFT addresses this by selecting the number
+of Euler stepsN, equivalently the NFEs of the velocity network, directly from
+slice-thickness metadata.
+Physics-Aware Difficulty (PAD).Given the input thicknessTi and the fixed
+target thicknessThr (Sec. 3), thicker slices lose a larger fraction of through-plane
+frequency content due to slice-direction integration. We quantify this protocol
+difficulty by the normalized bandwidth deficit:
+PAD(Ti,T hr) = 1− Thr
+Ti
+, (13)
+wherePAD∈[0,1), equals0whenT i =T hr. PAD serves as a physics-aware
+degradation severity cue rather than an image difficulty score. It reflects the
+normalized through-plane bandwidth deficit given by1−Thr/Ti, which increases
+as the input slice becomes thicker relative to the target resolution.
+Adaptive Integration Scheduler (AIS).AIS mapsPAD(Ti,T hr)to the step
+budget:
+N= clamp
+
+Nmax·PAD(Ti,T hr)
+
+, Nmin, Nmax
+
+, (14)
+where⌊·⌉rounds to the nearest integer andclamp(x,a,b) = min(max(x,a),b).
+We setN min = 0andN max = 15(See Sec.S7 in the supplementary material).
+This allocation uses fewer NFEs for easier (thin-slice) cases and more NFEs
+for harder (thick-slice) cases, with negligible overhead since it depends only on
+slice-thickness metadata.
+4 Experiments
+4.1 Experimental Setups
+Datasets.We evaluate on three public brain MRI datasets with isotropic HR
+volumes as ground truth, namely HCP [30], MIND [5], and IDEAS [29]. We
+use T1w and T2w for HCP and MIND, and T1w and FLAIR for IDEAS. All
+splits are subject-wise, and we use 890/223, 411/102, and 110/25 subjects for
+train/test on HCP, MIND, and IDEAS, respectively. We further perform zero-
+shot evaluation on real thick-slice MRI without isotropic ground truth using
+an IRB-approved in-house dataset and the public fastMRI brain dataset [37].
+The in-house dataset includes T2w and FLAIR scans from 2 healthy volunteers,
+and the fastMRI subset includes 20 clinically acquired axial T2w volumes. We
+additionally use CC359 [26] only for zero-shot PAD scheduling analysis on multi-
+vendor T1w data. Additional dataset details are provided in the supplementary
+material (Sec. S2).
+Evaluation.We evaluate all methods on reconstructed 3D volumes and present
+peak signal-to-noise ratio (PSNR) and SSIM [33]. For DRIFT and other 2D
+
+=== PDF PAGE 10 ===
+10 Y. Choi et al.
+baselines, we assemble each 3D volume by composing slice-wise predictions and
+compute PSNR over the reconstructed 3D volume. SSIM is computed on 2D
+slices and averaged over axial, coronal, and sagittal directions. For the IRB-
+approved in-house dataset, no isotropic ground truth is available, so we present
+qualitative results only.
+Baselines.We compare DRIFT against fixed-scale SR methods [14,16,25,36]
+and arbitrary-scale SR models [6,12,22,32,34]. All baselines are retrained per
+dataset using official codebases. Fixed-scale methods train one model per eval-
+uated scale, while arbitrary-scale methods train a single model per dataset. To
+enable fair comparison under through-plane SR, we train the 2D restoration and
+SR models [16,36] and INR-based baselines [6,12,34] using the same SLR-based
+thick-slice degradation as DRIFT (Sec. 3.1). This ensures that the LR inputs
+exhibit the slice axis degradation patterns, including stair-step artifacts in refor-
+matted views. For baselines whose formulations rely on dedicated specific-plane
+inputs [25,32], multi-view inputs [22], or inverse-problem operators [14], we fol-
+low their original input construction and preprocessing. Baseline-specific details
+are provided in the supplementary material (Sec. S3).
+Implementation.We implement DRIFT in PyTorch and train on 2D128×128
+patches with a two-stage framework. Stage 1 (APN) is trained for 100 epochs
+with a batch size of 64 per GPU and lr10−4. In Stage 2, APN is frozen and
+vθ is trained for 100 epochs with a batch size of 25 per GPU and lr5×10−5.
+We use AdamW with cosine annealing and mixed precision on 8×A6000 GPUs.
+During training, we synthesize thick-slice inputs using the SLR-based forward
+model (Sec. 3.1) and sampleTi∼U(T hr,6.0]mm. Training uses random slice
+and axis sampling, while evaluation uses fixed settings with a fixed seed for
+reproducibility. At inference, we apply sliding-window patch inference on each
+2D slice with 32-pixel overlap and Gaussian blending, and AIS selectsN∈[0,15]
+NFEs based on PAD (Sec. 3.6). Additional implementation details are provided
+in the supplementary material (Sec. S4).
+4.2 Comparison against SOTA SR baselines on public datasets
+Qualitative comparisons.Fig. 3 and Fig. S1 show visual comparisons on HCP,
+MIND, and IDEAS. For fixed-scale SR within the training range, DRIFT best
+preserves fine anatomical structures and textures while suppressing stair-step
+artifacts across datasets. SwinIR [16] tends to oversmooth details at larger thick-
+nesses. AFCM [25] exhibits discontinuities along the slice-acquisition direction in
+non-axial views, which becomes more pronounced at higher scales on HCP and
+IDEAS. ResShift [36] loses fine structures at the largest scale. TPDM [14] recon-
+structs sharp details but often overestimates patterns, and it can leave residual
+noise in the output. The advantage of DRIFT becomes clearer for arbitrary-scale
+SR under continuous thickness changes, including the out-of-distribution thick-
+ness of 6.5mm. Most arbitrary-scale baselines either blur anatomical details or
+fail to remove stair-step artifacts. In contrast, DRIFT produces outputs that are
+most consistent with the ground truth and maintains strong continuity along
+the slice-acquisition direction. Compared to 3D network ArSSR [34], DRIFT
+
+=== PDF PAGE 11 ===
+DRIFT for Through-plane MRI SR 11
+Fig. 3:Qualitative comparison with fixed-scale SR baselines on public datasets:
+HCP (green), MIND (yellow), and IDEAS (white). Results are shown at representative
+fixed scales within the training range, using HCP at×6(4.2mm) and×8(5.6mm),
+MIND at×5(4.5mm) and×6(5.4mm), and IDEAS at×5(5.0mm) and×6(6.0mm).
+Zoom-in boxes highlight regions of interest.
+reduces inter-slice inconsistency in challenging regions where stair-step artifacts
+are prominent (Fig. S1 in the supplementary material). Although DRIFT is
+slice-wise, its deterministic APN initialization and shared RF refinement reduce
+visible discontinuities in reformatted views (Fig. S8). We further quantify this
+effect in the supplementary material using through-plane gradient RMSE, where
+DRIFT shows lower gradient error than TPDM, SA INR, and ArSSR on HCP
+×8(Table. S5).
+Quantitativecomparisons.Table1indicatesPSNRandSSIMonHCP,MIND,
+and IDEAS under fixed-scale and arbitrary-scale settings, where DRIFT con-
+sistently achieves the best performance. For fixed-scale SR within the train-
+ing range, DRIFT yields consistent gains across datasets, achieving 37.64/0.952
+and 35.93/0.936 on HCP (×6,×8), 32.74/0.904 and 30.02/0.886 on MIND (×5,
+×6), and 32.75/0.946 and 32.01/0.938 on IDEAS (×5,×6). Compared to the
+strongest fixed-scale baseline SwinIR [16], DRIFT improves PSNR by up to
+
+=== PDF PAGE 12 ===
+12 Y. Choi et al.
+T able 1:Quantitative comparison with state-of-the-art methods on HCP, MIND,
+and IDEAS for through-plane MRI SR. We report PSNR↑/SSIM↑for fixed-scale and
+arbitrary-scale settings. The best results are highlighted in blue. Additional scales are
+in the supplementary.
+Method HCP MIND IDEAS
+Fixed-scale ×6
+(4.2mm)
+×8
+(5.6mm)
+×5
+(4.5mm)
+×6
+(5.4mm)
+×5
+(5.0mm)
+×6
+(6.0mm)
+SwinIR [16] 34.10/0.901 33.13/0.882 30.15/0.874 29.01/0.838 31.64/0.924 31.62/0.914
+AFCM [25] 27.11/0.642 26.08/0.501 27.74/0.728 26.02/0.713 23.89/0.825 22.55/0.796
+ResShift [36] 32.89/0.888 30.34/0.853 29.48/0.839 29.00/0.833 31.93/0.910 30.40/0.899
+TPDM [14] 29.31/0.798 28.24/0.755 22.50/0.452 22.11/0.413 26.64/0.744 26.11/0.720
+DRIFT (Ours)37.64/0.952 35.93/0.936 32.74/0.904 30.02/0.886 32.75/0.946 32.01/0.938
+Arbitrary-scale ×8.57
+(6.0mm)
+×9.28
+(6.5mm)
+×6.67
+(6.0mm)
+×7.22
+(6.5mm)
+×5.50
+(5.5mm)
+×6.50
+(6.5mm)
+SAINT [22] 25.09/0.686 24.77/0.666 23.39/0.721 23.05/0.701 24.63/0.649 24.33/0.627
+LIIF [6] 26.60/0.801 26.53/0.782 25.27/0.774 25.11/0.773 27.24/0.850 26.98/0.842
+LTE [12] 26.68/0.803 26.65/0.802 25.24/0.772 25.20/0.771 27.35/0.841 27.27/0.830
+SA-INR [32] 25.86/0.694 25.18/0.665 26.22/0.810 25.12/0.774 26.18/0.745 26.10/0.735
+ArSSR [34] 25.15/0.699 25.10/0.685 24.40/0.758 24.00/0.741 24.85/0.682 24.50/0.679
+DRIFT (Ours)32.97/0.891 32.90/0.880 29.51/0.882 29.50/0.881 32.05/0.945 31.99/0.935
+3.54dB (HCP), 2.59dB (MIND), and 1.11dB (IDEAS), with SSIM gains up
+to 0.054. TPDM [14] also appears sensitive to inference hyperparameters and
+can degrade noticeably across datasets even under the recommended setting
+of the authors. For arbitrary-scale SR, DRIFT shows larger advantages since
+many continuous-scale methods were originally developed under isotropic down-
+sampling. Across all datasets, DRIFT outperforms the strongest arbitrary-scale
+baseline, typically LTE [12] or SA-INR [32], by 3.29–6.29dB in PSNR at 6.0mm
+and 4.71–4.72dB at 6.5mm, with large SSIM gains. Notably, DRIFT remains
+robust at the out-of-distribution thickness of 6.5mm, while INR-based baselines
+such as LIIF [6], LTE [12], and ArSSR [34] show smaller improvements under
+stair-step artifacts.
+4.3 Zero-Shot Evaluation on Real Thick-Slice MRI
+We evaluate DRIFT on real thick-slice MRI without isotropic ground truth us-
+ing an IRB-approved in-house dataset and the public fastMRI brain dataset.
+Because full-reference metrics are unavailable, the in-house dataset is used as
+a prospective qualitative case study across different sequences and acquisition
+grids, while fastMRI provides a larger public cohort for qualitative comparison
+and no-reference image-quality evaluation.
+For the in-house scans, we use IDEAS-pretrained weights for FLAIR (1.0mm
+in-plane) and HCP-pretrained weights for T2w (0.7mm in-plane). As shown in
+Fig. 4, DRIFT reduces stair-step artifacts and preserves anatomical continu-
+ity in reformatted views across both sequences. Fixed-scale baselines cannot
+be evaluated on the T2w scan because models trained at the required scale
+are unavailable. Among arbitrary-scale baselines, several methods leave residual
+stair-step artifacts, and ArSSR [34] produces noticeably blurred reconstructions.
+
+=== PDF PAGE 13 ===
+DRIFT for Through-plane MRI SR 13
+Fig. 4:Qualitative comparison on the in-house dataset (zero-shot). IRB-approved
+thick-slice scans (5mm) for FLAIR and T2w are shown without isotropic ground truth.
+Models are applied without retraining using IDEAS-pretrained weights for FLAIR and
+HCP-pretrained weights for T2w. Zoom-in boxes highlight regions of interest.
+TPDM [14] shows weaker cross-dataset generalization and fails to recover coher-
+ent structures on the in-house scans.
+For fastMRI, we apply the HCP-pretrained DRIFT model to clinically ac-
+quired T2w scans with 5mm slice thickness and compare against foundation
+model BME-X [27]. Qualitative comparisons show that DRIFT produces sharper
+coronal reformats with fewer through-plane artifacts than BME-X [27]. DRIFT
+also achieves higher sharpness (0.291 vs. 0.238) and lower NIQE and BRISQUE
+(5.30 and 21.16 vs. 7.22 and 62.46), supporting its zero-shot use on real thick-
+slice MRI without retraining or dataset-specific tuning (Fig. S9 and Table S6 in
+the supplementary material).
+4.4 Efficiency–Fidelity Trade-off
+In this section, we analyze an efficiency–fidelity trade-off between reconstruction
+fidelity and inference cost from two complementary perspectives and further
+report standardized model cost in the supplementary material.
+Perceptual efficiency–fidelity (runtime vs. LPIPS).Fig. 5 indicates per-
+volumeruntimeagainstLPIPSonHCP×8(5.6mm→0.7mm).Mostfeed-forward
+baselines [6,12,16,25] are fast but show higher LPIPS due to oversmoothing. Sev-
+eral volumetric or coordinate-based feed-forward models, including SAINT [22],
+SA-INR [32], and ArSSR [34], can be slower than DRIFT in this setting. DRIFT
+achieves the lowest LPIPS (0.043) at about 20s per volume, improving over
+ArSSR [34] (0.112) by×3.3 while being×14 faster. TPDM [14] is about×450
+slower yet yields×6 worse LPIPS than DRIFT.
+Distortion efficiency–fidelity (NFEs vs. PSNR).Fig. 6 shows PSNR ver-
+sus NFEs against multi-step diffusion baselines on HCP. ResShift [36] runs with
+a small fixed step count (15 NFEs), which does not adapt to thickness-dependent
+difficulty. TPDM [14] requires 2,000 steps while producing lower PSNR. In con-
+trast, DRIFT achieves higher PSNR with fewer evaluations, using 8, 12, and 13
+NFEs at×2,×6, and×8, respectively. Overall, DRIFT is slice-thickness-aware
+and adaptively allocates NFEs, achieving higher PSNR than fixed-step diffusion
+baselines while using fewer function evaluations.
+Standardized model cost.We further report standardized cost and compact
+variant results in the supplementary material (Sec. S4.2). A smaller DRIFT-
+
+=== PDF PAGE 14 ===
+14 Y. Choi et al.
+Fig. 5:Perceptual efficiency-fidelity
+trade-off on HCP×8 (5.6mm). Per-
+volume runtime versus LPIPS.
+Fig. 6:Distortion efficiency-fidelity trade-
+off against multi-step diffusion baselines on
+HCP. PSNR versus NFEs at×2(1.4mm),
+×6(4.2mm), and×8(5.6mm).
+Small variant keeps the same two-stage design and adaptive integration mecha-
+nism while reducing parameters, FLOPs, and peak VRAM by×3.3,×4.0, and
+×5.3 relative to DRIFT-Large. Its performance remains competitive across HCP,
+MIND, and IDEAS, indicating that the efficiency and fidelity behavior of DRIFT
+is not explained by model size alone.
+4.5 Ablation Study
+PAD versus Image-Dependent Difficulty.On multi-vendor CC359 [26],
+an AdaDiffSR-style image score shows negligible correlation with HF-PSNR
+within fixed input-thickness groups. Image-only and hybrid scheduling also un-
+derperform PAD, supporting slice-thickness-based scheduling in this controlled
+through-plane SR setting (Sec. S11).
+Ablation on the Two-Stage Design.We compare Stage 1 only, Stage 2 only,
+and full DRIFT. Stage 1 removes coarse stair-step artifacts but oversmooths
+fine detail, while Stage 2 without APN improves local sharpness but lacks sta-
+ble anatomical initialization at larger slice thicknesses. Full DRIFT combines
+anatomical initialization with residual rectified-flow refinement and gives the
+best quantitative and qualitative results (Fig. S2).
+Ablation on Each Stage 2 Component.Table 2 quantifies the contribution
+ofeachStage2componentonHCP.Removingslice-thicknessconditioningcauses
+the largest degradation, showing that acquisition conditioning is essential for
+heterogeneous thick-slice inputs. CETA and U-shaped timestep sampling further
+improve the result, indicating complementary roles of trajectory regularization
+and timestep prioritization.
+Ablation on the CETA Proximal Gap.Table 3 evaluates the gap∆T
+used to form CETA loss pairs. Random CETA pairs improve over the no CETA
+setting in Table 2, but remain below the fixed 1.0mm gap despite moderate
+coverage, indicating that pair coverage alone is not sufficient. Increasing∆T
+can provide a stronger cross-thickness constraint, but it also reduces coverage
+
+=== PDF PAGE 15 ===
+DRIFT for Through-plane MRI SR 15
+T able 2:Stage 2 component ablation on
+HCP. We remove one component while
+keeping the Stage 1 APN fixed. Metrics are
+averaged overT i∈{1.5,3.0,5.0}mm with
+Thr = 0.7mm. CETA is N/A without thick-
+ness conditioning.
+Thickness
+Cond.
+U-shaped
+Sampling
+CETA loss
+(λCET A = 1) PSNR↑SSIM↑LPIPS↓
+✓ ✓ ✗ 36.92 0.9416 0.0308
+✗ ✓N/A 34.82 0.8986 0.0491
+✓ ✗ ✓ 38.12 0.9458 0.0342
+✓ ✓ ✓ 40.85 0.9634 0.0229
+T able 3:CETA gap ablation on
+HCP. Random denotes naive random
+CETA pairs, and Coverage denotes the
+supervised fraction of the thickness
+range. Metrics are averaged overT i ∈
+{1.5,3.0,5.0}mm withT hr = 0.7mm.
+Gap∆TCoverage PSNR↑SSIM↑LPIPS↓
+Random 65% 38.23 0.9460 0.0290
+0.5mm 91% 37.24 0.9430 0.0301
+1.0 mm 81% 40.85 0.9634 0.0229
+2.0mm 62% 39.10 0.9540 0.0265
+4.0mm 25% 37.58 0.9445 0.0338
+within the training range and aligns more dissimilar conditions, which may make
+optimization less stable. Conversely, a small gap such as 0.5mm yields high
+coverage but provides a weaker learning signal because paired conditions become
+nearly indistinguishable, making the alignment close to an identity constraint.
+Across random and fixed-gap settings,∆T= 1.0mm provides the best trade-off
+between constraint strength, locality, and coverage, achieving the best PSNR,
+SSIM, and LPIPS.
+Additionalevaluations.Additionaldownstreamsegmentationresultsandmulti-
+planar volumetric visualizations are provided in the supplementary material
+to assess anatomical utility and volumetric reformat quality. (Sec. S14 and
+Sec. S15).
+5 Conclusion
+We propose DRIFT, a two-stage difficulty-aware rectified flow framework for
+through-plane MRI SR, with thickness conditioning for continuous input slice
+thicknesses. APN projects thick-slice inputs onto a coarse HR manifold, reducing
+the residual transport solved by Stage 2. PAD-guided AIS allocates ODE steps
+according to slice-thickness difficulty, while CETA regularizes proximal thick-
+ness trajectories for consistent reconstructions. Across public datasets and real
+thick-sliceMRI,DRIFTimprovesfidelityandsamplingefficiencyoverregression,
+INR, and diffusion baselines. A current limitation is that the main experiments
+use fixed native target thicknesses. Extending target-thickness sampling across
+resolutions and anatomies remains an important direction for cross-protocol gen-
+eralization.
+Acknowledgements
+This work was supported by the National Research Foundation of Korea (NRF)
+grant funded by the Korea government (MSIT) (RS-2025-00561616).
+
+=== PDF PAGE 16 ===
+16 Y. Choi et al.
+References
+1. Benisty, R., Shteynman, Y., Porat, M., Ilivitzki, A., Freiman, M.: Simple: Si-
+multaneous multi-plane self-supervised learning for isotropic mri restoration from
+anisotropic data. In: Int. Conf. Medical Image Computing and Computer-Assisted
+Intervention (2025)
+2. Bernstein, M.A., King, K.F., Zhou, X.J.: Handbook of MRI pulse sequences. Else-
+vier (2004)
+3. Cao, J., Wang, Q., Xian, Y., Li, Y., Ni, B., Pi, Z., Zhang, K., Zhang, Y., Timo-
+fte, R., Van Gool, L.: Ciaosr: Continuous implicit attention-in-attention network
+for arbitrary-scale image super-resolution. In: IEEE Conf. Comput. Vis. Pattern
+Recog. (2023)
+4. Charbonnier, P., Blanc-Feraud, L., Aubert, G., Barlaud, M.: Two deterministic
+half-quadratic regularization algorithms for computed imaging. In: IEEE Int. Conf.
+Image Process. (1994)
+5. Chen,X.J.,Salvadore,M.,Blanco-Elorrieta,E.:MIND:Multilingualimagingneuro
+dataset. OpenNeuro dataset (2025).https://doi.org/10.18112/openneuro.
+ds006391.v2.0.0, version 2.0.0, Accessed 1 July 2026
+6. Chen, Y., Liu, S., Wang, X.: Learning continuous image representation with local
+implicit image function. In: IEEE Conf. Comput. Vis. Pattern Recog. (2021)
+7. Dhariwal, P., Nichol, A.: Diffusion models beat gans on image synthesis. Advances
+in neural information processing systems (2021)
+8. Fan, Y., Liu, C., Yin, N., Gao, C., Qian, X.: Adadiffsr: Adaptive region-aware
+dynamic acceleration diffusion model for real-world image super-resolution. In:
+Eur. Conf. Comput. Vis. (2024)
+9. Hu, X., Mu, H., Zhang, X., Wang, Z., Tan, T., Sun, J.: Meta-sr: A magnification-
+arbitrary network for super-resolution. In: IEEE Conf. Comput. Vis. Pattern
+Recog. (2019)
+10. Iglesias, J.E., Billot, B., Balbastre, Y., Magdamo, C., Arnold, S.E., Das, S., Edlow,
+B.L., Alexander, D.C., Golland, P., Fischl, B.: Synthsr: A public ai tool to turn
+heterogeneous clinical brain scans into high-resolution t1-weighted images for 3d
+morphometry. Science advances (2023)
+11. Iglesias, J.E., Billot, B., Balbastre, Y., Tabari, A., Conklin, J., González, R.G.,
+Alexander, D.C., Golland, P., Edlow, B.L., Fischl, B., et al.: Joint super-resolution
+and synthesis of 1 mm isotropic mp-rage volumes from clinical mri exams with
+scans of different orientation, resolution and contrast. Neuroimage (2021)
+12. Lee, J., Jin, K.H.: Local texture estimator for implicit representation function. In:
+IEEE Conf. Comput. Vis. Pattern Recog. (2022)
+13. Lee, S., Lin, Z., Fanti, G.: Improving the training of rectified flows. Adv. Neural
+Inform. Process. Syst. (2024)
+14. Lee, S., Chung, H., Park, M., Park, J., Ryu, W.S., Ye, J.C.: Improving 3d imaging
+with pre-trained perpendicular 2d diffusion models. In: Int. Conf. Comput. Vis.
+pp. 10710–10720 (2023)
+15. Li, H., Yang, Y., Chang, M., Chen, S., Feng, H., Xu, Z., Li, Q., Chen, Y.: Srdiff:
+Single image super-resolution with diffusion probabilistic models. Neurocomputing
+(2022)
+16. Liang, J., Cao, J., Sun, G., Zhang, K., Van Gool, L., Timofte, R.: Swinir: Image
+restoration using swin transformer. In: Int. Conf. Comput. Vis. (2021)
+17. Lipman, Y., Chen, R.T.Q., Ben-Hamu, H., Nickel, M., Le, M.: Flow matching for
+generative modeling. In: Int. Conf. Learn. Represent. (2023)
+
+=== PDF PAGE 17 ===
+DRIFT for Through-plane MRI SR 17
+18. Liu, X., Gong, C., qiang liu: Flow straight and fast: Learning to generate and
+transfer data with rectified flow. In: Int. Conf. Learn. Represent. (2023)
+19. Liu, X., Zhang, X., Ma, J., Peng, J., et al.: Instaflow: One step is enough for high-
+quality diffusion-based text-to-image generation. In: Int. Conf. Learn. Represent.
+(2023)
+20. Ohayon, G., Michaeli, T., Elad, M.: Posterior-mean rectified flow: Towards mini-
+mumMSEphoto-realisticimagerestoration.In:Int.Conf.Learn.Represent.(2025)
+21. Pauly, J., Le Roux, P., Nishimura, D., Macovski, A.: Parameter relations for the
+shinnar-le roux selective excitation pulse design algorithm (nmr imaging). IEEE
+Transactions on Medical Imaging (1991)
+22. Peng, C., Lin, W.A., Liao, H., Chellappa, R., Zhou, S.K.: Saint: Spatially aware
+interpolation network for medical slice synthesis. In: IEEE Conf. Comput. Vis.
+Pattern Recog. pp. 7750–7759 (2020)
+23. Rahaman, N., Baratin, A., Arpit, D., Draxler, F., Lin, M., Hamprecht, F., Bengio,
+Y., Courville, A.: On the spectral bias of neural networks. In: Int. Conf. Learn.
+Represent. (2019)
+24. Saharia, C., Ho, J., Chan, W., Salimans, T., Fleet, D.J., Norouzi, M.: Image super-
+resolution via iterative refinement. IEEE Trans. Pattern Anal. Mach. Intell. (2022)
+25. Song, Z., Wang, X., Zhao, X., Wang, S., Shen, Z., Zhuang, Z., Liu, M., Wang, Q.,
+Zhang, L.: Alias-free co-modulated network for cross-modality synthesis and super-
+resolution of mr images. In: Int. Conf. Medical Image Computing and Computer-
+Assisted Intervention (2023)
+26. Souza, R., Lucena, O., Garrafa, J., Gobbi, D., Saluzzi, M., Appenzeller, S., Rit-
+tner, L., Frayne, R., Lotufo, R.: An open, multi-vendor, multi-field-strength brain
+mr dataset and analysis of publicly available skull stripping methods agreement.
+NeuroImage (2018)
+27. Sun, Y., Wang, L., Li, G., Lin, W., Wang, L.: A foundation model for enhanc-
+ing magnetic resonance images and downstream segmentation, registration and
+diagnostic tasks. Nature Biomedical Engineering (2025)
+28. Tai, Y., Xie, R., Zhao, C., Zhang, K., Zhang, Z., Zhou, J., Yang, J.: Addsr: Acceler-
+ating diffusion-based blind super-resolution with adversarial diffusion distillation.
+Pattern Recognition (2026)
+29. Taylor, P.N., Wang, Y., Simpson, C., Janiukstyte, V., Horsley, J., Leiberg, K.,
+Little, B.,Clifford, H.,Adler,S., Vos,S.B., etal.: Theimaging databasefor epilepsy
+and surgery (ideas). Epilepsia (2025)
+30. Van Essen, D.C., Smith, S.M., Barch, D.M., Behrens, T.E., Yacoub, E., Ugurbil,
+K., Consortium, W.M.H., et al.: The wu-minn human connectome project: an
+overview. Neuroimage (2013)
+31. Vaswani,A.,Shazeer,N.,Parmar,N.,Uszkoreit,J.,Jones,L.,Gomez,A.N.,Kaiser,
+Ł., Polosukhin, I.: Attention is all you need. Adv. Neural Inform. Process. Syst.
+(2017)
+32. Wang, X., Wang, S., Xiong, H., Xuan, K., Zhuang, Z., Liu, M., Shen, Z., Zhao,
+X., Zhang, L., Wang, Q.: Spatial attention-based implicit neural representation for
+arbitrary reduction of mri slice spacing. Medical Image Analysis (2024)
+33. Wang, Z., Bovik, A.C., Sheikh, H.R., Simoncelli, E.P.: Image quality assessment:
+from error visibility to structural similarity. IEEE Trans. Image Process. (2004)
+34. Wu, Q., Li, Y., Sun, Y., Zhou, Y., Wei, H., Yu, J., Zhang, Y.: An arbitrary scale
+super-resolution approach for 3d mr images via implicit neural representation.
+IEEE Journal of Biomedical and Health Informatics (2022)
+
+=== PDF PAGE 18 ===
+18 Y. Choi et al.
+35. Xu, J., Li, W., Sun, H., Li, F., Wang, Z., Peng, L., Ren, J., Yang, H., Hu, X., Pei,
+R., Heng, P.A.: Fast image super-resolution via consistency rectified flow. In: Int.
+Conf. Comput. Vis. (2025)
+36. Yue, Z., Wang, J., Loy, C.C.: Resshift: Efficient diffusion model for image super-
+resolution by residual shifting. Adv. Neural Inform. Process. Syst. (2023)
+37. Zbontar, J., Knoll, F., Sriram, A., Murrell, T., Huang, Z., Muckley, M.J., Defazio,
+A., Stern, R., Johnson, P., Bruno, M., Parente, M., Geras, K.J., Katsnelson, J.,
+Chandarana, H., Zhang, Z., Drozdzal, M., Romero, A., Rabbat, M., Vincent, P.,
+Yakubova, N., Pinkerton, J., Wang, D., Owens, E., Zitnick, C.L., Recht, M.P., Sod-
+ickson, D.K., Lui, Y.W.: fastMRI: An open dataset and benchmarks for accelerated
+MRI (2018)
+38. Zhao, C., Dewey, B.E., Pham, D.L., Calabresi, P.A., Reich, D.S., Prince, J.L.:
+Smore: a self-supervised anti-aliasing and super-resolution algorithm for mri using
+deep learning. IEEE Transactions on Medical Imaging (2020)
+
+=== PDF PAGE 19 ===
+Supplementary Material for DRIFT:
+Difficulty-aware Rectified Flows for
+Through-plane MRI Super-Resolution
+Yoonseok Choi et al.
+S1 Slice-profile thick-slice simulation: implementation
+details
+Notation.T hr denotes the HR target slice-thickness andTi the sampled input
+thickness. LetYbe an HR 3D volume at spacingT hr. We randomly choose a
+degradation axisa∈{x,y,z}and use an SLR-derived slice profile kernelh Ti
+for thicknessT i [1,12]. Operators∗ a,R (a)
+Ti←Thr (·), andI (a)
+NN(·)denote axis-only
+convolution, axis-only resampling, and axis-only nearest-neighbor interpolation,
+respectively.
+Slice-profile kernel.For eachTi, we construct a discrete 1D kernelhTi on the
+HR grid (spacingThr) from the corresponding SLR slice profile. We normalize it
+to preserve DC gain,P
+nhTi [n] = 1, and apply symmetric padding along axisa
+during convolution to avoid boundary attenuation.
+Thick-slice formation (axis-only).We simulate through-plane signal inte-
+gration by convolving only along the selected axis:
+Y′ =Y∗ ahTi. (S1)
+We then resample only along axisafrom spacingThr toT i using center-aligned
+linear resampling (non-integer factors are allowed):
+X(a)
+i,↓ =R (a)
+Ti←Thr (Y′). (S2)
+For paired training on the HR grid while preserving stair-step morphology, we
+map the thick-slice volume back to the HR grid using nearest-neighbor interpo-
+lation along the same axis:
+X(a)
+i =I (a)
+NN
+
+X(a)
+i,↓
+
+. (S3)
+Multi-plane 2D sampling (training pairs).From(X(a)
+i ,Y), we sample 2D
+slices from planes orthogonal toaso that stair-step artifacts are explicit in the
+inputs. For each subject, we randomly selectKslice indices per orthogonal axis
+(we useK= 100) and extract aligned patch pairs(xp,i,yp). Axis randomization
+across iterations improves robustness to different reformatting views.
+
+=== PDF PAGE 20 ===
+2 Y. Choi et al.
+S2 Dataset details
+Public datasets.HCP [18] includes 1,113 healthy subjects at 0.7mm isotropic
+(T1w, T2w), and we use 890/223 for train/test with volumes of320×320×320.
+MIND [4] includes 513 subjects at 0.9mm isotropic (T1w, T2w), and we use
+411/102 with volumes of256×256×256. IDEAS [17] includes 135 subjects at
+1.0mm isotropic (T1w, FLAIR), and we use 110/25 with volumes of256×256×
+256.
+Slice sampling.For training, we sample 2D slices from axial, coronal, and
+sagittal planes and extract128×128patches. We sample 100 slices per plane
+for each subject and modality, yielding 300 slices per subject and modality.
+In-house dataset.We use an IRB-approved in-house dataset of 2 healthy vol-
+unteers scanned on a 3T MAGNETOM Vida (Siemens Healthineers). We ac-
+quire thick-slice FLAIR with 1.0mm in-plane resolution and thick-slice T2w
+with 0.7mm in-plane resolution, both at 5mm slice-thickness. The acquisition
+grids are368×368×52for T2w and256×256×52for FLAIR to match
+through-plane coverage to the in-plane field of view. No isotropic ground truth
+is available, so we report qualitative results only.
+fastMRI dataset.We use a subset of the public fastMRI brain dataset [22],
+which contains clinically acquired axial brain MRI scans from multiple sites and
+Siemens1.5Tand3Tscanners.Weselect20axialT2wvolumeswith0.69×0.69×
+5 mm3 resolution and 16 slices per volume. The selected scans were acquired on
+Siemens Avanto and Aera 1.5T scanners for 17 volumes and a Siemens Biograph
+3T scanner for 3 volumes. No isotropic ground truth is available, so we report
+qualitative comparisons and no-reference image-quality metrics.
+CC359 dataset.We use CC359 [15] for zero-shot analysis of PAD schedul-
+ing under multi-vendor and multi-field-strength variation. CC359 contains T1w
+brain MRI acquisitions from six scanner models across GE, Philips, and Siemens
+scanners at 1.5T and 3T. We use the 235 volumes provided at 1.0mm isotropic
+resolution as high-resolution ground truth. To obtain paired low-resolution in-
+puts, we apply the same slice-profile based degradation used in the main experi-
+ments along the through-plane axis. All 235 volumes are used only for evaluation,
+and no CC359 data are used for training or fine-tuning.
+S3 Baseline-specific configurations
+AFCM[14]. We follow the released training protocol of AFCM, which requires
+pre-resampling the LR input to the target shape using nearest-neighbor inter-
+polation and enforcing strict slice alignment across modalities for each subject.
+This preprocessing step is part of the alias-aware design of AFCM for cross-
+modality synthesis and SR. For SR, we adopt the official implementation and
+configuration of AFCM.
+TPDM[10]. TPDM solves through-plane SR as a 3D inverse problem using two
+perpendicular 2D diffusion priors. In their MR-ZSR setting, the measurement
+is formed by merging adjacent slices along the slice axis and averaging within
+
+=== PDF PAGE 21 ===
+Supplementary Material for DRIFT 3
+each group, and the posterior sampling step uses a slightly modified averaging
+kernel during enforcement of measurement consistency. We follow their original
+formulation for data construction and reconstruction.
+SAINT[13]. SAINT performs slice synthesis by exploiting multi-view consis-
+tency.Itfirstestimatesmissingslicesfromsagittalandcoronalviews,thenrefines
+axial slices using a residual fusion network to reduce directional artifacts. Voxel
+spacing information is used as an explicit input to guide interpolation strength.
+We follow the original SAINT pipeline for input formation and reconstruction.
+MRI INR-based baselines.SA-INR [19] and ArSSR [20] are INR-based meth-
+ods designed for 3D MR reconstruction. SA-INR represents an MR volume as a
+continuous implicit function of 3D coordinates and reconstructs arbitrary slice
+spacings by resampling coordinates, with spatial attention to improve local con-
+sistency. ArSSR learns an implicit voxel function from paired LR and HR exam-
+ples for arbitrary-scale 3D MR reconstruction. For both methods, we train and
+evaluate them in their original 3D coordinate-based setting, using LR-HR pairs
+generated with the same SLR-based through-plane degradation as DRIFT for
+fair comparison.
+Natural-image INR baselines.LIIF [5] and LTE [8] are originally developed
+for isotropic natural-image downsampling. To expose them to through-plane ar-
+tifacts, we generate LR inputs using the same SLR-based thick-slice degradation
+as DRIFT and provide anisotropic scale information through coordinate condi-
+tioning.
+2D restoration baseline.SwinIR [11] is a 2D image restoration model rather
+than an INR-based method. We disable the upsampling module by setting the
+upsampling factor to×1, and use it as a same-resolution restoration network on
+the degraded inputs.
+S4 Implementation Details
+S4.1 Network Architecture
+Both the APN (Stage 1) and velocity networkvθ (Stage 2) use a 2D U-Net with
+four encoder levels and a symmetric decoder. We use thelargeconfiguration:
+base channel dimensionC=96with channel multipliers(1,2,4,8), yielding fea-
+ture maps of[96,192,384,768]channels at each resolution level. Each encoder
+level contains 2 residual blocks, and each decoder level contains 3 residual blocks
+(one extra to accommodate the skip connection). The bottleneck consists of 2
+residual blocks at 768 channels. Downsampling is performed via strided convo-
+lution (3×3, stride 2), and upsampling via bilinear interpolation followed by a
+3×3convolution. Skip connections use channel-wise concatenation.
+Each residual block consists of two3×3convolutions with SiLU activation
+and Adaptive Group Normalization (AdaGN, 32 groups), where the affine pa-
+rameters (scale and shift) are predicted from the conditioning vector. In Stage 1,
+the conditioning vector (512-d) is derived solely from the acquisition protocol:
+each thicknessTis converted toτ=1/Tand independently projected through
+
+=== PDF PAGE 22 ===
+4 Y. Choi et al.
+T able S1:Standardized model cost across baselines and DRIFT variants.
+Method Params (M) FLOPs (G) Peak VRAM (MB)
+DRIFT-Large 266.9 173.0 1147
+DRIFT-Small80.9 43.5 218
+ArSSR [20] 6.3 196.8 202
+ResShift [21] 118.3 75.5 611
+TPDM [10] 44.1 34.1 222
+SAINT [13] 4.5 72.4 167
+SwinIR [11] 3.1 55.5 146
+LIIF [5] 1.5 23.5 133
+LTE [8] 1.7 19.3 139
+SA-INR [19] 3.0 96.8 1052
+a 2-layer MLP (1→128→256), then concatenated and fused. In Stage 2, an
+additional sinusoidal positional embedding encodes the flow timestept∈[0,1]
+into a 256-d vector, which is concatenated with the 512-d protocol embedding
+and projected to a 768-d conditioning vector. The output convolution of Stage 2
+is zero-initialized so that the initial velocity predictionvθ≈0and training starts
+near the Stage 1 output. Stage 1 has 127.9M parameters and Stage 2 has 139.0M
+parameters, yielding 266.9M parameters for DRIFT-Large.
+S4.2 Standardized Model Cost and Compact Variant
+To complement the runtime and NFE analysis in Sec. 4.4, we profile DRIFT
+variants and representative baselines under a standardized setting. We report
+parameters, FLOPs, and peak VRAM using the same input size, batch size,
+and hardware. FLOPs are measured on128×128inputs, and peak VRAM
+is measured with batch size 1 on the same GPU. Total sampling cost further
+depends on the number of function evaluations, which is analyzed in Sec. 4.4.
+Table S1 shows that DRIFT-Small reduces parameters, FLOPs, and peak
+VRAMby×3.3,×4.0,and×5.3relativetoDRIFT-Large,respectively.Although
+reducing capacity lowers PSNR, DRIFT-Small retains the same projection to
+rectified flow design and the same adaptive integration mechanism. It achieves
+PSNR values of 32.65, 29.47, and 31.04 dB on HCP, MIND, and IDEAS, respec-
+tively, compared with 35.93, 30.02, and 32.01 dB for DRIFT-Large. The larger
+performance gap on HCP is consistent with its finer 0.7mm target resolution,
+which places a stronger demand on high-frequency detail recovery. On MIND
+and IDEAS, which use coarser 0.9mm and 1.0mm target resolutions, DRIFT-
+Small remains close to DRIFT-Large while substantially reducing model cost.
+ThiscompactvariantindicatesthattheefficiencyandfidelitybehaviorofDRIFT
+is not explained by model size alone.
+
+=== PDF PAGE 23 ===
+Supplementary Material for DRIFT 5
+S4.3 Data Preprocessing
+Intensity normalization.Each 2D slice is independently min-max normalized
+to[0,1]and then linearly mapped to[−1,1].
+Sampling.During training,T i is uniformly sampled from(Tnative,6.0]mm and
+Thr is fixed atTnative. Random128×128patches are cropped from the full slice.
+Data augmentation.Random horizontal and vertical flips (each with proba-
+bility 0.5), random intensity scaling (×[0.95,1.05]), and random intensity shift
+([−0.04,+0.04]). CETA pairs share the same augmentation to maintain spatial
+consistency.
+S4.4 Training Details
+Optimizer.Both stages use AdamW (β1=0.9,β 2=0.999) with no weight decay.
+The learning rate schedule consists of a linear warmup (5% of total steps) fol-
+lowed by cosine annealing with a minimum factor of 0.1. Gradient clipping is set
+to 1.0.
+S4.5 Inference details
+Sliding-window reconstruction.We reconstruct each 2D slice using128×128
+patches with 32-pixel overlap. Overlapping predictions are fused using Gaussian
+window weighting to downweight patch borders and reduce stitching artifacts.
+Adaptive stepping.AISdetermines thenumber ofEulerintegrationsteps from
+PAD:N=clip(⌊N max×PAD⌉, Nmin, Nmax), whereN max=15andN min=0.
+The step size is∆t= 1/Nwith uniform time discretizationt i =i/Nfor
+i=0,...,N−1.
+S5 Stage-wise Ablation Across Slice-Thickness
+Fig. S2 provides a detailed stage-wise analysis under varying input slice thick-
+nessesT i. We compareStage 1 only(APN output),Stage 2 only(rectified flow
+without APN initialization), and full DRIFT, matching the labels in Fig. S2. The
+qualitative example in Fig. S2(a) highlights distinct failure modes.Stage 1 only
+produces an anatomically coherent HR estimate, but the result is biased toward
+smooth structures because APN is trained as a deterministic projection from
+thick-slice inputs.Stage 2 onlycan sharpen local texture, but it must recover
+coarse anatomy and residual high-frequency detail without APN initialization,
+making it more sensitive to severe through-plane degradation.
+The quantitative trends in Fig. S2(b) show consistent behavior across slice
+thicknesses.AtsmallT i,Stage 2 onlypartiallyrecoverslocaldetail,butitsPSNR
+and SSIM decrease rapidly asTi increases, and LPIPS rises sharply at large PAD
+values.Stage 1 onlyvaries more smoothly with thickness, reflecting the stability
+of deterministic anatomical projection, but it does not recover the perceptual
+detail of the full pipeline. Full DRIFT first forms a stable anatomical estimate
+
+=== PDF PAGE 24 ===
+6 Y. Choi et al.
+Fig. S1:Qualitative comparison with arbitrary-scale SR baselines on public datasets:
+HCP (green), MIND (yellow), and IDEAS (white). Results are shown at representative
+slice-thickness settings, using HCP at×8.57(6.0mm) and×9.28(6.5mm), MIND
+at×6.67(6.0mm) and×7.22(6.5mm), and IDEAS at×5.50(5.5mm) and×6.50
+(6.5mm). Zoom-in boxes highlight regions of interest.
+and then applies residual rectified-flow refinement, maintaining the best overall
+trend across PSNR, SSIM, and LPIPS as the through-plane bandwidth deficit
+increases.
+S6 Ablation on the CETA Loss Weight
+We ablate the weighting coefficient of the CETA term in the Stage 2 objective,
+LStage2 =L RF +λ CETALCETA (Sec. 3.5). Here,LRF is the primary rectified-flow
+supervision that matches the target velocity, whereasLCETA acts as a trajec-
+tory regularizer that encourages thickness-consistent refinement across proximal
+thickness pairs. We sweepλCETA∈{0.1,0.3,0.5,0.7,1.0,1.5,2.0}while keeping
+all other Stage 2 settings fixed.
+As shown in Fig. S3, PSNR and SSIM increase asλCETA grows up to 0.5,
+drop slightly at 0.7, and improve again whenλCETA is set to 1.0, where the best
+distortion performance is achieved across the evaluated thickness levels. LPIPS
+
+=== PDF PAGE 25 ===
+Supplementary Material for DRIFT 7
+Fig. S2:Stage-wise ablation of DRIFT on HCP (T2w,×8). (a) Representative×8
+qualitative comparison of LR input, Stage 1 only, Stage 2 only, full DRIFT, and GT.
+(b) Quantitative ablation across input slice-thicknesses. Green boxes and zoomed insets
+mark regions of interest. SSIM, PSNR, and LPIPS are plotted against slice-thickness
+Ti, and the top axis shows the corresponding PAD values.
+shows a non-monotonic but consistent improvement towardλCETA = 1.0: it de-
+creases from 0.1 to 0.3, increases at 0.5, slightly decreases at 0.7, and reaches the
+lowest value at 1.0. Overall, settingλCETA = 1.0yields the most stable and best
+performance across metrics, suggesting that balancingLCETA andL RF with a
+1:1 ratio provides an effective trade-off between velocity matching and trajec-
+tory regularization in Stage 2. In contrast, increasing the weight beyond 1.0
+consistently lowers PSNR and SSIM and increases LPIPS, indicating that exces-
+sive CETA regularization interferes with the primary velocity-learning objective.
+Accordingly, we setλCETA = 1.0as the default in all experiments.
+S7 Ablation on SelectingN max for Stage 2.
+We ablate NFEs in Stage 2 to select an effectiveN max that reduces infer-
+ence cost while maintaining high reconstruction quality. Fig. S4 shows PSNR,
+SSIM, and LPIPS for different NFEs under six degradation levels (i.e.,Ti ∈
+{1.5,2.0,3.0,4.0,5.0,6.0}mm). Starting from the Stage 1 initialization, increas-
+ing NFEs allows Stage 2 to progressively refine the reconstruction. As NFEs
+increases, PSNR and SSIM exhibit a slight decrease, which is expected from the
+perception–distortion trade-off in generative models [3]. Importantly, this degra-
+dation remains minimal in our setting: even for the hardest case (Ti = 6.0mm),
+increasing NFEs from 2 to 15 reduces PSNR by only 0.27dB. In contrast, LPIPS
+decreases as NFEs grows, indicating that Stage 2 effectively restores fine de-
+tails and improves perceptual quality beyond the coarse Stage 1 estimate. For
+
+=== PDF PAGE 26 ===
+8 Y. Choi et al.
+Fig. S3:Ablation on the CETA weightλ CET A in the Stage 2 lossL Stage2 =L RF +
+λCET ALCET A. We show PSNR, SSIM, and LPIPS on HCP forTi∈{1.5,3.0,5.0}mm.
+Thr is0.7mm.
+Fig. S4:Effect of the NFEs in Stage 2 on HCP across slice-thickness levels.
+We sweep NFE from 1 to 20 and present PSNR, SSIM, and LPIPS forT i ∈
+{1.5,2.0,3.0,4.0,5.0,6.0}mm, with the corresponding PAD values.
+NFEs>15,themarginalLPIPSgainperadditionalstepbecomesverysmall(be-
+low5×10 −4) across all thicknesses, suggesting saturation. We therefore set
+Nmax = 15as the default.
+S8 Ablation on Endpoint-Biased Timestep Sampling
+Stage 2 operates in a residual-refinement regime, where the velocity field is
+trained to recover high-frequency details missing from the Stage 1 estimate
+rather than to model the full signal. In this setting, timestep sampling af-
+fects how training budget is distributed along the path. Along the linear path
+s(t) = (1−t)z+ty, mid-trajectory states are convex blends, which can attenu-
+ate sharp structures and make the high-frequency supervision less pronounced.
+Conversely, the boundary regions are often more sensitive for refinement: near
+t≈0, the model should add fine details while preserving the coarse structure of
+zand avoiding artifacts; neart≈1, it should align with HR textures to miti-
+gate over-smoothing and perceptual degradation. This sensitivity can be more
+noticeable under low-budget numerical integration, where local velocity errors
+may accumulate along the trajectory. Motivated by prior rectified-flow analy-
+ses suggesting that boundary timesteps can be challenging [7,9], we adopt an
+
+=== PDF PAGE 27 ===
+Supplementary Material for DRIFT 9
+Fig. S5:Endpoint-biased timestep distributions. Probability density functionsp α(t)
+induced by the symmetric power-law sampler (Eq. 10) for different exponentsα.α= 1
+corresponds to uniform sampling, while largerαplaces more mass neart≈0andt≈1;
+we useα= 2in all experiments.
+T able S2:Sensitivity to the endpoint-biased sampling exponentαon HCP.α= 1
+reduces to uniform sampling, while largerαincreases probability mass neart≈0and
+t≈1. Metrics are averaged overTi∈{1.5,3.0,5.0}mm (T hr = 0.7mm).
+α PSNR↑SSIM↑LPIPS↓
+1.0 (uniform) 38.12 0.9458 0.0342
+1.5 39.76 0.9568 0.0274
+2.0 40.85 0.9634 0.0229
+3.0 40.18 0.9601 0.0248
+endpoint-biased timestep distributionpα(t)induced by the symmetric power-law
+sampler in Eq. 10. As illustrated in Fig. S5, the exponentαprovides a simple
+control over endpoint emphasis:α= 1reduces to uniform sampling, while larger
+αassigns more probability mass neart≈0andt≈1. Although the corresponding
+density attains its minimum att= 0.5, this occurs at a measure-zero point, and
+intermediate timesteps still receive non-zero probability mass over any finite in-
+terval. Table S2 shows that moderate endpoint emphasis improves PSNR, SSIM,
+and LPIPS over uniform sampling on HCP, with the best performance observed
+atα= 2.0in our sweep. A larger bias (α= 3.0) yields lower scores, which suggests
+that overly concentrated endpoint sampling may reduce coverage of intermediate
+timesteps and hurt trajectory-level consistency. Unless stated otherwise, we use
+α= 2.0in all experiments.
+S9 Ablation on Adaptive Step Allocation
+The AIS determines the NFEs for DRIFT from PAD, assigning fewer evaluations
+to thinner slices and more evaluations to thicker slices. To directly examine the
+
+=== PDF PAGE 28 ===
+10 Y. Choi et al.
+Fig. S6:AIS ablation within DRIFT on HCP. LPIPS↓(left) and HF-PSNR↑(right)
+of the final DRIFT reconstruction across input slice-thicknessesTi. Fixed-5, Fixed-10,
+and Fixed-15 denote DRIFT with inference steps fixed to 5, 10, and 15, respectively,
+while DRIFT (Ours) uses AIS. The top axis shows the adaptive step count selected by
+AIS for DRIFT (Ours) at each thickness.
+standalone effect of this scheduling rule, we compare adaptive inference with
+fixed-step variants of the same DRIFT model. Specifically, all compared methods
+use the same trained Stage 1 and Stage 2 networks, and differ only in the number
+ofinferencesteps:Fixed-5,Fixed-10,andFixed-15apply5,10,and15Eulersteps
+uniformly across all slice-thicknesses, whereas DRIFT (Ours) uses AIS to select
+the step count adaptively. We evaluate on HCP test dataset for each of six input
+thicknesses,Ti∈{1.5,2.0,3.0,4.0,5.0,6.0}mm, with fixed target thicknessT hr =
+0.7mm. Under this setting, AIS selects{8,10,12,12,13,13}steps across the six
+thicknesses, corresponding to 11.3 NFEs on average. We report LPIPS and high-
+frequency PSNR (HF-PSNR) to assess perceptual quality and high-frequency
+fidelity, respectively. As shown in Fig. S6, adaptive DRIFT remains close to the
+highest fixed-step setting, Fixed-15, while using fewer evaluations on average,
+and consistently outperforms lower-budget fixed schedules at moderate and large
+thicknesses. These results support the use of AIS as an efficient inference strategy
+within DRIFT, allocating computation more effectively across easy and hard
+slice-thickness conditions.
+S10 Empirical Validation of PAD Against Reconstruction
+Difficulty
+The PAD is used in AIS as a metadata-driven proxy for slice-thickness difficulty.
+While its definition is motivated by the thickness-dependent loss of through-
+plane information, it remains important to examine whether PAD is consistent
+with empirical reconstruction difficulty across slice-thicknesses. To this end, we
+correlate PAD with HF-PSNR measured on the final DRIFT reconstruction.
+We use HF-PSNR because Stage 2 primarily refines high-frequency details that
+are under-recovered by Stage 1. Specifically, we apply a Laplacian high-pass
+
+=== PDF PAGE 29 ===
+Supplementary Material for DRIFT 11
+Fig. S7:Correlation between PAD and reconstruction difficulty on HCP. HF-PSNR of
+the final DRIFT reconstruction is plotted against PAD across input slice-thicknesses
+Ti, with fixed target thickness inThr = 0.7mm.
+filter to both the reconstruction and the HR target and compute PSNR on the
+filtered images. We evaluate the full DRIFT pipeline on the HCP test dataset
+for six input thicknesses,Ti∈{1.5,2.0,3.0,4.0,5.0,6.0}mm, with fixed target
+thicknessT hr = 0.7mm. To isolate thickness-dependent difficulty from the effect
+of adaptive computation, we use the same NFEs (N= 8) for all thicknesses. As
+shown in Fig. S7, PAD exhibits a strong negative correlation with HF-PSNR
+(Pearsonr=−0.960, Spearmanρ=−1.000), indicating that larger PAD values
+are associated with lower high-frequency reconstruction fidelity under the same
+inference budget. These results are consistent with the use of PAD as a simple
+ordering proxy for adaptive step allocation.
+S11 PAD vs Image-Dependent Difficulty
+We evaluate whether image-dependent difficulty estimation improves adaptive
+step allocation beyond PAD. Following the adaptive inference idea of AdaD-
+iffSR [6], we compute an image difficulty score using an additional Stage 2
+forward pass. This experiment uses 235 T1w volumes from CC359 [15] with
+multiple vendors and field strengths. We evaluate input slice-thicknesses inTi∈
+{1.5,2.0,3.0,4.0,5.0,6.0}mm using the IDEAS pretrained model.
+WithineachfixedT i group,theimagedifficultyscoreshowsnegligiblecorrela-
+tion with HF-PSNR, with|r|≤0.04. Table S3 compares PAD-based scheduling
+with image-only and hybrid alternatives. PAD achieves the highest aggregate
+PSNR without requiring an additional image difficulty forward pass.
+S12 Sensitivity to the CETA Proxy Timestep
+We further examine the timestep used in the CETA endpoint proxy, which regu-
+larizeslocalcross-thicknessconsistencythrough ˜yp,k(t) =z p,k+vp,k(t).Toassess
+
+=== PDF PAGE 30 ===
+12 Y. Choi et al.
+T able S3:Comparison of adaptive scheduling cues on CC359 [15].
+Scheduling cue Extra forward Image-dependent PSNR↑
+PAD✗ ✗30.14
+Image-only✓ ✓28.42
+Hybrid✓ ✓28.38
+T able S4:Sensitivity to the timestep used in the CETA endpoint proxy on the HCP
+test set. Stage 2 is retrained for each setting while keeping all other components fixed.
+Metrics are averaged overTi∈{1.5,3.0,5.0}mm withT hr = 0.7mm.
+CETA timestep PSNR↑SSIM↑LPIPS↓
+No CETA 36.92 0.9416 0.0308
+Fixedt= 0.0037.20 0.9440 0.0310
+Fixedt= 0.2538.00 0.9490 0.0290
+Fixedt= 0.5039.00 0.9550 0.0275
+Fixedt= 0.7539.60 0.9590 0.0255
+Fixedt= 1.0039.00 0.9560 0.0275
+Sampledt(Ours)40.85 0.9634 0.0229
+theeffectofthischoice,weretrainStage2whilevaryingonlythetimestepusedin
+CETA.Specifically,wecomparefixed-tsettingswitht∈{0.00,0.25,0.50,0.75,1.00}
+against the current sampled-tsetting, which shares the same endpoint-biased
+timestep distribution as the rectified-flow objective. We keep the Stage 1 ini-
+tialization, thickness conditioning, proximal gap∆T= 1.0mm,λ CETA = 1.0,
+and all other training settings unchanged. We evaluate on the HCP test set and
+average the metrics overTi∈{1.5,3.0,5.0}mm withT hr = 0.7mm.
+As shown in Table S4, the sampled-tsetting gives the highest overall perfor-
+mance. All fixed-tvariants improve over the no-CETA baseline, indicating that
+endpoint-consistency regularization remains beneficial even when applied at a
+single timestep. Among the fixed-tchoices, later timesteps provide stronger re-
+sults than earlier timesteps, witht= 0.75giving the best single-tperformance.
+In contrast,t= 0.00gives the weakest result, suggesting that very early states
+provide a less informative endpoint proxy because they remain closer to the
+coarse Stage 1 initialization. Notably, the sampled-tsetting remains stronger
+than both exact-endpoint settings (t= 0.00andt= 1.00), which suggests that
+CETA benefits from emphasizing boundary-adjacent regions while still main-
+taining coverage over a broader portion of the trajectory. Overall, these results
+support the current sampled-tdesign as a simple and effective choice for CETA.
+S13 Through-Plane Continuity Analysis
+To complement the qualitative continuity comparisons in the main paper, we fur-
+ther analyze through-plane continuity on a representative HCP×8case (5.6 mm
+
+=== PDF PAGE 31 ===
+Supplementary Material for DRIFT 13
+Fig. S8:Through-plane continuity analysis on a representative HCP×8case (5.6 mm
+→0.7 mm). From top to bottom: reconstructed sagittal slice,z-direction gradient map,
+and gradient-error map with respect to the ground-truth gradient map. From left to
+right: LR, TPDM [10], SA-INR [19], ArSSR [20], DRIFT, and GT.
+T able S5:Through-plane continuity analysis on a representative HCP×8case (5.6
+mm→0.7 mm). We report Grad-RMSE between the reconstructedz-direction gradient
+map and the ground-truth gradient map. Lower is better.
+Method Grad-RMSE↓
+TPDM [10] 0.2222
+SA-INR [19] 0.1754
+ArSSR [20] 0.1955
+DRIFT (Ours)0.1252
+→0.7 mm). We select three representative baselines from the main comparisons,
+TPDM [10], SA-INR [19], and ArSSR [20], all of which are MRI SR baselines
+that showed strong performance in our main experiments, and compare them
+with DRIFT. For each reconstructed volumeˆVand ground-truth volumeV, we
+compute the gradient map along the through-plane (z) direction and quantify
+the discrepancy using
+Grad-RMSE =
+s
+1
+|Ω|
+∇z ˆV−∇ zV
+
+2
+2
+, (S4)
+whereΩdenotes the voxel grid. Lower Grad-RMSE indicates that the recon-
+structedslice-to-slicetransitionmorecloselyfollowstheground-truthanatomical
+variation.
+As shown in Table S5, DRIFT achieves the lowest Grad-RMSE among all
+compared methods. Fig. S8 provides a representative visual example. Although
+TPDM [10] reconstructs visually plausible slices, its through-plane gradient map
+
+=== PDF PAGE 32 ===
+14 Y. Choi et al.
+Fig. S9:Zero-shot qualitative comparison results on fastMRI T2w scans.
+T able S6:Zero-shot no-reference image-quality comparison on fastMRI T2w scans.
+fastMRIDRIFTBME-X [16]
+Sharp.↑0.2910.238
+NIQE↓5.307.22
+BRISQ↓21.1662.46
+deviates noticeably from the ground truth, and the corresponding gradient-error
+map contains broad residual noise across the reconstructed image. SA-INR [19]
+and ArSSR [20] improve over TPDM [10] in Grad-RMSE, but their reconstruc-
+tions remain either relatively smooth or affected by residual stair-step transi-
+tions, which appear as weakened or fragmented structures in the gradient maps.
+In contrast, DRIFT produces gradient patterns that more closely follow the
+ground truth and yields the smallest gradient-error response, particularly around
+fine anatomical interfaces. These observations are consistent with the qualitative
+findings in the main paper and support that DRIFT better preserves through-
+plane continuity under severe thick-slice degradation.
+S14 Downstream Segmentation Evaluation
+We further evaluate whether through-plane SR affects downstream anatomi-
+cal segmentation. We apply SynthSeg [2] to HCP T1w reconstructions under
+the×8setting and compute Dice scores against segmentations obtained from
+the HR reference. DRIFT achieves a Dice score of 0.910, compared with 0.816
+for SA-INR, 0.801 for TPDM, and 0.772 for ArSSR. The visual comparison in
+Fig. S10 shows the same trend, where DRIFT preserves anatomical boundaries
+more consistently in the reformatted view. These results suggest that the im-
+proved through-plane reconstruction of DRIFT is also reflected in segmentation
+consistency, although this experiment is intended as a downstream validation
+rather than a task-specific optimization.
+S15 Multi-planar Volumetric Visualization
+DRIFT is implemented as a 2D slice-wise model and does not use explicit 3D
+convolutions or cross-slice attention. Therefore, we do not claim a formal 3D con-
+sistency guarantee. Instead, we examine whether independently reconstructed
+
+=== PDF PAGE 33 ===
+Supplementary Material for DRIFT 15
+Fig. S10:Downstream segmentation evaluation on HCP T1w under the×8setting.
+SynthSeg is applied to each reconstructed volume, and segmentation results are com-
+pared with the HR reference.
+Fig. S11:Multi-planar volumetric visualization after through-plane SR. The upper
+row shows the sagittal input view, and the lower row shows the coronal reformat of the
+reconstructed volume.
+slices form coherent volumetric reformats in practice. Fig. S11 shows a sagit-
+tal input view and a coronal reformatted view after through-plane SR. Several
+baselines reduce the apparent slice spacing but still show residual stair-step arti-
+facts, blurring, or discontinuous anatomical boundaries in the coronal reformat.
+DRIFT produces a cleaner coronal reformat with more continuous cortical and
+ventricular structures, which is consistent with deterministic APN initialization
+followed by shared thickness-conditioned rectified-flow refinement across neigh-
+boring slices. This visualization supports the practical volumetric coherence of
+DRIFT, while keeping the scope limited to empirical multi-planar assessment.
+References
+1. Bernstein, M.A., King, K.F., Zhou, X.J.: Handbook of MRI pulse sequences. Else-
+vier (2004)
+2. Billot, B., Greve, D.N., Puonti, O., Thielscher, A., Van Leemput, K., Fischl, B.,
+Dalca, A.V., Iglesias, J.E., et al.: Synthseg: Segmentation of brain mri scans of any
+contrast and resolution without retraining. Medical Image Analysis (2023)
+
+=== PDF PAGE 34 ===
+16 Y. Choi et al.
+3. Blau, Y., Michaeli, T.: The perception-distortion tradeoff. In: IEEE Conf. Comput.
+Vis. Pattern Recog. (2018)
+4. Chen,X.J.,Salvadore,M.,Blanco-Elorrieta,E.:MIND:Multilingualimagingneuro
+dataset. OpenNeuro dataset (2025).https://doi.org/10.18112/openneuro.
+ds006391.v2.0.0, version 2.0.0, Accessed 1 July 2026
+5. Chen, Y., Liu, S., Wang, X.: Learning continuous image representation with local
+implicit image function. In: IEEE Conf. Comput. Vis. Pattern Recog. (2021)
+6. Fan, Y., Liu, C., Yin, N., Gao, C., Qian, X.: Adadiffsr: Adaptive region-aware
+dynamic acceleration diffusion model for real-world image super-resolution. In:
+Eur. Conf. Comput. Vis. (2024)
+7. Hu, X., Liao, R., Xu, K., Liu, B., Li, Y., Ie, E., Fei, H., Liu, Q.: Improving rectified
+flow with boundary conditions. In: Int. Conf. Comput. Vis. (2025)
+8. Lee, J., Jin, K.H.: Local texture estimator for implicit representation function. In:
+IEEE Conf. Comput. Vis. Pattern Recog. (2022)
+9. Lee, S., Lin, Z., Fanti, G.: Improving the training of rectified flows. Adv. Neural
+Inform. Process. Syst. (2024)
+10. Lee, S., Chung, H., Park, M., Park, J., Ryu, W.S., Ye, J.C.: Improving 3d imaging
+with pre-trained perpendicular 2d diffusion models. In: Int. Conf. Comput. Vis.
+pp. 10710–10720 (2023)
+11. Liang, J., Cao, J., Sun, G., Zhang, K., Van Gool, L., Timofte, R.: Swinir: Image
+restoration using swin transformer. In: Int. Conf. Comput. Vis. (2021)
+12. Pauly, J., Le Roux, P., Nishimura, D., Macovski, A.: Parameter relations for the
+shinnar-le roux selective excitation pulse design algorithm (nmr imaging). IEEE
+Transactions on Medical Imaging (1991)
+13. Peng, C., Lin, W.A., Liao, H., Chellappa, R., Zhou, S.K.: Saint: Spatially aware
+interpolation network for medical slice synthesis. In: IEEE Conf. Comput. Vis.
+Pattern Recog. pp. 7750–7759 (2020)
+14. Song, Z., Wang, X., Zhao, X., Wang, S., Shen, Z., Zhuang, Z., Liu, M., Wang, Q.,
+Zhang, L.: Alias-free co-modulated network for cross-modality synthesis and super-
+resolution of mr images. In: Int. Conf. Medical Image Computing and Computer-
+Assisted Intervention (2023)
+15. Souza, R., Lucena, O., Garrafa, J., Gobbi, D., Saluzzi, M., Appenzeller, S., Rit-
+tner, L., Frayne, R., Lotufo, R.: An open, multi-vendor, multi-field-strength brain
+mr dataset and analysis of publicly available skull stripping methods agreement.
+NeuroImage (2018)
+16. Sun, Y., Wang, L., Li, G., Lin, W., Wang, L.: A foundation model for enhanc-
+ing magnetic resonance images and downstream segmentation, registration and
+diagnostic tasks. Nature Biomedical Engineering (2025)
+17. Taylor, P.N., Wang, Y., Simpson, C., Janiukstyte, V., Horsley, J., Leiberg, K.,
+Little, B.,Clifford, H.,Adler,S., Vos,S.B., etal.: Theimaging databasefor epilepsy
+and surgery (ideas). Epilepsia (2025)
+18. Van Essen, D.C., Smith, S.M., Barch, D.M., Behrens, T.E., Yacoub, E., Ugurbil,
+K., Consortium, W.M.H., et al.: The wu-minn human connectome project: an
+overview. Neuroimage (2013)
+19. Wang, X., Wang, S., Xiong, H., Xuan, K., Zhuang, Z., Liu, M., Shen, Z., Zhao,
+X., Zhang, L., Wang, Q.: Spatial attention-based implicit neural representation for
+arbitrary reduction of mri slice spacing. Medical Image Analysis (2024)
+20. Wu, Q., Li, Y., Sun, Y., Zhou, Y., Wei, H., Yu, J., Zhang, Y.: An arbitrary scale
+super-resolution approach for 3d mr images via implicit neural representation.
+IEEE Journal of Biomedical and Health Informatics (2022)
+
+=== PDF PAGE 35 ===
+Supplementary Material for DRIFT 17
+21. Yue, Z., Wang, J., Loy, C.C.: Resshift: Efficient diffusion model for image super-
+resolution by residual shifting. Adv. Neural Inform. Process. Syst. (2023)
+22. Zbontar, J., Knoll, F., Sriram, A., Murrell, T., Huang, Z., Muckley, M.J., Defazio,
+A., Stern, R., Johnson, P., Bruno, M., Parente, M., Geras, K.J., Katsnelson, J.,
+Chandarana, H., Zhang, Z., Drozdzal, M., Romero, A., Rabbat, M., Vincent, P.,
+Yakubova, N., Pinkerton, J., Wang, D., Owens, E., Zitnick, C.L., Recht, M.P., Sod-
+ickson, D.K., Lui, Y.W.: fastMRI: An open dataset and benchmarks for accelerated
+MRI (2018)

@@ -1,0 +1,19 @@
+# 本批继承状态及实际核对边界
+
+用户提供前一模型的交接摘要，要求接续而不重复已做工作。它记录的科研目标仍active，不以阅读/软件资格替代可发表且独立确认的claim。全部新增限定innovation；不安装、不委派、不操作其他PID，不干预/重启/迁移现有训练。GPU已授权但新启动需要8192MiB，摘要仅1394MiB。Python为D:/conda/envs/MRI/python.exe，UTF8；磁盘/RAM各8,000,000,000 bytes并另预留原医学3MB。
+
+摘要记录11开发患者/19series、已见4验证患者/9series；8未见确认患者/12series与lockedIXI保持关闭。原六医学门槛、last、3e-6强度/概率、3e-12坐标、二值零差不降。见全11GT的19998parent不合法作严格LOPO初始化。
+
+摘要中29823最新91af8d仍live，前三臂2992，raw_pchip_spatial2420/2992，median2.1719825500040315s，累计24440.316172300023s，wall27000。90446最新2d7655仍live，3600/35904，full-chain1.9073486328125e-6、isolated0、coordinate1.1368683772161603e-13、elapsed1458.6461847999599s。上述仅继承值；本批第一实际poll ae49ed/7f6806证实仍live并有新进度。
+
+摘要中271修复资格真实47298终态2ce605 exit0，独立b422fd exit0；旧74234真实093916 exit1，第6217失败，旧6216前缀不继承。新production只gamma mean/std float64，旧reference、augmentation、原训练均不改。新90446从头35904，真实成功终态才执行audit；不重新poll旧句柄。
+
+上一不可变归档累计6515：index SHA f975b6febd911bc10985eafcb85d79ebf241895c02ea98376214cb38970c0b67，proof SHA 855e082d2ffdc7493c6c05fbc36e911c7a4346a4a6b7ca2d75fdd6bb86c08815。上一目录LAST_POST_ARCHIVE_HANDOFF.md、POST_ARCHIVE_TOOL_OBSERVATIONS.json、FINAL_SAVE_ACTUAL_TOOL_OBSERVATION.json是归档后增量，本次新index应纳入，不改旧index。
+
+上一批已读SynthSR2023与VSRAD2025、五表原XML/Fraction审计44f97f。SynthSR2023会主动用正常组织填病灶，不能当VS病灶保持基线；VSRAD75生成/11排除/64分析，高相关可伴绝对偏差。六final仅payload33.73MB，摘要磁盘储备外约29MB，不删历史腾空间。PSACNN与原SynthSR2021本批新读进一步核创新，不能重计上一批主文。
+
+本目录原fetch真实629237 exit1，两HTML与索引下载成功，optional citation_pmcid缺失使解析失败；没有重GET。本地恢复8774fa exit0核DOI/题名、HTTP requested/effective、canonical/fulltext URL。原失败和空attempt01保留。PSACNN191blocks/25table nodes=21公式+4结果，jointSR184blocks/14nodes=10公式+1超参+3结果。12实际完整连续读流均仍在session store，本批无损保存并逐块完整串注册。
+
+摘要指出原SynthSR2021 reliability map、spacing/thickness、多方向/对比与配准错误是直接先例；PSACNN序列近似与test-acquisition无label强度适配也属先例。图像像素、外链supp、作者实现及被引文献未读。新toy建议严格区分point P x=y与厚层 A x=y；本批已按另立冻结协议完整执行，详情见科学报告及actual工具文件。
+
+本交接文件是继承摘要的整理，不是对摘要所有旧事实重新做独立实验。旧来源固定SHA由本批归档链验证；本批actual返回和新阅读/机制证据独立保存。

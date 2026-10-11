@@ -1,0 +1,31 @@
+CHAPTER 3. RECONSTRUCTION METHODS
+to distribution shifts (Jalal et al., 2021; Darestani et al., 2021). Generative priors also
+require large amounts of data to train the generative model, and generally perform less
+well than trained reconstruction networks, while also having a slower inference time
+(Darestani et al., 2021). They have the advantage however of being robust to some
+distribution shifts like change in the distribution of masksω and their inference is more
+interpretable than deep learning methods, as the conditioning on the observations is
+explicitly computed from the prior, rather than through a black box like in an end-to-end
+reconstruction algorithm.
+Compressed sensing (CS), dictionary learning (DIL) and deep image prior (DIP) are
+generally slower at inference, as they all rely on iterative reconstruction, and require
+the optimization of increasingly large amounts of variable: from the image in CS to the
+image and dictionary in DIL to the parameters of a deep network in DIP. However, DIP
+is found to generally outperform CS-based approaches. The trade-offs between DIL, DIP
+and Generative priors is however less clear, as these methods have not been extensively
+compared in the literature.
+Overall, this survey highlights a couple of the general trends observed in the literature
+and is not exhaustive. It shows however a clear trend where different methods try to
+exploit the redundancy due to the structure in the data. Earlier works attempted to
+explicitly embed this structure by compactly representing the signal in a variety of
+different bases, such as Wavelet domain (Lustig et al., 2007), or through representing
+the signal as low-rank (Lingala et al., 2011). Later, approaches aimed rather atlearning
+how to leverage this structure from data, and use the powerful tools of deep learning
+to represent the signal in complex ways, following a data-driven paradigm. All these
+methods rely however on the idea that the structure of the signal allows to alleviate the
+ill-posedness of the inverse problem, and retrieve a signal from undersampled observations,
+because of its underlying structure.
+In the next chapter, we will detail the evolution in mask designsω used to generate the
+observation and how they have been optimized in order to provide the most informative
+observations to enable the best reconstruction downstream.
+30

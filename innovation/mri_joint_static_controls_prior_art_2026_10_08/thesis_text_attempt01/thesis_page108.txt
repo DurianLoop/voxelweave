@@ -1,0 +1,38 @@
+6.3. RE-EXAMINING DEEP RL FOR MRI SAMPLING
+leads to the greatest average improvement over a sample from the training dataset.
+We use the stochastic version that scales better to large dataset and images (Jin
+et al., 2019).
+• Non-adaptive Oracle (NA Oracle) (Bakker et al., 2020): This oracle is computed
+by training and evaluating LBCS directly on the test set, and can serve to illustrate
+the benefit of adaptivity in greedy methods. This is the instance of a non-adaptive,
+greedy sampling method (Bakker et al., 2020).
+For the training of the policy models of Bakker et al. (2020), we use the parameters
+of the greedy model in their paper, which we refer to simply asRL in the sequel. We
+excluded the non-greedy version, as Bakker et al. (2020) notice that the performance
+of the non-greedy model with discount factorγ = 0.9 is always close to one standard
+deviation of the greedy model, but significantly more computationally demanding.
+We studied both the short and long horizon sampling regimes but only report on the long
+horizon for conciseness, with the short horizon results summarized in Appendix A.2.1.
+Except for the deterministic LtH and NA Oracle, we report the performance of each
+method averaged on three runs/separately trained RL policies, along with the standard
+deviation.
+Summarizing, we start in the setting of Bakker et al. (2020) except for using complex
+data instead of magnitude data and then ablate over:i) cropped (c) vs cropped+resized
+(c+r), ii) vertical (v) vs horizontal (h) Cartesian sampling,iii) reconstruction with a
+pretrained UNet (Ronneberger et al., 2015; Bakker et al., 2020) or a cResNet (Zhang
+et al., 2019b) andiv) the training regime for the reconstructor proposed in Bakker et al.
+(2020) (b) or in Zhang et al. (2019b) (z). The base setting is referred to ascvb, for
+cropped (preprocessing) + vertical (mask) + Bakker et al. (sampling parameters) using
+a both a UNet and a cResNet reconstructor.
+6.3.2 Main results on Bakker et al. (2020)
+We first evaluated the method of Bakker et al. (2020) on two settings, namelycvb and
+c+rhz, and report it with two different aggregations. Table 6.2 shows the SSIM of the
+policies at the final sampling rate considered (25%), as used in as used in Bakker et al.
+(2020), whereas Table 6.3 has the SSIM aggregated over the whole acquisition trajectory
+by computing its AUC5.
+Several observations can be made from these tables regardingreversals. Focusing first on
+Table 6.2 only, we can see that although the first column, corresponding to the processing
+done by Bakker et al. (2020), supports that RL outperforms LBCS, changing architecture
+5A more complete ablation, using the settingcvzto ablate over the impact of different mask parameters,
+c+rvz to study the impact of different field of views and mask orientation is carried out in Appendix A.2.3.
+95

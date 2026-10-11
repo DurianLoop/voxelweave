@@ -1,0 +1,2102 @@
+                                              Machine Learning
+                                              for Biomedical Imaging
+Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evalua-
+tion of Uncertainty Quantification
+Gonzalo Esteban Mosquera Rojas 1                 , Sebastian R. van der Voort 2             , Carolin M. Pirkl 3 , Sandeep Kaushik 4           ,
+Marion Smits 1,5,6 , Stefan Klein 1
+
+1 Department of Radiology and Nuclear Medicine, Erasmus MC, University Medical Center Rotterdam, Rotterdam, the
+Netherlands
+2 Department of Medical Informatics, Amsterdam UMC, University of Amsterdam, Amsterdam, the Netherlands
+3 GE HealthCare, Munich, Germany
+4 GE HealthCare, USA
+5 Brain tumor Centre, Erasmus MC Cancer Institute, Rotterdam, the Netherlands
+6 Medical Delta, Delft, the Netherlands
+
+Abstract
+Uncertainty Quantification (UQ) is a key requirement for trustworthy AI in high-stakes medical image analysis. In this
+work, we evaluate UQ within a multi-task Deep Learning (DL) framework for MRI-based glioma diagnosis that performs
+tumor segmentation and predicts Isocitrate Dehydrogenase (IDH) mutation status, 1p/19q co-deletion status and tumor
+grade. We use Monte Carlo Dropout (MCD) as the primary sampling-based UQ method for the detailed task-aware
+analysis, obtaining predictive uncertainty and its aleatoric and epistemic components. We assess uncertainty along
+complementary axes: (i) MC sample convergence of uncertainty estimates and their decomposition into aleatoric and
+epistemic components, (ii) calibration of predictive probabilities, and (iii) operational utility of uncertainty estimates,
+including error detection, selective prediction, and associations with tumor segmentation performance. We also compare
+MCD with Deep Ensembles (DE) and Monte Carlo Deep Ensembles (MCDE) to assess whether the observed operational
+utility of uncertainty estimates extends beyond a single UQ method. For the tumor segmentation task, we further
+examine how different voxel-wise uncertainty aggregation strategies influence case-level reliability assessment, thereby
+explicitly accounting for task-specific uncertainty representation. Additionally, we study task interactions to quantify how
+tumor segmentation quality and uncertainty relate to the prediction of the tumor features. Finally, we explore whether a
+composite trust score integrating tumor segmentation and classification uncertainty improves error detection. Across
+tasks, uncertainty estimates supported meaningful error detection, while calibration depended on the dropout rate, with
+moderate rates yielding the most reliable predictive probabilities. Decomposition provided task-dependent interpretability
+but did not consistently improve error detection over predictive uncertainty alone. The comparison with DE and MCDE
+showed that ensemble-based uncertainty estimates provided comparable operational utility, although no UQ method
+consistently dominated across all tasks and metrics. Moreover, the proposed trust score did not consistently outperform
+classification uncertainty for selective prediction, indicating that task-specific predictive uncertainty remains the most
+informative operational indicator of trust. Overall, our results provide a task-aware evaluation strategy and practical
+guidance towards the development of trustworthy AI for glioma diagnosis.
+
+Keywords
+Glioma, Magnetic Resonance Imaging, Deep Learning, Uncertainty Quantification, Monte Carlo Dropout, Deep Ensembles
+
+Article informations
+https://doi.org/10.59275/j.melba.2026-456d                                                        ©2026 Mosquera Rojas et al. License: CC-BY 4.0
+Volume 2026, Received: 2026-03-09, Published 2026-09-28
+Corresponding author: g.mosquerarojas@erasmusmc.nl
+Special issue: Uncertainty for Safe Utilization of Machine Learning in Medical Imaging (UNSURE) 2025
+Guest editors: Mobarak Hoque, Raghav Mehta, Cheng Ouyang, Chen Qin, Marianne Rakic, Sandy Wells
+
+
+
+
+                                                                       674
+             Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+1. Introduction                                                      rationale behind the DL models’ predictions and increase
+                                                                     their interpretability (Lambert et al., 2024). Uncertainty es-
+          liomas are among the most aggressive primary brain         timates can enable selective automation by identifying cases
+
+G         tumors and are associated with substantial morbid-
+          ity and mortality worldwide (Ostrom et al., 2019).
+Advances in molecular neuropathology have transformed
+                                                                     requiring human review, and thus improving transparency
+                                                                     in decision-support systems.
+                                                                          Despite this growing interest, uncertainty in multi-task
+glioma classification, shifting diagnostic standards from            medical AI systems remains insufficiently characterized. In
+purely histological grading towards integrated molecular             multi-task settings, segmentation and classification branches
+definitions. The current World Health Organization (WHO)             share intermediate representations but produce heteroge-
+classification incorporates molecular markers such as Isoci-         neous outputs. Uncertainty may propagate differently across
+trate Dehydrogenase (IDH) mutation status and 1p/19q co-             tasks, and segmentation quality may influence subtype pre-
+deletion status, alongside tumor grade, to stratify gliomas          diction reliability. Furthermore, predictive uncertainty can
+into biologically and clinically meaningful subtypes (Louis          be decomposed into epistemic uncertainty, reflecting model
+et al., 2021). These characteristics directly influence ther-        uncertainty due to limited knowledge, and aleatoric un-
+apeutic strategy and patient prognosis, making accurate              certainty, reflecting intrinsic data ambiguity (Kendall and
+characterization essential for clinical decision-making.             Gal, 2017). While theoretically appealing, recent work
+     Magnetic resonance imaging (MRI) is the primary non-            has questioned whether disentangling uncertainty sources
+invasive imaging modality used for diagnosis, treatment              consistently yields practical benefits in real-world settings,
+planning, and longitudinal monitoring of patients with               emphasizing that the usefulness of such decomposition for
+glioma (Abdalla et al., 2020). In clinical practice, MRI             segmentation tasks may depend on dataset characteristics
+is often assessed using qualitative criteria or simple mea-          and downstream evaluation criteria (Kahl et al., 2024). Sys-
+sures based on tumor diameter, providing only a rudimen-             tematic empirical evaluation of these aspects in clinically
+tary view of tumor burden. Automated or semi-automated               relevant multi-task systems remains limited.
+segmentation can produce more detailed and reproducible                   These considerations highlight the need for a compre-
+measurements of tumor subregions, supporting improved                hensive and task-aware assessment of AI-based diagnostic
+diagnosis, treatment planning, and longitudinal monitoring.          systems. In this work, we present a systematic evaluation of
+However, developing robust algorithms remains challenging            UQ within a multi-task DL framework for MRI-based glioma
+due to variability in tumor appearance and subtle intensity          diagnosis. The pipeline jointly performs tumor segmenta-
+differences (Menze et al., 2014). Beyond spatial delineation,        tion and predicts IDH mutation status, 1p/19q co-deletion
+Deep Learning (DL) approaches have demonstrated promis-              status, and tumor grade. The DL architecture, which was
+ing capability in predicting molecular markers such as IDH           initially proposed by van der Voort et al. (2023), showed
+mutation and 1p/19q co-deletion status directly from imag-           promising performance but lacked UQ and analysis of the
+ing data, a paradigm often referred to as radiogenomics              interaction between the different tasks. Here, we use Monte
+(Chang et al., 2018; Kickingereder et al., 2019).                    Carlo Dropout (MCD) (Gal and Ghahramani, 2016) as the
+     To exploit shared imaging representations, multi-task           primary sampling-based UQ method to obtain predictive
+learning frameworks have been proposed that jointly per-             uncertainty and its aleatoric and epistemic components. In
+form tumor segmentation and genetic classification within            addition, we compare MCD with Deep Ensembles (DE) and
+a single model architecture. Such models leverage shared             Monte Carlo Deep Ensembles (MCDE) to assess whether
+feature representations and may improve efficiency and               the observed operational utility of uncertainty estimates
+generalization compared to isolated single-task approaches           extends beyond a single UQ method.
+(Kordnoori et al., 2024; Zhou et al., 2019; van der Voort                 We evaluate uncertainty along multiple complementary
+et al., 2023). However, while predictive performance has             axes: Monte Carlo (MC) sample convergence of uncertainty
+advanced substantially, translation of these systems into            estimates, uncertainty decomposition, calibration of predic-
+clinical workflows remains limited due to the black-box              tive probabilities, operational utility of uncertainty estimates
+nature of Neural Networks (NNs), which lack reliable confi-          including a comparison across different UQ methods, and
+dence scores about their predictions (Lambert et al., 2024;          cross-task interactions between tumor segmentation and
+Guo et al., 2017).                                                   the reliability of tumor feature prediction. We further ana-
+     In high-stakes medical applications, predictive accuracy        lyze how different voxel-wise aggregation strategies affect
+alone is insufficient. AI systems must communicate the               segmentation-level uncertainty assessment. Through this
+reliability of their predictions to support safe clinical integra-   comprehensive evaluation, we aim to clarify when and how
+tion (Ojha et al., 2025; Abdar et al., 2022; He et al., 2025).       uncertainty estimates meaningfully contribute to reliability
+Uncertainty Quantification (UQ) has therefore emerged as             in a multi-task glioma diagnosis AI system. By grounding
+a key component of trustworthy medical AI, aiming to offer           uncertainty analysis in clinically relevant tasks and opera-
+
+                                                                                                                                675
+                                                Mosquera Rojas et al., 2026
+
+
+tional metrics, our study provides practical guidance towards across related tasks, often leading to improved generaliza-
+the development of trustworthy AI for this application.        tion, regularization, and computational efficiency compared
+                                                               to isolated single-task models. By jointly optimizing mul-
+2. Related Works                                               tiple objectives, multi-task frameworks can exploit com-
+                                                               plementary supervision signals and encourage more robust
+2.1 MRI-based radiogenomics for glioma characterization feature learning. Multi-task DL has been successfully im-
+                                                               plemented in different medical imaging applications. For
+Radiogenomics has emerged as a promising paradigm for the
+                                                               instance, Zhou et al. (2019) demonstrated improved breast
+non-invasive characterization of gliomas by linking quantita-
+                                                               tumor classification by combining segmentation and classi-
+tive imaging features to molecular and genomic tumor pro-
+                                                               fication within a unified framework for ultrasound imaging.
+files. Several comprehensive reviews highlight the growing
+role of radiomics and radiogenomics in supporting precision        Kaushik et al. (2023) proposed a multi-task network
+medicine for glioma management, emphasizing applications       combining    segmentation and regression to generate syn-
+ranging from molecular subtyping and risk stratification       thetic  CT  images  from MRI for radiation therapy planning,
+to prognosis estimation and treatment monitoring (Mitra, where segmentation was used to localize bone regions of
+2021; Singh et al., 2021; Fathi Kazerooni et al., 2021).       interest and guide accurate density prediction during image
+                                                               translation. Kordnoori et al. (2024) reported enhanced
+     MRI constitutes one of the central imaging modali-
+                                                               diagnostic performance for brain tumor characterization
+ties in these efforts. Structural sequences, including T1-
+                                                               through joint segmentation and classification of gliomas,
+weighted (T1w), Contrast-Enhanced T1-weighted (T1wCE),
+                                                               meningiomas, and pituitary tumors.
+T2-weighted (T2w), and Fluid-Attenuated Inversion Re-
+covery (FLAIR), provide rich morphological information             Within neuro-oncology, multi-task approaches have been
+that can be exploited by radiomics pipelines for tumor explored both for segmentation enhancement and for joint
+characterization (Singh et al., 2021). These approaches segmentation–classification pipelines. Several studies have
+have demonstrated potential for predicting molecular sub- focused on improving tumor delineation through auxiliary
+types, distinguishing true progression from pseudoprogres- tasks. For instance, Ngo et al. (2020) proposed a multi-
+sion, estimating overall survival and progression-free sur- task framework for small brain tumor segmentation in MRI,
+vival, and identifying recurrence patterns (Fathi Kazerooni incorporating an auxiliary feature reconstruction task to
+et al., 2021).                                                 preserve fine-grained tumor characteristics. Similarly, Huang
+                                                               et al. (2021) introduced a DL multi-task framework based on
+     In parallel, DL–based radiogenomics has gained substan-
+                                                               a V-Net architecture with dual decoders, where a distance
+tial momentum. Convolutional Neural Networks (CNNs)
+                                                               transform prediction task regularized mask prediction and
+have been used to automatically extract hierarchical imag-
+                                                               led to improved segmentation contour accuracy.
+ing features directly from MRI data, often outperforming
+classical radiomics approaches in molecular subtype pre-           More recent efforts have extended multi-task paradigms
+diction (Li et al., 2022). For instance, Buda et al. (2020)    towards   integrated diagnostic pipelines in glioma research.
+demonstrated that CNNs can predict genomic subtypes Li et al. (2023) developed a transformer-based multi-task
+of lower-grade gliomas directly from MRI, exploring both model for simultaneous glioma segmentation and identi-
+training from scratch and transfer learning strategies. Com- fication of infiltrated brain regions, demonstrating that
+parative studies between radiomics and DL models suggest shared boundary information from segmentation can en-
+that learned representations may capture complementary or hance classification-related tasks. In a clinically oriented
+superior discriminative information relative to handcrafted setting, Chakrabarty et al. (2023) proposed a 2.5D hybrid
+features (Li et al., 2022).                                    multi-task Convolutional Neural Network (CNN) to jointly
+                                                               localize, segment, and predict IDH mutation status and
+     Despite promising performance, translation of radio-
+                                                               1p/19q co-deletion status, integrating imaging features with
+genomic models into routine clinical practice remains lim-
+                                                               prior clinical knowledge through feature fusion mechanisms.
+ited. Reviews consistently identify challenges related to
+reproducibility, generalizability across institutions, and ro-     In the work of van der Voort et al. (2023), a single
+bustness under distribution shifts (Fathi Kazerooni et al.,    3D  CNN    capable of jointly performing tumor segmentation
+2021; Singh et al., 2021). In addition, uncertainty and and predicting IDH mutation status, 1p/19q co-deletion
+interpretability of DL models are increasingly recognized as status, and tumor grade from pre-operative MRI was pro-
+critical factors for clinical acceptance (Singh et al., 2021). posed. Their framework achieved good performance on
+                                                               an independent test set, representing one of the first uni-
+                                                               fied models providing the necessary components for WHO
+2.2 Multi-task Deep Learning
+                                                               subtype derivation non-invasively. However, UQ was not
+Multi-task DL has gained increasing attention in medical incorporated, and interactions between tumor segmenta-
+imaging as a strategy to leverage shared representations tion quality, reliability of tumor features prediction, and
+
+676
+            Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+task-specific uncertainty were not systematically analyzed. works explicitly analyze how uncertainty behaves across
+                                                               interacting tasks or how it propagates within shared repre-
+2.3 Uncertainty Quantification and Decomposition               sentations.
+                                                                    Ruan et al. (2020) proposed Mt-UcGAN, a unified frame-
+UQ in DL for Medical Image Analysis encompasses a broad
+                                                               work for joint tumor segmentation, quantification, and un-
+range of approaches, including Bayesian Neural Networks
+                                                               certainty estimation in renal CT imaging, incorporating
+(BNNs), MC sampling methods, DE, Test-time Augmenta-
+                                                               an uncertainty-constrained adversarial mechanism within a
+tion (TTA), Evidential Learning (EL), Generative Modelling
+                                                               multi-task architecture. Similarly, Mehta et al. (2021) in-
+(GM), and Conformal Prediction (CP) frameworks (Lambert
+                                                               vestigated the propagation of voxel-level uncertainty across
+et al., 2024). These methods differ in their ability to model
+                                                               cascaded tasks, demonstrating that uncertainty estimates
+aleatoric and epistemic uncertainty and in their computa-
+                                                               from one stage can improve performance in downstream
+tional requirements, particularly for high-dimensional tasks
+                                                               segmentation tasks. However, these studies focus primarily
+such as 3D segmentation. The same review by Lambert
+                                                               on segmentation or cascaded processing pipelines rather
+et al. (2024) highlights that no single method consistently
+                                                               than on tightly integrated frameworks that jointly perform
+dominates across clinical applications, and emphasizes the
+                                                               different tasks.
+importance of task-specific and application-driven evalu-
+                                                                    To the best of our knowledge, the interaction between
+ation of uncertainty estimates. MCD remained the most
+                                                               tumor segmentation uncertainty and molecular subtype pre-
+used method for UQ among 218 papers analyzed in this
+                                                               diction uncertainty has not been systematically investigated
+review, followed by DE.
+                                                               in multi-task AI frameworks focused on glioma diagno-
+     Several approaches have been proposed to decompose
+                                                               sis. Although segmentation has been used in multi-task
+predictive uncertainty into aleatoric (data-related) and epis-
+                                                               approaches under the theoretical assumption that tumor
+temic (model-related) components. In a Bayesian frame-
+                                                               shape information can guide AI models in learning relevant
+work, the components are obtained via Predictive Entropy
+                                                               features for the tumor subtyping, it remains unclear whether
+and Mutual Information (MI) (Smith and Gal, 2018; Mukhoti
+                                                               uncertainty in the shared segmentation backbone influences
+et al., 2023). More recent methods derive uncertainty com-
+                                                               reliability in the prediction of relevant tumor features, and
+ponents directly from network outputs, for example within
+                                                               whether cross-task aggregation improves operational trust.
+3D U-Net architectures (Jones et al., 2022) or single-model
+diffusion-based frameworks (Chan et al., 2024), demonstrat-
+ing potential clinical relevance for identifying ambiguous or 3. Methods
+out-of-distribution cases.
+                                                               3.1 Multi-task Deep Learning Glioma Subtyping and
+     However, the practical value of disentanglement remains
+                                                                    Uncertainty Quantification Framework
+contested. Kahl et al. (2024) showed that successful separa-
+tion in controlled settings for segmentation tasks does not As shown in Figure 1, the pipeline operates on four pre-
+necessarily translate to real-world medical data, and that its operative structural MRI sequences: T1w, T1wCE, T2w,
+downstream benefit strongly depends on the task, dataset and FLAIR. The end goal is to accurately predict three key
+properties, and aggregation strategy. Similarly, Mukhoti glioma characteristics: IDH mutation status (wildtype or
+et al. (2023) emphasized that predictive entropy summa- mutated), 1p/19q co-deletion status (intact or co-deleted),
+rizes total uncertainty and therefore confounds aleatoric and tumor grade (grade 2, 3, or 4).
+and epistemic uncertainty. They showed that predictive              The framework includes a pre-processing module, and
+entropy can still be effective when one uncertainty source an encoder-decoder network (van der Voort et al., 2023;
+is low or dominant, but may become less informative when Ronneberger et al., 2015) that performs tumor segmentation
+ambiguous in-distribution samples and out-of-distribution as an auxiliary task to extract imaging features at different
+samples both lead to high predictive entropy. These find- resolution levels both in the encoder and decoder pathways.
+ings suggest that epistemic–aleatoric decomposition may These features are concatenated and fed to a classification
+be useful for interpreting the source of uncertainty, but branch composed of fully connected layers for the prediction
+that its operational benefit should not be assumed and of each of the tumor features. Details on the pre-processing
+instead needs to be validated within the specific application and architecture can be found in Appendix A.1 and A.2,
+context.                                                       respectively.
+
+2.4 Uncertainty Quantification in Multi-Task Settings         3.2 Data
+While UQ has been extensively studied for single-task seg- In compliance with the expected input of the model, the
+mentation or classification, its role in multi-task learning dataset was composed of different subsets containing the
+remains comparatively underexplored. In particular, few four structural MRI sequences, accompanied by its corre-
+
+                                                                                                                        677
+                                                Mosquera Rojas et al., 2026
+
+
+
+                                                                          SEGMENTATION                 UNCERTAINTY
+                                     MULTI-TASK NETWORK                                                   MAPS
+
+
+         INPUT DATA
+       T1       T1CE
+
+                                                                                                      Brain     Predicted tumor
+                                                                                                    aggregation   aggregation
+
+
+
+
+       T2       FLAIR
+
+                                                                                TUMOR
+                                                                                                   Dilated tumor   Distance-based
+                                                                               FEATURES             aggregation     aggregation
+
+                                                                              IDH mutation
+
+                                                                              Wildtype Mutated
+
+                                                                          1p19q co-deletion            UNCERTAINTY
+                                                                                                         SCORES
+                                                                               Intact Co-deleted
+
+
+                                                                              Tumor grade
+                                                                                                           Predictive
+
+
+
+                                                                                  2   3   4
+
+                                                                                                     Aleatoric      Epistemic
+
+
+
+
+Figure 1: Overview of the multi-task glioma subtyping framework with uncertainty quantification. The input data
+consist of four structural MRI sequences per patient, namely T1-weighted (T1w), contrast-enhanced T1-weighted
+(T1wCE), T2-weighted (T2w), and fluid-attenuated inversion recovery (FLAIR). The sequences are preprocessed using
+registration, bias field correction, and skull stripping. Subsequently, the data are used to train a Deep Learning model
+that jointly performs tumor segmentation and prediction of IDH mutation status, 1p/19q co-deletion status, and
+tumor grade. For each task, predictive, aleatoric, and epistemic uncertainty are computed. For tumor segmentation,
+voxel-wise uncertainty maps are converted into case-level uncertainty scores using four aggregation strategies: brain-level
+aggregation, predicted-tumor aggregation, dilated-tumor aggregation, and distance-weighted aggregation around the
+tumor region. In the tumor features panel, the colors of the icons vary from tumors associated with poorer prognosis
+(red) to those with better prognosis (green).
+
+
+sponding tumor segmentation and labels (when available),
+                                                                       Table 1: Train and test data distribution
+regarding IDH mutation status, 1p/19q co-deletion status
+                                                                   Set       Dataset       Number of cases Total
+and tumor grade.
+    The train and test sets are comprised of a collection of                      BraTS            156
+                                                                               Brain tumor
+both in-house and publicly available datasets of patients                      Progression          20
+with adult-type glioma, including BraTS (Bakas et al.,                        CPTAC-GBM             45
+2017, 2018; Menze et al., 2014), Brain tumor Progres-             Train                                                 1466
+                                                                                   EGD             775
+sion (Schmainda and Prah, 2018), CPTAC-GBM (CPTAC,                               IvyGAP             39
+2018), Erasmus Glioma Database (EGD) (van der Voort                             In-house           322
+et al., 2021), IvyGAP (Shah et al., 2016) and REMBRANDT                       REMBRANDT            109
+(Scarpace et al., 2019) for the training set; and TCGA-
+GBM (Scarpace et al., 2016) and TCGA-LGG (Pedano                               TCGA-GBM            133
+                                                                   Test                                                  236
+et al., 2016) for the test set. The distribution of the data                   TCGA-LGG            103
+is presented in Table 1.
+    Since not all data samples had information regarding
+molecular features and tumor grade, this was handled with additional information on the data distribution for each
+a masked loss during training. Details on this procedure are of the tumor features, evidencing the highly-imbalanced
+given in Appendix A.2. Table 10 in Appendix B provides nature of all the tasks across datasets.
+
+678
+             Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+3.3 Uncertainty Quantification                                      a new input x∗ , each forward pass t samples a different
+                                                                    set of network weights Wt , yielding a collection of pre-
+3.3.1 Bayesian Modeling
+                                                                    dictions {p(y ∗ |x∗ , Wt )}Tt=1 . The predictive distribution is
+Given a training dataset consisting of input X = {x1 , . . . , xn } then approximated by:
+and corresponding output Y = {y1 , . . . , yn }, Bayesian mod-
+eling aims to infer parameters ω of a function y = f ω (x)                           ∗ ∗           1 ∑︂T
+
+that are likely to have generated the observed output.                           p(y  |x  , D)  ≈        p(y ∗ |x∗ , Wt ).       (4)
+                                                                                                  T t=1
+    Before observing any data, an initial belief about plau-
+                                                                    The total predictive uncertainty can be quantified by com-
+sible parameter values is set. In the Bayesian framework,
+                                                                    puting the entropy of this predictive distribution (Smith
+this belief is encoded through a prior distribution over the
+                                                                    and Gal, 2018; Depeweg et al., 2018):
+parameter space, denoted as p(ω). The prior reflects as-
+sumptions about the model parameters before incorporating
+evidence from the data.                                                                             T
+                                                                                             (︄                            )︄
+                                                                                          ∑︂ 1 ∑︂
+                                                                                                          ∗          ∗
+    Once data are observed, the prior belief is updated. To             Upredictive = −                p(y = c | x , Wt )
+                                                                                           c    T t=1
+perform this update a likelihood function is required. This                                  (︄    T
+                                                                                                                           )︄
+function specifies the probabilistic mechanism by which                                         1 ∑︂      ∗          ∗
+                                                                                      × log           p(y = c | x , Wt ) ,       (5)
+outputs are generated given inputs and parameters, thus                                         T t=1
+describing how well a particular parameter configuration
+                                                                    where x∗ denotes a test input sample and y ∗ the correspond-
+explains the observed data. It is defined as:
+                                                                    ing predicted label. Wt represents the network weights
+                                                                    obtained at MC sample t when dropout is applied at test
+                         p(Y | X , ω).                        (1)
+                                                                    time, and T is the total number of MC forward passes
+    Applying Bayes’ theorem, the posterior distribution over (MC samples hereinafter). The term p(y ∗ = c | x∗ , Wt )
+the parameters is given by                                          denotes the predicted probability for class c produced by
+                                                                    the model in the t-th MC sample. The inner average
+                             p(Y | X , ω) p(ω)
+                                                              (2) T t=1 p(y = c | x , Wt ) approximates the predictive
+                                                                     1 ∑︁T       ∗           ∗
+              p(ω | X , Y) =                      ,
+                                   p(Y | X )                        distribution by averaging the class probabilities across all
+where p(Y | X ) is the marginal likelihood (or evidence), and MC samples. Finally, c indexes the set of possible classes.
+acts as a normalization constant ensuring that the posterior            The predictive uncertainty can be decomposed into two
+integrates to one.                                                  components. The aleatoric uncertainty, representing the
+    The posterior distribution characterizes the updated inherent noise in the data, is estimated by averaging the
+belief over model parameters after observing the data. Given entropy of the predictive distribution from all T MC samples
+a new input x∗ , predictions are obtained by marginalizing (Smith and Gal, 2018; Depeweg et al., 2018):
+over all possible parameter configurations, weighted by their
+posterior probability:                                                                    T
+                                                                                               (︄
+                                                                                       1 ∑︂
+                                                                                                             p(y ∗ = c | x∗ , Wt )
+                                                                                                        ∑︂
+                                                                          Ualeatoric =              −
+                                                                                       T t=1            c
+                          ∫︂                                                                                            )︄
+  p(y ∗ | x∗ , X , Y) =        p(y ∗ | x∗ , ω) p(ω | X , Y) dω. (3)                                 ∗           ∗
+                                                                                      × log p(y = c | x , Wt ) ,                     (6)
+     This integral expresses the Bayesian predictive distribu-
+tion, which accounts for uncertainty in the model parameters where p(y = c | x , Wt ) represents the predicted probabil-
+                                                                          ∗         ∗
+
+by averaging predictions over the posterior distribution.      ity for class c at inference under weight realization Wt . In
+                                                               this case, the entropy is computed for each MC sample t
+3.3.2 Uncertainty Decomposition and MCD                        and subsequently averaged across the T samples.
+                                                                    The epistemic uncertainty describes the uncertainty
+Let N be a Neural Network (NN) with weights W. The the- coming from the model parameters. It is computed as the
+oretical definition of the predictive distribution in Equation difference between the predictive and aleatoric components,
+3 is analytically intractable for N given its high-dimensional yielding the MI (Smith and Gal, 2018; Depeweg et al.,
+weight space. MCD (Gal and Ghahramani, 2016) was then 2018):
+proposed as an approximation to Bayesian inference.
+     In MCD, Bayesian inference is approximated by applying
+                                                                                     T ∑︂
+                                                                               (︄                       )︄ (︄              )︄
+dropout to N with rate δ at train time, and then performing      Uepistemic =
+                                                                                  1 ∑︂
+                                                                                           pt,c log pt,c −
+                                                                                                             ∑︂
+                                                                                                                p̄c log p̄c ,
+T stochastic forward passes with the same dropout rate                            T t=1 c                     c
+enabled at test time. Given some training data D and                                                                         (7)
+
+                                                                                                                                     679
+                                                Mosquera Rojas et al., 2026
+
+
+where p̄c represents the mean predicted probability for class tion tasks and dropout configurations. This was a practical
+c across all T MC samples, and pt,c describes the class c choice to balance calibration-curve resolution with the relia-
+probability at MC sample t.                                   bility of bin-wise accuracy estimates, since using more bins
+                                                              reduces the number of cases per bin and can make ECE
+3.4 Evaluation Experiments:                                   more sensitive to small changes in case assignment.
+                                                                   NLL evaluates both correctness and confidence by pe-
+3.4.1 MC Sample Convergence and Decomposition of
+                                                              nalizing low probability assigned to the true class:
+      Uncertainty Estimates
+We performed a systematic evaluation of MCD parameters,                                         N
+                                                                                             1 ∑︂
+varying the dropout rate δ and the number of MC samples                           NLL   =  −        log p̂i,yi ,          (9)
+                                                                                             N i=1
+T and observing the magnitudes for predictive, aleatoric
+and epistemic uncertainty, which were computed as shown where p̂i,yi denotes the predicted probability assigned to
+in equations 5, 6 and 7. Specifically, we explored values of δ the true class yi for case i.
+between 0.2 and 0.6 in increments of 0.05, and values of T          Importantly, both ECE and NLL were computed exclu-
+from 10 to 100 in steps of 10. These ranges were selected sively from the softmax output probabilities of the MCD
+to analyze the effect of both parameters in a wide spectrum, ensemble and therefore reflect calibration of the model prob-
+covering both moderate and higher values, and considering ability outputs, rather than calibration of the uncertainty
+theoretical and empirical insights from the literature (Gal estimates themselves.
+and Ghahramani, 2016; Kendall et al., 2015; Srivastava              Additionally, we computed the Receiver Operating Char-
+et al., 2014).                                                  acteristic Area Under the Curve (AUC) of the MCD ensem-
+    We define the dropout rate as the probability of drop- ble model at each configuration as a general measure of
+ping out units, meaning that higher rates reduce the network classification performance using the softmax probabilities.
+predictive capacity more aggressively. Too low a dropout In case of the tumor grade task, which consisted of three
+rate may lead to underestimation of uncertainty, while ex- classes, it was calculated using the one-vs-rest strategy.
+cessively high values can degrade predictive performance            For the tumor segmentation task, the quality of un-
+or lead to underfitting. The upper bound of 0.6 is chosen certainty estimates was assessed by computing the Pear-
+such that even with aggressive dropout, sufficient model son correlation coefficient ρ between case-level uncertainty
+capacity is retained without requiring network width scaling. scores and the Dice Similarity Coefficient (DSC) between
+Likewise, the number of MC samples influences the fidelity the predicted segmentation and the ground truth for all
+of uncertainty estimates: too few may yield noisy approxi- cases in the test set, under the assumption that informative
+mations, but the more samples, the longer the computation uncertainty estimates should correlate negatively with tumor
+time at inference.                                              segmentation accuracy. To assess whether the observed re-
+    A sufficient number of MC samples was defined as the lationships were robust to non-linear but monotonic trends,
+point at which the average uncertainty estimates showed we additionally computed Spearman rank correlation ρs .
+limited additional change with increasing sampling.                 Case-level uncertainty is derived by aggregating entropy-
+                                                                based voxel-wise uncertainty estimates. This aggregation
+3.4.2 Calibration and Quality Analysis                          was explored in four different regions. First, full-brain ag-
+Model calibration in the classification tasks was assessed gregation was computed by averaging uncertainty over the
+using Expected Calibration Error (ECE) and Negative Log- brain mask obtained using HD-BET (Isensee et al., 2019).
+Likelihood (NLL). ECE quantifies the discrepancy between Second, predicted tumor aggregation was computed by aver-
+predicted confidence and empirical accuracy. Given pre- aging uncertainty within the predicted tumor mask obtained
+dicted labels ŷi and predicted confidence values p̂i for a from the MCD ensemble. Third, to include uncertainty im-
+case i from the total number of cases N , predictions are mediately adjacent to the predicted tumor boundary, we
+partitioned into B confidence bins. Here, p̂i denotes the computed a dilated predicted-tumor aggregation, where
+maximum softmax probability assigned to the predicted the predicted tumor mask was expanded using a 5-voxel
+class ŷi . For bin b, let acc(b) denote the empirical accuracy binary dilation. Finally, we evaluated a boundary-weighted
+and conf(b) the mean confidence. ECE is computed as:            aggregation in which all brain voxels contributed to the
+                                                                case-level score with weights decreasing as a function of
+                         B
+                            |Bb |                               their distance to the predicted tumor boundary. Specifically,
+                                                            (8) for voxel v, the weight was defined as
+                        ∑︂
+              ECE =               |acc(b) − conf(b)| ,
+                    b=1
+                             N
+                                                                                             (︄        )︄
+where |Bb | is the number of samples in bin b. We used                                        d(v)2
+                                                                                 w(v) = exp −               ,
+B = 5 equally spaced confidence bins across all classifica-                                    2σ 2
+
+680
+            Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+where d(v) is the Euclidean distance from voxel v to the the AP, corresponding to the area under the precision-recall
+predicted tumor boundary for a given case, and σ = 5 curve:
+voxels. The boundary-weighted uncertainty score was then                                                          (13)
+                                                                                  ∑︂
+                                                                            AP =     (Rk − Rk−1 )Pk ,
+computed as                                                                        k
+                       ∑︁                                   where Pk and Rk denote precision and recall at threshold
+                 bw      v∈Ωbrain w(v)uv                    k.
+                U = ∑︁                   ,
+                          v∈Ωbrain w(v)                         The baseline AP of a random classifier equals the error
+with uv denoting the uncertainty value at voxel v. This     rate:
+                                                                                         N
+allowed us to compare whole-brain, tumor-local, peri-tumor,                            1 ∑︂
+                                                                                  ϵ=        ei .                  (14)
+and boundary-aware aggregation strategies.                                            N i=1
+                                                                   Thus, AP values above ϵ indicate better-than-random
+3.4.3 Operational Utility of Uncertainty Estimates             identification of errors. It aims to answer the question: Is
+To evaluate the operational utility of uncertainty estimates, uncertainty useful when errors are rare?
+we quantified their ability to identify erroneous predictions      Error-Rate Lift: To quantify error identification relative
+across tasks and to support selective prediction by retaining to baseline prevalence, we computed Lift:
+the most certain cases. Table 2 provides a summary of                                              AP
+the metrics used, their interpretation, and expected ranges                              Lift =        .                 (15)
+                                                                                                    ϵ
+indicative of strong performance.
+                                                                   A Lift of 1 indicates performance equivalent to the
+    For each classification task, a binary error indicator for
+                                                               baseline error rate, as expected under random ranking. A
+case i was defined as:
+                                                               Lift greater than 1 indicates that erroneous cases tend to
+                    1, if prediction i is incorrect            receive higher uncertainty scores than non-erroneous cases.
+                 {︄
+            ei =                                          (10)     Area Under the Risk–Coverage Curve (AURC): To ad-
+                    0, otherwise.
+                                                               ditionally evaluate uncertainty estimates in a selective pre-
+    For the tumor segmentation, the binary error indicator diction setting, we computed the AURC (El-Yaniv et al.,
+was defined as:                                                2010; Jaeger et al., 2022; Zenk et al., 2025). For our ap-
+                                                               plication, we computed an empirical definition obtained
+                            1, if DSC i ≤ τ
+                          {︄
+                   seg
+                 ei =                                     (11) by progressively retaining cases from lowest to highest un-
+                            0, otherwise.                      certainty. Let Ui denote the uncertainty score for case
+                                                               i, with larger values indicating lower confidence. The N
+Since this binary definition of segmentation error depends on cases were ordered from most certain to least certain, such
+the selected DSC threshold τ , we additionally performed a that U ≤ U ≤ · · · ≤ U . The case-wise risk r was
+                                                                       (1)        (2)         (N )                     i
+threshold-sensitivity analysis for τ ∈ {0.60, 0.70, 0.80}. We defined as:
+computed the segmentation error rate to assess whether the
+                                                                                           for classification tasks,
+                                                                           {︄
+operational utility of segmentation uncertainty depended                      ei ,
+                                                                     ri =                                                (16)
+heavily on the value of τ , or whether the conclusions re-                    1 − DSCi , for tumor segmentation,
+mained consistent across more lenient and stricter defini-
+tions of error.                                                where ei = 1 for an incorrect classification and ei = 0
+    U-AUC: In this case, we measured the Uncertainty- otherwise.
+based Receiver Operating Characteristic Area Under the             For a retained set containing the k most certain cases,
+Curve (U-AUC): MCD-derived uncertainty scores U were           coverage    was defined as:
+treated as continuous predictors of error ei , and the area                                        k
+under this curve was computed. In this setting, this metric                               Ck = ,                         (17)
+                                                                                                   N
+evaluates the probability that a randomly chosen erroneous and selective risk was computed as the mean risk among
+case receives a higher uncertainty score than a randomly the retained cases:
+chosen correct case:
+                                                                                                     k
+                                                                                                1 ∑︂
+                U -AU C = P(Ue=1 > Ue=0 ).                (12)                        R(Ck ) =          r .              (18)
+                                                                                                k j=1 (j)
+While U-AUC is threshold-independent, it may be optimistic     The AURC was then computed by averaging the selec-
+when errors are rare. It aims to answer the question: does tive risk over all retained-set sizes:
+uncertainty rank errors above successes overall?
+                                                                                             N
+   Average Precision (AP): Given the typically imbalanced                                1 ∑︂
+                                                                              AURC =            R(Ck ).     (19)
+nature of medical imaging tasks, we additionally computed                                N k=1
+
+                                                                                                                         681
+                                                Mosquera Rojas et al., 2026
+
+
+
+Table 2: Summary of the metrics used to assess operational utility of uncertainty estimates, namely, Uncertainty-based
+Receiver Operating Characteristic Area Under the Curve (U-AUC), Average Precision (AP), Lift, and Area Under the
+Risk–Coverage Curve (AURC). For each metric, the purpose, possible values, and interpretation are presented.
+                                                        Possible
+         Metric                 Purpose                                             Interpretation
+                                                         Values
+                 Measures the probability that a
+                                                                    Values close to 1 indicate
+                 randomly chosen error case has
+        U-AUC                                            0–1        uncertainty correctly ranks
+                 higher uncertainty than a correct
+                                                                    errors above successes.
+                 case.
+                 Evaluates precision-recall                         Values above the baseline
+        AP       trade-off for predicting errors,        0–1        error rate (ϵ) indicate better-than-random
+                 suitable for imbalanced tasks.                     error identification.
+                                                                    Values > 1 indicate that uncertainty
+                 Quantifies error-identification
+                                                              1     successfully prioritizes error cases.
+        Lift     performance relative to baseline        0−
+                                                              ϵ     A value of 1 indicates random
+                 prevalence.
+                                                                    selection.
+                 Evaluates the mean residual risk                   Lower values indicate that
+        AURC among retained cases as coverage            0–1        uncertainty successfully retains
+                 varies from most certain to all cases.             lower-risk cases at reduced coverage.
+
+
+This corresponds to a discrete retained-set approximation of       where pi,m denotes the class-probability vector for case
+the risk–coverage curve area. Lower AURC values indicate       i predicted by ensemble member m.
+that low-uncertainty retained cases have lower residual risk       For MCDE, we combined deep ensembles with MCD
+across coverage levels. This metric therefore aims to an-      by enabling dropout at inference for each independently
+swer the question: how much prediction risk remains when       trained ensemble member. For each model, we used the
+retaining only the most certain cases?                         selected MCD configuration identified in the MCD analyses.
+                                                               The final MCDE predictive probability vector was obtained
+3.4.4 Comparison of MCD with other UQ methods                  by averaging predictions across both ensemble members
+                                                               and MC samples:
+Although MCD is widely used for uncertainty estimation in
+DL, relying on a single UQ method may limit the interpre-                                         T
+                                                                                               M ∑︂
+                                                                                          1 ∑︂
+tation of a task-aware uncertainty analysis. After selecting                  p̄MCDE
+                                                                                i     =              pi,m,t ,
+                                                                                         M T m=1 t=1
+the final MCD configuration, we therefore compared it with
+two ensemble-based strategies, DE and MCDE. These meth-            where pi,m,t denotes the probability vector for case i
+ods were selected because they are compatible with the from the t-th MC sample of ensemble member m.
+multi-task architecture used in this study. Ensembles can          This additional comparison was included to provide
+also be interpreted as Bayesian Model Averaging (He et al., a broader evaluation of UQ beyond MCD and to assess
+2020; Wilson and Izmailov, 2020; Mukhoti et al., 2023). whether the operational utility of uncertainty estimates was
+Therefore, the same framework for disentangling epistemic consistent across dropout-based and ensemble-based sam-
+and aleatoric uncertainty described in 3.3.2 was applied.      pling strategies. It was performed after selecting the final
+     For DE, we trained M = 5 independently initialized MCD configuration and using the same operational-utility
+models using the same architecture, data split, prepro- metrics defined in Section 3.4.3: U-AUC, AP, Lift, and
+cessing, loss functions, and training procedure (including AURC. This allowed us to assess whether the operational
+dropout) as in the main experiments. The ensemble mem- utility observed for MCD was specific to dropout-based
+bers differed only in their fixed random seeds, which affected stochastic inference, or whether comparable behavior was
+initialization, mini-batch ordering, and stochastic data aug- also observed for ensemble-based uncertainty estimates.
+mentation. At inference, dropout was disabled and the final
+predictive probability vector was obtained by averaging the 3.4.5 Interaction Between Tumor Segmentation and
+deterministic probability vectors across ensemble members:           Classification
+                                                               To investigate cross-task dependencies, we analyzed the
+                               M
+                            1 ∑︂                               relationship between tumor segmentation performance and
+                   p̄DE
+                     i  =         pi,m ,
+                            M m=1                              uncertainty, as well as classification correctness.
+
+682
+             Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+     Tumor Segmentation Quality and Classification Correct-       referral strategies. The proposed trust score was evaluated
+ness: We used DSC scores as a measure of tumor segmenta-          using selective prediction analysis to determine whether
+tion quality and compared its values between correctly and        combining uncertainty sources improved error identification
+incorrectly classified cases for each of the tasks. Differences   compared to classification uncertainty alone.
+between groups were evaluated using the Mann–Whitney U
+test to assess whether segmentation performance systemat-         4. Results
+ically differed between classification outcomes.
+     Uncertainty Correlation Across Tasks: To assess shared       4.1 MC-Sample Convergence and Decomposition of
+uncertainty patterns, we computed Pearson correlation co-             Uncertainty Estimates
+efficients between tumor segmentation uncertainty Useg
+                                                                  As shown in Figure 2, the average uncertainty values reached
+and classification uncertainty Ucls . This analysis was per-
+                                                                  a plateau across tasks once the number of MC samples was
+formed separately for predictive, aleatoric, and epistemic
+                                                                  approximately 20–30, depending on the task. Increasing
+components.
+                                                                  dropout rates generally led to proportional increases in
+     Tumor Segmentation Uncertainty as Predictor of Classi-
+                                                                  predictive, aleatoric and epistemic uncertainties.
+fication Error: Finally, we evaluated whether segmentation
+                                                                      For all the tumor features prediction tasks, namely, IDH
+uncertainty alone was able to predict classification errors by
+                                                                  mutation status, 1p/19q co-deletion status, and tumor
+computing U-AUC, AP, Lift and AURC using Useg as the
+                                                                  grade, the aleatoric uncertainty component was the main
+predictor and ecls as the outcome. This analysis quantified
+                                                                  contributor to the predictive uncertainty. Conversely, epis-
+whether uncertainty in the shared segmentation backbone
+                                                                  temic uncertainty dominated in the tumor segmentation
+propagated to prediction reliability of the tumor features.
+                                                                  task.
+     Composite Trust Score:
+     To investigate whether incorporating tumor segmenta-
+tion uncertainty improved the identification of classification    4.2 Calibration and Quality Analysis
+errors beyond classification uncertainty alone, we defined a    Based on the convergence patterns in Figure 2, we selected
+composite trust score that integrated uncertainty from both     T = 30 for the remaining analyses, as this was the point at
+tasks. The trust score for task t and case i was defined as:    which average uncertainty values had generally plateaued
+                                                                across tasks. Figure 3 presents the ECE, NLL and AUC
+                                                          (20) as a function of dropout rate δ for the classification tasks.
+                          (︂                        )︂
+         Trusti,t = 1 − αt Ũi,t + (1 − αt ) Ũi,seg ,
+                                                                For the IDH mutation status prediction, both ECE and
+where Ũi,t and Ũi,seg denote the normalized predictive un- NLL reached their lowest values at dropout 0.25, with
+certainty for the classification and the segmentation task, subtle fluctuations between 0.2 and 0.4 and then a steady
+respectively, and αt ∈ [0, 1] represents the weighting factor increase thereafter. AUC was highest at 0.2 and generally
+for task t.                                                     declined as dropout increased. In the case of 1p/19q co-
+    The weight αt was determined based on the relative deletion status prediction, ECE and NLL were minimized
+ability of each uncertainty source to identify classification at 0.2 and generally rose with higher dropout rates. AUC
+errors, quantified using Lift. Specifically, let Liftt denote followed a similar decreasing pattern. For the tumor grade
+the Lift obtained when using classification uncertainty to prediction, ECE was lowest at 0.25 and gradually increased
+predict classification errors on task t, and Liftseg→t the Lift with dropout, while NLL rose consistently. AUC also showed
+obtained when using tumor segmentation uncertainty for a decreasing trend for dropout rates higher than 0.35.
+the same purpose. The task-specific weight was defined as:          Although ECE, NLL, and AUC showed broadly related
+                                                                trends, the curves were not identical across dropout rates.
+                                Liftt
+                    αt =                    .             (21) For IDH mutation status prediction, ECE showed a local
+                          Liftt + Liftseg→t                     decrease between dropout rates 0.35 and 0.40, whereas
+This formulation assigns greater weight to the uncertainty NLL did not show a corresponding decrease and AUC re-
+source with greater error-identification performance relative mained below its value at lower dropout rates. For 1p/19q
+to baseline prevalence. Intuitively, if classification uncer- co-deletion status prediction, ECE and NLL both increased
+tainty is highly predictive of errors, αt approaches 1 and after dropout 0.20, but ECE showed smaller local fluctua-
+the trust score relies primarily on classification uncertainty. tions at higher dropout rates while NLL and AUC indicated
+Conversely, if segmentation uncertainty provides additional clearer degradation. For tumor grade prediction, the differ-
+predictive value, its contribution increases accordingly.       ence between the metrics was most apparent: ECE showed
+    The subtraction from 1 ensures that higher trust scores local decreases at intermediate dropout values, particularly
+correspond to more reliable predictions, facilitating interpre- around dropout rates 0.25 and 0.45, whereas NLL increased
+tation and enabling direct comparison with confidence-based more steadily and AUC decreased at higher dropout rates.
+
+                                                                                                                          683
+                                                                                  Mosquera Rojas et al., 2026
+
+
+                                        Predictive Uncertainty                  Aleatoric Uncertainty                   Epistemic Uncertainty                 Average Uncertainty
+                              0.2                                     0.2                                     0.2                                    0.8
+0.200                        0.25                                    0.25                                    0.25
+        IDH mutation
+                              0.3                                     0.3                                     0.3                                    0.6
+                             0.35                                    0.35                                    0.35
+                              0.4                                     0.4                                     0.4                                    0.4
+0.175                        0.45                                    0.45                                    0.45
+                              0.5                                     0.5                                     0.5                                    0.2
+                             0.55                                    0.55                                    0.55
+                              0.6                                     0.6                                     0.6                                    0.0
+0.150                               10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100
+                                                  T                                       T                                       T
+                              0.2                                     0.2                                     0.2                                    0.8
+        1p/19q co-deletion
+
+
+
+
+                             0.25                                    0.25                                    0.25
+0.125                         0.3                                     0.3                                     0.3                                    0.6
+                             0.35                                    0.35                                    0.35
+                              0.4                                     0.4                                     0.4                                    0.4
+                             0.45                                    0.45                                    0.45
+0.100                         0.5                                     0.5                                     0.5                                    0.2
+                             0.55                                    0.55                                    0.55
+                              0.6                                     0.6                                     0.6                                    0.0
+0.075                               10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100
+                                                  T                                       T                                       T
+                              0.2                                     0.2                                     0.2                                    0.8
+                             0.25                                    0.25                                    0.25
+                              0.3                                     0.3                                     0.3
+        Tumor grade
+
+
+
+
+0.050                                                                                                                                                0.6
+                             0.35                                    0.35                                    0.35
+                              0.4                                     0.4                                     0.4                                    0.4
+                             0.45                                    0.45                                    0.45
+0.025                         0.5                                     0.5                                     0.5                                    0.2
+                             0.55                                    0.55                                    0.55
+                              0.6                                     0.6                                     0.6                                    0.0
+                                    10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100
+                                                  T                                       T                                       T
+ 0.20                         0.2                                     0.2                                     0.2                                    0.8
+        Tumor segmentation
+
+
+
+
+                             0.25                                    0.25                                    0.25
+ 0.15                         0.3                                     0.3                                     0.3                                    0.6
+                             0.35                                    0.35                                    0.35
+ 0.10                         0.4                                     0.4                                     0.4                                    0.4
+                             0.45                                    0.45                                    0.45
+                              0.5                                     0.5                                     0.5                                    0.2
+ 0.05                        0.55                                    0.55                                    0.55
+                              0.6                                     0.6                                     0.6                                    0.0
+                                    10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100          10 20 30 40 50 60 70 80 90 100
+                                                  T                                       T                                       T                    Predictive     Aleatoric     Epistemic
+
+
+
+
+Figure 2: First three columns from left to right: predictive, aleatoric and epistemic uncertainty value heatmaps across all
+tasks as a function of the number of MCD samples T and the dropout rate δ. The value at each cell of the heatmap
+represents the mean uncertainty across all cases of the test set. The last column presents the average value for each
+type of uncertainty over all experiments with the blue, green and red bars representing predictive, aleatoric and epistemic
+uncertainty, respectively. Uncertainty values for classification tasks were normalized at the same scale to ease the analysis
+of the patterns. For the segmentation task the heatmaps were kept in the original scale.
+
+
+    Figure 4 presents the uncertainty quality analysis for the                                          hyperparameters, predicted tumor aggregation was selected
+tumor segmentation task. Brain mask-based aggregation                                                   for the downstream segmentation uncertainty analyses.
+showed weak correlations with DSC across dropout rates,                                                     Our evaluation across tasks and metrics indicated that
+with values fluctuating around zero and no consistent nega-                                             the MCD model with a dropout rate of 0.25 provided
+tive association. In contrast, predicted tumor aggregation                                              a favorable trade-off between predictive performance and
+showed the strongest and most stable negative correlations                                              uncertainty calibration, and was therefore selected for the
+across the evaluated dropout range. Dilated tumor aggrega-                                              remaining evaluation.
+tion followed a similar trend at low and moderate dropout                                                   To further assess whether the reported Pearson correla-
+rates, but the correlation became progressively weaker at                                               tions reflected the case-wise uncertainty and performance
+higher dropout values. Boundary-weighted aggregation also                                               relationship, we visualized predictive uncertainty against
+showed a negative association with DSC at low and moder-                                                tumor segmentation DSC at the selected configuration
+ate dropout rates, although this association weakened more                                              (T = 30, δ = 0.25). The corresponding scatter plots are
+markedly as dropout increased. The lower panel shows                                                    provided in Appendix D. For predicted tumor and dilated
+that the mean segmentation DSC was highest at moderate                                                  tumor aggregation, the scatter plots showed a clear de-
+dropout rates, peaking at 0.25. It generally decreased with                                             creasing trend, consistent with the strong negative Pearson
+stronger dropout. Based on its consistently strong negative                                             and Spearman correlations. Boundary-weighted aggrega-
+association with DSC and its lack of additional aggregation                                             tion also showed a negative monotonic trend, although
+
+684
+                                   Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+                              ECE with 95% Confidence Interval                      NLL with 95% Confidence Interval                      AUC with 95% Confidence Interval
+                     0.18                                                                                                        0.95
+                                                                           0.60
+                     0.15
+                                                                           0.55                                                  0.90
+                     0.13
+IDH mutation
+
+
+
+
+                     0.10                                                  0.50                                                  0.85
+                     0.08                                                  0.45
+                                                                                                                                 0.80
+                     0.05                                                  0.40
+                     0.03                                                  0.35                                                  0.75
+                     0.00
+                            0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60          0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60          0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60
+                                                 p                                                     p                                                     p
+                     0.18
+                                                                           0.40                                                  0.90
+                     0.15
+1p/19q co-deletion
+
+
+
+
+                     0.13                                                                                                        0.85
+                                                                           0.35
+                     0.10                                                                                                        0.80
+                     0.08                                                  0.30                                                  0.75
+                     0.05
+                                                                           0.25                                                  0.70
+                     0.03
+                                                                                                                                 0.65
+                     0.00
+                            0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60          0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60          0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60
+                                                 p                                                     p                                                     p
+                                                                           1.00                                                  0.90
+                     0.14
+                                                                                                                                 0.88
+                     0.12                                                  0.90
+                                                                                                                                 0.85
+Tumor grade
+
+
+
+
+                     0.10
+                     0.08                                                  0.80                                                  0.83
+                     0.06                                                  0.70                                                  0.80
+                     0.04                                                                                                        0.78
+                     0.02                                                  0.60
+                                                                                                                                 0.75
+                            0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60          0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60          0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60
+                                                 p                                                     p                                                     p
+
+
+     Figure 3: Expected Calibration Error (ECE), Negative Log-Likelihood (NLL) and Receiver Operating Characteristic Area
+     Under the Curve (AUC) values as a function of dropout rate δ. For each point in every graph, a 95% confidence interval
+     is presented. This interval was obtained by 1000× bootstrap resampling of the test set.
+
+
+    with a weaker linear association. In contrast, brain mask                                        ance, particularly for 1p/19q co-deletion status and tumor
+    aggregation showed no clear relationship between predictive                                      grade prediction tasks.
+    uncertainty and DSC. Overall, Pearson and Spearman corre-
+    lation values were similar across the aggregation strategies,                                    4.3 Operational Utility of Uncertainty Estimates
+    indicating that the main findings were not dependent on
+    the use of a strictly linear association measure.                                                For tumor segmentation, the primary error definition used
+         Figure 5 further highlights the ability of uncertainty                                      τDSC = 0.70. A sensitivity analysis using different values
+    scores to discriminate between high- and low-quality pre-                                        of τDSC ∈ {0.60, 0.70, 0.80} is reported in Appendix C.
+    dictions, with low-quality predictions generally exhibiting                                          Table 4 summarizes the ability of predictive, aleatoric,
+    higher uncertainty across tasks. The difference between                                          and epistemic uncertainty estimates to identify erroneous
+    the distributions for all tasks was statistically significant                                    predictions across all tasks, evaluated using U-AUC, AP, Lift,
+    according to the Mann–Whitney U test.                                                            and AURC. For each metric, 1000× bootstrap confidence
+         In order to contextualize the uncertainty-based error                                       intervals are reported in the table to indicate the variability
+    detection analyses, we additionally reported the predic-                                         of the estimates. The observed error rates of 0.18, 0.10,
+    tive performance of the selected MCD configuration used                                          0.29, and 0.17 for IDH mutation status, 1p/19q co-deletion
+    throughout the remaining experiments (T = 30, δ = 0.25).                                         status, tumor grade and tumor segmentation, respectively,
+    Table 3 reports the task-specific class distribution in the                                      correspond to the baseline AP for a random classifier.
+    test set, along with different performance metrics, including                                        For IDH mutation status prediction, predictive uncer-
+    accuracy, balanced accuracy, macro-averaged F1-score and                                         tainty achieved an AP of 0.42, corresponding to a Lift
+    AUC. The class distributions highlight substantial imbal-                                        of 2.37 relative to the baseline error rate. Aleatoric and
+
+                                                                                                                                                                                685
+                                                                                             Mosquera Rojas et al., 2026
+
+
+
+                                 0.2
+                                                                                                           Table 3: Predictive performance at the selected MCD con-
+                                                                                                           figuration (T = 30, δ = 0.25) for the three classification
+Pearson correlation with DSC
+
+
+
+
+                                 0.0
+                                                                                                           tasks. For each task, the class distribution is also reported.
+                                 0.2       Brain mask
+                                                                                                           Values are shown with 95% confidence intervals obtained
+                                           Predicted tumor
+                                           Dilated tumor r=5
+                                                                                                           by 1000× bootstrap resampling of the test set. AUC is
+                                 0.4       Boundary weighted = 5                                           reported at task level: for tumor grade, it corresponds to
+                                                                                                           the macro-averaged one-vs-rest AUC across grade classes.
+                                 0.6
+                                                                                                           Total test set size differs across tasks because molecular
+                                 0.8                                                                       and histopathological annotations were not available for all
+                                                                                                           patients. Arrows in metric column headers indicate that
+                                0.80                                                                       higher values are preferable (↑).
+                                                                                                                                              Class                            Balanced Macro F1
+                                                                                                             Task                                            Accuracy ↑                                   AUC ↑
+                                0.78
+  Tumor segmentation mean DSC
+
+
+
+
+                                                                                                                                           distribution                       accuracy ↑ score ↑
+                                                                                                                                           Wildtype: 129   0.82        0.79        0.80        0.90
+                                0.76                                                                         IDH
+                                                                                                                                           Mutated: 85 [0.77,0.87] [0.73,0.84] [0.74,0.85] [0.85,0.94]
+                                                                                                                                           Intact: 205        0.90        0.56        0.57        0.85
+                                0.74                                                                         1p/19q
+                                                                                                                                           Co-deleted: 25 [0.85,0.93] [0.50,0.63] [0.47,0.67] [0.77,0.91]
+                                                                                                                   Grade 2: 45
+                                                                                                                                                                  0.71        0.60        0.51        0.85
+                                0.72                                                                         Grade Grade 3: 58
+                                                                                                                                                              [0.64,0.77] [0.57,0.64] [0.47,0.54] [0.81,0.88]
+                                                                                                                   Grade 4: 132
+                                0.70
+
+                                                                                                                                              Correct classification / DSC > 0.7
+                                       0
+
+                                             5
+
+                                                      0
+
+                                                               5
+
+                                                                      0
+
+                                                                               5
+
+                                                                                       0
+
+                                                                                             5
+
+                                                                                                   0
+                                  0.2
+
+                                           0.2
+
+                                                   0.3
+
+                                                            0.3
+
+                                                                    0.4
+
+                                                                             0.4
+
+                                                                                      0.5
+
+                                                                                            0.5
+
+                                                                                                  0.6
+
+
+
+
+                                                                                                                                              Incorrect classification / DSC ≤ 0.7
+                                                                   Dropout rate ( )                                                  1.0
+                                                                                                            Predictive uncertainty
+
+
+
+
+                                                                                                                                     0.8
+
+
+Figure 4: Tumor segmentation uncertainty quality analysis.
+                                                                                                                                     0.6
+The top panel presents the Pearson correlation coefficient
+between case-level predictive uncertainty and Dice Simi-                                                                             0.4
+larity Coefficient (DSC) as a function of the dropout rate
+δ used for the MCD ensemble. Correlations are shown                                                                                  0.2
+for four spatial aggregation strategies: brain-mask aggrega-
+tion, predicted-tumor aggregation, 5-voxel dilated predicted-                                                                        0.0
+                                                                                                                                             IDH mutation         1p/19q             Tumor grade      Tumor
+tumor aggregation, and boundary-weighted aggregation us-                                                                                                        co-deletion                        segmentation
+ing σ = 5 voxels. More negative correlations indicate that
+higher case-level uncertainty is associated with lower seg-
+mentation accuracy. The bottom panel presents the mean                                                     Figure 5: Violin plots of the predictive uncertainty across
+DSC between the predicted tumor segmentation and the                                                       different tasks, comparing the distributions of high qual-
+ground truth in the test set as a function of the dropout                                                  ity and low quality predictions, obtained with the optimal
+rate δ.                                                                                                    configuration of the MCD model at T = 30 and δ = 0.25.
+                                                                                                           For the classification tasks, high and low quality predic-
+                                                                                                           tions correspond to correctly and incorrectly classified cases,
+epistemic uncertainty yielded lower AP values of 0.32 and
+                                                                                                           respectively. For the tumor segmentation task, high and
+0.34, corresponding to Lifts of 1.79 and 1.89, respectively.
+                                                                                                           low quality predictions represent cases with DSC > 0.7
+AURC values were similar across uncertainty components,
+                                                                                                           and DSC ≤ 0.7, respectively. For all tasks, the difference
+with all three components achieving an AURC of 0.10. De-
+                                                                                                           between the distributions for both groups was statistically
+spite aleatoric uncertainty being dominant in magnitude
+                                                                                                           significant (Mann–Whitney U test).
+(as shown in Figure 2), predictive uncertainty provided the
+numerically highest Lift.
+    For 1p/19q co-deletion status prediction, predictive and                                               AURC values of 0.03, compared with 0.05 for epistemic
+aleatoric uncertainty achieved AP values of 0.37 and 0.39,                                                 uncertainty. In this task, the dominant aleatoric component
+corresponding to Lifts of 3.55 and 3.70, respectively, while                                               also achieved the numerically highest Lift.
+epistemic uncertainty yielded a lower AP of 0.16 (Lift 1.54).                                                  For tumor grade prediction, predictive and aleatoric
+Predictive and aleatoric uncertainty also achieved lower                                                   uncertainty achieved identical AP values of 0.59, corre-
+
+686
+            Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+sponding to Lifts of 2.00, whereas epistemic uncertainty           For tumor segmentation, predictive uncertainty was ag-
+achieved a lower AP of 0.45 (Lift 1.52). Similarly, predictive gregated within the predicted tumor region. All three meth-
+and aleatoric uncertainty achieved lower AURC values of ods achieved high U-AUC values, indicating that predicted-
+0.12, compared with 0.17 for epistemic uncertainty.            tumor uncertainty was informative for identifying low-quality
+     For tumor segmentation, aleatoric uncertainty achieved segmentations. MCDE achieved the highest U-AUC and
+the highest AP of 0.83 (Lift 5.01), followed closely by Lift, whereas MCD achieved the highest AP. The lowest
+predictive uncertainty with an AP of 0.82 (Lift 4.95) and AURC values were observed for DE and MCDE.
+epistemic uncertainty with an AP of 0.81 (Lift 4.90). All          Overall, ensemble-based uncertainty estimates provided
+three uncertainty components achieved high U-AUC values, operational utility comparable to MCD, but no method
+ranging from 0.95 to 0.96, and similar AURC values of 0.13. consistently dominated across all tasks and metrics. In
+Although epistemic uncertainty was dominant in magnitude particular, MCDE tended to provide favorable AURC val-
+(as shown in Figure 2), aleatoric and predictive uncertainty ues, suggesting slightly improved selective-risk behavior,
+still achieved comparable or higher Lift.                      whereas DE or MCD more often achieved higher AP or
+     Overall, while all uncertainty types identified errors Lift. Because confidence intervals overlapped in several
+better than expected from the baseline error rates, the com- comparisons, these differences were interpreted as task- and
+ponent with the highest magnitude (as shown in Figure 2) metric-dependent trends rather than as evidence of consis-
+did not consistently correspond to the highest Lift or lowest tent superiority of one uncertainty method. Therefore, the
+AURC. For IDH mutation status prediction, predictive un- subsequent analyses were based on MCD.
+certainty had the highest point estimates for AP and Lift,         The corresponding results for aleatoric and epistemic
+but the corresponding confidence intervals overlapped with uncertainty are reported in Appendix E, Table 11. For
+those of aleatoric and epistemic uncertainty. For 1p/19q aleatoric uncertainty, the trends were broadly consistent
+co-deletion status prediction and tumor grade prediction, with the predictive-uncertainty analysis: all three methods
+predictive and aleatoric uncertainty showed very similar per- showed operational utility above the baseline error rate
+formance, whereas epistemic uncertainty generally showed across the classification tasks, and tumor segmentation
+lower AP, lower Lift, and higher AURC. For tumor segmen- uncertainty aggregated within the predicted tumor region
+tation, all three uncertainty components showed comparable remained highly informative. For epistemic uncertainty, clas-
+performance, with U-AUC values between 0.95 and 0.96, sification error-detection performance was weaker and less
+AP values between 0.81 and 0.83, Lift values between 4.90 consistent than for predictive or aleatoric uncertainty. This
+and 5.01, and identical AURC values of 0.13. Therefore, was most evident for 1p/19q co-deletion status prediction,
+it can be noted that predictive uncertainty achieved per- where epistemic uncertainty showed lower U-AUC, AP, and
+formance comparable to that of individual decomposed Lift than the corresponding predictive and aleatoric uncer-
+components across all tasks given the high overlap between tainty estimates. Across the classification tasks, MCD-based
+the confidence intervals.                                      epistemic uncertainty tended to retain the most consistent
+                                                               operational utility, whereas the ensemble-based epistemic
+4.4 Comparison of MCD with other UQ methods                    estimates showed more metric-dependent behavior.
+
+After selecting the final MCD configuration, we compared
+                                                               4.5 Interaction Between Tumor Segmentation and
+MCD with two ensemble-based UQ methods, DE and
+                                                                   Classification
+MCDE, using the same operational-utility framework. Ta-
+ble 5 reports the performance of predictive uncertainty for    Figure 6 shows the distribution of tumor segmentation DSC
+error detection and selective prediction across the three      scores stratified by classification correctness for each classi-
+classification tasks and tumor segmentation using predicted-   fication task. For IDH mutation status, correctly classified
+tumor aggregation.                                             cases exhibited higher segmentation performance compared
+    For the classification tasks, all three methods produced   to misclassified cases, and this difference was statistically
+uncertainty estimates with Lift values above 1, indicating     significant (Mann–Whitney U test). For 1p/19q co-deletion
+better-than-baseline error identification. For IDH mutation    status, correctly classified cases tended to present slightly
+status prediction, MCDE had the lowest AURC, while MCD         higher DSC scores; however, the difference did not reach
+achieved the highest AP and Lift. For 1p/19q co-deletion       statistical significance. For tumor grade, correctly classified
+status prediction, DE and MCD showed the same U-AUC            cases again showed higher DSC scores, with a statistically
+values, with DE achieving the highest AP and Lift. For         significant difference between groups (Mann–Whitney U
+tumor grade prediction, DE achieved the highest U-AUC,         test).
+AP, and Lift, whereas MCDE achieved the lowest error rate          Table 6 presents the correlations between tumor segmen-
+and AURC.                                                      tation uncertainty and classification uncertainty. Overall,
+
+                                                                                                                          687
+                                                                     Mosquera Rojas et al., 2026
+
+
+
+Table 4: Operational utility of uncertainty estimates per task. Assessment is made using Uncertainty-based Receiver
+Operating Characteristic Area Under the Curve (U-AUC), Average Precision (AP), Lift, and Area Under the Risk–Coverage
+Curve (AURC), derived from using uncertainty as a predictor of errors. Values are reported with 95% confidence intervals
+obtained by 1000× bootstrap resampling of the test set. The numerically highest values for U-AUC, AP, and Lift, and
+the numerically lowest values for AURC, are indicated in bold for each task. Arrows in metric column headers indicate
+whether higher (↑) or lower (↓) values are preferable.
+                                                                                                 Uncertainty
+                       Error
+        Task                                      Predictive                                      Aleatoric                                       Epistemic
+                      rate ↓
+                                U-AUC ↑       AP ↑        Lift ↑    AURC ↓ U-AUC ↑            AP ↑        Lift ↑    AURC ↓ U-AUC ↑            AP ↑        Lift ↑    AURC ↓
+ IDH mutation                     0.73        0.42         2.37       0.10         0.71        0.32        1.79       0.10         0.71        0.34        1.89       0.10
+                      0.18
+ status prediction             [0.62,0.82] [0.28,0.57] [1.72,3.34] [0.05,0.15] [0.61,0.80] [0.22,0.46] [1.39,2.54] [0.05,0.15] [0.61,0.80] [0.23,0.50] [1.45,2.80] [0.05,0.16]
+ 1p/19q co-deletion               0.84         0.37        3.55       0.03        0.84        0.39        3.70        0.03         0.68        0.16        1.54        0.05
+                      0.10
+ status prediction             [0.76,0.91] [0.22,0.58] [2.37,6.07] [0.01,0.05] [0.77,0.91] [0.22,0.58] [2.51,6.19] [0.01,0.04] [0.58,0.77] [0.10,0.29] [1.22,2.59] [0.03,0.08]
+ Tumor grade                       0.78       0.59         2.00       0.12        0.79        0.59        2.00        0.12         0.70        0.45        1.52        0.17
+                      0.29
+ prediction                    [0.72,0.84] [0.47,0.71] [1.66,2.47] [0.09,0.17] [0.73,0.85] [0.47,0.72] [1.68,2.50] [0.09,0.17] [0.62,0.77] [0.35,0.58] [1.28,1.94] [0.12,0.24]
+ Tumor                             0.95        0.82        4.95       0.13        0.96        0.83        5.01        0.13         0.95        0.81        4.90       0.13
+                      0.17
+ segmentation                  [0.92,0.98] [0.72,0.91] [3.89,6.67] [0.12,0.14] [0.94,0.98] [0.72,0.91] [3.93,6.80] [0.12,0.14] [0.92,0.98] [0.71,0.90] [3.85,6.64] [0.12,0.14]
+
+
+
+                                                                                                                   1.0
+Table 5: Comparison of uncertainty quantification methods
+using predictive uncertainty. Assessment is made using
+                                                                                          Tumor segmentation DSC   0.8
+Uncertainty-based Receiver Operating Characteristic Area
+Under the Curve (U-AUC), Average Precision (AP), Lift,
+                                                                                                                   0.6
+and Area Under the Risk–Coverage Curve (AURC), derived
+from using predictive uncertainty as a predictor of errors.
+Values are reported with 95% confidence intervals obtained                                                         0.4
+
+by 1000× bootstrap resampling of the test set. For tumor
+segmentation, predictive uncertainty was aggregated within                                                         0.2
+
+the predicted tumor region. The numerically highest values                                                               Correct classification
+                                                                                                                         Incorrect classification
+for U-AUC, AP, and Lift, and the numerically lowest values                                                         0.0
+                                                                                                                           IDH mutation               1p/19q      Tumor grade
+for AURC, are indicated in bold for each task. Arrows in                                                                                            co-deletion
+metric column headers indicate whether higher (↑) or lower
+(↓) values are preferable.
+ Task         Method Error ↓ U-AUC ↑        AP ↑        Lift ↑    AURC ↓
+                                 0.72        0.37        2.15        0.10                Figure 6: Distribution of tumor segmentation Dice Similarity
+              DE      0.17
+ IDH                         [0.62,0.82] [0.24,0.56] [1.57,3.23] [0.05,0.15]             Coefficient (DSC) scores for correctly and incorrectly classi-
+ mutation                        0.73       0.42        2.37         0.10
+              MCD     0.18
+                             [0.62,0.82] [0.28,0.57] [1.72,3.34] [0.05,0.15]
+                                                                                         fied cases for the IDH mutation status, 1p/19q co-deletion
+              MCDE 0.17
+                                0.73         0.34        2.03       0.09                 status and tumor grade. Cases are stratified according to
+                             [0.63,0.83] [0.23,0.50] [1.53,2.98] [0.05,0.14]
+                                0.84        0.39        3.90        0.03
+                                                                                         whether the corresponding prediction was correct or incor-
+              DE      0.10
+ 1p/19q                      [0.76,0.91] [0.22,0.59] [2.53,6.62] [0.01,0.04]             rect. For each task, higher DSC values indicate better
+ co-deletion                                 0.37        3.55
+              MCD     0.10
+                                0.84                                0.03
+                             [0.76,0.91] [0.22,0.58] [2.37,6.07] [0.01,0.05]
+                                                                                         agreement between predicted and reference tumor segmen-
+              MCDE 0.09
+                                 0.81        0.26        2.84       0.03                 tations. Statistical significance between groups was found
+                             [0.74,0.89] [0.16,0.45] [2.06,4.91] [0.01,0.04]
+                                0.80        0.61        2.04         0.13
+                                                                                         for the IDH mutation status and tumor grade prediction
+              DE      0.30                                                               (Mann–Whitney U test).
+ Tumor                       [0.73,0.86] [0.50,0.73] [1.70,2.53] [0.09,0.18]
+ grade                           0.78        0.59        2.00        0.12
+              MCD     0.29
+                             [0.72,0.84] [0.47,0.71] [1.66,2.47] [0.09,0.17]
+                                 0.78        0.51        1.82       0.12
+              MCDE 0.28
+                             [0.72,0.84] [0.40,0.65] [1.53,2.30] [0.08,0.17]              intervals that remained above zero for the predictive and
+                                 0.94        0.65        4.91       0.12
+ Tumor
+              DE      0.13
+                             [0.90,0.96] [0.48,0.82] [3.70,7.30] [0.11,0.13]              aleatoric components across all three classification tasks.
+ segmentation                    0.95                    4.95        0.13
+              MCD     0.17
+                                            0.82
+                                                                     For IDH mutation status prediction, tumor segmentation
+                             [0.92,0.98] [0.72,0.91] [3.89,6.67] [0.12,0.14]
+              MCDE 0.12
+                                0.96         0.79       6.37     uncertainty showed moderate correlations with predictive
+                                                                    0.12
+                             [0.92,0.98] [0.65,0.89] [4.82,9.16] [0.12,0.13]
+                                                                 and aleatoric classification uncertainty, with correlation
+                                                                 coefficients of 0.48 and 0.51, respectively. The association
+predictive and aleatoric uncertainty components exhibited        with  epistemic uncertainty was weaker, with a correlation
+positive correlations across the classification tasks, indi- coefficient of 0.09, and its confidence interval included zero,
+cating that cases with higher tumor segmentation uncer- indicating no clear positive association for this component.
+tainty also tended to present higher classification uncertainty.     For 1p/19q co-deletion status prediction, correlations
+These positive associations were supported by confidence were weaker overall. Predictive and aleatoric uncertainty
+
+688
+             Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+                                                                  segmentation uncertainty achieved the highest U-AUC in
+Table 6: Pearson correlation (ρ) between tumor segmen-
+                                                                  all three classification tasks. However, the highest AP and
+tation uncertainty and classification uncertainty for each
+                                                                  Lift were obtained by epistemic uncertainty for IDH mu-
+task. Correlations were computed separately for predictive,
+                                                                  tation status prediction, aleatoric uncertainty for 1p/19q
+aleatoric, and epistemic uncertainty components. Values
+                                                                  co-deletion status prediction, and epistemic uncertainty
+are reported with 95% confidence intervals obtained by
+                                                                  for tumor grade prediction. In each task, the confidence
+1000× bootstrap resampling of the test set. The numeri-
+                                                                  intervals of the segmentation uncertainty components over-
+cally highest correlation coefficient per task is indicated in
+                                                                  lapped for U-AUC, AP, and Lift.
+bold.
+                                       Uncertainty
+                                                                       Compared to classification uncertainty (Table 4), tumor
+              Task
+                          Predictive   Aleatoric     Epistemic
+                                                                  segmentation    uncertainty showed lower error-detection and
+                                                                  selective-prediction performance when comparing the pre-
+      IDH mutation           0.48         0.51          0.09
+      status prediction  [0.38, 0.57] [0.42, 0.58] [-0.04, 0.21]  dictive uncertainty scores directly. For IDH mutation status
+      1p/19q co-deletion     0.22         0.24         −0.15      prediction, predictive segmentation uncertainty achieved
+      status prediction  [0.12, 0.33] [0.15, 0.33] [-0.25, -0.05]
+      Tumor grade            0.53         0.50          0.10      a Lift of 1.68 and an AURC of 0.15, whereas predictive
+      prediction         [0.45, 0.61] [0.42, 0.57] [-0.03, 0.26]  classification uncertainty achieved a Lift of 2.37 and an
+                                                                  AURC of 0.10. For 1p/19q co-deletion status prediction,
+                                                                  predictive segmentation uncertainty achieved a Lift of 2.16
+showed modest positive associations, with correlation coeffi- and an AURC of 0.06, compared with a Lift of 3.55 and an
+cients of 0.22 and 0.24, respectively. In contrast, epistemic AURC of 0.03 for predictive classification uncertainty. For
+uncertainty showed a weak negative correlation of −0.15, tumor grade prediction, predictive segmentation uncertainty
+and its confidence interval remained below zero. This indi- achieved a Lift of 1.52 and an AURC of 0.22, compared
+cates that, for 1p/19q co-deletion status prediction, higher with a Lift of 2.00 and an AURC of 0.12 for predictive
+tumor segmentation epistemic uncertainty was not associ- classification uncertainty. Thus, for all three classification
+ated with higher classification epistemic uncertainty.            tasks, predictive classification uncertainty achieved higher
+     For tumor grade prediction, tumor segmentation un- Lift and lower AURC than predictive tumor segmentation
+certainty was again moderately correlated with predictive uncertainty.
+and aleatoric classification uncertainty, with correlation co-         The same pattern was observed for aleatoric uncertainty,
+efficients of 0.53 and 0.50, respectively. The association where classification uncertainty achieved higher Lift and
+with epistemic uncertainty remained weak, with a correla- lower AURC than tumor segmentation uncertainty for all
+tion coefficient of 0.10, and its confidence interval included three classification tasks. For epistemic uncertainty, the
+zero. Overall, predictive and aleatoric uncertainty demon- comparison was less uniform for Lift: classification uncer-
+strated consistent positive cross-task associations, whereas tainty achieved a higher Lift for IDH mutation status predic-
+epistemic uncertainty showed weaker and less consistent tion, whereas tumor segmentation uncertainty had a higher
+relationships across tasks.                                       Lift for 1p/19q co-deletion status and tumor grade pre-
+     Table 7 summarizes the ability of tumor segmentation diction. However, classification epistemic uncertainty still
+uncertainty to identify classification errors. Overall, tumor achieved lower AURC than tumor segmentation epistemic
+segmentation uncertainty provided moderate discrimination uncertainty for all three tasks. Overall, tumor segmentation
+of classification errors, with U-AUC values ranging from 0.61 uncertainty was informative for identifying classification
+to 0.69. In terms of AP, predictive segmentation uncertainty errors, but classification-specific uncertainty remained the
+achieved values of 0.30, 0.23, and 0.44 for IDH, 1p/19q, and more direct and generally stronger error predictor.
+tumor grade prediction, corresponding to Lifts of 1.68, 2.16,          The proposed trust score demonstrated consistent ability
+and 1.52, respectively. Similar Lift values were observed for to identify classification errors across tasks (Table 8). For
+aleatoric and epistemic segmentation uncertainty, ranging IDH mutation status prediction, the trust score achieved a
+from 1.45 to 2.55 depending on the task and component. U-AUC of 0.73 and an AP of 0.38, corresponding to a Lift
+For all tasks and uncertainty components, the lower bounds of 2.12 relative to the baseline error rate of 0.18, with an
+of the Lift confidence intervals remained above 1, indicating AURC of 0.09. For 1p/19q co-deletion status prediction,
+that high segmentation uncertainty identified subsets of the trust score yielded a U-AUC of 0.85 and an AP of 0.42,
+cases with higher classification error rates than expected representing a Lift of 3.98 over the baseline error rate of
+under random selection. AURC values ranged from 0.06 to 0.10, with an AURC of 0.02. For tumor grade prediction,
+0.22, with lower values indicating lower residual risk among the trust score achieved a U-AUC of 0.77 and an AP of 0.51,
+retained cases.                                                   corresponding to a Lift of 1.77 relative to the baseline error
+     Across tasks, no single segmentation uncertainty com- rate of 0.29, with an AURC of 0.13. For all three tasks,
+ponent was consistently best across all metrics. Aleatoric the lower bounds of the Lift confidence intervals remained
+
+                                                                                                                            689
+                                                 Mosquera Rojas et al., 2026
+
+
+above 1, indicating that low-trust cases contained more             The analysis of uncertainty decomposition revealed con-
+classification errors than expected under random selection. sistent task-dependent patterns. Aleatoric uncertainty dom-
+     Compared with predictive classification uncertainty alone inated in classification tasks, whereas epistemic uncertainty
+(Table 4), the trust score did not show a consistent improve- was more prominent in tumor segmentation, which likely
+ment across tasks. For IDH mutation status prediction, the reflects fundamental differences in the nature of the tasks.
+trust score achieved the same U-AUC as predictive classi- Molecular subtype prediction from MRI is inherently limited
+fication uncertainty, lower AP and Lift, and slightly lower by the indirect relationship between imaging appearance and
+AURC. For 1p/19q co-deletion status prediction, the trust genetic status, introducing irreducible uncertainty possibly
+score achieved higher point estimates for U-AUC, AP, and due to biological variability. In contrast, tumor segmenta-
+Lift, and a lower AURC than predictive classification uncer- tion is more directly informed by image appearance, tumor
+tainty alone. In contrast, for tumor grade prediction, the boundaries, and local texture patterns. Therefore, higher
+trust score achieved lower U-AUC, AP, and Lift, and higher epistemic uncertainty in segmentation may reflect model-
+AURC than predictive classification uncertainty alone. The related limitations in representing atypical morphologies,
+confidence intervals for the trust score overlapped with ambiguous boundaries, or underrepresented imaging pat-
+those of predictive classification uncertainty across these terns in MRI.
+comparisons. Therefore, although the trust score slightly           Importantly, however, uncertainty magnitude alone did
+improved the point estimates for 1p/19q co-deletion status not directly indicate operational utility. Components that
+prediction, the results do not show a consistent improve- dominated in magnitude did not necessarily perform best in
+ment over predictive classification uncertainty alone across the evaluation metrics. Decomposing predictive uncertainty
+all classification tasks.                                       into aleatoric and epistemic components did not consis-
+                                                                tently improve error detection performance either. This
+5. Discussion                                                   finding is consistent with the mathematical definition of
+                                                                the decomposition used in this work: predictive uncertainty
+UQ is increasingly recognized as a key requirement for can be high because of aleatoric uncertainty, epistemic un-
+trustworthy artificial intelligence in medical imaging, yet certainty, or both. Therefore, when one uncertainty source
+its practical value remains highly dependent on the task dominates, predictive uncertainty may already provide a
+and application context. In this work, we performed a strong operational signal for error detection, even if it does
+task-aware evaluation of uncertainty within a multi-task DL not distinguish why the model is uncertain. The bootstrap
+framework for glioma diagnosis, analyzing its MC sample confidence intervals supported this interpretation, showing
+convergence, magnitude and decomposition, calibration, that the operational utility of predictive uncertainty was
+and operational utility, as well as its interactions between comparable to that of its components across tasks.
+tumor segmentation and tumor molecular subtyping fea-               These findings are in line with a recent work by Kahl
+tures. Collectively, our results provide insights into both et al. (2024), which questions the practical utility of un-
+the capabilities and limitations of uncertainty estimates in certainty decomposition in real-world settings by demon-
+this clinical application.                                      strating that uncertainty decomposition in segmentation
+     We first assessed the convergence of average uncer- works in synthetic settings but does not necessarily translate
+tainty estimates as a function of the number of MC samples to real-world data, and therefore the benefit or feasibility
+and dropout rate. Across tasks, mean uncertainty values of uncertainty decomposition cannot be assumed a priori.
+generally reached a plateau after approximately 20–30 MC Instead, its value must be evaluated empirically for each
+samples, indicating that further sampling produced limited specific task and dataset. Our results extend these observa-
+changes in average uncertainty magnitude. This supports tions to a multi-task setting including three classification
+the use of a computationally practical number of MC sam- tasks and demonstrate that uncertainty decomposition pro-
+ples for the subsequent analyses.                               vides insight into the origin of predictive uncertainty but its
+     Increasing the dropout rate generally led to higher uncer- operational utility is task-limited.
+tainty magnitudes, reflecting broader posterior approxima-          Calibration and quality analysis further demonstrated
+tions and increased predictive variability. However, excessive that the quality of uncertainty estimates was dependent
+dropout resulted in reduced predictive performance and de- on the amount of dropout applied. Moderate dropout lev-
+graded uncertainty quality, suggesting that overly strong els achieved the best performance, while excessive dropout
+stochastic perturbations can degrade predictive outputs degraded calibration and predictive likelihood. This likely re-
+and reduce the practical value of uncertainty estimates. flects the trade-off between model confidence and predictive
+This highlights the importance of balancing stochasticity accuracy: insufficient stochasticity leads to overconfident
+and predictive fidelity when computing uncertainty through predictions, whereas excessive stochasticity reduces predic-
+MCD.                                                            tive consistency. These results highlight that uncertainty
+
+690
+                 Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+
+Table 7: Ability of tumor segmentation uncertainty to predict classification errors. Assessment is performed using
+Uncertainty-based Receiver Operating Characteristic Area Under the Curve (U-AUC), Average Precision (AP), Lift, and
+Area Under the Risk–Coverage Curve (AURC). Values are reported with 95% confidence intervals obtained by 1000×
+bootstrap resampling of the test set. The numerically highest values for U-AUC, AP, and Lift, and the numerically
+lowest values for AURC, are indicated in bold for each task. Arrows in metric column headers indicate whether higher
+(↑) or lower (↓) values are preferable.
+                                                            Tumor segmentation uncertainty as a predictor of classification errors
+                      Error
+        Task                                Predictive                                      Aleatoric                                       Epistemic
+                     rate ↓
+                          U-AUC ↑       AP ↑        Lift ↑    AURC ↓ U-AUC ↑            AP ↑        Lift ↑    AURC ↓ U-AUC ↑            AP ↑        Lift ↑    AURC ↓
+ IDH mutation                0.62        0.30        1.68        0.15       0.65         0.28        1.54       0.13         0.61       0.32        1.79         0.15
+                    0.18
+ status prediction       [0.51,0.72] [0.21,0.46] [1.27,2.60] [0.08,0.22] [0.55,0.75] [0.20,0.40] [1.22,2.23] [0.07,0.20] [0.50,0.72] [0.22,0.46] [1.30,2.72] [0.09,0.23]
+ 1p/19q co-deletion          0.68        0.23        2.16       0.06        0.69        0.27        2.55        0.06         0.67        0.24        2.26       0.06
+                    0.10
+ status prediction       [0.57,0.78] [0.12,0.41] [1.38,4.15] [0.03,0.11] [0.57,0.79] [0.14,0.43] [1.50,4.56] [0.03,0.11] [0.56,0.78] [0.12,0.40] [1.36,4.19] [0.03,0.11]
+ Tumor grade                 0.65        0.44        1.52        0.22       0.67         0.42        1.45       0.19         0.65       0.45        1.54         0.22
+                    0.29
+ prediction              [0.57,0.73] [0.35,0.58] [1.25,1.94] [0.15,0.30] [0.59,0.74] [0.34,0.55] [1.23,1.82] [0.14,0.26] [0.56,0.73] [0.35,0.58] [1.27,1.95] [0.16,0.30]
+
+
+
+                                                                           curacy, without necessarily implying that the model assigns
+Table 8: Performance of the proposed trust score for pre-
+                                                                           higher probabilities to the true classes or improves class dis-
+dicting classification errors. Assessment is performed using
+                                                                           crimination. Conversely, an increase in NLL can occur when
+Uncertainty-based Receiver Operating Characteristic Area
+                                                                           the average probability assigned to the true class decreases,
+Under the Curve (U-AUC), Average Precision (AP), Lift,
+                                                                           even if the confidence values remain reasonably aligned
+and Area Under the Risk–Coverage Curve (AURC). Val-
+                                                                           with empirical accuracy. Similarly, AUC may decrease when
+ues are reported with 95% confidence intervals obtained
+                                                                           the separation of classes worsens, even if the calibration
+by 1000× bootstrap resampling of the test set. Arrows in
+                                                                           error is unchanged or reduced. These observations support
+metric column headers indicate whether higher (↑) or lower
+                                                                           evaluating ECE, NLL, and AUC, together, rather than in-
+(↓) values are preferable.
+                     Error                   Trust score                   terpreting any single metric as a complete summary of the
+         Task
+                    rate ↓ U-AUC ↑        AP ↑        Lift ↑    AURC ↓     model predictive performance.
+ IDH mutation                  0.73        0.38        2.12        0.09
+ status prediction
+                     0.18
+                           [0.64,0.81] [0.26,0.53] [1.58,3.10] [0.05,0.14]
+                                                                                In the tumor segmentation task, case-level uncertainty
+ 1p/19q co-deletion
+                     0.10
+                               0.85        0.42        3.98        0.02    was negatively correlated with segmentation accuracy, in-
+ status prediction         [0.77,0.91] [0.25,0.58] [2.71,6.39] [0.01,0.04] dicating that uncertainty estimates reflected meaningful
+ Tumor grade                   0.77        0.51        1.77        0.13
+                     0.29                                                  variations  in prediction quality. The strength of this re-
+ prediction                [0.71,0.83] [0.41,0.65] [1.48,2.23] [0.09,0.17]
+                                                                           lationship depended strongly on the spatial aggregation
+                                                                           strategy. Full-brain aggregation showed weak associations
+quality cannot be optimized independently of predictive with DSC, suggesting that averaging uncertainty over the
+performance, reinforcing the need for joint evaluation of entire brain is not well suited for case-level segmentation
+both aspects when developing diagnostic AI systems.                        reliability assessment. This is likely because most brain
+     The behavior of ECE, NLL, and AUC across dropout voxels correspond to confidently predicted background and
+rates further illustrates that calibration and predictive perfor- contribute limited information about tumor delineation qual-
+mance capture related but distinct properties of the model ity, thereby diluting the uncertainty signal arising from the
+probability outputs. ECE evaluates calibration by comparing lesion region. In contrast, aggregation within the predicted
+predicted confidence with empirical accuracy, and therefore tumor region showed the strongest and most stable negative
+reflects whether the numerical confidence values are aligned association with segmentation accuracy.
+with the observed correctness rate. In contrast, NLL evalu-                     The dilated tumor and boundary-weighted analyses fur-
+ates the probability assigned to the true class, averaged over ther addressed whether uncertainty immediately outside
+all cases, and therefore depends on both confidence and cor- the predicted boundary could provide additional informa-
+rectness. It penalizes probability mass assigned away from tion. These strategies also showed negative associations
+the true class, especially for confident incorrect predictions. with DSC, supporting the relevance of spatially localized
+Conversely, AUC evaluates discriminative performance by uncertainty around the tumor, although they did not pro-
+measuring how well the model separates cases across dif- vide a clearer advantage over predicted tumor aggregation
+ferent classification thresholds, without directly assessing and introduced additional hyperparameters such as dilation
+whether the predicted probabilities are calibrated.                        radius or distance-weighting scale.
+     These differences explain why the metrics did not al-                      A central objective of this study was to evaluate the
+ways change in parallel across dropout rates. A decrease operational utility of uncertainty estimates by quantifying
+in ECE at a specific dropout configuration can indicate their ability to detect erroneous predictions. Across tasks,
+improved agreement between confidence and empirical ac- uncertainty estimates identified errors better than expected
+
+                                                                                                                                                                    691
+                                                Mosquera Rojas et al., 2026
+
+
+from the baseline error rates, with Lift values above 1 three classification tasks. In contrast, epistemic uncertainty
+and AURC values indicating reduced residual risk among showed weaker and less consistent relationships: its confi-
+retained high-confidence cases. These results indicate that dence intervals included zero for IDH mutation status and
+uncertainty estimates can serve as practical indicators of tumor grade prediction, while for 1p/19q co-deletion sta-
+prediction reliability in the studied AI-based glioma diagnosis tus prediction the association was weakly negative. Thus,
+framework.                                                      shared cross-task uncertainty patterns were mainly observed
+     The comparison with DE and MCDE further showed for predictive and aleatoric uncertainty, rather than for the
+that this operational utility was not specific to MCD. Across epistemic component.
+tasks, ensemble-based uncertainty estimates achieved per-           Tumor segmentation uncertainty alone demonstrated
+formance comparable to MCD, although no method con- moderate ability to predict classification errors, with Lift
+sistently dominated across all metrics. This supports the values above 1 across all three classification tasks, indi-
+generality of the task-aware evaluation framework, while cating that it contained information about classification
+also showing that the preferred UQ method may depend reliability. However, when comparing predictive uncertainty
+on the intended use case: ranking errors, identifying rare scores directly, classification-specific uncertainty achieved
+failures, or reducing residual risk among retained cases.       higher Lift and lower AURC than tumor segmentation un-
+     For tumor segmentation, the binary definition of seg- certainty for all three classification tasks. This suggests
+mentation error depended on the selected DSC threshold. that although segmentation contributes to classification reli-
+The threshold-sensitivity analysis showed that the segmen- ability, classification-specific predictive uncertainty remains
+tation error rate increased, as expected, when stricter DSC the most informative predictor of classification error.
+thresholds were used. Nevertheless, segmentation uncer-             To investigate whether integrating information across
+tainty remained informative across the evaluated thresholds, tasks could improve reliability assessment, we proposed
+with high error-detection performance and Lift values above a composite trust score combining classification and tu-
+1. This indicates that the operational conclusion that seg- mor segmentation uncertainty. The trust score identified
+mentation uncertainty identifies low-quality segmentations low-trust cases with higher classification error rates than
+was not driven by the primary threshold of DSC ≤ 0.70, expected under random selection across tasks, with Lift
+although the absolute values of AP and Lift varied with the values above 1. However, compared with predictive classi-
+induced error prevalence.                                       fication uncertainty alone, it did not provide a consistent
+     Because the classification tasks rely on shared repre- improvement. For 1p/19q co-deletion status prediction,
+sentations learned jointly with segmentation, we further the trust score improved the point estimates for U-AUC,
+investigated their interactions. Tumor segmentation quality AP, Lift, and AURC. This improvement was not observed
+was significantly associated with classification correctness for IDH mutation status or tumor grade prediction, where
+for IDH mutation status and tumor grade prediction, indi- predictive classification uncertainty performed comparably
+cating that errors in structural representation learning may or better depending on the metric. This result suggests
+propagate to classification tasks. In contrast, the associa- that classification uncertainty already captures the most
+tion between segmentation quality and 1p/19q co-deletion relevant information about classification reliability in this
+status prediction did not reach statistical significance. This setting.
+suggests that, while accurate structural representation is          The previous finding highlights an important principle
+important for certain molecular predictions, its influence for trustworthy AI development: additional complexity does
+may vary depending on the specific biological feature being not necessarily improve reliability estimation. Instead, task-
+predicted. One possible explanation is that imaging corre- specific predictive uncertainty measures may provide the
+lates of 1p/19q co-deletion status are less strongly linked most direct and informative indicators of prediction confi-
+to tumor morphology captured by segmentation, and may dence. At the same time, the trust score provides a useful
+instead depend more on subtler texture or intensity patterns. conceptual framework for integrating uncertainty across
+Overall, these findings support the hypothesis that tumor tasks. Although its current formulation did not consis-
+segmentation performance partially reflects the quality of tently improve selective risk reduction, it establishes a basis
+shared latent features used for molecular prediction, but for future developments. Future trust-score formulations
+that this dependency is task-specific rather than universal. may require task-specific calibration, non-linear integration
+     Correlation analysis revealed moderate associations be- strategies, or explicit modeling of when tumor segmentation
+tween tumor segmentation and classification uncertainty uncertainty is expected to contribute additional information
+for predictive and aleatoric components, suggesting that beyond classification uncertainty alone.
+some uncertainty patterns are shared across tasks. The              This study has some limitations. First, uncertainty was
+bootstrap confidence intervals supported positive associ- evaluated using structural MRI modalities only. While these
+ations for predictive and aleatoric uncertainty across all sequences form the backbone of current radiological assess-
+
+692
+            Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+ment, advanced imaging techniques such as diffusion- and posed composite trust score did not consistently improve
+perfusion-weighted MRI provide complementary informa- over it. The comparison of MCD with DE and MCDE
+tion that may be of utility to strengthen interpretability and further showed that the operational value of uncertainty
+robustness of the uncertainty estimates.                         estimates was not restricted to a single UQ method. Over-
+     Second, our convergence analysis focused on average all, these findings emphasize that UQ should be evaluated
+uncertainty magnitudes as a function of the number of in relation to the intended clinical task and use case. The
+MC samples and dropout rate. Therefore, it should not task-aware evaluation framework proposed here provides
+be interpreted as a complete stability assessment. We practical guidance for assessing uncertainty in DL-based
+did not evaluate case-wise ranking stability, repeatability diagnostic tools and represents a promising step towards
+across independently trained models or random seeds, or the trustworthy AI for glioma diagnosis.
+variability of downstream error-detection metrics across re-
+peated MC realizations. These aspects represent important
+directions for future work, particularly when uncertainty
+                                                                 Acknowledgments
+estimates are used for patient-level referral or prioritization.
+     Beyond the specific methods evaluated in this study, This work is part of the “Trustworthy AI for MRI” ICAI lab
+the task-aware evaluation framework proposed here pro- within the project ROBUST: Trustworthy AI-based Systems
+vides a general basis for assessing uncertainty estimates for Sustainable Growth with project number
+in clinically oriented DL models. Because the framework KICH3.LTP.20.006, financed by the Dutch Research Council
+evaluates convergence, calibration, uncertainty decomposi- (NWO), GE HealthCare, and the Dutch Ministry of Eco-
+tion, error-detection performance, and selective prediction, nomic Affairs and Climate Policy (EZK) under the program
+its principles can be applied to newer UQ methods beyond LTP KIC 2020-2023.
+MCD, DE, and MCDE. Future work may therefore extend
+this comparison to additional UQ approaches and assess Ethical Standards
+method-specific trade-offs in calibration, computational
+cost, scalability, and clinical deployment feasibility.          The work follows appropriate ethical standards in conducting
+                                                               research and writing the manuscript, following all applicable
+6. Conclusion                                                  laws and regulations regarding treatment of animals or
+                                                               human subjects.
+This study presents a comprehensive, task-aware evalua-
+tion of UQ in a multi-task DL framework for glioma diag-
+nosis. Our findings show that average MCD uncertainty Conflicts of Interest
+estimates converged with a practical number of MC sam-
+ples, that calibration and uncertainty quality depended on Authors GEMR, MS, and SKlein are part of the Erasmus
+the dropout configuration, and that uncertainty estimates MC ICAI lab ”Trustworthy AI for MRI”, a public-private
+provided meaningful information about model reliability. research program partially funded by GE HealthCare (pay-
+Across tasks, uncertainty estimates enabled identification of ment to institution). CP and SKaushik are employees of
+prediction errors and supported selective-prediction analy- GE HealthCare. SvdV declares no competing interests.
+ses, although their utility depended on the task, uncertainty
+component, and operational metric considered.
+    Uncertainty decomposition offered insight into task- Data availability
+specific uncertainty sources, with aleatoric uncertainty being
+more prominent in classification and epistemic uncertainty The public datasets included in this study are available
+being more prominent in tumor segmentation. However, online:
+decomposition did not provide a consistent operational • BraTS: http://braintumorsegmentation.org/
+advantage over predictive uncertainty alone. For tumor
+                                                                  • Brain Tumor Progression: https://doi.org/10.793
+segmentation, uncertainty estimates were informative for
+                                                                    7/K9/TCIA.2018.15quzvnb
+identifying low-quality segmentations, particularly when
+aggregated within tumor-focused regions rather than across • CPTAC-GBM: https://doi.org/10.7937/K9/TCIA.
+the full brain.                                                     2018.3rje41q1
+    Although tumor segmentation performance and uncer- • EGD: https://xnat.bmia.nl/REST/projects/egd
+tainty were associated with classification reliability, classifi- • IvyGAP: https://doi.org/10.7937/K9/TCIA.2016
+cation predictive uncertainty remained the most direct and          .XLwaN6nL
+informative indicator of classification error, and the pro- • REMBRANDT: https://doi.org/10.7937/K9/TCI
+
+                                                                                                                         693
+                                                 Mosquera Rojas et al., 2026
+
+
+    A.2015.588OZUZB                                            Peter Chang, Jack Grinband, Brian D Weinberg, Marios
+• TCGA-GBM: https://doi.org/10.7937/K9/TCIA.                     Bardis, Vahe Khy, Guillermo Cadena, Min Su, Soonmee
+    2016.RNYFUYE9                                                Cha, Christopher G Filippi, Daniela Bota, et al. Deep-
+• TCGA-LGG: https://doi.org/10.7937/K9/TCIA.                     learning convolutional neural networks accurately classify
+    2016.L4LTD3TK                                                genetic mutations in gliomas. AJNR American Journal
+                                                                 of Neuroradiology, 39(7):1201–1207, 2018.
+     The code used for this paper is publicly available in the
+following repository: https://github.com/ErasmusMC CPTAC. The Clinical Proteomic Tumor Analysis Consor-
+-NeuroOnco/PrognosAIs-UQ                                         tium Glioblastoma Multiforme Collection (CPTAC-GBM)
+                                                                 (Version 16) [dataset]. The Cancer Imaging Archive,
+References                                                       2018.
+
+Gehad Abdalla, Ahmed Hammam, Mustafa Anjari, Dr Felice Stefan Depeweg, Jose-Miguel Hernandez-Lobato, Finale
+  D’Arco, and Dr Sotirios Bisdas. Glioma surveillance    Doshi-Velez, and Steffen Udluft. Decomposition of un-
+  imaging: current strategies, shortcomings, challenges  certainty in Bayesian deep learning for efficient and risk-
+  and outlook. BJR— Open, 2(1):20200009, 2020.           sensitive learning. In International Conference on Machine
+Moloud Abdar, Abbas Khosravi, Sheikh Mohammed Shariful   Learning, pages 1184–1193. PMLR, 2018.
+  Islam, U Rajendra Acharya, and Athanasios V Vasilakos.
+                                                                Ran El-Yaniv et al. On the foundations of noise-free selective
+  The need for quantification of uncertainty in artificial
+                                                                  classification. Journal of Machine Learning Research, 11
+  intelligence for clinical data analysis: increasing the level
+                                                                  (5), 2010.
+  of trust in the decision-making process. IEEE Systems,
+  Man, and Cybernetics Magazine, 8(3):28–40, 2022.
+                                                                Anahita Fathi Kazerooni, Stephen J Bagley, Hamed Akbari,
+Spyridon Bakas, Hamed Akbari, Aristeidis Sotiras, Michel          Sanjay Saxena, Sina Bagheri, Jun Guo, Sanjeev Chawla,
+  Bilello, Martin Rozycki, Justin S Kirby, John B Freymann,       Ali Nabavizadeh, Suyash Mohan, Spyridon Bakas, et al.
+  Keyvan Farahani, and Christos Davatzikos. Advancing the         Applications of radiomics and radiogenomics in high-
+  Cancer Genome Atlas glioma MRI collections with expert          grade gliomas in the era of precision medicine. Cancers,
+  segmentation labels and radiomic features. Scientific           13(23):5921, 2021.
+  Data, 4(1):1–13, 2017.
+                                                                Vladimir Fonov, Alan C Evans, Kelly Botteron, C Robert
+Spyridon Bakas, Mauricio Reyes, Andras Jakab, Ste-                Almli, Robert C McKinstry, D Louis Collins, Brain De-
+  fan Bauer, Markus Rempfler, Alessandro Crimi, Rus-              velopment Cooperative Group, et al. Unbiased average
+  sell Takeshi Shinohara, Christoph Berger, Sung Min Ha,          age-appropriate atlases for pediatric studies. NeuroImage,
+  Martin Rozycki, et al. Identifying the best machine learn-      54(1):313–327, 2011.
+  ing algorithms for brain tumor segmentation, progression
+  assessment, and overall survival prediction in the BRATS Vladimir S Fonov, Alan C Evans, Robert C McKinstry,
+  challenge. arXiv preprint arXiv:1811.02629, 2018.               C Robert Almli, and DL Collins. Unbiased nonlinear
+                                                                  average age-appropriate brain templates from birth to
+Mateusz Buda, Ehab A AlBadawy, Ashirbani Saha, and
+                                                                  adulthood. NeuroImage, 47:S102, 2009.
+  Maciej A Mazurowski. Deep radiogenomics of lower-
+  grade gliomas: convolutional neural networks predict Yarin Gal and Zoubin Ghahramani. Dropout as a Bayesian
+  tumor genomic subtypes using MR images. Radiology:              approximation: Representing model uncertainty in deep
+  Artificial Intelligence, 2(1):e180050, 2020.                    learning. In International Conference on Machine Learn-
+Satrajit Chakrabarty, Pamela LaMontagne, Joshua Shimony,    ing, pages 1050–1059. PMLR, 2016.
+  Daniel S Marcus, and Aristeidis Sotiras. MRI-based clas-
+  sification of IDH mutation and 1p/19q codeletion status Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian Q Weinberger.
+  of gliomas using a 2.5 D hybrid multi-task convolutional  On calibration of modern neural networks. In Interna-
+  neural network. Neuro-Oncology Advances, 5(1):vdad023,    tional conference on machine learning, pages 1321–1330.
+  2023.                                                     PMLR, 2017.
+
+Matthew Chan, Maria Molina, and Chris Metzler. Esti- Bobby He, Balaji Lakshminarayanan, and Yee Whye Teh.
+ mating epistemic and aleatoric uncertainty with a single Bayesian deep ensembles via the neural tangent kernel.
+ model. Advances in Neural Information Processing Sys-    Advances in neural information processing systems, 33:
+ tems, 37:109845–109870, 2024.                            1010–1022, 2020.
+
+694
+            Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+Wenchong He, Zhe Jiang, Tingsong Xiao, Zelin Xu, and Diederik P Kingma and Jimmy Ba. Adam: A method for
+ Yukun Li. A survey on uncertainty quantification methods stochastic optimization. arXiv preprint arXiv:1412.6980,
+ for deep learning. ACM Computing Surveys, 2025.          2014.
+
+He Huang, Guang Yang, Wenbo Zhang, Xiaomei Xu, Weiji Shirin Kordnoori, Maliheh Sabeti, Mohammad Hossein
+  Yang, Weiwei Jiang, and Xiaobo Lai. A deep multi-         Shakoor, and Ehsan Moradi. Deep multi-task learning
+  task learning framework for brain tumor segmentation.     structure for segmentation and classification of supra-
+  Frontiers in Oncology, 11:690244, 2021.                   tentorial brain tumors in MR images. Interdisciplinary
+                                                            Neurosurgery, 36:101931, 2024.
+Fabian Isensee, Marianne Schell, Irada Pflueger, Gianluca
+  Brugnara, David Bonekamp, Ulf Neuberger, Antje Wick,
+                                                          Benjamin Lambert, Florence Forbes, Senan Doyle, Har-
+  Heinz-Peter Schlemmer, Sabine Heiland, Wolfgang Wick,
+                                                            monie Dehaene, and Michel Dojat. Trustworthy clinical
+  et al. Automated brain extraction of multisequence MRI
+                                                            AI solutions: a unified review of uncertainty quantifica-
+  using artificial neural networks. Human Brain Mapping,
+                                                            tion in deep learning models for medical image analysis.
+  40(17):4952–4964, 2019.
+                                                            Artificial Intelligence in Medicine, 150:102830, 2024.
+Paul F Jaeger, Carsten T Lüth, Lukas Klein, and Till J
+  Bungert. A call to reflect on evaluation practices for Yiming Li, Dong Wei, Xing Liu, Xing Fan, Kai Wang,
+  failure detection in image classification. arXiv preprint   Shaowu Li, Zhong Zhang, Kai Ma, Tianyi Qian, Tao
+  arXiv:2211.15259, 2022.                                     Jiang, et al. Molecular subtyping of diffuse gliomas using
+                                                              magnetic resonance imaging: comparison and correla-
+Craig K Jones, Guoqing Wang, Vivek Yedavalli, and Haris       tion between radiomics and deep learning. European
+  Sair. Direct quantification of epistemic and aleatoric      Radiology, 32(2):747–758, 2022.
+  uncertainty in 3D U-net segmentation. Journal of Medical
+  Imaging, 9(3):034002–034002, 2022.                        Yin Li, Kaiyi Zheng, Shuang Li, Yongju Yi, Min Li, Yufan
+                                                              Ren, Congyue Guo, Liming Zhong, Wei Yang, Xinming Li,
+Kim-Celine Kahl, Carsten T Lüth, Maximilian Zenk, Klaus      et al. A transformer-based multi-task deep learning model
+  Maier-Hein, and Paul F Jaeger. VALUES: A framework          for simultaneous infiltrated brain area identification and
+  for systematic validation of uncertainty estimation in      segmentation of gliomas. Cancer Imaging, 23(1):105,
+  semantic segmentation. arXiv preprint arXiv:2401.08501,     2023.
+  2024.
+                                                            David N Louis, Arie Perry, Pieter Wesseling, Daniel J
+Sandeep S Kaushik, Mikael Bylund, Cristina Cozzini, Dat-      Brat, Ian A Cree, Dominique Figarella-Branger, Cyn-
+  tesh Shanbhag, Steven F Petit, Jonathan J Wyatt,            thia Hawkins, Ho-Keung Ng, Stefan M Pfister, Guido
+  Marion I Menzel, Carolin Pirkl, Bhairav Mehta, Vikas        Reifenberger, et al. The 2021 WHO classification of
+  Chauhan, et al. Region of interest focused MRI to syn-      tumors of the central nervous system: a summary. Acta
+  thetic CT translation using regression and segmentation     Neuropathologica, 143(1):11–28, 2021.
+  multi-task network. Physics in Medicine & Biology, 68
+  (19):195003, 2023.                                        Raghav Mehta, Thomas Christinck, Tanya Nair, Aurelie
+                                                                Bussy, Swapna Premasiri, Manuela Costantino, M Mallar
+Alex Kendall and Yarin Gal. What uncertainties do we need
+                                                                Chakravarthy, Douglas L Arnold, Yarin Gal, and Tal
+  in Bayesian deep learning for computer vision? Advances
+                                                                Arbel. Propagating uncertainty across cascaded medical
+  in Neural Information Processing Systems, 30, 2017.
+                                                                imaging tasks for improved deep learning inference. IEEE
+Alex Kendall, Vijay Badrinarayanan, and Roberto Cipolla.        Transactions on Medical Imaging, 41(2):360–373, 2021.
+  Bayesian SegNet: Model uncertainty in deep convolu-
+  tional encoder-decoder architectures for scene understand- Bjoern H Menze, Andras Jakab, Stefan Bauer, Jayashree
+  ing. arXiv preprint arXiv:1511.02680, 2015.                  Kalpathy-Cramer, Keyvan Farahani, Justin Kirby, Yuliya
+                                                               Burren, Nicole Porz, Johannes Slotboom, Roland Wiest,
+Philipp Kickingereder, David Bonekamp, Marta Nowosiel-         et al. The multimodal brain tumor image segmentation
+  ski, Andreas Kratz, Martin Sill, Stefanie Burth, Wolfgang    benchmark (BRATS). IEEE Transactions on Medical
+  Wick, Heinz-Peter Schlemmer, Alexander Radbruch, Mar-        Imaging, 34(10):1993–2024, 2014.
+  tin Bendszus, et al. Radiogenomics of glioblastoma:
+  machine learning–based classification of molecular char- Sushmita Mitra. Deep learning with radiogenomics towards
+  acteristics by using multiparametric and multiregional       personalized management of gliomas. IEEE Reviews in
+  MR imaging features. Radiology, 290(3):674–682, 2019.        Biomedical Engineering, 16:579–593, 2021.
+
+                                                                                                                    695
+                                               Mosquera Rojas et al., 2026
+
+
+Jishnu Mukhoti, Andreas Kirsch, Joost Van Amersfoort, Kathleen Schmainda and Melissa Prah. Data from brain-
+   Philip HS Torr, and Yarin Gal. Deep deterministic un-        tumor-progression. The Cancer Imaging Archive, 21,
+   certainty: A new simple baseline. In Proceedings of the      2018.
+   IEEE/CVF conference on computer vision and pattern
+   recognition, pages 24384–24394, 2023.                      N Shah, X Feng, M Lankerovich, RB Puchalski, and
+                                                                B Keogh. Data from Ivy Glioblastoma Atlas Project
+Duc-Ky Ngo, Minh-Trieu Tran, Soo-Hyung Kim, Hyung-              (IvyGAP) [Data set]. The Cancer Imaging Archive, 2016.
+   Jeong Yang, and Guee-Sang Lee. Multi-task learning
+   for small brain tumor segmentation from MRI. Applied Gagandeep Singh, Sunil Manjila, Nicole Sakla, Alan True,
+   Sciences, 10(21):7790, 2020.                                 Amr H Wardeh, Niha Beig, Anatoliy Vaysberg, John
+                                                                Matthews, Prateek Prasanna, and Vadim Spektor. Ra-
+Jaya Ojha, Oriana Presacan, Pedro G. Lind, Eric Mon-            diomics and radiogenomics in gliomas: a contemporary
+   teiro, and Anis Yazidi. Navigating uncertainty: A user-      update. British Journal of Cancer, 125(5):641–657, 2021.
+   perspective survey of trustworthiness of AI in healthcare.
+   ACM Transactions on Computing for Healthcare, 6(3): Lewis Smith and Yarin Gal. Understanding measures of un-
+   1–32, 2025.                                                  certainty for adversarial example detection. arXiv preprint
+                                                                arXiv:1803.08533, 2018.
+Quinn T Ostrom, Gino Cioffi, Haley Gittleman, Nirav Patil,
+   Kristin Waite, Carol Kruchko, and Jill S Barnholtz-Sloan. Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya
+   CBTRUS statistical report: primary brain and other cen-      Sutskever, and Ruslan Salakhutdinov. Dropout: A simple
+   tral nervous system tumors diagnosed in the United States    way to prevent neural networks from overfitting. Journal
+   in 2012–2016. Neuro-Oncology, 21(Supplement 5):v1–           of Machine Learning Research, 15(1):1929–1958, 2014.
+   v100, 2019.                                                Sebastian R van der Voort, Fatih Incekara, Maarten MJ
+Nancy Pedano, Adam E Flanders, Lisa Scarpace, Tom               Wijnenga, Georgios Kapsas, Renske Gahrmann, Joost W
+  Mikkelsen, Jennifer M Eschbacher, Beth Hermes, Vic-           Schouten, Hendrikus J Dubbink, Arnaud JPE Vincent,
+  tor Sisneros, Jill Barnholtz-Sloan, and Quinn Ostrom.         Martin J van den Bent, Pim J French, et al. The Erasmus
+ The Cancer Genome Atlas Low Grade Glioma Collection            Glioma Database (EGD): Structural MRI scans, WHO
+ (TCGA-LGG). The Cancer Imaging Archive, 2016.                  2016 subtypes, and segmentations of 774 patients with
+                                                                glioma. Data in Brief, 37:107191, 2021.
+Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-
+  net: Convolutional networks for biomedical image seg- Sebastian R van der Voort, Fatih Incekara, Maarten MJ
+  mentation. In Medical Image Computing and Computer-     Wijnenga, Georgios Kapsas, Renske Gahrmann, Joost W
+  Assisted Intervention – MICCAI 2015: 18th International Schouten, Rishi Nandoe Tewarie, Geert J Lycklama,
+  Conference, Munich, Germany, October 5-9, 2015, Pro-    Philip C De Witt Hamer, Roelant S Eijgelaar, et al. Com-
+  ceedings, Part III, pages 234–241. Springer, 2015.      bined molecular subtyping, grading, and segmentation of
+                                                          glioma using multi-task deep learning. Neuro-Oncology,
+Yanan Ruan, Dengwang Li, Harry Marshall, Timothy Miao,    25(2):279–289, 2023.
+  Tyler Cossetto, Ian Chan, Omar Daher, Fabio Accorsi,
+  Aashish Goela, and Shuo Li. Mt-UcGAN: multi-task Andrew G Wilson and Pavel Izmailov. Bayesian deep learn-
+  uncertainty-constrained GAN for joint segmentation,     ing and a probabilistic perspective of generalization. Ad-
+  quantification and uncertainty estimation of renal tu-  vances in neural information processing systems, 33:4697–
+  mors on CT. In International Conference on Medical      4708, 2020.
+  Image Computing and Computer-Assisted Intervention, Maximilian Zenk, David Zimmerer, Fabian Isensee, Jeremias
+  pages 439–449. Springer, 2020.                          Traub, Tobias Norajitra, Paul F Jäger, and Klaus Maier-
+L Scarpace, AE Flanders, R Jain, T Mikkelsen, and DW An-        Hein. Comparative benchmarking of failure detection
+  drews. Data from REMBRANDT [Data set]. The Cancer             methods in medical image segmentation: unveiling the
+  Imaging Archive, 2019.                                        role of confidence aggregation. Medical image analysis,
+                                                                101:103392, 2025.
+Lisa Scarpace, Tom Mikkelsen, Soonmee Cha, Sujaya Rao,
+   Sangeeta Tekchandani, David Gutman, Joel H Saltz, Tianlang Zhou, Su Ruan, and Stephane Canu. Multi-task
+   Bradley J Erickson, Nancy Pedano, Adam E Flanders,     learning for segmentation and classification of tumors
+   et al. The Cancer Genome Atlas Glioblastoma Multiforme in 3D medical images. In Machine Learning in Medical
+   Collection (TCGA-GBM). The Cancer Imaging Archive,     Imaging, pages 339–347. Springer, 2019.
+   2016.
+
+696
+             Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+Appendix A. Implementation details                                A.2 Architecture and training procedure
+                                                              The architecture (van der Voort et al., 2023; Ronneberger
+A.1 Pre-processing
+                                                              et al., 2015) depicted in Figure 7 processes full 3D vol-
+Prior to model training, all MRI scans underwent a stan- umes. It was trained for up to 100 epochs with ADAM
+dardized pre-processing pipeline consistent with common (Kingma and Ba, 2014) optimizer and minimizing the fol-
+practices in Medical Image Analysis. These steps were de- lowing weighted loss function (van der Voort et al., 2023):
+signed to reduce inter-subject variability, improve anatomi-
+                                                                         L = WIDH · LIDH + W1p/19q · L1p/19q
+cal alignment across patients, and ensure numerical stability                                                      (22)
+during network optimization.                                                  + Wgrade · Lgrade + Wseg · Lseg .
+    First, all scans were spatially registered to the MNI152                                for t ∈ {IDH, 1p/19q, grade}
+                                                                              {︄
+                                                                                   Ntrain
+
+atlas space (Fonov et al., 2009, 2011) to establish a common           Wt =         Nt                                   ,     (23)
+                                                                                1           for t = seg
+anatomical reference frame. This atlas has a resolution of
+1×1×1 mm3 and a size of 197×233×189 voxels. Modality-             where Ntrain corresponds to the number of training subjects,
+specific registration was performed to preserve anatomical        and Nt to the amount of available labeled samples for each
+correspondence: T1w and T1wCE images were registered to           task t.
+the T1w MNI152 atlas, while T2w and FLAIR images were                 To account for missing data and intrinsic class im-
+registered to the T2w atlas template. This modality-aware         balance in each task, a masked, class-weighted categor-
+registration strategy ensures optimal alignment of tissue         ical cross-entropy loss was used. This formulation en-
+contrasts while minimizing interpolation artifacts across         sures that only samples with available labels contribute
+sequences. Standard-space alignment reduces anatomical            to the loss, and that underrepresented classes are not ne-
+variability unrelated to pathology and facilitates consistent     glected during optimization. Let a batch contain N sam-
+learning of spatial patterns by the NN.                           ples and C classes. For each sample i ∈ {1, . . . , N }, let
+                                                                  yi = (yi,1 , . . . , yi,C ) denote the one-hot encoded ground
+    Following registration, bias field correction was applied     truth label, and ŷi = (ŷi,1 , . . . , ŷi,C ) the predicted class
+to each scan to mitigate low-frequency intensity inhomo-          probabilities. Let mi ∈ {0, 1} be a binary mask indicating
+geneities caused by magnetic field non-uniformities. Cor-         whether sample i has a valid label. A fixed weight wc is
+recting these intensity distortions is particularly important     assigned to each class c, computed from the full training
+in multi-center datasets, like the one used in this work, as      dataset as:
+scanner-dependent intensity variations can otherwise intro-
+duce spurious features that degrade model generalization.                                        Nt
+                                                                                               wc =    ,                 (24)
+    Subsequently, skull-stripping was performed using the                                       C · nc
+HD-BET tool (Isensee et al., 2019) to generate an accurate        where Nt corresponds to the amount of labeled training
+brain mask for the MNI152 atlas. Removing non-brain tis-          samples for the task, and nc is the number of occurrences
+sues (e.g., skull, fat, and extracranial structures) serves two   of class c among those training samples. The masked, class-
+purposes: (i) it restricts the learning process to anatomi-       weighted loss for a batch is then defined as (van der Voort
+cally relevant regions and (ii) reduces the risk of the model     et al., 2023):
+exploiting non-biological artifacts. The resulting brain mask
+was further used to compute a tight bounding box around
+                                                                              ⎧
+                                                                                         N           C
+                                                                              ⎪     1   ∑︂      (︂ ∑︂                     )︂
+the intracranial volume, allowing spatial cropping of the                                   m     −     w  y    log ŷ i,c ,
+                                                                              ⎪
+                                                                              ⎪
+                                                                              ⎪ N m
+                                                                              ⎪
+                                                                              ⎪ ∑︁            i           c i,c
+scans, and resulting in a uniform scan size of 145x182x152                        i=1 i i=1         c=1
+                                                                              ⎨
+                                                                    Lmasked =             if N
+                                                                                            ∑︁
+voxels. This step reduces computational burden, decreases                     ⎪
+                                                                              ⎪                 i=1 mi > 0,
+background redundancy, and increases the effective propor-
+                                                                              ⎪
+                                                                              ⎪
+                                                                              ⎪
+                                                                                            otherwise.
+                                                                              ⎪
+                                                                              ⎩      0,
+tion of informative voxels presented to the model.
+                                                                                                                          (25)
+    Finally, intensity normalization was performed via z-              For the tumor segmentation task, we use the DSC
+score standardization within the brain mask region. For           loss, which directly optimizes for the overlap between the
+each scan, voxel intensities were centered and scaled using       predicted segmentation and the ground truth. Let p̂j ∈
+the mean and standard deviation computed over brain tis-          [0, 1] and gj ∈ [0, 1] denote the predicted and ground truth
+sue only. Masked normalization avoids contamination from          values for voxel j over a total of M voxels. The DSC loss
+background voxels and ensures comparable intensity distri-        is defined as:
+butions across subjects and modalities, thereby promoting
+stable training dynamics and improving convergence.
+                                                                                                          ∑︁M
+                                                                                                      2   j=1 p̂j gj
+                                                                              LDSC = 1 − ∑︁M            2   ∑︁M 2        ,
+                                                                                                  j=1 p̂j +   j=1 gj + ϵ
+
+
+                                                                                                                                697
+                                                Mosquera Rojas et al., 2026
+
+
+where ϵ is a small constant added for numerical stability.
+                                                                Table 9: Sensitivity of segmentation uncertainty error de-
+                                                                tection to the DSC threshold used to define segmentation
+Appendix B. Data                                                error. For each threshold, segmentation error was defined
+                                                                as DSC ≤ τDSC . Error rate is reported as the proportion
+Table 10 provides a detailed overview of the dataset used       of cases classified as segmentation errors. U-AUC, AP, and
+in this study. The table reports the number of cases in         Lift are reported for predictive, aleatoric, and epistemic un-
+the training and test sets, together with the distribution      certainty, with 95% confidence intervals obtained by 1000×
+of available labels for IDH mutation status, 1p/19q co-         bootstrap resampling of the test set. Arrows in metric
+deletion status, and tumor grade. For each task, cases          column headers indicate whether higher (↑) or lower (↓)
+with missing annotations are reported as N/A, reflecting        values are preferable.
+incomplete molecular or histopathological information. This                 τDSC Error rate ↓ Uncertainty U-AUC ↑        AP ↑        Lift ↑
+                                                                                                              0.96        0.78        7.96
+breakdown highlights both the class imbalance across tasks                                    Predictive
+                                                                                                          [0.93,0.98] [0.64,0.90] [5.73,12.41]
+and the presence of missing labels, which motivated the                                                       0.97        0.82        8.33
+                                                                             0.60    0.10     Aleatoric
+use of task-specific masking during training.                                                             [0.95,0.99] [0.67,0.92] [5.99,13.09]
+                                                                                                              0.96        0.76        7.77
+                                                                                              Epistemic
+                                                                                                          [0.93,0.98] [0.61,0.88] [5.61,12.26]
+                                                                                                              0.95        0.82        4.95
+Appendix C. Segmentation error threshold                                                      Predictive
+                                                                                                          [0.92,0.98] [0.72,0.91] [3.89,6.67]
+  sensitivity analysis                                                                                        0.96        0.83        5.01
+                                                                             0.70    0.17     Aleatoric
+                                                                                                          [0.94,0.98] [0.72,0.91] [3.93,6.80]
+                                                                                                              0.95        0.81        4.90
+To assess whether the operational utility of segmentation un-                                 Epistemic
+                                                                                                          [0.92,0.98] [0.71,0.90] [3.85,6.64]
+certainty depended on the binary definition of segmentation                                   Predictive
+                                                                                                              0.93        0.88        2.83
+                                                                                                          [0.89,0.96] [0.81,0.93] [2.41,3.46]
+error, we repeated the segmentation error-detection anal-                                                     0.93        0.89        2.87
+                                                                             0.80    0.31     Aleatoric
+ysis for three DSC thresholds: τDSC = 0.60, τDSC = 0.70,                                                  [0.89,0.97] [0.83,0.95] [2.45,3.53]
+                                                                                                              0.92        0.87        2.80
+and τDSC = 0.80. These thresholds were chosen to rep-                                         Epistemic
+                                                                                                          [0.88,0.95] [0.80,0.92] [2.38,3.42]
+resent a more lenient definition focused on severe failures,
+the primary intermediate operating point used in the main
+analysis, and a stricter definition of low-quality segmenta-
+                                                              Appendix D. Correlation patterns between
+tion. For each threshold, segmentation error was defined
+                                                                segmentation uncertainty estimates and tumor
+as DSC ≤ τDSC , and the threshold-specific error rate, U-       segmentation DSC
+AUC, AP, and Lift were recomputed for predictive, aleatoric
+and epistemic uncertainty. This analysis was not used to                  Brain mask         Predicted tumor
+                                                                         Pearson =0.015       Pearson =-0.832
+                                                                       Spearman s=-0.032     Spearman s=-0.772
+optimize the segmentation error threshold, but to assess
+                                                                  Tumor segmentation DSC
+
+
+
+
+                                                                                                                                Tumor segmentation DSC
+
+
+
+
+whether the conclusion that segmentation uncertainty iden-       0.8                     0.8
+tifies low-quality segmentations was robust to the selected      0.6
+                                                                                         0.6
+binarization.                                                    0.4
+                                                                                         0.4
+                                                                                           0.2
+     As expected, increasing the DSC threshold resulted in                                 0.0
+                                                                                                                                                         0.2
+a higher segmentation error rate, from 0.1 at τDSC = 0.60,                                        0.02 0.04 0.06 0.08 0.10                                           0.2        0.4        0.6
+                                                                                                      Predictive uncertainty                                         Predictive uncertainty
+to 0.17 at τDSC = 0.70, and 0.31 at τDSC = 0.80. De-
+spite this change in error prevalence, segmentation un-                                                Dilated tumor r=5                                       Boundary weighted = 5
+                                                                                                         Pearson =-0.791                                              Pearson =-0.630
+certainty remained strongly informative across thresholds.                                              Spearman s=-0.798                                            Spearman s=-0.717
+                                                                                           1.0                                                           1.0
+                                                                  Tumor segmentation DSC
+
+
+
+
+                                                                                                                                Tumor segmentation DSC
+
+
+
+
+For predictive uncertainty, U-AUC remained high across
+                                                                                           0.8                                                           0.8
+all thresholds, ranging from 0.96 at τDSC = 0.60 to 0.93
+                                                                                           0.6                                                           0.6
+at τDSC = 0.80. AP values were consistently above the
+                                                                                           0.4                                                           0.4
+corresponding threshold-specific baseline error rates, and
+                                                                                           0.2                                                           0.2
+Lift values remained greater than 1 for all thresholds. Simi-
+                                                                                                 0.1    0.2 0.3 0.4 0.5                                        0.1        0.2        0.3         0.4
+lar patterns were observed for the aleatoric and epistemic                                             Predictive uncertainty                                        Predictive uncertainty
+uncertainty components. These results indicate that the
+operational conclusion that segmentation uncertainty identi-    Figure 8: Case-wise association between predictive segmen-
+fies low-quality segmentations was not driven by the specific   tation uncertainty and tumor segmentation DSC at the
+primary threshold of DSC ≤ 0.70, although the absolute          selected MCD configuration (T = 30, δ = 0.25). Results
+metric values varied with the prevalence of segmentation        are shown for brain mask, predicted tumor, 5-voxel dilated
+errors induced by each threshold.                               tumor, and boundary-weighted aggregation (σ = 5 voxels).
+                                                                Each point represents one test case; Pearson ρ and Spear-
+                                                                man ρs are reported for each strategy.
+698
+             Towards Trustworthy AI for Glioma Diagnosis: A Task-Aware Evaluation of Uncertainty Quantification
+
+
+
+          Input data                                                                                                     Segmentation
+
+
+
+
+                                      32                                                              32   2
+
+
+
+                                           32   64                                            64 32
+             Dense + softmax
+
+             Up-conv + ReLU (2×2×2)
+                                                     128                             128 64
+             Concatenation
+
+             Dropout
+                                                           256             256 128
+             Dense + ReLU
+
+             Conv + ReLU (3×3×3)
+
+             Conv + softmax (1×1×1)
+                                                                 512 256
+
+             Max pooling (2×2×2)
+                                                                                                               IDH wildtype
+             Deconv + ReLU (9×9×9, stride 3×3×3)                                                               IDH mutated
+                                                                                                512   2
+                                                                                                               1p/19q intact
+             Batch normalization
+                                                                                                               1p/19q co-deleted
+                                                                 1472                           512   2
+             Skip connection                                                                                   Grade 2
+                                                                                                               Grade 3
+             Global max-pooling                                                                 512   3        Grade 4
+
+
+
+
+Figure 7: Overview of the multi-task DL network used for the tumor segmentation and prediction of IDH mutation
+status, 1p/19q co-deletion status and tumor grade. The architecture processes full 3D volumes. The labels in the figure
+define the layer type, and the numbers indicate either the number of filters, dense units or features. Figure based on the
+one presented in the work of van der Voort et al. (2023).
+
+
+Figure 8 shows the case-wise relationship between predic-                  a negative uncertainty–performance relationship, whereas
+tive segmentation uncertainty and tumor segmentation DSC                   brain-level aggregation did not. This supports the use of
+at the selected MCD configuration. This analysis was in-                   Pearson correlation in the main analysis, while showing that
+cluded to assess whether the uncertainty–DSC associations                  the observed findings were not dependent on assuming a
+reported using Pearson correlation were consistent with the                strictly linear relationship.
+corresponding rank-based Spearman correlation.
+    Across the tumor-localized uncertainty scores, Pear-                   Appendix E. Comparison of UQ Methods
+son and Spearman correlations showed the same overall
+                                                             Table 11 provides the component-wise comparison of MCD,
+interpretation: higher predictive uncertainty was associ-
+                                                             DE, and MCDE using aleatoric and epistemic uncertainty.
+ated with lower tumor segmentation DSC. For predicted
+                                                             These analyses complement the main predictive-uncertainty
+tumor aggregation, both coefficients indicated a strong neg-
+                                                             comparison by showing how the decomposed uncertainty
+ative association, with Pearson ρ = −0.832 and Spearman
+                                                             components behave across tasks and methods. For tumor
+ρs = −0.772. A similar pattern was observed for dilated
+                                                             segmentation, uncertainty was aggregated within the pre-
+tumor aggregation, with Pearson ρ = −0.791 and Spear-
+                                                             dicted tumor region, matching the strategy used in the
+man ρs = −0.798. Boundary-weighted aggregation also
+                                                             main method-comparison analysis.
+showed a negative relationship, with Pearson ρ = −0.630
+                                                                 Overall, aleatoric uncertainty showed trends broadly
+and Spearman ρs = −0.717.
+                                                             consistent with predictive uncertainty, with useful error-
+    For brain mask aggregation, both coefficients were close detection performance across classification tasks and high
+to zero, with Pearson ρ = 0.015 and Spearman ρs = performance for tumor segmentation. Epistemic uncertainty
+−0.032, indicating no meaningful association between brain- was more variable across methods and tasks. It remained
+level predictive uncertainty and tumor segmentation DSC. informative for tumor segmentation with all three methods,
+Thus, the conclusions were consistent across Pearson and with the strongest U-AUC, AP, and Lift observed for MCD,
+Spearman correlation: tumor-localized uncertainty showed but was generally weaker for classification error detection.
+
+                                                                                                                                        699
+                                                  Mosquera Rojas et al., 2026
+
+
+
+
+Table 10: Detailed distribution of the data used for training and testing the Deep Learning (DL) architecture for each
+one of the classification tasks. N/A (not available) represents missing data. Tumor segmentation ground truth was
+available for all cases.
+                                     IDH mutation status        1p/19q co-deletion status      Tumor grade
+     Dataset          Subset
+                                 Wildtype Mutated N/A Intact Co-deleted N/A                  2    3     4   N/A
+                      BraTS           0         0        156       0         0       156     0    0     0    156
+                   Brain tumor
+                                      0          0        20       0         0        20     0    0     0     20
+                   Progression
+      Train       CPTAC-GBM           0         0         45       0         0        45     0    0     0     45
+                       EGD          312        155       308     186        73       516 135 80 502           58
+                     IvyGAP          32          6        1       27         3         9     0    1    36      2
+                    In-house         86         53       183     107        22       193    24    6 191 101
+                 REMBRANDT            0          0       109      0          0       109    37 21 32          19
+                   TCGA-GBM         107          5        21     127         0         6     0    0 132        1
+       Test
+                   TCGA-LGG          22         80        1       78        25         0    45 58       0      0
+
+
+
+
+Table 11: Comparison of Uncertainty Quantification methods using aleatoric and epistemic uncertainty. Assessment is
+made using Uncertainty-based Receiver Operating Characteristic Area Under the Curve (U-AUC), Average Precision
+(AP), Lift, and Area Under the Risk–Coverage Curve (AURC), derived from using each uncertainty component as a
+predictor of errors. Values are reported with 95% confidence intervals obtained by 1000× bootstrap resampling of the
+test set. The error column denotes the method-specific classification error rate for classification tasks and the proportion
+of cases with DSC ≤ 0.70 for tumor segmentation. For the latter, uncertainty was aggregated within the predicted
+tumor region. The highest displayed values for U-AUC, AP, and Lift, and the lowest displayed values for AURC, are
+indicated in bold for each task and uncertainty component. Arrows in metric column headers indicate whether higher
+(↑) or lower (↓) values are preferable.
+                                              Aleatoric uncertainty                          Epistemic uncertainty
+ Task           Method Error ↓
+                                  U-AUC ↑       AP ↑        Lift ↑    AURC ↓ U-AUC ↑            AP ↑        Lift ↑    AURC ↓
+                                    0.73        0.39        2.26        0.09         0.64        0.28        1.60        0.12
+                DE       0.17
+ IDH                             [0.62,0.82] [0.26,0.56] [1.66,3.31] [0.05,0.15] [0.54,0.74] [0.17,0.43] [1.20,2.45] [0.07,0.18]
+ mutation                            0.71        0.32        1.79        0.10       0.71        0.34        1.89        0.10
+                MCD      0.18
+                                 [0.61,0.80] [0.22,0.46] [1.39,2.54] [0.05,0.15] [0.61,0.80] [0.23,0.50] [1.45,2.80] [0.05,0.16]
+                                    0.73         0.36        2.12       0.09         0.64        0.30        1.81        0.12
+                MCDE     0.17
+                                 [0.62,0.82] [0.24,0.53] [1.55,3.13] [0.05,0.14] [0.54,0.73] [0.20,0.47] [1.31,2.83] [0.07,0.19]
+                                     0.83        0.29        2.95        0.03        0.66       0.18        1.79        0.05
+                DE       0.10
+ 1p/19q                          [0.75,0.90] [0.18,0.49] [2.12,5.25] [0.01,0.04] [0.55,0.76] [0.10,0.34] [1.19,3.65] [0.03,0.08]
+ co-deletion                        0.84        0.39        3.70         0.03       0.68         0.16        1.54       0.05
+                MCD      0.10
+                                 [0.77,0.91] [0.22,0.58] [2.51,6.19] [0.01,0.04] [0.58,0.77] [0.10,0.29] [1.22,2.59] [0.03,0.08]
+                                     0.81        0.28        3.02       0.02         0.60        0.12        1.33        0.06
+                MCDE     0.09
+                                 [0.74,0.89] [0.17,0.47] [2.11,5.55] [0.01,0.04] [0.48,0.72] [0.08,0.22] [1.04,2.27] [0.03,0.09]
+                                    0.80        0.59         1.99        0.13        0.64       0.47        1.58         0.22
+                DE       0.30
+ Tumor                           [0.73,0.85] [0.48,0.71] [1.65,2.47] [0.09,0.18] [0.56,0.72] [0.36,0.60] [1.31,2.02] [0.16,0.29]
+ grade                               0.79       0.59        2.00        0.12        0.70         0.45        1.52       0.17
+                MCD      0.29
+                                 [0.73,0.85] [0.47,0.72] [1.68,2.50] [0.09,0.17] [0.62,0.77] [0.35,0.58] [1.28,1.94] [0.12,0.24]
+                                     0.78        0.53        1.90       0.12         0.63        0.41        1.45        0.21
+                MCDE     0.28
+                                 [0.71,0.84] [0.42,0.66] [1.58,2.40] [0.08,0.17] [0.55,0.71] [0.32,0.54] [1.21,1.90] [0.14,0.28]
+                                    0.96         0.81        6.11        0.13        0.93        0.63        4.75       0.12
+                DE       0.13
+ Tumor                           [0.93,0.98] [0.66,0.90] [4.58,8.68] [0.12,0.13] [0.89,0.96] [0.46,0.80] [3.56,7.10] [0.12,0.13]
+ segmentation                       0.96        0.83         5.01        0.13       0.95        0.81        4.90         0.13
+                MCD      0.17
+                                 [0.94,0.98] [0.72,0.91] [3.93,6.80] [0.12,0.14] [0.92,0.98] [0.71,0.90] [3.85,6.64] [0.12,0.14]
+                                    0.96         0.79       6.43        0.12         0.83        0.40        3.25        0.13
+                MCDE     0.12
+                                 [0.92,0.98] [0.65,0.90] [4.83,9.28] [0.12,0.13] [0.76,0.89] [0.25,0.59] [2.26,4.96] [0.12,0.14]
+
+
+
+
+700
+

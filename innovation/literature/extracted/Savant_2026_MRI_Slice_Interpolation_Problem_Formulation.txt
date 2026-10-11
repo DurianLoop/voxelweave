@@ -1,0 +1,846 @@
+                                           Deep Learning for MRI Slice Interpolation: The
+                                               Critical Role of Problem Formulation
+
+                                                                               Shamit Savant
+
+                                                            University of Florida, Gainesville, FL 32611, USA
+                                                                            s.savant@ufl.edu
+arXiv:2605.16476v1 [eess.IV] 15 May 2026
+
+
+
+
+                                                 Abstract. Through-plane resolution in clinical MRI is typically much
+                                                 coarser than in-plane resolution, limiting diagnostic utility. This work
+                                                 investigates deep learning approaches to interpolate intermediate MRI
+                                                 slices in prostate imaging, effectively doubling through-plane resolution
+                                                 from a higher value to lower value (e.g., We use 1.5mm→0.75mm as our
+                                                 reference, though it generalizes to arbitrary slice spacing). I evaluated five
+                                                 different architectures (CNN, U-Net, two GAN variants, and DDPM) and
+                                                 discovered that problem formulation has dramatically more impact than
+                                                 architectural complexity. By reformulating the interpolation task to use
+                                                 adjacent slices (i-1, i+1) rather than distant slices (i-2, i+2), I achieved a
+                                                 58% improvement in SSIM performance across all deterministic architec-
+                                                 tures. My U-Net model achieved the best results with PSNR of 30.08 dB
+                                                 and SSIM of 0.898, representing a 10.1% improvement over linear inter-
+                                                 polation baseline. A Denoising Diffusion Probabilistic Model (DDPM)
+                                                 was also evaluated but showed poor reconstruction quality (PSNR 17.89
+                                                 dB, SSIM 0.585) due to fundamental mismatch between stochastic gen-
+                                                 eration and deterministic reconstruction requirements. These findings
+                                                 demonstrate that in medical imaging tasks, understanding the anatomi-
+                                                 cal constraints and formulating the problem appropriately can have 290×
+                                                 more impact than architectural sophistication.
+
+                                                 Keywords: MRI slice interpolation · Deep learning · Problem formula-
+                                                 tion · Prostate imaging · Super-resolution
+
+
+                                           1   Introduction
+
+                                           Magnetic Resonance Imaging (MRI) is a cornerstone of modern medical diagnos-
+                                           tics, offering excellent soft tissue contrast without ionizing radiation. However,
+                                           clinical MRI acquisition faces fundamental trade-offs between spatial resolution,
+                                           acquisition time, and signal-to-noise ratio. In practice, this results in anisotropic
+                                           voxel spacing where in-plane resolution (typically 0.5mm) is substantially finer
+                                           than through-plane resolution (typically 1.5-3mm). This anisotropy limits 3D
+                                           reconstruction quality, multiplanar reformatting, and computer-aided diagnosis
+                                           systems that rely on isotropic data.
+                                               Traditional interpolation methods such as linear or cubic interpolation pro-
+                                           vide smooth transitions but fail to recover true anatomical detail lost dur-
+ing acquisition. Recent advances in deep learning, particularly in image super-
+resolution and generative models, suggest that learned approaches might bet-
+ter reconstruct intermediate slices by leveraging patterns from large training
+datasets.
+
+
+
+
+Fig. 1: Through-plane resolution enhancement via slice interpolation. Left: Clin-
+ical T2-weighted prostate MRI acquisition with 1.5mm spacing (6 slices). Right:
+After deep learning interpolation achieving 0.75mm spacing (11 slices). Dashed
+outlines indicate predicted intermediate slices that double through-plane resolu-
+tion.
+    My investigation reveals a counterintuitive finding: the formulation of the
+interpolation task—specifically, which adjacent slices are used as inputs—has
+dramatically more impact on performance than architectural sophistication.
+Through systematic experimentation with five different deep learning architec-
+tures, I demonstrate that problem formulation can account for a 58% perfor-
+mance improvement, while architectural variations contribute less than 1% under
+identical problem formulations.
+
+
+1.1   Contributions:
+
+ – Systematic evaluation of five deep learning architectures (CNN, U-Net, basic
+   GAN, improved GAN, DDPM) for MRI slice interpolation
+ – Empirical demonstration that problem formulation has 290× more impact
+   than architecture choice (58% vs 0.2% performance variation)
+ – Achievement of 10.1% improvement over linear interpolation baseline using
+   U-Net architecture
+ – Analysis of why cutting-edge diffusion models fail for deterministic recon-
+   struction tasks
+
+
+                                       2
+2   Related Work
+Medical Image Super-Resolution: Deep learning has shown remarkable suc-
+cess in natural image super-resolution, with methods like EDSR [8] and SR-
+GAN [7] achieving photorealistic results. Medical imaging presents unique chal-
+lenges: preservation of diagnostic information takes precedence over perceptual
+quality, and hallucinated details could mislead clinical interpretation [3]. Re-
+cent work on medical image super-resolution emphasizes anatomically plausible
+reconstruction while maintaining quantitative accuracy.
+    MRI Slice Interpolation: Unlike in-plane super-resolution which enhances
+blurry existing images, through-plane interpolation must predict entirely unseen
+anatomical content between acquired slices. This is fundamentally more chal-
+lenging as it requires inferring 3D structure from 2D observations. Prior work
+has explored both traditional methods (spline interpolation, registration-based
+techniques) and learning-based approaches (CNNs, GANs), with reported SSIM
+values varying widely (0.80-0.92) depending on anatomical region, baseline res-
+olution, and task difficulty.
+    Problem Formulation: While much deep learning research focuses on novel
+architectures, recent work highlights that problem formulation—how tasks are
+defined, what inputs are provided, and what outputs are expected—can have
+outsized impact on performance. In medical imaging specifically, incorporating
+domain knowledge into problem design often yields greater improvements than
+architectural innovations [5,10].
+
+
+3   Dataset and Method
+Data: I used the UCLA Prostate MRI-US Biopsy dataset from The Cancer
+Imaging Archive [9,1], containing T2-weighted MRI scans from 58 patients. Af-
+ter preprocessing (bias field correction, intensity normalization, resampling to
+256×256 pixels, 1.5mm through-plane spacing), the dataset yielded 46,329 slices.
+I used 70%/15%/15% train/validation/test split, resulting in 6,963 test samples
+for final evaluation. Training was conducted on University of Florida’s HiPerGa-
+tor cluster using NVIDIA L4 GPUs.
+    Problem Formulation: Given adjacent slices at positions i − k and i + k,
+predict the intermediate slice at position i. The choice of k critically determines
+task difficulty: larger k values span greater anatomical distances, making inter-
+polation more challenging. I initially used k = 2 (6mm gap) but reformulated to
+k = 1 (3mm gap) after discovering the former exceeded anatomical continuity
+limits.
+    Architectures: I evaluated five approaches (detailed architecture descrip-
+tions in Supplementary Material):
+ – CNN (EDSR-style): Residual network with 8 residual blocks (0.3M pa-
+   rameters)
+ – U-Net: Encoder-decoder with skip connections (1.86M parameters)
+ – GAN (Basic): Generator with patch discriminator (0.3M + discriminator)
+
+                                        3
+ – GAN (Improved): Deeper generator (16 blocks) with attention (0.6M +
+   discriminator)
+ – DDPM: Conditional diffusion model with 100 timesteps (20.5M parame-
+   ters)
+   All deterministic models trained for 25 epochs with Adam optimizer (learn-
+ing rate 10−4 ), L1 loss, and mixed-precision training. GANs additionally used
+adversarial loss. DDPM trained for 20 epochs with noise prediction objective.
+   Evaluation: I used PSNR (Peak Signal-to-Noise Ratio) and SSIM (Struc-
+tural Similarity Index) on the held-out test set, comparing against linear and
+nearest-neighbor interpolation baselines.
+
+4     Results
+4.1   Impact of Problem Formulation
+
+
+
+
+Fig. 2: Impact of problem formulation on interpolation quality. Top: k=2 formu-
+lation uses distant slices (i-2, i+2) spanning 6mm. Middle: Schematic showing
+the reformulation from 6mm to 3mm total gap via a 3-line code change. Bottom:
+k=1 formulation uses adjacent slices (i-1, i+1) achieving high-quality reconstruc-
+tion
+   Table 1 quantifies the dramatic impact of problem reformulation. With k = 2
+formulation (6mm gap), all models plateaued around SSIM 0.56 regardless of
+
+
+                                        4
+architecture complexity. The gap exceeded anatomical continuity—intermediate
+prostate anatomy cannot be reliably inferred from boundaries 6mm apart. Re-
+formulating to k = 1 (3mm gap) yielded a 58% SSIM improvement across all
+architectures, demonstrating that problem formulation has 290× more impact
+than architectural choice (58% vs 0.2% performance variation between architec-
+tures under optimal formulation).
+
+      Table 1: Impact of problem formulation (k=2 vs k=1) on performance
+            Architecture      k=2 (6mm gap)            k=1 (3mm gap)
+                             PSNR (dB) SSIM PSNR (dB) SSIM
+            CNN (EDSR)           21.8           0.56      29.89     0.894
+            U-Net                22.1           0.57      30.08     0.898
+            GAN (Basic)          21.5           0.54      29.83     0.893
+            GAN (Improved)       21.3           0.55      29.67     0.892
+            Improvement                 —                +20%      +58%
+
+
+
+4.2    Quantitative Results with Optimal Formulation
+
+Table 2 presents comprehensive results with k = 1 formulation. U-Net achieved
+the best performance (30.08 dB PSNR, 0.898 SSIM), representing 10.1% and
+7.1% improvements over linear interpolation in PSNR and SSIM respectively.
+All deep learning methods substantially outperformed traditional interpolation,
+with nearest-neighbor performing particularly poorly (22.25 dB, 0.686 SSIM).
+
+            Table 2: Quantitative results on test set (6,963 samples)
+               Method            PSNR (dB)                 SSIM
+               Traditional Methods
+               Nearest Neighbor 22.25 ± 3.17           0.6855 ± 0.0674
+               Linear Baseline    27.31 ± 3.35         0.8383 ± 0.0665
+               Deep Learning Methods
+               CNN (EDSR)        29.89 ± 3.38 0.8937 ± 0.0607
+               U-Net            30.08 ± 3.33 0.8978 ± 0.0542
+               GAN (Basic)       29.83 ± 3.36 0.8934 ± 0.0597
+               GAN (Improved) 29.67 ± 3.41    0.8916 ± 0.0651
+               DDPM (T=100)      17.89 ± 2.91 0.5851 ± 0.0823
+               Improvement over Linear
+               U-Net           +2.77 (+10.1%) +0.0595 (+7.1%)
+    Remarkably, architectural variations among deterministic models yielded min-
+imal performance differences (0.2% SSIM range), validating that under opti-
+mal problem formulation, simpler models suffice. DDPM’s poor performance
+(17.89 dB, 0.585 SSIM) despite stable training and substantially more parame-
+ters (20.5M) highlights fundamental task mismatch rather than implementation
+issues.
+
+
+                                            5
+Fig. 3: PSNR vs SSIM scatter plot across 6,963 test samples. All deep learning
+methods cluster tightly (SSIM 0.89-0.90), demonstrating convergence to similar
+performance regardless of architecture. Traditional methods show wider vari-
+ance. DDPM scatters at lower performance due to stochastic sampling mismatch.
+4.3   Qualitative Analysis
+
+
+
+
+Fig. 4: Comprehensive qualitative comparison on representative test case. Top
+row shows input slices (i-1, i+1) and ground truth (i). Middle rows show predic-
+tions from all six methods. Bottom row shows absolute error maps (red indicates
+high error). Deep learning methods achieve substantially lower error than tradi-
+tional interpolation, with subtle differences among architectures.
+
+
+                                       6
+   Figure 4 presents visual comparison on a representative test case. Among
+deep learning methods, visual differences are subtle, consistent with quantitative
+convergence. DDPM produces noticeably degraded results with loss of fine detail
+(not included in figure).
+   Figure 5 visualizes spatial error distribution via SSIM heatmap for U-Net
+predictions. Yellow regions (SSIM ≈ 1.0) indicate near-perfect reconstruction.
+Cyan/blue regions showing local errors concentrate at anatomical boundaries
+and the prostate periphery where intensity gradients are steepest.
+
+
+
+
+Fig. 5: Spatial SSIM map for U-Net prediction. Left: U-Net output. Right: Local
+SSIM heatmap. Yellow regions (SSIM ≈ 1.0) indicate excellent reconstruction in
+homogeneous tissue.
+
+
+5     Discussion
+5.1   The Primacy of Problem Formulation
+My results demonstrate that problem formulation has orders-of-magnitude more
+impact than architectural sophistication. Changing three lines of code to use
+adjacent slices (k=1) instead of distant slices (k=2) required 5 minutes but
+improved SSIM by 58%, while extensive architectural exploration with k=2 re-
+quired 20+ hours with minimal gains—a 240:1 time investment ratio. This im-
+provement stems from anatomical continuity: prostate tissue at 1.5mm spacing
+shows smooth transitions enabling interpolation, while 6mm spacing (four slices)
+includes structural transitions no model could infer, highlighting that effective
+problem formulation requires domain knowledge.
+
+5.2   Computational Efficiency
+Table 3 presents computational requirements. U-Net demonstrates remarkable
+training efficiency (9 min/epoch despite 1.86M parameters) due to effective gra-
+dient flow through skip connections.
+
+
+                                        7
+         Table 3: Computational requirements and training efficiency
+Model             Params Train/Epoch Total Best at                  Inference*
+                                    Epochs Epoch
+CNN (EDSR)      0.3M           18 min        25       23               ∼3 ms
+U-Net          1.86M            9 min        25       24               ∼4 ms
+GAN (Basic)     0.3M           24 min        25       23               ∼3 ms
+GAN (Improved) 0.6M            48 min        10        7               ∼5 ms
+DDPM (T = 100) 20.5M           19 min        20       16              ∼300 ms
+* Inference times are theoretical estimates based on model complexity and sampling steps.
+DDPM requires 100 sequential denoising steps vs. single forward pass for others.
+
+   DDPM requires approximately 300 ms per image—roughly 100× slower than
+deterministic approaches due to iterative sampling (100 sequential denoising
+steps). Even if DDPM matched deterministic performance, this computational
+overhead would preclude deployment in time-sensitive clinical workflows.
+
+5.3   Why Diffusion Models Failed
+DDPM’s poor performance (17.89 dB PSNR, 0.585 SSIM) stems from funda-
+mental task mismatch rather than implementation errors. Despite stable training
+(loss decreased from 0.112 to 0.081), diffusion models excel at generating diverse
+images but fail at deterministic reconstruction—stochastic sampling introduces
+unwanted variability. Using T=100 timesteps (versus standard 1000) and 20
+epochs (versus typical 500-1000) likely limited performance, though computa-
+tional constraints prevented full-scale experiments. Given deterministic models
+achieve strong performance (U-Net: 0.898 SSIM with 100× faster inference),
+pursuing diffusion models for this task appears unjustified.
+
+
+6     Conclusion
+This work demonstrates that problem formulation dramatically outweighs ar-
+chitectural sophistication in medical image analysis. Reformulating MRI slice
+interpolation from distant-slice (k=2) to adjacent-slice (k=1) inputs—a 3-line
+code change—achieved 58% performance improvement, 290× greater impact
+than architectural choice. Under optimal formulation, a simple U-Net achieved
+10.1% improvement over linear interpolation, with deterministic models con-
+verging to similar performance (SSIM 0.89-0.90), while a diffusion model failed
+despite 20.5M parameters due to mismatch between stochastic generation and
+deterministic reconstruction requirements. Key principles emerge: (1) domain-
+informed problem formulation often yields greater gains than architectural in-
+novations, (2) well-formulated problems enable simple models to excel, and (3)
+cutting-edge methods require task alignment evaluation before adoption. While
+computational constraints limited exploration, the strong empirical trends ro-
+bustly support the central conclusion: problem formulation exerts far greater
+influence than architectural complexity.
+
+
+                                         8
+References
+ 1. Clark, K., Vendt, B., Smith, K., Freymann, J., Kirby, J., Koppel, P., Moore, S.,
+    Phillips, S., Maffitt, D., Pringle, M., et al.: The cancer imaging archive (tcia): main-
+    taining and operating a public information repository. Journal of Digital Imaging
+    26(6), 1045–1057 (2013). https://doi.org/10.1007/s10278-013-9622-7, https:
+    //doi.org/10.1007/s10278-013-9622-7
+ 2. Globus Team: Globus: Research data management. https://www.globus.org
+    (2024), accessed: 2024-12-05
+ 3. Greenspan, H.: Super-resolution in medical imaging. The Computer Journal 52(1),
+    43–63 (2008). https://doi.org/10.1093/comjnl/bxm075, https://doi.org/10.
+    1093/comjnl/bxm075
+ 4. Ho, J., Jain, A., Abbeel, P.: Denoising diffusion probabilistic models. In: Advances
+    in Neural Information Processing Systems. vol. 33, pp. 6840–6851 (2020), https:
+    //arxiv.org/abs/2006.11239
+ 5. Irvin, J., Rajpurkar, P., Ko, M., Yu, Y., Ciurea-Ilcus, S., Chute, C., Marklund, H.,
+    Haghgoo, B., Ball, R., Shpanskaya, K., et al.: Chexpert: A large chest radiograph
+    dataset with uncertainty labels and expert comparison. In: Proceedings of the
+    AAAI Conference on Artificial Intelligence. vol. 33, pp. 590–597 (2019). https:
+    //doi.org/10.1609/aaai.v33i01.3301590
+ 6. Isola, P., Zhu, J.Y., Zhou, T., Efros, A.A.: Image-to-image translation with con-
+    ditional adversarial networks. In: Proceedings of the IEEE Conference on Com-
+    puter Vision and Pattern Recognition. pp. 1125–1134 (2017). https://doi.org/
+    10.1109/CVPR.2017.632, https://arxiv.org/abs/1611.07004
+ 7. Ledig, C., Theis, L., Huszár, F., Caballero, J., Cunningham, A., Acosta, A., Aitken,
+    A., Tejani, A., Totz, J., Wang, Z., et al.: Photo-realistic single image super-
+    resolution using a generative adversarial network. In: Proceedings of the IEEE
+    Conference on Computer Vision and Pattern Recognition. pp. 4681–4690 (2017).
+    https://doi.org/10.1109/CVPR.2017.19, https://arxiv.org/abs/1609.04802
+ 8. Lim, B., Son, S., Kim, H., Nah, S., Lee, K.M.: Enhanced deep residual net-
+    works for single image super-resolution. In: Proceedings of the IEEE Confer-
+    ence on Computer Vision and Pattern Recognition Workshops. pp. 136–144
+    (2017), https://openaccess.thecvf.com/content_cvpr_2017_workshops/w12/
+    papers/Lim_Enhanced_Deep_Residual_CVPR_2017_paper.pdf, arXiv:1707.02921
+ 9. Natarajan, S., Priester, A., Margolis, D., Huang, J., Marks, L.S.: Prostate mri
+    and ultrasound with pathology and coordinates of tracked biopsy (prostate-mri-
+    us-biopsy). The Cancer Imaging Archive (2020). https://doi.org/10.7937/
+    TCIA.2020.A61IOC1A,          https://www.cancerimagingarchive.net/collection/
+    prostate-mri-us-biopsy/
+10. Rajpurkar, P., Irvin, J., Zhu, K., Yang, B., Mehta, H., Duan, T., Ding, D., Bagul,
+    A., Langlotz, C., Shpanskaya, K., et al.: Chexnet: Radiologist-level pneumonia de-
+    tection on chest x-rays with deep learning. arXiv preprint arXiv:1711.05225 (2017),
+    https://arxiv.org/abs/1711.05225
+11. Ronneberger, O., Fischer, P., Brox, T.: U-net: Convolutional networks for biomedi-
+    cal image segmentation. In: International Conference on Medical Image Computing
+    and Computer-Assisted Intervention. pp. 234–241. Springer (2015). https://doi.
+    org/10.1007/978-3-319-24574-4_28, https://arxiv.org/abs/1505.04597
+12. Song, J., Meng, C., Ermon, S.: Denoising diffusion implicit models. In: International
+    Conference on Learning Representations (2021), https://arxiv.org/abs/2010.
+    02502
+
+
+                                             9
+13. Zhang, H., Goodfellow, I., Metaxas, D., Odena, A.: Self-attention generative adver-
+    sarial networks. In: International Conference on Machine Learning. pp. 7354–7363.
+    PMLR (2019), https://arxiv.org/abs/1805.08318
+
+
+
+
+                                          10
+Supplementary Material
+This supplementary material provides extended details, additional experimental
+results, and comprehensive technical specifications that complement the main
+paper.
+
+
+S1     Extended Dataset Description
+S1.1   Data Source and Selection Criteria
+I utilized the UCLA Prostate MRI-US Biopsy dataset from The Cancer Imaging
+Archive (TCIA) [9,1]. This dataset contains multi-parametric MRI sequences
+from 1197 patients who underwent prostate biopsy at UCLA Medical Center
+between 2008-2017. All studies were acquired on 3 Tesla MRI systems (Siemens
+Magnetom Trio, Verio, and Skyra).
+    For this work, I specifically selected T2-weighted axial sequences, which pro-
+vide excellent soft tissue contrast for prostate anatomy. T2-weighted imaging is
+the cornerstone sequence for prostate MRI interpretation and offers the most
+detailed anatomical visualization.
+
+S1.2   Preprocessing Pipeline
+DICOM Filtering: I filtered sequences to include only:
+ – 3 Tesla field strength (standardization)
+ – T2-weighted sequences (consistent contrast)
+ – Axial orientation (consistent geometry)
+ – Siemens scanners (vendor consistency)
+ – Slice thickness 1.5mm ± 0.2mm (standard clinical protocol)
+    This filtering ensured homogeneous data characteristics, reducing confound-
+ing variables in model evaluation.
+    Intensity Normalization: I applied min-max normalization to scale inten-
+sities to [0, 1] range within each volume, accounting for inter-scan variations in
+acquisition parameters and hardware calibration. This per-volume normalization
+preserves relative intensity relationships while standardizing absolute ranges.
+    Spatial Standardization: All slices were resized to 256×256 pixels using
+bilinear interpolation, maintaining aspect ratio by center-cropping when neces-
+sary. This standardization enables batch processing while preserving anatomi-
+cal proportions. The 256×256 resolution balances computational efficiency with
+preservation of diagnostic detail.
+    Quality Control: I excluded volumes with:
+ – Fewer than 20 slices (insufficient anatomical coverage)
+ – Extreme intensity artifacts (failed normalization indicating motion or acqui-
+   sition errors)
+ – Missing DICOM metadata
+ – Corrupted files or incomplete series
+
+
+                                       11
+S1.3    Dataset Statistics
+
+After preprocessing, the final dataset comprised:
+
+ – Total patients: 58
+ – Total volumes: 58
+ – Total slices after filtering: 46,329
+ – Training set: 32,547 slice triplets (70%)
+ – Validation set: 6,842 slice triplets (15%)
+ – Test set: 6,963 slice triplets (15%)
+ – Total storage: approximately 80 GB
+
+    Each sample consists of a triplet (Si−k , Si , Si+k ) where Si is the target slice
+to be predicted from inputs Si−k and Si+k . I maintained strict patient-level
+separation across splits to prevent data leakage and ensure models generalize to
+new patients rather than memorizing specific anatomies.
+    The test set evaluation in the main paper used 6,963 samples, representing
+the subset where both k=1 and k=2 formulations could be evaluated (requiring
+at least 2 slices on each side).
+
+
+S1.4    Infrastructure and Data Transfer
+
+Dataset transfer to computational resources presented practical challenges. The
+80 GB dataset required efficient transfer to the University of Florida’s HiPerGa-
+tor supercomputing cluster. Initial attempts using university VPN resulted in
+prohibitively slow transfer rates (estimated multiple days).
+    I successfully employed Globus [2] for high-speed research data transfer, com-
+pleting the upload in approximately 6 hours to the Blue storage system. This
+demonstrated the value of specialized research data transfer tools for large-scale
+medical imaging projects.
+    Training was conducted on HiPerGator’s GPU resources:
+
+ – Initial experiments and debugging: NVIDIA L4 GPUs (24GB memory)
+ – Final production training: NVIDIA L4 and A100 GPUs
+ – Job scheduling via SLURM workload manager
+ – Mixed precision training (FP16) enabled on all GPUs for memory efficiency
+
+
+S2     Detailed Architecture Specifications
+
+S2.1    CNN (EDSR-Style)
+
+Architecture Overview: Enhanced Deep Super-Resolution (EDSR) [8] style
+network with residual learning. The architecture consists of:
+
+ – Entry convolution: 2 input channels → 64 feature channels
+ – 8 residual blocks, each containing:
+     • Conv 3×3, 64 filters
+
+
+                                         12
+    • ReLU activation
+    • Conv 3×3, 64 filters
+    • Residual connection (addition)
+ – Exit convolution: 64 channels → 1 output channel
+ – Global skip connection from input to pre-output
+   Parameters:
+ – Total trainable parameters: 297,217 ( 0.3M)
+ – Entry conv: 1,216 parameters
+ – Each residual block: 36,928 parameters × 8 = 295,424
+ – Exit conv: 577 parameters
+   Training Configuration:
+ – Optimizer: Adam
+ – Learning rate: 10−4
+ – Batch size: 4
+ – Loss function: L1 (Mean Absolute Error)
+ – Epochs: 25
+ – Training time: 7.5 hours (18 min/epoch)
+ – Best validation performance: Epoch 23
+
+S2.2   U-Net
+Architecture Overview: Encoder-decoder architecture [11] with symmetric
+skip connections. The network features two levels of resolution with progressive
+channel expansion.
+    Encoder Path:
+ – Level 1: 2 → 64 channels (two 3×3 convs + ReLU)
+ – MaxPool 2×2 (downsample to 128×128)
+ – Level 2: 64 → 128 channels (two 3×3 convs + ReLU)
+ – MaxPool 2×2 (downsample to 64×64)
+   Bottleneck:
+ – 128 → 256 channels (two 3×3 convs + ReLU)
+ – Resolution: 64×64
+   Decoder Path:
+ – ConvTranspose 2×2 upsampling: 256 → 128 (upsample to 128×128)
+ – Concatenation with encoder Level 2 skip connection (128 channels)
+ – Two 3×3 convolutions + ReLU: (256 → 128 → 128)
+ – ConvTranspose 2×2 upsampling: 128 → 64 (upsample to 256×256)
+ – Concatenation with encoder Level 1 skip connection (64 channels)
+ – Two 3×3 convolutions + ReLU: (128 → 64 → 64)
+   Output:
+
+                                      13
+ – Final 1×1 conv: 64 → 1 channel
+
+   Parameters:
+
+ – Total trainable parameters: 1,862,273 ( 1.86M)
+ – Encoder: 259,584 parameters
+ – Bottleneck: 885,248 parameters
+ – Decoder (including upsampling): 717,376 parameters
+ – Final layer: 65 parameters
+
+   Training Configuration:
+
+ – Optimizer: Adam
+ – Learning rate: 10−4
+ – Batch size: 4
+ – Loss function: L1
+ – Epochs: 25
+ – Training time: 3.75 hours (9 min/epoch)
+ – Best validation performance: Epoch 24
+
+
+S2.3   GAN (Basic)
+
+Generator: Similar to CNN architecture with 8 residual blocks
+    Discriminator (PatchGAN): PatchGAN architecture [6] with the follow-
+ing structure:
+
+ – Conv 4×4, stride 2: 1 → 64 channels
+ – LeakyReLU (0.2)
+ – Conv 4×4, stride 2: 64 → 128 channels
+ – LeakyReLU (0.2)
+ – Conv 4×4, stride 2: 128 → 256 channels
+ – LeakyReLU (0.2)
+ – Conv 4×4, stride 1: 256 → 1 channel (score map)
+
+   Training:
+
+ – Adversarial loss: Binary cross-entropy with logits
+ – Generator loss: LG = LL1 + 0.001 × Ladv
+ – Discriminator loss: LD = 0.5 × (Lreal + Lf ake )
+ – Alternating updates: 1 discriminator step, 1 generator step
+ – Epochs: 25
+ – Training time: 10 hours (24 min/epoch)
+ – Best validation performance: Epoch 23
+
+
+                                     14
+S2.4    GAN (Improved)
+Generator Improvements:
+ – 16 residual blocks (vs 8 in basic)
+ – Spatial attention mechanism [13] after residual blocks
+ – Additional pre-exit convolution layer
+ – Total parameters: 0.6M
+   Discriminator Improvements:
+ – Deeper: 4 convolutional layers (vs 3)
+ – Batch normalization after each conv (except first)
+ – Additional 512-channel layer before output
+   Training:
+ – Feature matching loss added: LF M = ||ϕ(y) − ϕ(G(x))||1
+ – Generator loss: LG = LL1 + 0.01 × Ladv + 0.1 × LF M
+ – Epochs: 10 (early stopping)
+ – Training time: 8 hours (48 min/epoch)
+ – Best validation performance: Epoch 7
+
+S2.5    DDPM (Denoising Diffusion Probabilistic Model)
+Architecture: Conditional U-Net [4] with time embeddings for noise prediction.
+  Diffusion Schedule:
+ – Total timesteps T = 100 (vs standard 1000)
+ – Linear noise schedule: β1 = 10−4 to β√   T = 0.02
+ – Forward process: q(xt |xt−1 ) = N (xt ; 1 − βt xt−1 , βt I)
+ – Reverse process: pθ (xt−1 |xt , c) = N (xt−1 ; µθ (xt , t, c), Σt )
+   Conditional U-Net:
+ – Similar encoder-decoder structure to standard U-Net
+ – Time embedding dimension: 256
+ – Sinusoidal positional encoding for timesteps
+ – Time embeddings injected into each residual block
+ – Conditioning on adjacent slices (i-1, i+1) via concatenation
+ – Self-attention at bottleneck layer
+ – Total parameters: 20.5M
+   Training:
+ – Objective: Predict noise ϵ at each timestep
+ – Loss: L = ||ϵ − ϵθ (xt , t, c)||2
+ – Optimizer: Adam, learning rate 10−4
+ – Batch size: 8
+ – Epochs: 20
+
+
+                                            15
+ – Training time: 6.3 hours (19 min/epoch)
+ – Best validation loss: Epoch 16
+
+     Sampling:
+
+ – Start from Gaussian noise: xT ∼ N (0, I)
+ – Iteratively denoise for t = T, T − 1, ..., 1
+ – At each step: predict noise, compute mean, add noise (except t=0)
+ – Total inference: 100 forward passes through 20.5M parameter network
+ – Inference time: 300ms per image (vs 3-5ms for deterministic models)
+
+
+S3     Extended Experimental Results
+
+S3.1    k=2 Formulation: Detailed Failure Analysis
+
+The k=2 formulation (using slices at positions i-2 and i+2 to predict slice i)
+represents a 6mm gap in the through-plane direction. At this spacing, four in-
+termediate anatomical slices exist between the input slices.
+   Why k=2 Failed:
+
+1. Anatomical Discontinuity: In prostate MRI at 1.5mm slice spacing, sig-
+   nificant anatomical changes occur over 6mm. The prostate gland transitions
+   from base to apex over 40-50mm; thus 6mm represents 12-15% of the organ’s
+   extent.
+2. Structural Transitions: The intervening 6mm may span:
+     – Prostate zonal transitions (peripheral zone to central gland)
+     – Entry or exit of seminal vesicles
+     – Bladder neck to prostatic urethra transitions
+     – Prostatic capsule variations
+3. Insufficient Boundary Information: Even sophisticated deep learning
+   models cannot reliably infer such complex intermediate anatomy from bound-
+   ary conditions alone. The task becomes fundamentally ill-posed.
+4. Model Saturation: All four architectures (CNN, U-Net, GANs) reached
+   similar poor performance (SSIM 0.56), suggesting the limitation arose from
+   problem formulation rather than model capacity.
+
+    Training Dynamics with k=2:
+    Despite extended training and hyperparameter exploration, k=2 models con-
+sistently plateaued:
+
+ – Training loss decreased normally
+ – Validation metrics plateaued around epoch 15-20
+ – No architecture achieved breakthrough performance
+ – Increasing model capacity did not help
+
+   This suggested a fundamental ceiling imposed by task difficulty rather than
+optimization issues.
+
+
+                                     16
+Fig. S1: Detailed zoomed comparison showing fine anatomical structures. Top
+row shows zoomed predictions from all methods. Bottom row shows correspond-
+ing error heatmaps. Deep learning methods preserve fine detail better than tra-
+ditional interpolation.
+
+
+
+
+Fig. S2: Side-by-side comparison across two anatomical levels showing consis-
+tency of method performance. All deep learning methods generalize well across
+different anatomical regions.
+S3.2   Additional Qualitative Examples
+
+Figure S1 provides zoomed views highlighting preservation of fine anatomical
+structures. U-Net and CNN methods maintain sharp boundaries at the prostatic
+capsule and gland-seminal vesicle interface. GANs show comparable performance
+with subtle texture differences. Traditional methods exhibit noticeable blurring.
+
+
+S3.3   Failure Cases and Limitations
+
+While deep learning methods substantially outperform traditional interpolation,
+certain challenging scenarios remain:
+    Rapid Anatomical Transitions: At the prostatic apex and base, where
+anatomy changes rapidly between slices, all methods show increased error. These
+regions represent the boundaries of feasible interpolation even with k=1 formu-
+lation.
+    Low Contrast Regions: In regions with minimal tissue contrast (e.g.,
+within homogeneous central gland), interpolation accuracy depends heavily on
+intensity gradients. Subtle structural details may be smoothed.
+
+
+                                       17
+   Motion Artifacts: When input slices contain patient motion between ac-
+quisitions, interpolation performance degrades as the assumption of anatomical
+continuity is violated.
+   Edge Effects: At the very top and bottom of the prostate volume, where
+boundary slices are used, interpolation is inherently more difficult due to asym-
+metric context.
+
+
+S4     Extended DDPM Analysis
+
+S4.1   Training Dynamics
+
+Despite DDPM’s poor final performance, training proceeded stably:
+   Training Loss Evolution:
+
+ – Epoch 1: Train loss 0.1119, Val loss 0.0927
+ – Epoch 5: Train loss 0.0956, Val loss 0.0861
+ – Epoch 10: Train loss 0.0891, Val loss 0.0844
+ – Epoch 16: Train loss 0.0808, Val loss 0.0813 (best)
+ – Epoch 20: Train loss 0.0798, Val loss 0.0821
+
+    Loss decreased steadily with no overfitting (training and validation losses
+tracked closely). This indicates the model successfully learned the noise predic-
+tion task. The failure stems from task mismatch, not training issues.
+
+
+S4.2   Why Standard Diffusion Objectives Fail for This Task
+
+DDPM optimizes for:
+
+                         L = Et,x0 ,ϵ [||ϵ − ϵθ (xt , t, c)||2 ]              (1)
+
+  This objective trains the model to predict noise, enabling stochastic sampling.
+However, slice interpolation requires:
+
+ – Deterministic output: Single ground truth slice must be reconstructed
+ – Pixel-accurate matching: PSNR/SSIM metrics penalize any deviation
+ – Anatomical plausibility: Generated structure must match actual anatomy
+
+   The stochastic sampling process introduces variability that degrades these
+metrics even if samples are perceptually reasonable.
+
+
+S4.3   Alternative Approaches
+
+Several modifications might improve DDPM performance:
+   DDIM Sampling: Denoising Diffusion Implicit Models (DDIM) [12] en-
+able deterministic sampling, potentially improving reconstruction metrics while
+maintaining diffusion model benefits.
+
+
+                                          18
+    Increased Training: Standard DDPM implementations train for 500-1000
+epochs with T = 1000 timesteps. My 20 epochs and T = 100 may have been
+insufficient.
+    Hybrid Objectives: Combining noise prediction with direct reconstruction
+loss might bridge the gap between generation and reconstruction objectives.
+    Conditional Guidance: Stronger conditioning on anatomical constraints
+(e.g., segmentation maps, structural priors) could constrain generation to anatom-
+ically valid outputs.
+    However, given the strong performance and 100× faster inference of determin-
+istic models, these modifications appear academically interesting but practically
+unjustified for this specific task.
+    Figure S3 provides visual evidence of DDPM’s reconstruction failure. While
+the model successfully learned the noise prediction task (as evidenced by decreas-
+ing training loss), the stochastic sampling process produces outputs with severe
+anatomical inaccuracies. The error map shows concentrated failures (bright re-
+gions) at tissue boundaries and within the prostate gland, where precise re-
+construction is most critical. Notably, the DDPM output appears somewhat
+smoother than linear interpolation but with incorrect anatomical details—a
+perceptually plausible but quantitatively inaccurate result that highlights the
+mismatch between generative and reconstructive objectives.
+
+
+S4.4   Qualitative DDPM Failure Analysis
+
+
+
+
+Fig. S3: Visual comparison of DDPM reconstruction failure. Left to right: Lin-
+ear interpolation baseline, DDPM output (PSNR 19.40 dB), ground truth, error
+map (SSIM 0.6666). The error map reveals severe reconstruction failures (bright
+yellow/white regions) across anatomical boundaries, particularly in the prostate
+gland and surrounding structures. Despite stable training, the stochastic sam-
+pling process introduces artifacts that prevent accurate deterministic reconstruc-
+tion.
+
+
+S5     Limitations
+
+Single Modality: I focused exclusively on T2-weighted prostate MRI. General-
+ization to other sequences (T1, DWI), anatomical regions, or imaging modalities
+requires validation.
+
+
+                                       19
+    Single Vendor/Field Strength: All data came from 3T Siemens scanners.
+Performance on other vendors (GE, Philips) or field strengths (1.5T, 7T) is
+unknown.
+    Resolution Assumptions: My approach assumes consistent 1.5mm slice
+spacing. Clinical protocols vary (0.75-3mm), and thicker slices might exceed
+interpolation feasibility even with k=1 formulation.
+    Evaluation Metrics: PSNR and SSIM are imperfect proxies for clinical
+utility. Future work should include radiologist evaluation for diagnostic tasks
+(tumor detection, staging).
+    Computational Resources: My work required substantial GPU resources
+(hundreds of GPU-hours). This may limit reproducibility in resource-constrained
+settings, though inference is fast once models are trained.
+    Patient Demographics: The UCLA dataset may not represent all pa-
+tient populations. Validation on diverse cohorts would strengthen generalizabil-
+ity claims.
+
+
+S6     Clinical Implications and Future Directions
+
+S6.1   Clinical Potential
+
+Improved through-plane resolution enables:
+    3D Reconstruction: Higher isotropy improves 3D rendering for surgical
+planning and patient education, reducing interpolation artifacts in reconstructed
+volumes.
+    Multiplanar Reformatting: Clinicians often reformat axial acquisitions to
+sagittal or coronal views. Better through-plane resolution reduces reformatting
+artifacts and improves diagnostic confidence in non-native planes.
+    Computer-Aided Diagnosis: Many CAD systems assume isotropic data.
+Interpolation could enable deployment of such systems on clinical data without
+requiring acquisition protocol changes.
+    Radiation Therapy Planning: Improved resolution assists in precise tu-
+mor delineation for treatment planning.
+
+
+S6.2   Deployment Considerations
+
+Clinical deployment requires:
+    Regulatory Approval: FDA clearance or equivalent for algorithm changes
+to clinical workflow.
+    Clear Labeling: Generated intermediate slices must be clearly marked to
+prevent misinterpretation as acquired data.
+    Validation Studies: Radiologist reader studies comparing diagnostic per-
+formance on original versus interpolated volumes.
+    Integration: Seamless integration into clinical PACS systems and radiology
+workflows.
+
+
+                                       20
+S6.3   Future Research Directions
+
+Multi-Sequence Integration: Prostate MRI typically acquires multiple se-
+quences (T2, T1, DWI, DCE). Leveraging information across sequences could im-
+prove interpolation quality, as different contrasts reveal complementary anatom-
+ical information.
+    Uncertainty Quantification: Providing confidence estimates for interpo-
+lated slices would help radiologists identify regions requiring scrutiny. Bayesian
+deep learning or ensemble methods could quantify prediction uncertainty.
+    Active Learning: In scenarios with limited high-resolution training data,
+active learning could identify most informative samples for annotation, reducing
+labeling burden.
+    Task-Specific Optimization: Rather than optimizing pixel-level metrics,
+training could target downstream tasks (tumor detection, segmentation) to en-
+sure interpolation preserves clinically relevant information.
+    Generalization Studies: Evaluating performance across different scanners,
+institutions, and patient populations would assess real-world deployability.
+    Real-Time Application: Exploring deployment scenarios where interpola-
+tion occurs during or immediately after acquisition to provide higher resolution
+to radiologists without protocol changes.
+
+
+
+
+                                       21
+

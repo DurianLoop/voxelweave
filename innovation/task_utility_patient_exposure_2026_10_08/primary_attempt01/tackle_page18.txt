@@ -1,0 +1,97 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 18
+TABLE VIII
+COMPARISON OF TACKLE ROI ON IN - AND OUT -OF-DISTRIBUTION SAMPLES
+UNDER DIFFERENT ACCELERATION RATIOS (R)
+Metric R Samples w/ MT Samples w/o MT
+(in-distribution) (out-of-distribution)
+4 37.65 36.92
+PSNR (dB) 8 33.28 32.88
+16 32.06 31.74
+as illustrated in Figure 13. We denote the number of trajectories
+along ky and kz (the two phase encoding directions) as nky
+and nkz, respectively. For the fully sampling scenario, one
+needs to sequentially sample a total of nkynkz trajectories,
+which could take a long time to acquire in practice. Given a
+2D subsampling mask m, we subsample in the ky-kz plane
+according to m. If m has an acceleration ratio of R, the
+subsampling sequence only takes nkynkz/R trajectories and
+the acquisition time will be reduced by a factor R in practice.
+One can obtain the slice-wise 2D k-space measurements y
+by taking the 1D inverse Fourier Transform of the raw 3D
+k-space data along kx. We have implemented a 4×-accelerated
+version of the sequence that we used in Section V of the main
+text on the Siemens IDEA sequence programming platform,
+using the subsampling scheme we described above. Figure 10
+in the main text demonstrates that the prospective subsampling
+version of our learned sequence achieves the same level of
+visual quality as the fully sampling version but only takes a
+quarter of the scan time. This result highlights the real-world
+practicality of our approach.
+SUPPLEMENT D
+ADDITIONAL VALIDATION ON OUT -OF-DISTRIBUTION DATA
+In the main text, we showed that TACKLE ROI improves the
+reconstruction of ROIs that contain the meniscus tear (MT).
+In practice, it is likely that a healthy subject or someone
+with a different pathology lesion from the meniscus tear will
+get scanned. So it is important that the learned sequence
+should also generalize to out-of-distribution subjects. Here
+we take our trained TACKLE ROI models with 4×, 8×, and 16×
+accelerations from our ROI reconstruction experiments, and
+directly test them on images that do not contain the meniscus
+tear, without additional fine-tuning. The results are summarized
+in Table VIII.
+Although it is not surprising that TACKLE ROI performs better
+on the in-distribution data (samples w/ MT), we want to point
+out that the two numbers above correspond to two different test
+sets and are thus not directly comparable. The main takeaway
+is that TACKLE ROI can robustly recover samples without MT,
+even if it is trained on samples with MT. As discussed in
+the Section IV .A of the main text, TACKLE ROI improves the
+ROI reconstruction by trading off k-space frequencies for the
+local anatomy to attain improved resolution. We find that
+such a strategy can lead to satisfactory reconstruction quality
+even when the underlying subject does not contain the target
+pathology.
+PSNR (dB) PSNR (dB)
+8×
+16×
+FastMRI — Meniscus Tear ROI Reconstruction
+T ackleROIPD+UNFOVLP+UNFOV LOUPEFOV
+T ackleROIPD+UNFOVLP+UNFOV LOUPEFOV
+(a)
+(b)
+70.1% 
+9.43e-13
+86.6% 
+1.86e-37
+95.0% 
+7.12e-61
+68.2% 
+3.33e-9
+77.6% 
+1.55e-19
+98.5% 
+2.29e-83
+Top: percentage of improved samples (↑) 
+Bottom: -value of the paired t-test (↓)p
+(26.95±0.63)95% CI (28.23±0.44) (30.32±0.55) (34.04±0.63)
+(25.16±0.60)95% CI (26.05±0.48) (27.32±0.57) (31.53±0.61)
+Fig. 14. Box plots of the Meniscus Tear ROI reconstruction results under
+8× (a) and 16× (b) accelerations. Within the rectangle between each pair of
+methods, the top number is the percentage of samples that get improved and
+the bottom number is the p-value given by the paired samples t-test. A higher
+percentage and lower p-value indicate a more significant improvement. The
+95% confidence intervals for all methods are given below their names.
+SUPPLEMENT E
+ADDITIONAL RESULTS
+We provide a boxplot comparison for the Meniscus Tear
+ROI reconstruction in Figure 14. We also provide some visual
+examples for the tumor classification task in Figure 15. For
+the three reconstruction-oriented baselines (left three columns),
+the inputs to the predictor network are typical reconstructions.
+Optimized end-to-end for classification accuracy, the retriever
+of TACKLE class. learns a feature map that highlights the region
+where a tumor could exist. Similar to the segmentation results,
+we find that the end-to-end model TACKLE class. circumvents
+the typical reconstruction but preserves image-level features
+that are helpful for downstream classification prediction.

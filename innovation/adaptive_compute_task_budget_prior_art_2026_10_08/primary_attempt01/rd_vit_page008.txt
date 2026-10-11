@@ -1,0 +1,42 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+8
+3.6 Depth-wise LoRA Adaptation
+Pure weight sharing (using identical computation at every loop iteration) may be suboptimal because early 
+and late iterations serve different functional roles: early iterations extract basic features while late iterations 
+refine boundaries. Depth-wise LoRA provides per-loop differentiation without duplicating the full 
+parameter set.
+The LoRA adapter consists of shared down-projection Adown ∈ ℝ dim ×r), shared up-projection Bup ∈
+ℝ r ×dim), and a per-loop scale embedding st ∈ ℝ r
+indexed by the loop counter t. The adaptation is: 𝛥h = 
+(x ⋅ Adown ⊙ st
+) ⋅ Bup, where ⊙ is element-wise multiplication. With rank r = 4, this adds only 4 ⋅ dim ⋅ 2 
++ T ⋅ 4 parameters (approximately 1.5K for our Tiny model), a negligible overhead that nonetheless allows 
+each loop iteration to specialize.
+Additionally, a sinusoidal loop-index embedding is added to the first dim/8 channels of the hidden state at 
+each iteration, providing the model with an explicit signal of its current depth. This serves a similar function 
+to positional encoding in the sequence dimension but along the depth dimension.
+3.7 Segmentation Head
+The segmentation head converts patch-level features (B, N, dim) to pixel/voxel-level predictions (B, C, H, 
+W) or (B, C, D, H, W). We first project patch features to a higher-dimensional space (4 × seghead_channels) 
+via a linear layer with GELU activation. The features are then reshaped to the spatial grid and progressively 
+upsampled via transposed convolutions.
+For 2D inputs with patch size P, the spatial upsampling factor is P. We use a cascade of ConvTranspose2d 
+layers: a 4× upsampling followed by BatchNorm and GELU for the first stage, then additional 2× stages 
+as needed to reach the full resolution. For 3D inputs, we first upsample the depth dimension via 
+ConvTranspose3d with kernel (Pz
+, 1, 1), then upsample the spatial dimensions. A final 1×1(×1) 
+convolution produces class logits.
+When the segmentation head output does not exactly match the target spatial resolution (due to rounding in 
+the upsampling cascade), we apply bilinear or trilinear interpolation to the logits before computing the loss.
+3.8 Loss Function and Training
+The total training loss is: L = LCE + 𝜆 ⋅ Lponder, where LCE is the standard cross-entropy loss between 
+predicted logits and ground truth labels, and Lponder is the ACT ponder cost. We use 𝜆 = 0.01, which 
+provides sufficient incentive for early halting without overwhelming the segmentation signal.
+We train with AdamW optimizer with learning rate 1 × 10−4
+, weight decay 0.05, and cosine annealing 
+learning rate schedule. Gradient clipping at norm 1.0 stabilizes training. We apply random horizontal 
+flipping as data augmentation for 3D volumes. All experiments use seed 42 for reproducibility.
+4 Model Variants
+We evaluate four model variants to systematically investigate the impact of model capacity, recurrence, 
+and MoE:
+Table 1: Model variant specifications.

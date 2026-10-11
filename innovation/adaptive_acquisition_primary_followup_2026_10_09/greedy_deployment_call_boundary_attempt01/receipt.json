@@ -1,0 +1,170 @@
+{
+  "complete": true,
+  "errors": [],
+  "records": [
+    {
+      "function": "get_new_zf",
+      "params": [
+        "masked_kspace_batch"
+      ],
+      "start_line": 61,
+      "end_line": 69,
+      "GT_name_references": [],
+      "calls": [
+        "transforms.ifft2(masked_kspace_batch)",
+        "transforms.complex_abs(image_batch)",
+        "transforms.normalize(image_batch, dim=(-2, -1), eps=1e-11)",
+        "image_batch.clamp(-6, 6)"
+      ]
+    },
+    {
+      "function": "compute_next_step_reconstruction",
+      "params": [
+        "recon_model",
+        "kspace",
+        "masked_kspace",
+        "mask",
+        "next_rows"
+      ],
+      "start_line": 94,
+      "end_line": 109,
+      "GT_name_references": [],
+      "calls": [
+        "acquire_rows_in_batch_parallel(kspace, masked_kspace, mask, next_rows)",
+        "masked_kspace.size(-2)",
+        "masked_kspace.view(mask.size(0) * channel_size, 1, res, res, 2)",
+        "get_new_zf(masked_kspace)",
+        "recon_model(zf)",
+        "recon.view(mask.size(0), channel_size, res, res)",
+        "zf.view(mask.size(0), channel_size, res, res)",
+        "masked_kspace.view(mask.size(0), channel_size, res, res, 2)",
+        "mask.size(0)",
+        "mask.size(0)",
+        "mask.size(0)",
+        "mask.size(0)"
+      ]
+    },
+    {
+      "function": "get_policy_probs",
+      "params": [
+        "model",
+        "recons",
+        "mask"
+      ],
+      "start_line": 112,
+      "end_line": 128,
+      "GT_name_references": [],
+      "calls": [
+        "mask.size(-2)",
+        "recons.view(mask.size(0) * channel_size, 1, res, res)",
+        "model(recons)",
+        "output.view(mask.size(0), channel_size, res)",
+        "(mask == 0).squeeze(-1).squeeze(-2).float()",
+        "torch.where(loss_mask.byte(), output, -10000000.0 * torch.ones_like(output))",
+        "torch.nn.functional.softmax(logits - logits.max(dim=-1, keepdim=True)[0], dim=-1)",
+        "torch.distributions.Categorical(probs)",
+        "mask.size(0)",
+        "loss_mask.byte()",
+        "mask.size(0)",
+        "(mask == 0).squeeze(-1).squeeze(-2)",
+        "torch.ones_like(output)",
+        "logits.max(dim=-1, keepdim=True)",
+        "(mask == 0).squeeze(-1)"
+      ]
+    },
+    {
+      "function": "compute_scores",
+      "params": [
+        "args",
+        "recons",
+        "gt_mean",
+        "gt_std",
+        "unnorm_gt",
+        "data_range",
+        "comp_psnr"
+      ],
+      "start_line": 131,
+      "end_line": 144,
+      "GT_name_references": [
+        "gt_mean",
+        "gt_std",
+        "unnorm_gt"
+      ],
+      "calls": [
+        "unnorm_gt.expand(-1, recons.shape[1], -1, -1)",
+        "compute_ssim(unnorm_recons, gt_exp, size_average=False, data_range=data_range).mean(-1).mean(-1)",
+        "compute_psnr(args, unnorm_recons, gt_exp, data_range)",
+        "compute_ssim(unnorm_recons, gt_exp, size_average=False, data_range=data_range).mean(-1)",
+        "compute_ssim(unnorm_recons, gt_exp, size_average=False, data_range=data_range)"
+      ]
+    }
+  ],
+  "source_bindings": [
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/audit_greedy_deployment_call_boundary_v1.py",
+      "bytes": 3162,
+      "sha256": "f7d45c56c0e0bb9ecfd827f0de55087b15455a527aa71c1886fea4dd1e98e91d"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/greedy_selected_sources_attempt01/src__policy_model__policy_model_utils.py.gz",
+      "bytes": 3508,
+      "sha256": "690e59a634413fdcb5f3a204a6e155f1e5fbf5de35fdc3dd5a9c21f2ae1a23cd"
+    },
+    {
+      "path": "adaptive_acquisition_primary_followup_2026_10_09/greedy_policy_utils_fetch_attempt01/receipt.json",
+      "bytes": 2784,
+      "sha256": "8d8e5996e01823be0dac8b573b6b720e9bf914fc09654317c68ad2891f9a970d"
+    }
+  ],
+  "author_commit": "d4e4164c5e7d13e57391f8a932ffd81958995dcd",
+  "authenticated_publication_time_version": false,
+  "selected_policy_and_next_reconstruction_function_bodies_have_no_GT_names": true,
+  "acquisition_reads_chosen_column_from_full_kspace_simulator": true,
+  "full_kspace_is_project_deployment_input": false,
+  "GT_statistics_present_in_quality_scoring": true,
+  "quality_scoring_GT_statistics_prove_deployment_leak": false,
+  "callback_models_external_helpers_and_all_transitive_globals_audited": false,
+  "whole_author_pipeline_noninterference_proven": false,
+  "author_code_imported": false,
+  "author_code_executed": false,
+  "author_training_reproduced": false,
+  "publication_claim_confirmed": false,
+  "goal_status": "active",
+  "resources_before": {
+    "workspace_free_bytes": 8036814848,
+    "available_ram_bytes": 107839811584,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 36232649,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6816689,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 1787679
+    },
+    "guarded_workspace_free_bytes": 8000582199
+  },
+  "resources_after": {
+    "workspace_free_bytes": 8036814848,
+    "available_ram_bytes": 107837747200,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false,
+    "remaining_all_stage_allowance_bytes": 36232649,
+    "stage_sizes_bytes": {
+      "six_resolution_training_preparation_2026_10_09": 6816689,
+      "gpu_full_fov_and_atomic_capture_2026_10_09": 7286773,
+      "gin_accepted_primary_followup_2026_10_09": 5676210,
+      "adaptive_acquisition_primary_followup_2026_10_09": 1787679
+    },
+    "guarded_workspace_free_bytes": 8000582199
+  },
+  "elapsed_seconds": 0.042316599981859326
+}

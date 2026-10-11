@@ -1,0 +1,148 @@
+4 IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2020
+filters from the training data and generalize well over unseen
+test data. The proposed formulation is
+γ = arg min
+γ
+kA(γ) − bk
+2
+2 + λk (I − DI
+| {z }
+NI
+)(γ)k
+2
+2
+(9)
+where NI = I − DI denotes a multi-channel spatial domain
+CNN and I is the identity operator. Note the similarity of
+(9) to (8); we expect the non-linear spatial domain CNN NI
+to realize the spatially varying convolutions qc,j,i ∗ γ. The
+solution to (9) alternates between the residual CNN DI and
+the DC block as shown in Fig. 1. The corresponding equations
+are
+zn = DI(γn) (10)
+γbn+1 = (A
+HA + λI)
+−1
+(A
+Hb + λbzn) (11)
+The recursive network structure is shown in Fig. 1, which
+alternates between the residual CNN DI and the DC block.
+We propose to learn the CNN parameters by unrolling the
+algorithm for a finite number of iterations K and training it
+end-to-end using exemplar datasets. Similar to [17], the CNN
+weights are shared across iterations. An MSE loss is computed
+between the predicted image γ and the gold standard image
+γ
+gs obtained from fully sampled measurements. It can be
+written as Lrec = kγs−γ
+gs
+s k
+2
+2
+. Here, γs
+is the sum-of-squares
+image obtained from the multi-channel reconstructed image
+γ, while γ
+gs
+s
+is the reference (gold standard) sum-of-squares
+image.
+The proposed algorithm does not require any calibration
+data for estimation of coil sensitivities or linear filters Qc.
+Computationally, this approach is orders of magnitude faster
+than CLEAR since the unrolled algorithm requires fewer
+iterations to converge. In addition, it eliminates the need for
+performing singular value decomposition (SVD) of Γc every
+iteration, which increases the computational complexity of
+CLEAR.
+Apart from the multi-channel annihilation relations (5)
+resulting from the multi-channel acquisition, MR images also
+satisfy annihilation properties resulting from the redundancy
+of patches. For instance, smooth regions can be annihilated
+by derivative filters, while wavelet filters are effective in
+annihilating texture regions. The proposed image domain
+multi-channel annihilation CNN framework can exploit these
+annihilation relations as well, which is a distinction from the
+k-space approach in [17]; the larger number of annihilation
+relations can translate to improved performance. Note that the
+traditional CLEAR approach only exploits the multi-channel
+relations in (5).
+B. Joint Reconstruction-Segmentation Framework
+MRI reconstruction and segmentation are often studied
+as two different tasks in the MR image analysis pipeline.
+In the case of a direct cascade of tasks, any aliasing or
+blurring artifact in reconstructions due to highly accelerated
+acquisition gets propagated to the segmentation task, leading
+to degradation of segmentation quality [22]. In this section,
+we propose a multi-task framework for joint reconstruction
+and segmentation to obtain segmentations that are robust to
+Fig. 1. Proposed IDSLR network: It consists of residual CNN DI
+for spatial domain learning. DI exploits the image domain annihilation
+relations among patches to denoise the multi-channel image Γ. The
+network is unrolled for K iterations and trained end-to-end. Output
+of DI at the nth iteration is denoted by Zn according to (10). The
+network parameters are shared across iterations similar to Deep-SLR
+[17] framework.
+undersampling artifacts. We also expect the segmentation task
+to aid the reconstructions.
+1) Shared Encoder Architecture: The proposed multi-task
+DL framework is shown in Fig. 2. The unrolled version of
+the IDSLR network in Fig. 1 with shared weights across
+iterations is used for reconstruction, together with an additional
+segmentation network. For IDSLR, the CNN NI
+is a UNET
+with encoder NIE and decoder NID. A segmentation task
+dedicated decoder SID is connected to the output of the NIE
+from the final iteration of IDSLR. Thus, the encoder for
+segmentation UNET is NIE, whose parameters are shared with
+the reconstruction task. We expect that the shared encoder will
+encourage the learning of common latent variables for both
+the segmentation and reconstruction tasks, thus exploiting the
+synergy between them. In particular, we hypothesize that the
+spatial domain features extracted by the encoder NIE from
+multiple channels would become sharper due to the auxiliary
+segmentation loss, resulting in improved representation of
+edges and finer details. The shared encoder architecture also
+facilitates the learning of the segmentation task from a few
+labelled datasets as explained below.
+2) Loss Function: A weighted linear combination of recon￾struction and segmentation losses is used to train the multi-task
+network end-to-end. Let θ, φ and ψ be the weights of NIE,
+NID, and SID, respectively. We used the MSE loss,
+Lrec(γ
+gs
+s
+, γs
+; θ, φ) = kγ
+gs
+s − γs
+(θ, φ)k
+2
+2
+(12)
+as the reconstruction loss. The output of the reconstruction
+network is only dependent on θ and φ. The segmentation
+decoder outputs probability maps of the tissue classes denoted
+by p(θ, φ, ψ); note that the probability maps are dependent
+on all the network parameters. We compare p against the
+reference segmentation z(r) using the pixel-level multi-label
+cross-entropy loss
+Lseg(p, z; θ, φ, ψ) = −
+X
+r
+z(r) log(p(r; θ, φ, ψ)). (13)
+Here, pi
+(r; θ, φ, ψ) is the predicted probabilities at the pixel
+r corresponding to the i
+th dataset, while zi(r) is the reference
+labels obtained from the reference image γ
+gs
+s,i(r). The total loss
+is given as
+L(θ, φ, ψ) = X
+Nt
+i=1
+(1 − α) Lrec(γ
+gs
+s,i, γs,i)
++α Lseg(pi
+, zi), (14)

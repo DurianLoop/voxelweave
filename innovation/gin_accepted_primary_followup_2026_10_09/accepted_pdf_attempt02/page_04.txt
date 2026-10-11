@@ -1,0 +1,78 @@
+, VOL. XX, NO. XX, XXXX 2020 4
+Fig. 2. A. The data generation process of medical images: An image X is modeled as the effect of two independent factors: 1) a domain-independent
+content factor C which represents the geometric shapes of the patient anatomy; 2) and a domain-dependent acquisition factor A which controls image
+appearances. Mechanism of the domain-invariant segmentation network: We assume that 1) there exists a domain-invariant representation S that encodes
+shape information (S is caused by C); 2) the ground-truth Y can be derived from S. A domain-invariant segmentation network fϕ(·) is trained to implicitly
+estimate S in spite of different simulated acquisition processes A’s.
+B. Workflow of the proposed data augmentation approach: It simulates different possible acquisition processes, hence domains. GIN transforms images
+to have new appearances, using randomly-weighted shallow networks. IPA blends two GIN-augmented versions of the same image in a spatially-variable
+manner. This blending operation perturbs/randomizes spurious correlations among patches, in terms of their appearances. The segmentation network fϕ(·) is
+trained to make consistent predictions, unaffected by simulated appearances and perturbed correlations.
+augmentation-based single-source domain generalization ap￾proach. Inspired by recent works [54], [55], we model the
+data generation process and the (ideally, domain-invariant)
+segmentation process using the causal model shown in Fig.
+2-A. Specifically, we make the following assumptions:
+1) A → X ← C : An image X is generated from two
+independent variables (factors): acquisition A and content C.
+C represents the shapes of underlying anatomical structures
+of the patient, while A represents the acquisition process. The
+factor A maps different types of tissues of the patient in the
+scanner into different pixel values in the image.
+2) C → S → Y : There exists an ideal domain-invariant
+representation S, determined by C. S is in the form of feature
+maps of the deep layers of the network and it contains the
+shape information of the objects of interest. The ground-truth
+segmentation mask Y can be derived from S.
+3) X → fϕ(X): The segmentation network fϕ(·) takes X as
+the input and predicts Y , by implicitly estimating S.
+A and C are independent: changing A does not affect C,
+S or Y . Of note, our discussion is constrained to acquisition
+shift. C is assumed to be unchanged across the source domain
+and the target domain(s) in our experiments.
+Causal intervention for domain robustness: According to
+[55], our argument that S is invariant to shifts of A can be
+formally written as follows:
+p(Y |S, do(A = ai)) = p(Y |S, do(A = aj )), ∀ai
+, aj . (1)
+Here p(Y |S, do(A = ai)) denotes the distribution that comes
+from letting images to be generated from a specific acquisition
+process A = ai [14], [55], for example MRI. Using a sym￾metric notation, we let aj to be another acquisition process,
+for example CT. Eq. 1 suggests that ideally, this distribution
+should remain the same regardless of the acquisition processes.
+In practice, as shown in Fig.2-A, we use a segmentation
+network fϕ(·) parameterized by ϕ to predict Y . To make fϕ(·)
+domain invariant, ideally, fϕ(·) should implicitly estimate S in
+the last layers of fϕ(·). However, the condition in Eq. 1 cannot
+be directly used to train fϕ(·), as “physical” interventions on
+A (scanning patients under all possible acquisition processes)
+is impractical. Fortunately, Ilse et al. [18] have demonstrated
+that data augmentations can be used as “virtual” causal inter￾ventions. Therefore, we assume that for each ai
+, there exists a
+photometric transformation function Ti(·) that transforms the
+image X to be like from ai
+3
+. We therefore have:
+p(Y |S, do(A = ai)) ≈ p(Y |fϕ(Ti(X))). (2)
+Combining Eq. 1 and 2 leads to a practical domain invariance
+condition: minimizing the difference between distributions that
+come from different photometric transformations Ti(·) and
+Tj (·) [55]. By combining this domain invariance condition
+and the image segmentation loss, we can now derive our loss
+function (inspired by [55]). For each iteration, we have
+L(ϕ) = Lseg(fϕ(Ti(x)), y) + Lseg(fϕ(Tj (x)), y) (3)
++λdivD(p(y|fϕ(Ti(x)))∥p(y|fϕ(Tj (x)))).
+Here (x, y) ∼ p(X, Y ) denotes an image-label pair in the
+training dataset, Lseg(·, ·) is a segmentation loss, e.g. cross￾entropy; Ti(·) and Tj (·) are two different photometric transfor￾mations that simulate the effect of ai or aj respectively, ran￾domly sampled from a family of photometric transformations
+at each iteration; D(·∥·) is the Kullback–Leibler divergence:
+measuring the gaps between two distributions; λdiv is a
+weighting coefficient. Similar divergence terms have also been
+used for semi-supervised learning [46], [56], although they are
+not derived from a causal perspective.
+As implied by Eq. 3, the photometric transformations
+{T (·)} serve as the core of the domain invariance condition.
+Since the target-domain data are unavailable, we resort to
+3Arguably this transformation can be interpreted as generating coun￾terfactual examples [11], [14]: given an observed image from a certain
+acquisition process, asking how this image could look like should it had
+been generated from another imaging process. We do not interpret our data
+augmentation as counterfactual generation since the aim of our approach is
+not to synthesize the appearance of a specific domain.

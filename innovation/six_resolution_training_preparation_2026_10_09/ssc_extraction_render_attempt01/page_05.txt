@@ -1,0 +1,53 @@
+Multimodal Fusion for Image-Guided Interventions Using Self-similarities 191
+2/5 4/5
+0/5 5/5
+2/5 = 00011
+4/5 = 01111
+0/5 = 00000
+5/5 = 11111
+3/5 5/5
+1/5 4/5
+3/5 = 00111
+5/5 = 11111
+1/5 = 00001
+4/5 = 01111
+continuous SSC 
+(image I) 
+continuous SSC 
+(image J) 
+binary SSC 
+(image I), 20 bit 
+concatenated 
+binary SSC 
+(image J), 20 bit 
+concatenated 
+00011011110000011111 00111111110000101111 ⊕
+00100100000000110000
+5 bit quantisation 
+bit-wise exclusive or 
+bit-count (Hamming weight) = 4 (divide by 20) equivalent to SAD 
+Fig. 2. Concept of using the Hamming distance to speed up similarity evaluations.
+Continuous valued descriptor entries (here: |N | = 4) are quantised to a fixed number
+of bits and concatenated. The similarity of Eq. 2 can then be evaluated using only one
+bitwise XOR and bit-count operation.
+4 Registration of US and MRI Scans for Neurosurgery
+We applied the presented approach to a set of 13 pairs of pre-operative MRI
+and pre-resection 3D ultrasound (US) images of the Brain Images of Tumours
+for Evaluation (BITE) database [12] from the Montreal Neurological Institute1.
+The MRI scans have an isotropic resolution of 0.5 mm and the US are resam￾pled to the same resolution (the MRI scans are then cropped to have the same
+dimensions and a similar field of view). Roughly 27 corresponding anatomical
+landmarks have been selected for each scan pair by a neurosurgeon and two
+experts. The same dataset was recently used by [14], and therefore enables a
+direct comparison. They apply multi-feature α-MI [16] with a stochastic gradi￾ent descent optimisation [8], and extend this framework using a self-similarity
+weighting within the feature space, calling the new metric SeSaMI.
+We use the following parameter settings for the discrete optimisation: three
+scales of control point spacings of {6, 5, 4} mm, 50 similarity term samples per
+control point and a dense displacement search range of {12, 5, 2} mm (with a
+spacing of {2, 1, 0.5} mm). This corresponds to roughly 107 degrees of freedom
+for the optimisation. We employ three different similarity metrics: blockwise MI,
+MIND [4] and SSC. For the self-similarity calculations a patch-size of 3 × 3 × 3
+voxels and a distance between neighbouring patches of 2 voxels was chosen.
+Blockwise MI is computed the same way as global MI [10], but a new joint
+histogram is estimated for each control point and each displacement using 100
+samples within the cubic influence region of the control point. We empirically
+1 Publicly available at www.bic.mni.mcgill.ca/Services/ServicesBITE

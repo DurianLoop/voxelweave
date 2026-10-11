@@ -1,0 +1,99 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4
+Fig. 2: The proposed MoEDiff-SR workflow starts by extracting multi-scale patches from the conditional input 3T MRI slice y.
+These patches are subsequently transformed via a linear projection layer, and the obtained embeddings are further encoded by
+a Swin Transformer E2, resulting in conditional latent representation zc. Next, the gating network G dynamically computes
+adaptive weights (G1, G2, and G3) for three specialized diffusion-based SR experts (E1, E2, and E3). Each expert follows the
+fundamental architecture of the Conditional Latent Diffusion Model (CLDM) [21] and receives the latent representation z0
+from the 7T MRI, zc from the 3T MRI, the timestep t, and its assigned weight Gi
+. The experts then individually generate
+region-specific denoised latent outputs zˆ0(i)
+. Finally, these outputs are aggregated based on the dynamically assigned weights to
+produce the final weighted latent denoised code zˆ0.
+Gi =
+exp(Scorei)
+P
+j
+exp(Scorej )
+·
+e
+−γci
+P
+j
+e−γcj
+(4)
+where ci denotes the exponentially smoothed usage frequency
+of expert Ei
+, which is updated during training using an
+Exponential Moving Average (EMA) [25] with a decay factor
+of 0.99. γ controls the strength of the frequency regularization
+(set to γ = 0.1 in our implementation).
+C. Expert specialization
+The MoE framework comprises three anatomically special￾ized diffusion denoising experts Ei
+:
+• E1: Specializes in denoising the centrum semiovale,
+enhancing smooth white matter regions with minimal
+textural variation.
+• E2: Focuses on the sulcal and gyral cortex, preserving
+high-frequency details within complex cortical folds.
+• E3: Targets the grey-white matter junction, ensuring sharp
+delineation at the cortical-subcortical interface.
+Using the expert-specific Gaussian noise schedule, the latent
+representation z0 is noised as follows:
+zt(i) =
+p
+α¯t(i)z0 +
+p
+1 − α¯t(i)ϵ(i)
+, ϵ(i) ∼ N (0, I) (5)
+To ensure effective specialization within the MoE diffusion
+model, each expert Ei
+is trained using a combination of a
+fundamental diffusion-based denoising loss and an expert￾specific task loss tailored to distinct MRI restoration objectives.
+The training loss for each expert is defined as follows:
+LEi = Ldiffusion(i) + Ltask(i)
+(6)
+where the diffusion loss Ldiffusion(i) encourages accurate noise
+estimation during the diffusion process:
+Ldiffusion(i) = Ezt(i),ϵ(i)
+
+∥Ei(zt(i)
+, t) − ϵ(i)∥
+2
+2
+
+(7)
+where zt(i)
+is the noisy latent code at diffusion timestep t,
+and ϵ(i)
+represents the Gaussian noise specifically introduced
+by expert Ei during the forward diffusion process, while
+Ei(zt(i)
+, t) represents the predicted noise by each expert.
+Following the diffusion framework described in Eq. 5, each
+expert estimates the clean latent representation zˆ0(i)
+through
+the reverse diffusion step:
+zˆ0(i) =
+zt(i) −
+p1 − α¯t(i)Ei(zt(i)
+, ti)
+pα¯t(i)
+(8)
+The final latent representation zˆ0 is computed by aggregating
+expert outputs weighted by the gating probabilities:
+zˆ0 =
+X
+K
+i=1
+Gi
+· zˆ0(i)
+(9)
+where Gi denotes the gating probability assigned to expert
+Ei
+, dynamically adjusting its contribution based on regional
+characteristics within the MRI slice. K denotes the total number
+of experts in our approach.
+The expert-specific task losses Ltask(i)
+further refine expert
+specialization, addressing distinct anatomical or texture-related
+challenges:

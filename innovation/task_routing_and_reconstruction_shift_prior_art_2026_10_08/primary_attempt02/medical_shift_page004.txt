@@ -1,0 +1,39 @@
+Wohlrapp Bubeck Rueckert Lotter
+Optimization-level methods integrate fairness constraints into model training via adver-
+sarial learning, fairness-specific loss functions, or specialized training regimens. Adversarial
+methods discourage encoding protected attributes (Zhang et al., 2018; Adeli et al., 2019;
+Kim et al., 2019; Wang et al., 2020), distributionally robust optimization (Group DRO) tar-
+gets worst-case subgroup performance (Sagawa et al., 2020), and fairness-specific constraints
+can be incorporated directly into training (Marcinkevics et al., 2022). Post-processing
+methods adjust model outputs after training, employing techniques such as calibration and
+pruning (Wu et al., 2022).
+While prior studies have focused mainly on bias mitigation in classification tasks, there
+remains a critical need to assess analogous strategies for image reconstruction.
+3. Methods
+Our framework, visualized in Figure 1, encompasses image denoising, downstream task
+evaluation, fairness assessment, and bias mitigation for medical image reconstruction. The
+framework uses classification and segmentation models to estimate the effect of reconstruc-
+tion on downstream task performance and fairness. Additionally, mitigation strategies are
+applied exclusively at the reconstruction stage to determine their ability to reduce down-
+stream biases without retraining diagnostic models.
+3.1. Datasets
+We apply our framework to public datasets from two distinct imaging domains:
+MRI:UCSF-PDGM includes 501 pre-operative glioma MRI exams from patients with
+diffuse glioma, along with tumor masks and labels for subtype and grade (Calabrese et al.,
+2022). We use the T2-weighted FLAIR volumes for all analyses.
+X-Ray:CheXpert comprises 224,316 radiographs from 65,240 patients annotated for 14
+thoracic findings (Irvin et al., 2019), of which we use 12 (excluding “Support Devices” and
+“No Findings” to focus on disease pathologies).
+We use a 70/10/20 train/validation/test split stratified by patient for both datasets. For
+CheXpert, the training set is further divided into non-overlapping sets for reconstruction and
+classification model training, with percentages of 70/30, respectively. For UCSF-PDGM,
+the same training data is for both tasks given smaller sample size. Group-wise fairness is
+assessed for age (dichotomized at the dataset median), sex, and self-reported race (unavail-
+able for UCSF-PDGM). Detailed attribute distributions are reported in Tables 5 and 6 in
+the Appendix.
+3.2. Noising Process
+We simulate realistic acquisition degradations as follows:
+MRI:k-space data is masked with radial undersampling patterns (Feng, 2022) at accel-
+eration factors 4, 8, and 16, where higher acceleration means greater undersampling (see
+Appendix A).
+4

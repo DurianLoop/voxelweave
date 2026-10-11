@@ -1,0 +1,11 @@
+# 当前任务网的不确定性接口：只读准备
+
+实际b44626/4d4036 exit0读取了当前训练的import链：run_matched_adaptation.py从mc_rc_3d_19series_common_init_2026_10_07导入TaskUNet3D；后者从mc_rc_3d_baseline_v2_2026_10_07导入；v2从mc_rc_3d_baseline_2026_10_07导入原网络，仅覆写physical_label。
+
+原TaskUNet3D在77–93行，channels16/32/64/128，ConvBlock用Conv3d、InstanceNorm3d(affine=True)、LeakyReLU，maxpool和ConvTranspose3d，三个deep-supervision logit heads。已读类没有Dropout或随机采样操作。forward返回逆序的三个logit outputs，没有显式返回encoder/decoder feature tuple；当前模型训练loss是BCE加softDice，不能照搬Jungo纯CE校准结论。
+
+因此当前可准备的廉价对照是同一合法raw任务概率的二值entropy加开发内边界/距离/体积聚合。把同一无dropout网络改成train模式并重复50次，不能称忠实MC-dropout对照；另加推断dropout而不按固定训练配方训练，也不能直接称Jungo复现。需要MC/ensemble时另立预算匹配开发控制，与当前模型公平比较完整质量和费用。
+
+auxiliary feat.需要明确取得哪个feature、是否共享backbone以及训练/缓存费用；当前forward接口未提供feature，需要另一个冻结版本显式定义，不能修改正在运行的训练源。若用query mask+observed T2控制，则可保持模型接口，额外QC forward仍须计成本。此处没有加载模型state、实例化网络、运行forward或读取MRI/GT；只是代码证据与后续准备。
+
+原source文件均只读，不改根环境或.gitignore，不改变session29823。具体文件hash另在READING_PROVENANCE.json记录，不能据接口准备宣称QC/收益头已训练。

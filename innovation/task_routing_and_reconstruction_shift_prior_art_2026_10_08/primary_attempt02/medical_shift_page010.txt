@@ -1,0 +1,39 @@
+Wohlrapp Bubeck Rueckert Lotter
+U-Net GAN SDE
+Median 2.28 -0.21 1.59
+Absolute Median 14.6 11.8 11.5
+Table 2: Median of bias change (% change in EODD/SER) by reconstruction approach
+across all datasets, tasks, and attributes by model. SDE and GAN show a slightly
+smaller bias shift than U-Net.
+4.3. Bias Mitigation
+While the impact of reconstruction on fairness was generally modest, applying mitigation
+strategies at the reconstruction stage could still reduce these effects or even improve the
+fairness of the underlying diagnostic models. We therefore tested two mitigation techniques
+inspired by classification literature but applied exclusively during reconstruction model
+training: sample reweighting and an equalized odds (EODD) constraint.
+Sex Age Race
+Standard 24.1 -1.88 3.30
+Reweighted 10.6 0.03 1.05
+EODD 7.56 -2.01 0.52
+Table 3: Median bias change (% change in EODD/SER) by mitigation strategy across all
+datasets, tasks, and models. Standard corresponds to the original results without
+mitigation applied.
+Table 3 summarizes the bias changes for the mitigated models compared to the standard
+models. The summary is presented as an aggregation over pathologies and reconstruction
+model types, with results for each combination presented in Figures 4 and 5. Sex-related
+biases see the most substantial percentage improvements for both mitigation strategies. The
+EODD mitigation approach exhibited slightly lower median bias for each sensitive attribute
+than the reweighted sampling strategy (Table 3). For CheXpert the improved fairness for
+sex was most notable for the U-Net and SDE models, and less so for the GAN-based Pix2Pix
+model (Figure 4). For UCSF-PDGM segmentation, EODD reduced bias for most attributes
+and models, most strongly for U-Net (Figure 5). Classification fairness on UCSF-PDGM
+exhibits no consistent pattern, with fluctuations in both directions. Overall, while some
+fairness improvements are observed, the magnitudes are modest compared to the original
+bias (e.g., 16.5% median improvement for sex with EODD mitigation) and can depend on
+the pathology and sensitive attribute.
+Fairness gains can incur performance trade-offs, but the trade-offs observed here are
+modest. Table 4 reports the mean change in PSNR and downstream task performance across
+reconstruction models when the mitigation strategies are applied. CheXpert deviations
+are below 1 % for PSNR and downstream AUROC. Downstream performance in UCSF-
+PDGM is also only moderately affected by the mitigation strategies, though PSNR shows
+10

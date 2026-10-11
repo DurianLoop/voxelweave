@@ -1,0 +1,5 @@
+# 正常匿名 cookie 客户端修订
+
+新官方.pdf URL在a4c3ba返回实际303，最终URL明确error=cookies_not_supported，旧下载器没有CookieJar。公开章节HTML已经用匿名内存CookieJar得到HTTP200，所以新版本对同一citation_pdf_url启用标准匿名CookieJar，其余证书验证/10MB/30s/最多3HTTPS跳转保持。这里只处理公开服务器自己要求的普通cookie，不复制trackid、不使用认证或绕过收费权限。
+
+此前所有失败源/receipt保持。另存chapter_pdf_attempt03，单次GET，无自动重试。若仍未获取合法原文，不继续把名称当已读；SADFN16页已有实际全文，不受此失败影响。

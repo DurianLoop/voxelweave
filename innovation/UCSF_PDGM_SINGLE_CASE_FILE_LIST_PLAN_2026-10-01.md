@@ -1,0 +1,5 @@
+# UCSF-PDGM exact-case file-list pilot
+
+Written after the official public package root and one-level listing, before opening any case directory. The v5 public package ID is `1065`; its one-level listing has 501 examination directories. The v5 CSV's lexicographically first baseline ID with no `BraTS21 ID` is `UCSF-PDGM-005`. Its exact official directory entry is `/UCSF-PDGM-v5/UCSF-PDGM-0005_nifti` (four-digit package padding). This is a provisional leakage filter, not proof of independence.
+
+Use the same public-link read-only file-browser API already used for the root. Request only this one case directory, save status, response SHA-256, paths, types and declared sizes; do not request a transfer specification, file contents or pixels. Check whether exact-case T2 and `tumor_segmentation` entries exist. A failure, unexpected directory path or absence of either file ends this pilot. File names alone do not prove that the image and mask share a grid; NIfTI headers and identity crosswalk remain later gates. No GPU or locked IXI test is involved.

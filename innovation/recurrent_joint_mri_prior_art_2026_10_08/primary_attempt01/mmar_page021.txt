@@ -1,0 +1,32 @@
+modality combinations, the absolute highest macro-average DSC (54.52%) on
+the test set was achieved by U-HeMIS using T1w and FLAIR. MMAR secured
+the second and third best overall results—54.33% (T1w, FLAIR, DWI) and
+54.04% (T1w, T2w, FLAIR)—both of which were novel combinations.
+When the crucial FLAIR sequence was unavailable, MMAR achieved the
+peak performance of 48.89% using a novel combination of T1w, T2w, and
+DWI. This specific combination also yielded the best non-FLAIR results for
+the multi-channel U-Net and U-HeMIS. This underscores the power of hetero￾modal learning for navigating missing modality scenarios at inference time:
+without it, the next best non-FLAIR result was only 47.01%, achieved by
+MMAR using an overlapping combination (T1w and DWI).
+4.4. MMAR outperforms established hetero-modal models on corrupted data
+The final experiments evaluated model robustness against severe data
+degradation. We applied corruption augmentation during training on split
+1 and tested under four scenarios: completely missing modalities, “false
+present” modalities (missing but unidentified as such), catastrophic Gaus￾sian noise, and severe bias fields.
+As shown in Table 4, when predicting with explicitly missing modal￾ities, the multi-channel U-Net and MMAR performed slightly worse than
+they did without corruption augmentation, whereas U-HeMIS showed slight
+improvement.
+However, the results shift under the remaining three corruption scenarios
+(Tables 5, 6, and 7). Faced with false presents, Gaussian noise, or severe
+bias fields, the MMAR consistently outperformed both the multi-channel
+U-Net and U-HeMIS for both WMH and ISL segmentation, and exhibited
+minimal performance degradation when transitioning from explicitly missing
+to corrupted modality testing.
+We attribute the MMAR’s success to its router-based architecture and
+auxiliary router loss. During training, we observed the router loss drop
+rapidly and remain low. This mechanism drastically reduces the gradient
+flow to any encoder processing a corrupted image, protecting that encoder
+from wasting learning capacity on becoming robust to catastrophic noise.
+4.5. MMAR: attention router analysis
+Figure 6 visualises the maximum intensity projection (across all 16 chan￾nels) of the router’s output weights at the highest encoder resolution level,
+21

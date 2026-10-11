@@ -1,0 +1,43 @@
+7.4. EXPERIMENTS
+testing set, and we see very different behaviors. First, as LBCS is a fixed policy, it is
+clear that the same locations are acquired for all images, and as a result, the policy is
+either 0 or 1. Then the GAN policy is quite concentrated around low frequencies, and
+spans a range that is consistent with the locations acquired by LBCS. On the contrary,
+the evaluator tends to acquire a lot of high frequencies, and it is hard to discern much
+structure in the acquisition.
+Note that the GAN policy might suffer from acquiring less often some very central
+frequencies. It might fail to do so due to the uncertainty on these locations being quite
+small, although the error remains non-negligible.
+0 20 40 60 80 100 120
+Sampling location
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Acquisition probability
+LBCS
+Evaluator
+GAN
+Figure 7.2: Acquisition probability of sampling locations by LBCS, our method and the evaluator
+of Zhang et al. (2019b), evaluated on the testing set at25% sampling rate, using the GAN model
+for reconstruction.
+0.00025 0.00050 0.00075 0.00100 0.00125 0.00150 0.00175 0.00200
+MSE
+0.00025
+0.00050
+0.00075
+0.00100
+0.00125
+0.00150
+0.00175
+0.00200Uncertainty
+Figure 7.3: Uncertainty (empirical variance) against MSE for the GAN model. Each point
+represents a given test sample at a given sampling rate. For clarity, not all data points are
+represented. The red line is the result of performing a linear regression on the data points, and
+has R2 = 0.705. The black line corresponds to Uncertainty= MSE
+Uncertainty calibration.We might also wonder how good is the uncertainty (aggre-
+gated empirical variance) at predicting the mean squared error. This is shown for our
+GAN model on Figure 7.3, where we see that overall estimation is quite good, but has
+some limitations still. At high errors, the model tends to be over-confident, and show a
+117

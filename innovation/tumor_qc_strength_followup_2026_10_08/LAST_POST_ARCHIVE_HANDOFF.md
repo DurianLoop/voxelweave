@@ -1,0 +1,11 @@
+# 本轮最后实际观察，覆盖归档前1980时点
+
+首要实际poll原session29823，不重启/迁移/改训练源。最新650420仍含session_id：native_reference_intensity2090/2992，median2.0710244499496184秒、累计4392.683118699933秒；loss .17371495068073273仅进度。其余三个分支尚无真正完成记录，验证未启动。
+
+归档session3820实际f0c36e exit0，旧5976保持+新84=6060。a71b10精确核indexSHA3851809bc4bb6d6a92d9da526ea699b7299c54ff315fdf6b9430e3e202fce01c、proofSHA fb48c2d2338f049d836cc8e1ee6728332f53cd724f052b01ebc7399eb39ec54c；本delta新增绑定live训练文件0，旧累计只有frozen_config允许。不得把archive exit当training exit或医学成功。
+
+两篇主文、四源码、两项CPU探索、强对照与接口准备已完成；见[下一阶段顺序](NEXT_STAGE_HANDOFF.md)。真正训练terminal→四state/11968日志审计→36FOV评价→实际评价exit/summary顺序保持。目标active，无独立确认或可发表claim。GPU授权有效，最近totalsfree1394MiB未达8192MiB；不动其他PID。根environment/.gitignore不改，不安装、不委派，8未见12series及lockedIXI关闭。
+
+POST_ARCHIVE_ACTUAL_TOOL_OBSERVATIONS、POST_ARCHIVE_FINAL_METADATA、FINAL_PUBLIC_RESPONSE、VISIBLE_DIALOGUE_PART02和本文件为index后附，下一delta纳入；不修改已冻结文档。当前新stage归档核时约3.10MB，5MB预算与磁盘/RAM8GB储备保持。交接前缺失逐字commentary在PART01已注明，所有可恢复实际工具和失败已保存。
+
+

@@ -1,0 +1,681 @@
+                                                Measured-Subspace Consistency: A Plug-and-Play Operator for Diffusion
+                                                       Posterior Sampling in Accelerated MRI Reconstruction
+
+                                                                                Junhyeok Lee1        Kyu Sung Choi2,3
+                                                      1
+                                                     Interdisciplinary Program in Cancer Biology, Seoul National University College of Medicine
+                                            2
+                                              Department of Radiology, Seoul National University College of Medicine, Seoul National University Hospital
+                                                                3
+                                                                  Healthcare AI Research Institute, Seoul National University Hospital
+arXiv:2606.28448v1 [eess.IV] 26 Jun 2026
+
+
+
+
+                                                                   Abstract                                         Leakage-prone sampler                                          + MSC
+
+                                           Diffusion posterior samplers for accelerated MRI can re-
+
+
+
+
+                                                                                                                                                                                                         posterior std (log)
+                                                                                                                                                             10 1                                     10 1
+                                           construct accurately yet still disagree on the acquired k-                                                        10 2                                     10 2
+                                           space across samples, placing posterior variability on co-                                                        10 3                                     10 3
+                                                                                                                                                             10 4                                     10 4
+                                           efficients the scanner has already measured. We identify                                                        250
+                                                                                                                                                         200
+                                                                                                                                                                                                    250
+                                                                                                                                                                                                  200
+                                                                                                                0                                                   0
+                                           this measured-subspace leakage as a physical-admissibility               50                                 150              50                      150
+                                                                                                                         100                         100                     100              100
+                                           failure. Under a hard-constraint model it violates the mea-                kx       150
+                                                                                                                                     200           50     ky             kx 150 200 250 0   50     ky
+                                                                                                                                           250 0
+                                           surement constraint and inflates the reported uncertainty                                        acquired (measured) lines              unmeasured lines
+                                           with disagreement about coefficients the scanner has al-
+                                           ready determined. To quantify this leakage, we intro-              Figure 1. Measured-subspace leakage and MSC. Per-(kx , ky )
+                                           duce complementary measured- and unmeasured-subspace               posterior standard deviation across samples in multi-coil k-space.
+                                           k-space dispersion metrics (MSD/USD). We then present              Orange lines are acquired, blue lines are unmeasured, and the ACS
+                                           Measured-Subspace Consistency (MSC), a training-free               peak is clipped for visibility. MSC locks acquired lines, reduc-
+                                           terminal correction that wraps any compatible image-space          ing inadmissible measured-line variability while retaining unmea-
+                                           posterior sampler with a standard multi-coil consistency           sured diversity up to the practical coil-combination residual.
+                                           lock. The ideal lock follows classical range/null-space data
+                                           consistency. Our contribution is to repurpose it as a black-
+                                           box posterior audit and correction rather than a new recon-        physics-driven deep networks that unroll the reconstruction
+                                           structor or learned sampler. Theoretically, we prove that          with learned regularizers [1, 13, 20]. Most recently, score-
+                                           the ideal transform confines pairwise sample differences to        based diffusion models [14, 31, 32] have emerged as pow-
+                                           the MRI null space and bound the residual cross-subspace           erful priors for this task [5, 18, 33]. Used as posterior sam-
+                                           coupling left by practical sensitivity-weighted implementa-        plers, they produce not a single reconstruction but a distri-
+                                           tions. Across six base samplers and two MRI anatomies,             bution of plausible images, enabling valuable uncertainty
+                                           including out-of-distribution transfer where a knee prior          quantification. However, high image-space reconstruction
+                                           reconstructs brain, MSC substantially reduces measured-            quality (e.g., PSNR, SSIM) does not guarantee a physically
+                                           subspace dispersion for Soft samplers (a median 16.5× re-          valid posterior. In practice, a sampler can produce visually
+                                           duction for DPS across five brain contrasts, up to ∼29×),          convincing images while stochastically varying the k-space
+                                           while preserving unmeasured-subspace diversity and acting          coefficients that the scanner has already measured. Since
+                                           as a near-identity map for Consistent ones. Furthermore,           the acquired data are fixed observations, sample-to-sample
+                                           MSC maintains or modestly improves PSNR/SSIM, with no              variability on those coefficients is physically inadmissible
+                                           retraining, retuning, or significant computational overhead.       in the hard-constraint (noise-negligible) regime we take as
+                                                                                                              our reference. Under a noisy acquisition a calibrated poste-
+                                                                                                              rior may instead carry measured-subspace variance up to the
+                                                                                                              noise level. Geometrically, the acquisition operator splits
+                                           1. Introduction                                                    image content into a measured subspace that the scanner
+                                                                                                              pins down and an orthogonal, unmeasured (null-space) sub-
+                                           Accelerated MRI reconstruction has evolved from com-               space that the prior alone must fill in. A physically faithful
+                                           pressed sensing with hand-crafted sparsity priors [23] to          posterior should therefore express variability only within
+
+
+                                                                                                          1
+the unmeasured subspace. This measured-subspace leak-                  (range/null-space) data-consistency projection (not itself
+age, posterior variability that instead spills into the mea-           novel) as a plug-and-play, training-free output-placement
+sured subspace, implies that a portion of the reported “un-            audit and correction for compatible image-space posterior
+certainty” is physically inadmissible rather than informa-             samplers, reducing physically inadmissible measured-
+tive (Fig. 1): it portrays sample-to-sample disagreement on            subspace variation without retraining or parameter retun-
+coefficients that the scanner has already measured and that            ing.
+all samples condition on identically. Given that prior work          • We mathematically characterize the transformation, de-
+has linked spurious or missing reconstruction details to po-           riving its exact agreement in the ideal case and a prac-
+tentially misleading interpretation [3, 4, 24], we treat such          tical, sensitivity-weighted leakage bound that reveals the
+inadmissible variation as a property worth diagnosing and              role of cross-subspace coupling.
+removing, while noting that its clinical impact is not evalu-        • We demonstrate the selective behavior of MSC across six
+ated here.                                                             base samplers, showing that it systematically reduces k-
+    Why does this leakage arise? Existing posterior samplers           space leakage on Soft samplers while preserving unmea-
+all tie measurement fidelity directly to their internal update         sured diversity and maintaining or improving reconstruc-
+rules, and how they do so creates a practical dilemma. Con-            tion quality across multiple anatomies, masks, and priors.
+ceptually, they fall into two families: Soft samplers (e.g.,
+DPS [7], ΠGDM [30]), which guide the reverse dynamics                2. Related Work
+via soft data gradients but lack a hard measured-subspace
+projection and are therefore prone to leakage, and Consis-           2.1. Diffusion Posterior Samplers: Soft vs. Consis-
+tent samplers (e.g., DDNM [36], Score-MRI [5]), which                      tent
+build a hard measured-subspace projection [19] into their            Posterior samplers differ in how they enforce data fi-
+dynamics. Consequently, practitioners are forced to choose           delity. Soft samplers guide the diffusion prior toward the
+between the high perceptual quality of Soft samplers and             measurement with soft gradients or likelihood approxi-
+the physical consistency of Consistent ones. Retrofitting            mations: CSGM-Langevin [18] runs annealed Langevin
+a pre-trained Soft sampler with hard consistency is math-            dynamics with a linear measurement gradient, DPS [7]
+ematically involved, typically requiring redesigned update           and ΠGDM [30] steer general diffusion solvers using data
+equations and retuned hyperparameters rather than reuse of           term gradients, and Nila-DC [15] dynamically scales a
+the model as-is.                                                     soft data-consistency gradient according to noise levels.
+    To resolve this dilemma, we introduce measured-                  While they yield high perceptual quality, their stochas-
+subspace consistency (MSC), a training-free, plug-and-play           tic updates can perturb acquired k-space coefficients, re-
+terminal correction that treats the base sampler as a black          sulting in measured-subspace leakage. Conversely, Con-
+box and appends a classical measured-subspace consistency            sistent samplers enforce fidelity inside the reverse update
+lock to its final output, reducing physically inadmissible           through different mechanisms: Score-MRI [5, 33] inter-
+measured-subspace variation without retraining or parame-            leaves reverse SDE steps with POCS-style k-space replace-
+ter retuning. In the ideal range/null-space setting MSC con-         ment (the in-loop analogue of the terminal paste-back we
+fines pairwise sample differences to the unmeasured sub-             use), DDRM [19] and DDNM [36] apply an explicit SVD
+space. In the practical multi-coil implementation it sup-            or range/null-space split to pin measured range components,
+presses measured-subspace dispersion up to a bounded coil-           and MCG [6] uses a manifold-constrained gradient correc-
+combination residual, preserving a sampler’s uncertainty             tion that our audit finds effectively measured-consistent.
+about what the prior had to imagine while removing its dis-          Since these mechanisms are integrated in-loop, they cannot
+agreement about what the scanner already measured. Em-               wrap arbitrary soft samplers without modifying their inter-
+pirically, across six base samplers, two anatomies, and out-         nal dynamics.
+of-distribution priors, MSC sharply reduces leakage on Soft
+bases while remaining a near-no-op on Consistent ones, at            2.2. MRI-Domain Solvers and Classical Projections
+negligible cost and without degrading PSNR/SSIM.                     Other methods enforce consistency inside specialized do-
+Our contributions are summarized as follows:                         mains: SPIRiT-Diffusion [9] casts the self-consistency
+• We formalize measured-subspace leakage as a physical-              driven SPIRiT constraint [22] as a k-space diffusion prior,
+  admissibility failure of diffusion posterior samplers and          DiffuseRecon [26] injects k-space measurements during
+  introduce two complementary k-space metrics, measured              coarse-to-fine reverse diffusion, and MCLC [16] stabilizes
+  (MSD) and unmeasured (USD) subspace dispersion, that               latent-diffusion solvers with a measurement-consistent cor-
+  quantify whether reported uncertainty falls on already-            rector. MSC instead operates in image space, control-
+  acquired or genuinely unmeasured coefficients.                     ling multi-coil dispersion without latent inversion. Clos-
+• We repurpose the classical hard measured-subspace                  est to our decoupling of data consistency from the sam-
+
+                                                                 2
+pler’s dynamics, the Decomposed Diffusion Sampler [8]                  induce an orthogonal acquired/unacquired split. Non-
+runs conjugate-gradient data consistency in a Krylov sub-              Cartesian trajectories are left to future work. With C
+space outside the per-step denoiser, and ReSample [29]                 sensitivity-weighted coils, the forward model is
+enforces hard data consistency for latent-diffusion solvers.
+MSC differs by applying a single terminal multi-coil paste-                          y = Ax + ε,          A = MFS,                  (1)
+back to a black-box sampler, with no inner CG/Krylov loop
+                                                                       where x ∈ CN is the complex image, S applies coil sensi-
+and no per-step interleaving. A related but orthogonal line
+                                                                       tivities, ε is acquisition noise, and y = My is zero-filled
+is SDR [24], whose diversity-seeking generation surfaces
+                                                                       acquired multi-coil k-space. The adjoint AH = SH F−1 M
+rare findings, whereas we remove physically inadmissible
+                                                                       maps k-space to image space by inverse Fourier transform
+variation.
+                                                                       and sensitivity-weighted coil combination. Since M dis-
+    The projection operator itself is classical: it is a
+                                                                       cards unsampled locations, A is rank-deficient: sample dif-
+multi-coil POCS paste-back (POCSENSE [28]), and re-
+                                                                       ferences split into a measured component constrained by
+lates more broadly to parallel-imaging methods that exploit
+                                                                       the scanner and a null-space component N (A) = {x :
+coil structure to recover unsampled data (GRAPPA [11],
+                                                                       MFSx = 0} about which the measurement is silent. In
+SPIRiT [22]). Applied once at the sampler output, MSC is
+                                                                       this hard-constraint (noise-negligible) regime, only the lat-
+a terminal multi-coil data-consistency paste-back. It should
+                                                                       ter represents legitimate posterior uncertainty. Under mea-
+not be read as a new MRI projection operator. The contribu-
+                                                                       surement noise the measured component additionally ad-
+tion is orthogonal to the operator: (i) identifying measured-
+                                                                       mits variance up to the noise level.
+subspace variance as a failure mode of diffusion posterior
+                                                                           Against this model, diffusion posterior samplers denoise
+samples rather than merely a reconstruction-error issue, (ii)
+                                                                       from noise while guiding each image-space iterate xt to-
+introducing MSD/USD metrics that separate inadmissible
+                                                                       ward y, either through a soft data term or a hard measured-
+measured variation from unmeasured posterior diversity,
+                                                                       subspace projection. Running the stochastic reverse process
+(iii) showing that a terminal classical projection is sufficient
+                                                                       L times yields samples {x(ℓ) }L     ℓ=1 whose spread is com-
+to correct Soft samplers without retraining or retuning and
+                                                                       monly reported as uncertainty.
+without collapsing null-space diversity, and (iv) explaining
+                                                                           Not all dispersion is physically justified. Variation on
+why the practical multi-coil realization leaves a bounded
+                                                                       unacquired coefficients reflects ambiguity. Variation on
+residual floor after sensitivity-weighted coil combination.
+                                                                       acquired coefficients means samples disagree on recorded
+2.3. Relation to Uncertainty Quantification                            data, which we term measured-subspace leakage. To quan-
+                                                                                     (ℓ)
+                                                                       tify it, let kc,i be the multi-coil k-space coefficient of sam-
+Uncertainty quantification (UQ) for MRI reconstruction re-             ple ℓ at coil c and position i, and define the complex sample
+ports image-space uncertainty, either post hoc (VAE vari-              standard deviation across chains as
+ance [10], Bayesian epistemic uncertainty [25]) or as the
+                                                                                       L                                           L
+sample variance of the diffusion posterior samplers we                      (ℓ)   1 X  (ℓ)        2 1/2
+                                                                                                                                  X      (ℓ)
+study [5, 18], and typically validates it against ground truth         Stdℓ kc,i = L−1   kc,i −k̄c,i       ,          k̄c,i = L1         kc,i .
+through calibration [12, 21] or distribution-free conformal                                 ℓ=1                                    ℓ=1
+                                                                                                                          (2)
+coverage, both for imaging inverse problems [2] and for
+                                                                       We then define the measured-subspace dispersion (MSD,
+diffusion models [34]. MSC instead poses an orthogonal,
+                                                                       denoted Dmeas ) and unmeasured-subspace dispersion
+ground-truth-free question: does the reported uncertainty
+                                                                       (USD, denoted Dunmeas ) as the mean complex standard
+vary coefficients the scanner already measured? Measured-
+                                                                       deviation over the measured (Mi = 1) and unmeasured
+subspace admissibility is in fact a necessary condition for a
+                                                                       (Mi = 0) regions, respectively:
+calibrated posterior (samples conditioned on the same fixed
+measurement cannot legitimately disagree on it), yet un-
+                                                                                                             h     i
+                                                                                                               (ℓ)
+                                                                                    Dmeas = Avgc,i:Mi =1 Stdℓ kc,i ,
+like calibration it needs no ground truth or held-out data.                                                  h     i      (3)
+MSC is therefore not itself a UQ method but a physical-                                                        (ℓ)
+                                                                                  Dunmeas = Avgc,i:Mi =0 Stdℓ kc,i .
+admissibility check on posterior dispersion that comple-
+ments these image-space methods. Its MSD/USD metrics                   A measured-subspace consistent sampler should have low
+could in turn audit the validity of their variance maps.               MSD without suppressing USD. Reconstruction quality is
+                                                                       evaluated separately with NMSE, PSNR, and SSIM [37]
+3. Method                                                              on the chain-mean magnitude after one least-squares scale
+                                                                       match. Two details matter. First, MSD/USD partition
+3.1. Measured-Subspace Leakage Problem
+                                                                       multi-coil k-space into acquired/unacquired regions. In
+We consider 2D multi-coil Cartesian accelerated MRI,                   the single-coil unitary case this coincides with the image-
+where unitary Fourier transform F and binary mask M                    space range/null-space split R(AH )/N (A). Second, dis-
+
+
+                                                                   3
+  Measured-subspace leakage               Measured-subspace consistency (MSC)                          Admissible posterior uncertainty
+
+                    null
+                                                y = Ax0 + ε
+                                                         ​
+
+
+
+
+                                                                                      Acquired
+
+
+
+
+                                                                                                                                     posterior std σ
+                                                                                      fixed
+                                      →                       null kept
+                                                                                                   →                   σ (base)
+
+                           measured                          measured                 Unacquired
+                                                                                      kept                       ˉ
+                                                                                                           recon x
+
+
+
+    measured-axis spread (MSD > 0)            PMSC (z; y) = SH F−1 [My + (I − M)FSz]
+                                                   ​
+
+
+                                                                                                                      σ (+ MSC)
+
+
+Figure 2. Overview of measured-subspace consistency. Left: leakage is posterior spread along measured coordinates. Middle: MSC
+replaces acquired multi-coil k-space coefficients of proposal z with observations y, keeps unacquired coefficients, and maps back with
+SH F−1 . Right: MSD/USD audit the resulting measured and unmeasured dispersion.
+
+
+                                                                              so that A P ∗ (z1 ; y)−P ∗ (z2 ; y) = 0. Moreover, Az = y
+                                                                                                                 
+persion is computed on the final returned iterate by re-
+encoding with FS. For MSC, this includes the cross-                           implies P ∗ (z; y) = z.
+subspace coupling floor of Prop. 2. We therefore restrict
+cross-sampler MSD comparisons to scale-invariant ratios,                      Proof. Subtracting two instances of Eq. (4), the data terms
+while absolute MSD (×10−4 ) remains comparable within a                       A+ y cancel, leaving (I − A+ A)(z1 − z2 ). Since A(I −
+sampler/contrast.                                                             A+ A) = A − AA+ A = 0, this difference lies in N (A).
+                                                                              Finally, if Az = y then y − Az = 0, so P ∗ (z; y) = z.
+3.2. Ideal Consistency Operator
+                                                                                 Proposition 1 implies zero ideal MSD with preserved
+MSC uses a training-free terminal lock to audit and correct                   null-space diversity, and the fixed-point property leaves al-
+samplers that expose an image-space output. We model a                        ready consistent samples unchanged. This explains why
+compatible base sampler as a map zt−1 = St (xt ; y) (Fig-                     MSC should suppress Soft-sampler leakage while acting as
+ure 2), where St may use soft data guidance or in-loop hard                   a near-no-op on Consistent bases, up to the practical resid-
+projection. Compatibility only requires an exposed image-                     ual below.
+space iterate, an applicable forward operator A, and the
+ability to append a final projection. K-space-native, latent-                 3.3. Practical Multi-Coil Operator
+only, or exact-likelihood samplers may still be diagnosed                     Although Proposition 1 characterizes the ideal projection,
+with MSD/USD, but are outside the wrapper interface.                          P ∗ is impractical for multi-coil MRI. Computing the ex-
+   To establish the mathematical foundation of our method,                    act SENSE pseudoinverse A+ is computationally expen-
+we first analyze measured-subspace consistency in the                         sive and numerically unstable in low-sensitivity regions.
+ideal, range-consistent setting (y ∈ R(A)). In this case,                     We therefore use a practical multi-coil consistency lock
+the consistency operator replaces the measured component                      PMSC realized via sensitivity-weighted coil combination,
+of the iterate with the acquired scanner data:                                the diffusion-output analogue of classical multi-coil POCS
+                                                                              data consistency [28]:
+               P ∗ (z; y) = z + A+ (y − Az),                    (4)
+                                                                                    PMSC (z; y) = SH F−1 [My + (I − M)FSz] ,                           (6)
+with A+ the pseudoinverse of A = MFS. P ∗ over-
+writes the measured component with y and leaves the null-                     The bracketed k-space exactly matches acquired entries be-
+space component untouched. This is the same classical                         fore coil combination. After applying SH and re-encoding,
+range/null-space principle used by hard data-consistency                      the match becomes approximate because coil sensitivities
+and null-space diffusion solvers [19, 36]. Here it is used                    couple subspaces. We bound this residual leakage next.
+at the output to analyze and correct posterior leakage.
+                                                                              Proposition 2 (Practical leakage bound). For the operator
+Proposition 1 (Exact measured-subspace agreement). For                        (6), let ∆z = z1 − z2 and u = (I − M)FS∆z be the un-
+any iterates z1 , z2 , the transform (4) satisfies                            measured multi-coil k-space difference retained by the lock.
+                                                                              Then
+P ∗ (z1 ; y) − P ∗ (z2 ; y) = (I − A+ A)(z1 − z2 ) ∈ N (A),
+                                                         (5)                          PMSC (z1 ; y) − PMSC (z2 ; y) = SH F−1 u,                        (7)
+
+
+                                                                          4
+Table 1. In-domain knee reconstruction. Single PD knee prior across masks, accelerations, and PD/PDFS contrasts. Metrics: MSD
+(×10−4 , ↓), PSNR (dB, ↑), SSIM (↑). Better of base/+MSC in bold (display ties unbolded).
+
+  Sampling Patterns R Metric                              PD                                                      PDFS
+                                           Soft                       Consistent                     Soft                      Consistent
+                                 DPS     Nila-DC   ΠGDM        DDNM     MCG        Score   DPS    Nila-DC    ΠGDM      DDNM      MCG        Score
+                               base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC
+                     MSD 11.6 4.9 23.1 8.6 42.4 13.6 7.3 5.6 4.5 3.8 5.5 4.5 13.9 7.1 22.0 7.9 37.9 9.6 9.2 7.1 6.1 5.2 8.0 6.7
+                  4× PSNR 37.4 37.5 33.6 35.0 24.6 27.2 36.4 36.6 37.0 37.0 37.1 37.2 33.1 33.5 31.7 33.2 23.6 27.3 33.4 33.3 33.4 33.2 33.3 33.1
+                     SSIM .94 .94 .85 .91 .66 .78 .93 .93 .93 .93 .94 .94 .81 .84 .75 .83 .52 .72 .84 .83 .84 .83 .83 .83
+  Uniform 1D         MSD 30.9 4.7 26.8 8.2 57.4 14.4 6.7 5.2 4.7 4.0 5.3 4.4 12.0 6.3 25.0 7.6 52.0 10.1 7.2 5.8 5.3 4.7 6.3 5.3
+                  8× PSNR 30.9 30.9 29.6 29.8 22.8 24.0 29.9 29.9 29.6 29.6 29.7 29.7 26.6 26.6 26.5 26.7 22.8 24.8 26.1 26.2 26.6 26.6 26.6 26.6
+                     SSIM .85 .85 .80 .83 .62 .67 .83 .83 .83 .83 .83 .83 .65 .66 .61 .66 .49 .61 .66 .67 .68 .68 .68 .68
+                      MSD 30.7 6.4 32.4 11.8 66.9 20.1 8.9 7.1 6.7 5.9 7.2 6.2 14.8 8.5 28.9 10.8 59.0 15.5 9.2 7.4 7.2 6.4 8.2 7.2
+                  12× PSNR 28.4 28.4 27.3 27.4 21.0 21.6 27.0 27.0 26.2 26.2 26.8 26.8 24.2 24.2 24.3 24.4 22.0 23.2 24.3 24.3 24.7 24.7 24.7 24.7
+                      SSIM .81 .81 .76 .78 .57 .60 .78 .78 .76 .76 .77 .78 .60 .60 .56 .60 .46 .55 .61 .61 .62 .63 .63 .63
+                     MSD 34.8 3.9 28.0 7.7 61.4 14.9 5.8 4.5 3.9 3.3 4.3 3.6 11.8 5.6 28.1 7.6 60.0 12.3 6.9 5.4 4.7 4.1 5.5 4.7
+                  8× PSNR 33.2 33.2 31.9 32.5 24.5 26.6 32.7 32.7 32.8 32.8 32.9 33.0 31.4 31.5 30.6 31.2 23.6 26.6 31.4 31.4 31.5 31.5 31.6 31.5
+                     SSIM .88 .88 .84 .87 .66 .74 .88 .88 .88 .88 .88 .88 .77 .78 .72 .77 .51 .67 .78 .78 .78 .78 .78 .78
+  Gaussian 1D
+                      MSD 28.7 5.5 34.3 11.9 76.5 24.0 8.5 6.5 5.7 4.9 6.4 5.4 14.1 8.1 32.8 12.0 68.4 19.9 9.5 7.6 6.7 5.9 7.8 6.7
+                  12× PSNR 31.8 31.8 31.0 31.2 22.3 23.6 31.3 31.3 31.3 31.3 31.5 31.5 29.6 29.6 29.2 29.6 22.6 24.3 29.3 29.3 29.4 29.4 29.6 29.5
+                      SSIM .86 .86 .82 .84 .61 .66 .85 .85 .85 .85 .85 .85 .71 .72 .69 .72 .48 .60 .72 .73 .73 .73 .73 .73
+                     MSD 24.0 5.9 32.7 15.1 77.1 29.6 10.0 7.3 6.0 4.8 7.1 5.6 14.9 9.0 34.1 15.2 70.7 23.4 12.1 9.0 7.5 6.2 9.2 7.4
+                  8× PSNR 35.8 35.9 33.7 34.8 26.2 31.4 35.5 35.6 35.7 35.7 35.8 35.8 33.6 33.5 32.3 33.2 24.3 30.3 33.6 33.5 33.6 33.5 33.5 33.4
+                     SSIM .92 .92 .86 .90 .71 .86 .91 .92 .92 .92 .92 .92 .82 .84 .76 .82 .56 .78 .84 .84 .83 .83 .83 .83
+  Gaussian 2D
+                      MSD 31.4 10.4 43.3 25.5 121.2 62.2 16.8 13.3 11.2 9.5 12.7 10.7 22.7 15.5 47.5 27.8 106.6 47.8 20.2 16.2 14.1 12.2 16.2 14.0
+                  15× PSNR 34.2 34.3 33.0 33.6 24.4 27.7 33.9 34.0 34.1 34.1 34.2 34.2 32.1 32.1 31.5 31.9 23.4 26.8 32.1 32.1 32.1 32.0 31.9 31.8
+                      SSIM .90 .90 .85 .87 .66 .77 .89 .90 .90 .90 .90 .90 .80 .80 .75 .78 .51 .68 .81 .80 .80 .80 .80 .79
+                     MSD 24.5 8.6 30.8 18.0 70.6 34.3 13.1 10.2 8.5 7.1 10.1 8.3 18.5 12.5 32.4 18.5 62.8 25.9 15.6 12.2 11.0 9.3 14.1 11.8
+                  8× PSNR 36.5 36.8 33.6 34.8 25.7 30.1 36.0 36.2 36.5 36.6 36.7 36.8 33.7 33.6 32.2 33.1 24.3 29.5 33.6 33.6 33.5 33.3 33.3 33.0
+                     SSIM .92 .93 .86 .90 .69 .83 .92 .92 .93 .93 .93 .93 .82 .84 .76 .82 .55 .75 .84 .83 .83 .82 .82 .81
+  Poisson 2D
+                      MSD 34.7 11.6 39.2 24.6 104.6 55.1 17.1 13.7 11.9 10.1 13.3 11.3 23.4 15.4 42.1 26.2 99.6 44.3 19.4 15.8 14.1 12.2 16.7 14.4
+                  15× PSNR 34.9 35.1 33.0 33.6 24.9 28.0 34.2 34.4 34.7 34.7 34.9 35.0 32.3 32.4 31.5 32.0 23.8 27.7 32.2 32.3 32.4 32.3 32.3 32.2
+                      SSIM .90 .90 .84 .87 .66 .77 .89 .90 .90 .90 .90 .90 .80 .80 .74 .78 .52 .68 .81 .81 .80 .80 .80 .80
+
+
+                                                     
+and re-encoding gives A PMSC (z1 ; y) − PMSC (z2 ; y) =                       but for C > 1 coils SSH is then a rank-N orthogonal
+Ccross u with Ccross = MFSSH F−1 . Hence                                      projector on the CN -dimensional multi-coil space (not the
+                                                                             identity), so Ccross ̸= 0 even for perfectly conditioned
+          A PMSC (z1 ; y) − PMSC (z2 ; y) 2                                   maps and MSC reduces measured dispersion strongly but
+                                                      (8)
+            ≤ ∥Ccross ∥2 (I − M)FS(z1 − z2 ) 2 .                              not exactly to zero. The same normalization gives S+ =
+                                                                              (SH S)−1 SH = SH , so substituting the SENSE pseudoin-
+Proof. Subtracting two outputs of the linear operator in                      verse [27, 35] leaves post-MSC dispersion essentially un-
+Eq. (6) cancels the measured term:                                            changed and cannot lower a floor set by SSH . Reducing it
+                                                                              would instead require a regularized inverse, which can am-
+ PMSC (z1 ; y) − PMSC (z2 ; y) = SH F−1 (I − M)FS∆z
+                                                                              plify low-sensitivity noise, so we use SH by default.
+                                       = SH F−1 u.                               In practice, we apply PMSC once, to the sampler’s final
+                                                                              output: xout ← PMSC (xbaseout ; y) (MSC). It has no trainable
+Left-multiplying by A = MFS gives                                             parameters, requires no retuning, and costs one forward and
+                                                                              inverse Fourier transform.
+   A PMSC (z1 ; y) − PMSC (z2 ; y) = MFSSH F−1 u
+                                  
+
+                                            = Ccross u.                       4. Experiments
+The stated inequality follows from submultiplicativity of                     4.1. Experimental Setup & Baselines
+the operator norm and the definition of u.
+                                                                              We evaluate on two complementary multi-coil fastMRI [38]
+   Physically, because the measurement terms cancel, post-                    anatomies: axial brain (a high-SNR clinical dataset) and
+MSC measured dispersion is independent of the base sam-                       coronal knee, which serves as an anatomy-transfer test.
+pler’s original measured-subspace disagreement. It arises                     All data are coil-combined with ESPIRiT-estimated sensi-
+only from unmeasured-to-measured cross-coupling through                       tivities [35], square-cropped and resized to 256×256, and
+SH , captured by Ccross = MFSSH F−1 . This residual is                        scored on a foreground ROI after a single least-squares scale
+intrinsic to sensitivity-weighted coil combination: ESPIRiT                   match. The full brain sweep (Tab. 2) spans five contrasts.
+maps are root-sum-of-squares normalized, so SH S = I,                         The knee sweep covers the PD and PDFS contrasts. Each
+
+
+                                                                          5
+Table 2. OOD brain reconstruction. Knee prior reconstructs five fastMRI brain contrasts at R = 8, 12. Metrics: MSD (×10−4 , ↓),
+PSNR (dB, ↑), SSIM (↑). Better of base/+MSC in bold (display ties unbolded).
+
+Contrast Metric                                     R=8                                                        R = 12
+                                       Soft                       Consistent                       Soft                      Consistent
+                              DPS    Nila-DC     ΠGDM     DDNM      MCG        Score      DPS     Nila-DC   ΠGDM     DDNM      MCG        Score
+                          base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC base MSC
+                    MSD 59.1 3.9 24.8 6.5 62.4 9.0 5.1 4.0 3.6 3.1 4.1 3.4 70.0 5.8 29.5 9.0 79.9 16.4 7.0 5.6 5.3 4.6 5.9 5.0
+T2                  PSNR 23.4 23.5 22.7 22.8 17.9 19.7 22.3 22.3 22.7 22.7 22.9 22.9 20.1 20.1 19.6 19.7 16.8 17.9 19.1 19.1 19.6 19.7 19.8 19.8
+                    SSIM .76 .76 .69 .72 .36 .52 .70 .70 .72 .72 .73 .74 .63 .64 .58 .60 .28 .39 .57 .57 .61 .61 .62 .62
+                    MSD 35.5 4.7 24.7 6.8 56.1 9.3 5.8 4.7 4.2 3.8 4.8 4.2 44.5 6.3 26.5 8.5 65.0 14.8 7.3 6.0 5.7 5.0 6.3 5.5
+FLAIR               PSNR 24.6 24.7 24.0 24.1 19.0 20.8 23.8 23.8 24.2 24.2 24.3 24.3 22.2 22.3 21.0 21.1 17.8 19.1 20.5 20.6 21.8 21.8 22.0 22.0
+                    SSIM .71 .71 .63 .68 .39 .52 .68 .68 .70 .70 .71 .71 .62 .62 .52 .56 .34 .43 .54 .54 .60 .61 .61 .62
+                    MSD 47.6 2.8 16.7 4.1 53.4 6.6 3.5 2.7 2.5 2.1 2.8 2.3 53.0 3.7 17.8 5.2 60.2 10.5 4.3 3.3 3.5 2.9 3.7 3.1
+T1                  PSNR 28.6 28.8 27.8 28.0 20.7 22.9 27.6 27.6 27.0 27.0 27.3 27.3 26.2 26.3 25.3 25.4 19.3 20.6 24.6 24.6 23.7 23.7 24.0 24.0
+                    SSIM .81 .82 .76 .81 .56 .64 .80 .80 .80 .80 .80 .80 .75 .75 .71 .74 .49 .55 .71 .71 .70 .70 .71 .71
+                    MSD 61.3 4.0 23.9 6.1 78.2 10.9 5.2 4.1 3.8 3.2 4.2 3.6 66.2 5.1 24.8 7.6 85.0 16.6 6.4 5.2 4.6 4.1 5.2 4.5
+T1PRE               PSNR 26.8 27.0 26.4 26.6 18.8 21.2 26.2 26.2 26.4 26.4 26.5 26.6 24.1 24.1 23.4 23.5 17.2 18.7 22.9 23.0 22.8 22.8 23.1 23.1
+                    SSIM .77 .78 .73 .77 .48 .56 .76 .76 .76 .77 .77 .77 .69 .69 .64 .68 .42 .47 .66 .66 .66 .66 .67 .67
+       MSD 122.5 4.2 34.0 5.2 115.0 9.5 4.8 4.1 3.8 3.4 4.2 3.7 122.9 5.6 34.7 6.3 120.4 14.9 5.7 4.8 5.3 4.8 5.7 5.0
+T1POST PSNR 27.9 28.1 26.7 26.9 19.9 22.2 26.6 26.7 26.7 26.7 26.8 26.9 24.8 24.9 24.2 24.3 18.2 19.7 23.7 23.7 22.9 22.9 23.3 23.3
+       SSIM .79 .80 .73 .78 .52 .60 .77 .77 .78 .78 .78 .78 .71 .71 .66 .70 .45 .50 .68 .68 .65 .65 .67 .67
+
+
+                                                  DPS                                  Nila-DC                          DDNM
+                         GT               base             +MSC                base              +MSC            base              +MSC
+   Reconstruction
+   ROI zoom
+dispersion
+ k-space
+
+
+
+
+Figure 3. Qualitative measured-subspace consistency. In-domain knee PD, Gaussian-1D mask, R = 8. Columns show GT and
+base/+MSC pairs for DPS, Nila-DC, and DDNM. Rows show chain-mean reconstruction, ROI zoom, and central k-space posterior disper-
+sion across L samples with unmeasured lines dimmed.
+
+
+cell is the median over 20 volumes × 4 central slices, and                         consistency), and ΠGDM [30]. The three bases on the Con-
+each experiment states the contrasts it uses (e.g. the down-                       sistent side either embed a hard projection or empirically
+stream task reports T1 and T1POST). Unless otherwise                               behave measured-consistently in our audit: DDNM [36]
+stated, headline analyses use acceleration R = 8, L = 8                            (range/null-space split), MCG [6] (manifold-constrained
+chains, and T = 300 reverse steps.                                                 gradient), and Score-MRI [5, 33] (per-step POCS-style k-
+                                                                                   space replacement). Each base appears beside its deter-
+   We wrap six base samplers spanning the Soft-to-
+                                                                                   ministic +MSC wrap. MSC is not a new reconstructor:
+Consistent spectrum. The three Soft bases steer sampling
+                                                                                   reconstruction quality is inherited from the base sampler,
+with a soft data term and lack a hard measured-subspace
+                                                                                   while the targeted effect is measured-subspace admissibil-
+projection: DPS [7], Nila-DC [15] (noise-adaptive data
+
+
+                                                                               6
+Table 3. Reversed organ mismatch. Brain prior reconstructs            Table 4. Ablation on the DPS base. In-domain knee PD and
+knee CORPD at R = 8. Metrics: MSD (×10−4 , ↓), PSNR (dB,              OOD brain T1POST at R = 8. Columns toggle sampler, output
+↑), SSIM (↑, leading zero omitted). Better of base/+MSC in bold       lock, and SENSE pseudoinverse (S+ ); DC-only is the diversity-
+(display ties unbolded).                                              collapse control. Bold compares base DPS with MSC rows only
+                                                                      (display ties unbolded).
+                   MSD↓          PSNR↑        SSIM↑
+                                                                          sampler out S+ MSD↓ USD (%)↑ PSNR↑ SSIM↑
+                 base MSC base MSC base MSC
+                                                                          knee PD (in-domain)
+       Soft                                                                  ✓              30.87     100%       30.91   0.849
+       DPS     40.2     5.1   28.3   28.3    .78   .79                             ✓        0.40       7.5%      30.30   0.846
+       Nila-DC 24.3     7.0   27.4   27.5    .73   .76                       ✓     ✓        4.73      99.3%      30.91   0.852
+       ΠGDM 51.7        9.3   22.0   23.3    .56   .63                       ✓     ✓ ✓ 4.68           98.3%      30.91   0.852
+
+       Consistent                                                         brain T1POST (OOD)
+                                                                             ✓            122.5       100%       27.91   0.795
+       DDNM       6.3   5.0   26.8   26.8    .74   .74                             ✓       0.2         7.6%      27.92   0.799
+       MCG        4.5   4.0   27.0   27.1    .76   .76                       ✓     ✓       4.2        99.7%      28.08   0.798
+       Score      5.1   4.4   27.2   27.2    .76   .76                       ✓     ✓ ✓     4.2        98.7%      28.08   0.798
+
+
+
+ity. The DC-only variant, a measured lock without stochas-
+ticity, serves as a diversity-collapse control.                       plers. Wrapping the leakage-prone Soft bases (DPS, Nila-
+    No base sampler is retuned when MSC is appended.                  DC, ΠGDM) cuts MSD by about an order of magnitude
+Each base uses its source paper’s default guidance and step           across datasets and conditions. In contrast, the already-
+settings, and the same L = 8 noise seeds are shared be-               consistent bases (DDNM, MCG, Score-MRI) move only
+tween a base and its +MSC wrap, so each comparison is                 marginally, matching the fixed point of Proposition 1 rather
+paired and MSC is a deterministic post-map of the final               than a generic re-projection artifact. Volume-level paired
+chains. Sensitivity maps use sigpy ESPIRiT rather than the            tests confirm every leakage-prone MSD drop (p ≤ 1.9 ×
+BART reference, so absolute numbers are not directly com-             10−6 after Holm correction), and bootstrap confidence in-
+parable to the original Nila report. Both priors are uncondi-         tervals for the headline DPS-brain reduction are tight (e.g.
+tional DDPM-style U-Nets [14] (256×256, 128 base chan-                T2 15.0× [14.1, 16.1], median 16.5× across the five con-
+nels, 1000-step linear schedule, EMA weights), trained sep-           trasts, up to ∼29× on T1POST). These ratios and their
+arately per anatomy following the Nila setup [15]: a multi-           intervals are computed per volume and then aggregated,
+contrast brain prior on 52k fastMRI images and a single-              so they need not equal the quotient of the independently
+contrast PD knee prior on 30.8k fastMRI images. Since                 rounded median cells in Tab. 2. Figure 3 shows this effect
+each prior is anatomy-specific, applying one to the other             at the sample level: on the Soft bases the dispersion on ac-
+is a genuine out-of-distribution test on an anatomy the prior         quired k-space lines drops sharply under +MSC while the
+never saw. Headline numbers carry volume-level bootstrap              reconstruction is visually unchanged, whereas the Consis-
+95% confidence intervals, and paired significance tests use           tent DDNM barely moves.
+volume-level Wilcoxon tests with Holm correction where                Finding 2: The MSD reduction is measured-subspace
+multiple leakage-prone pairs are tested.                              consistency, not posterior collapse. A measured-subspace
+                                                                      projection can drive MSD near zero trivially by collaps-
+4.2. Main Reconstruction Results: Soft vs. Consis-                    ing the posterior, so MSD must be read together with
+      tent Split                                                      unmeasured-subspace dispersion (USD). MSC preserves
+Table 1 (in-domain knee, across masks, accelera-                      the base sampler’s unmeasured diversity while suppress-
+tions, and the PD/PDFS contrasts) and Tab. 2 (out-of-                 ing measured leakage, whereas a hard data-consistency lock
+distribution transfer, where the knee prior reconstructs five         without stochasticity collapses it. The ablation (Tab. 4)
+brain contrasts) report MSD↓ and reconstruction quality               quantifies this gap.
+(PSNR/SSIM) for every base sampler, comparing each base               Finding 3: Reconstruction quality is preserved or mod-
+against its paired +MSC column. MSD is the primary                    estly improved. Across both datasets, MSC holds or im-
+admissibility metric, with PSNR/SSIM as quality checks.               proves PSNR and SSIM. The strongest bases change little in
+The main result is a sampler-structure effect: MSC changes            PSNR (typically within ±0.1 dB), while the weakest base,
+samplers that leak in the measured subspace and is nearly             ΠGDM, gains the most in both PSNR and SSIM. Paired
+an identity map on samplers that already enforce a hard               tests confirm SSIM gains on every leakage-prone base, in-
+measured-subspace constraint.                                         cluding DPS on knee PD and brain T2 (20/20 volumes in
+Finding 1: MSC selectively reduces MSD on Soft sam-                   both, p = 1.9 × 10−6 ).
+
+
+                                                                  7
+Table 5. OOD downstream brain extraction. HD-BET Dice               4.5. Downstream Task Utility & Computational
+(↑) and HD95 (mm, ↓) for DPS base vs. +MSC on T1/T1POST                  Overhead
+at R = 8, 12. The vol. row counts higher-Dice MSC volumes.
+Better values in bold (display ties unbolded).                      Brain extraction provides a downstream sanity check: re-
+                                                                    moving measured-subspace leakage should not damage task
+         Contrast Metric      R=8         R = 12                    utility. Using the same shared PD knee prior as Tabs. 1
+                            base MSC base MSC                       and 2, we take the fully sampled brain mask as reference
+                    Dice↑ .950 .951 .933 .934                       and measure the HD-BET [17] mask on 20 full-volume
+         T1         HD95↓ 4.82 4.76 6.02 5.90                       fastMRI brain cases for T1 and T1POST (Tab. 5). The
+                    vol.↑    14/20     14/20                        DPS base is already near the mask ceiling (Dice 0.93–0.96),
+                Dice↑ .956 .956 .928 .929                           and MSC is neutral: Dice changes by at most ±0.001,
+         T1POST HD95↓ 4.31 4.20 6.42 6.29                           while HD95 is unchanged or slightly improved (e.g. T1
+                vol.↑    15/20     12/20                            6.02 → 5.90, T1POST 6.42 → 6.29 mm at R = 12).
+                                                                        MSC adds one output correction: a forward/inverse FFT
+                                                                    and coil combination (O(C N log N ) for C coils and N
+                                                                    pixels), with zero trainable parameters. On a 256×256 A/B
+4.3. Robustness & Generalization Under Mismatch
+                                                                    harness with 8 chains, one application takes 1.09 ms versus
+The robustness experiments vary the axes that could plausi-         73.0 ms for one denoiser reverse step. Applied once after a
+bly break a measured-subspace post-map. First, mask type            T = 300 trajectory, this is < 0.01% overhead. It requires
+does not require retuning: Tab. 1 includes Uniform 1D,              no retraining and no base-sampler retuning.
+Gaussian-1D, Gaussian-2D, and Poisson-disc masks, and
+MSC simply locks the samples to whichever measurements              5. Conclusion
+were acquired. Second, the pattern persists across acceler-
+ation, covering knee PD/PDFS at R ∈ {4, 8, 12, 15} and              We introduced measured-subspace consistency (MSC), a
+brain at R ∈ {8, 12}.                                               training-free, plug-and-play terminal correction that locks
+                                                                    acquired multi-coil k-space at a diffusion posterior sam-
+   The same organization holds under anatomy and prior              pler’s output. Theoretically, we prove exact measured-
+mismatch. Table 1 covers knee reconstruction, while Tab. 2          subspace agreement in the ideal case and bound the cross-
+reconstructs brain contrasts using the knee prior. The tables       subspace coupling residual for the practical sensitivity-
+therefore test both in-domain use and out-of-distribution           weighted operator. Empirically, we demonstrate MSC’s se-
+transfer. The trend persists even under a reversed organ            lectivity across six base samplers, two anatomies, and out-
+mismatch: applying the brain prior to knee data still cuts          of-distribution priors: it substantially reduces measured-
+measured-subspace dispersion on the Soft bases by 3.5–              subspace dispersion for leakage-prone Soft bases while act-
+7.9× in Tab. 3, while holding or improving SSIM, and                ing as a near-identity map for Consistent ones. By sup-
+leaves the Consistent bases near-unchanged. Finally, the            pressing measured-subspace leakage, MSC preserves legit-
+held-out samplers land on their predicted sides: ΠGDM be-           imate unmeasured diversity and maintains or improves re-
+haves as a Soft sampler, while MCG behaves as a Consistent          construction quality at negligible cost. It thus redirects pos-
+sampler.                                                            terior variability away from scanner-fixed coefficients and
+                                                                    toward unacquired frequencies, ensuring that the sampler’s
+                                                                    uncertainty reflects what the prior had to infer.
+4.4. Ablation Study
+
+The ablation separates MSC from two simpler alternatives.           Limitations and Future Work. First, in the presence
+On the DPS base (Tab. 4), MSC lowers MSD in both knee               of measurement noise (y = Ax + ε), locking the
+PD and out-of-distribution brain T1POST while keeping               acquired k-space introduces a small conservative bias
+nearly all unmeasured diversity (≥ 98%). A DC-only mea-             by removing legitimate noise-level variance in the mea-
+sured lock reaches near-zero MSD only by collapsing that            sured subspace. Second, the sensitivity-weighted multi-
+diversity (≤ 8%), so it is not an admissible uncertainty-           coil projection leaves a small residual measured-subspace
+                                                                    floor because SSH ̸= I couples a fraction of unmea-
+preserving substitute. Replacing the adjoint coil combiner
+                                                                    sured energy onto measured lines. Third, our analy-
+SH with the SENSE pseudoinverse S+ leaves the result                sis is restricted to 2D Cartesian multi-coil MRI. Extend-
+essentially unchanged, as expected since RSS-normalized             ing MSC to non-Cartesian trajectories, 3D acquisitions,
+maps give S+ = SH . The small residual reflects coil com-           and evaluating its prospective clinical utility in down-
+bination (SSH ̸= I), not the combiner choice, so the default        stream diagnostic tasks are important directions for future
+keeps the simpler SH .                                              work.
+
+
+                                                                8
+References                                                                     and Florian Knoll. Learning a variational network for recon-
+                                                                               struction of accelerated MRI data. Magnetic Resonance in
+ [1] Hemant K. Aggarwal, Merry P. Mani, and Mathews Jacob.                     Medicine, 79(6):3055–3071, 2018. 1
+     MoDL: Model-based deep learning architecture for inverse
+                                                                          [14] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising dif-
+     problems. IEEE Transactions on Medical Imaging, 38(2):
+                                                                               fusion probabilistic models. In Advances in Neural Informa-
+     394–405, 2019. 1
+                                                                               tion Processing Systems (NeurIPS), pages 6840–6851, 2020.
+ [2] Anastasios N. Angelopoulos, Amit Pal Kohli, Stephen Bates,
+                                                                               1, 7
+     Michael Jordan, Jitendra Malik, Thayer Alshaabi, Srigokul
+                                                                          [15] Shoujin Huang, Guanxiong Luo, Xi Wang, Ziran Chen,
+     Upadhyayula, and Yaniv Romano. Image-to-image regres-
+                                                                               Yuwan Wang, Huaishui Yang, Pheng-Ann Heng, Lingyan
+     sion with distribution-free uncertainty quantification and ap-
+                                                                               Zhang, and Mengye Lyu. Noise level adaptive diffusion
+     plications in imaging. In International Conference on Ma-
+                                                                               model for robust reconstruction of accelerated MRI. In In-
+     chine Learning (ICML), pages 717–730, 2022. 3
+                                                                               ternational Conference on Medical Image Computing and
+ [3] Vegard Antun, Francesco Renna, Clarice Poon, Ben Adcock,
+                                                                               Computer-Assisted Intervention, pages 498–508. Springer
+     and Anders C. Hansen. On instabilities of deep learning in
+                                                                               Nature Switzerland, 2024. 2, 6, 7
+     image reconstruction and the potential costs of AI. Proceed-
+     ings of the National Academy of Sciences, 117(48):30088–             [16] Lee Hyoseok, Sohwi Lim, Eunju Cha, and Tae-Hyun Oh.
+     30095, 2020. 2                                                            Measurement-consistent langevin corrector for stabilizing
+                                                                               latent diffusion inverse problem solvers, 2026. Preprint. 2
+ [4] Sayantan Bhadra, Varun A. Kelkar, Frank J. Brooks, and
+     Mark A. Anastasio. On hallucinations in tomographic im-              [17] Fabian Isensee, Marianne Schell, I. Tursunova, G. Brugnara,
+     age reconstruction. IEEE Transactions on Medical Imaging,                 D. Bonekamp, U. Neuberger, A. Wick, H. Schlemmer, S.
+     40(11):3249–3260, 2021. 2                                                 Heiland, W. Wick, et al. Automated brain extraction of multi-
+ [5] Hyungjin Chung and Jong Chul Ye. Score-based diffusion                    sequence MRI using artificial neural networks. Human Brain
+     models for accelerated MRI. Medical Image Analysis, 80:                   Mapping, 40(17):4952–4964, 2019. 8
+     102479, 2022. 1, 2, 3, 6                                             [18] Ajil Jalal, Marius Arvinte, Giannis Daras, Eric Price,
+ [6] Hyungjin Chung, Byeongsu Sim, Dohoon Ryu, and                             Alexandros G. Dimakis, and Jon Tamir. Robust compressed
+     Jong Chul Ye. Improving diffusion models for inverse prob-                sensing MRI with deep generative priors. In Advances in
+     lems using manifold constraints. In Advances in Neural                    Neural Information Processing Systems (NeurIPS), pages
+     Information Processing Systems 35, pages 25683–25696.                     14938–14954, 2021. 1, 2, 3
+     Neural Information Processing Systems Foundation, Inc.               [19] Bahjat Kawar, Michael Elad, Stefano Ermon, and Jiaming
+     (NeurIPS), 2022. 2, 6                                                     Song. Denoising diffusion restoration models. In Ad-
+ [7] Hyungjin Chung, Jeongsol Kim, Michael T. McCann,                          vances in Neural Information Processing Systems (NeurIPS),
+     Marc L. Klasky, and Jong Chul Ye. Diffusion posterior sam-                pages 23593–23606. Neural Information Processing Sys-
+     pling for general noisy inverse problems. In International                tems Foundation, Inc. (NeurIPS), 2022. 2, 4
+     Conference on Learning Representations (ICLR), 2023. 2, 6            [20] Florian Knoll, Kerstin Hammernik, Chi Zhang, Steen
+ [8] Hyungjin Chung, Suhyeon Lee, and Jong Chul Ye. Decom-                     Moeller, Thomas Pock, Daniel K. Sodickson, and Mehmet
+     posed diffusion sampler for accelerating large-scale inverse              Akcakaya. Deep-learning methods for parallel magnetic res-
+     problems. In International Conference on Learning Repre-                  onance imaging reconstruction: A survey of the current ap-
+     sentations (ICLR), 2024. 3                                                proaches, trends, and issues. IEEE Signal Processing Maga-
+ [9] Zhuoxu Cui, Chentao Cao, Jing Cheng, Seng Jia, Hairong                    zine, 37(1):128–140, 2020. 1
+     Zheng, Dong Liang, and Yanjie Zhu. SPIRiT-diffusion: Self-           [21] Volodymyr Kuleshov, Nathan Fenner, and Stefano Ermon.
+     consistency driven diffusion model for accelerated MRI.                   Accurate uncertainties for deep learning using calibrated re-
+     IEEE Transactions on Medical Imaging, 44(2):1019–1031,                    gression. In International Conference on Machine Learning
+     2024. 2                                                                   (ICML), pages 2801–2809, 2018. 3
+[10] Vineet Edupuganti, Morteza Mardani, Shreyas Vasanawala,              [22] Michael Lustig and John M. Pauly. SPIRiT: Iterative self-
+     and John M. Pauly. Uncertainty quantification in deep MRI                 consistent parallel imaging reconstruction from arbitrary k-
+     reconstruction. IEEE Transactions on Medical Imaging, 40                  space. Magnetic Resonance in Medicine, 64(2):457–471,
+     (1):239–250, 2021. 3                                                      2010. 2, 3
+[11] Mark A. Griswold, Peter M. Jakob, Robin M. Heidemann,                [23] Michael Lustig, David Donoho, and John M. Pauly. Sparse
+     Mathias Nittka, Vladimir Jellus, Jianmin Wang, Berthold                   MRI: The application of compressed sensing for rapid MR
+     Kiefer, and Axel Haase. Generalized autocalibrating par-                  imaging. Magnetic Resonance in Medicine, 58(6):1182–
+     tially parallel acquisitions (GRAPPA). Magnetic Resonance                 1195, 2007. 1
+     in Medicine, 47(6):1202–1210, 2002. 3                                [24] Jan Nikolas Morshuis, Christian Schlarmann, Thomas
+[12] Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian Q. Wein-                      Küstner, Christian F. Baumgartner, and Matthias Hein. Mind
+     berger. On calibration of modern neural networks. In In-                  the detail: Uncovering clinically relevant image details in ac-
+     ternational Conference on Machine Learning (ICML), pages                  celerated MRI with semantically diverse reconstructions. In
+     1321–1330, 2017. 3                                                        International Conference on Medical Image Computing and
+[13] Kerstin Hammernik, Teresa Klatzer, Erich Kobler,                          Computer-Assisted Intervention, pages 356–366. Springer
+     Michael P. Recht, Daniel K. Sodickson, Thomas Pock,                       Nature Switzerland, 2025. 2, 3
+
+
+                                                                      9
+[25] Dominik Narnhofer, Alexander Effland, Erich Kobler, Ker-                 to structural similarity. IEEE Transactions on Image Pro-
+     stin Hammernik, Florian Knoll, and Thomas Pock. Bayesian                 cessing, 13(4):600–612, 2004. 3
+     uncertainty estimation of learned variational MRI recon-            [38] Jure Zbontar, Florian Knoll, Anuroop Sriram, Tullie Mur-
+     struction. IEEE Transactions on Medical Imaging, 41(2):                  rell, Zhengnan Huang, Matthew J. Muckley, Aaron Defazio,
+     279–291, 2022. 3                                                         Ruben Stern, Patricia Johnson, Mary Bruno, et al. fastMRI:
+[26] Cheng Peng, Pengfei Guo, S. Kevin Zhou, Vishal M. Pa-                    An open dataset and benchmarks for accelerated MRI. arXiv
+     tel, and Rama Chellappa. Towards performant and reliable                 preprint arXiv:1811.08839, abs/1811.08839, 2018. 5
+     undersampled MR reconstruction via diffusion model sam-
+     pling. In Lecture Notes in Computer Science, pages 623–633.
+     Springer Nature Switzerland, 2022. 2
+[27] Klaas P. Pruessmann, Markus Weiger, Markus B. Scheideg-
+     ger, and Peter Boesiger. SENSE: Sensitivity encoding for
+     fast MRI. Magnetic Resonance in Medicine, 42(5):952–962,
+     1999. 5
+[28] Alexei A. Samsonov, Eugene G. Kholmovski, Dennis L.
+     Parker, and Chris R. Johnson. POCSENSE: POCS-based
+     reconstruction for sensitivity encoded magnetic resonance
+     imaging. Magnetic Resonance in Medicine, 52(6):1397–
+     1406, 2004. 3, 4
+[29] Bowen Song, Soo Min Kwon, Zecheng Zhang, Xinyu Hu,
+     Qing Qu, and Liyue Shen. Solving inverse problems with
+     latent diffusion models via hard data consistency. In Inter-
+     national Conference on Learning Representations (ICLR),
+     2024. 3
+[30] Jiaming Song, Arash Vahdat, Morteza Mardani, and Jan
+     Kautz. Pseudoinverse-guided diffusion models for inverse
+     problems. In International Conference on Learning Repre-
+     sentations (ICLR), 2023. 2, 6
+[31] Yang Song and Stefano Ermon. Generative modeling by
+     estimating gradients of the data distribution. In Advances
+     in Neural Information Processing Systems (NeurIPS), pages
+     11895–11907, 2019. 1
+[32] Yang Song, Jascha Sohl-Dickstein, Diederik P. Kingma, Ab-
+     hishek Kumar, Stefano Ermon, and Ben Poole. Score-based
+     generative modeling through stochastic differential equa-
+     tions. In International Conference on Learning Represen-
+     tations (ICLR), 2021. 1
+[33] Yang Song, Liyue Shen, Lei Xing, and Stefano Ermon. Solv-
+     ing inverse problems in medical imaging with score-based
+     generative models. In International Conference on Learning
+     Representations (ICLR), 2022. 1, 2, 6
+[34] Jacopo Teneggi, Matthew Tivnan, J. Webster Stayman, and
+     Jeremias Sulam. How to trust your diffusion model: A con-
+     vex optimization approach to conformal risk control. In In-
+     ternational Conference on Machine Learning (ICML), pages
+     33940–33960, 2023. 3
+[35] Martin Uecker, Peng Lai, Mark J. Murphy, Patrick Virtue,
+     Michael Elad, John M. Pauly, Shreyas S. Vasanawala, and
+     Michael Lustig. ESPIRiT—an eigenvalue approach to au-
+     tocalibrating parallel MRI: where SENSE meets GRAPPA.
+     Magnetic Resonance in Medicine, 71(3):990–1001, 2014. 5
+[36] Yinhuai Wang, Jiwen Yu, and Jian Zhang. Zero-shot im-
+     age restoration using denoising diffusion null-space model.
+     In International Conference on Learning Representations
+     (ICLR), 2023. 2, 4, 6
+[37] Zhou Wang, Alan C. Bovik, Hamid R. Sheikh, and Eero P.
+     Simoncelli. Image quality assessment: From error visibility
+
+
+                                                                    10
+

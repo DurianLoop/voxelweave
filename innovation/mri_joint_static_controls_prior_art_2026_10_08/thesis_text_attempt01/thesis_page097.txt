@@ -1,0 +1,45 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+Formally speaking, in RL, an agent acts in anenvironment with an underlying model
+that may be known or not. The agent will stay in one of the many statess∈S of the
+environment, and take an actiona∈A , which allow it to move from its current state to
+another states′. As a result of taking the actiona, the agent receives a rewardr∈R as
+feedback.
+This process is repeated several times, and produces a sequence of states, actions and
+rewards. This results in a tuple
+(S1,A 1,R 2,S 2,...,S T )
+whereT is the total number of steps taken. The states, actions and rewards are capitalized
+here as they refer to random variables. This tuple is referred to as anepisode. During
+an episode, the agent interacts with the environment in order to learn a better strategy.
+This strategy is described as a policyπ(s), which is a probability distribution over which
+actions taken in a states are likely to get the maximal cumulative reward. In order to
+quantify this, each state is associated with a value functionVπ(s), which predicts the
+expected amount of future reward that we would receive by acting following the current
+policy π. In RL, one generally aims at learning the policy and/or the value function.
+Modeling the environment. In order to do that, we need to further describe the
+environment by a model. A model usually relies on two quantities, the transition
+probabilityP and the rewardR. Starting in states and taking actiona, the transition
+probability describe how likely it is that we end up moving to states′ and obtaining
+rewardr as a result, namely
+P (s′,r|s,a ) = P[St+1 =s′,Rt+1 =r|St =s,At =a]
+where P describes here a probability. The reward function is defined as the expected
+reward for a given state action pair
+R(s,a ) = E[Rt+1|St =s,At =a] =
+∑
+r∈R
+r
+∑
+s′∈S
+P (s′,r|s,a )
+Value function and state-action function.The value function aims at predicted
+the expected amount of future reward, that is commonly referred to as thereturn and
+defined as
+Gt≜Rt+1 +γRt+2 +...γ T−t−1RT =
+T∑
+k=t
+γk−1Rt+k
+where γ∈ [0, 1] is called thediscounting factor. The idea of the discounting factor is to
+penalize rewards in the future as a way to nudge the agent towardsimmediate benefit.
+Note that the returnGt always sums every future reward until the end of the episode, at
+time T.
+84

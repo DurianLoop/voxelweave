@@ -1,0 +1,98 @@
+8 IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. XX, NO. XX, XXXX 2020
+approach offers an additional 0.75 dB improvement in the
+SNR, which can also be visualized from the zoomed-in images
+in Fig. 4.
+B. Segmentation Quality Comparison
+We compare the segmentation performance of the cascade
+of a segmentation network with the above networks with our
+proposed end-to-end multi-task learning scheme in Table II
+and Fig. 5, respectively. The segmentation results are reported
+in terms of Dice coefficients averaged over 15 subjects. The
+SEG method consists of a UNET for segmentation, trained
+on fully sampled images. K-UNET+SEG, KIKI-Net+SEG,
+IDSLR+SEG, and KDSLR+SEG are the segmentation perfor￾mances of the SEG network on the pre-trained reconstruction
+networks K-UNET, KDSLR, IDSLR, and KIKI-Net, respec￾tively. Among all the methods, the SEG network alone is the
+best performing since it is trained and tested on fully sampled
+images. The segmentation performance of other methods is
+dependent on the reconstruction quality. The IDSLR+SEG pro￾vides more accurate labels than other direct cascade methods
+due to the improved quality of reconstructions (Table I). Our
+proposed end-to-end training approach, IDSLR-SEG, is seen
+to offer better performance than the direct cascade methods,
+including IDSLR+SEG. IDSLR-SEG is trained with labels for
+all training datasets. The quantitative results in Table II agree
+with the results in Fig. 5. In particular, the proposed approach
+offers segmentations that are the closest to SEG. The improved
+segmentation quality of proposed methods over IDSLR+SEG
+is evident from Fig 5.
+Comparison of Reconstruction
+Methods 6-fold 8-fold
+IDSLR 21.99 20.53
+KDSLR 21.04 20.01
+KIKI-Net 21.12 19.93
+K-UNET 19.93 19.08
+Proposed 22.76 21.32
+TABLE I
+QUANTITATIVE COMPARISON OF RECONSTRUCTION METHODS SHOWN
+IN FIG. 4 WITH SNR VALUES AVERAGED OVER 15 SUBJECTS IN DB.
+C. Benefit of Shared Encoder Architecture
+We study the performance of different joint reconstruction￾segmentation architectures in Table III. We note that the
+difference in performance between the proposed fully su￾pervised and the few-shot learning approaches is marginal,
+which is also seen from Fig.5.(e). On the other hand, for
+cascade architecture, the segmentation performance degrades
+significantly in the few-shot learning case. Note that in few￾shot approaches, segmentation labels are available for only
+10% of the data (4 subjects). We also note that this trend
+is mirrored by the reconstruction performances in Table III.
+The proposed few-shot approach gives a similar performance
+compared to the fully supervised one in terms of average
+SNR. We note from the zoomed-in sections of Fig. 5 that
+Comparison of Segmentation
+Methods 6-fold 8-fold
+CSF GM WM CSF GM WM
+KDSLR+SEG 0.714 0.749 0.823 0.652 0.728 0.801
+IDSLR+SEG 0.738 0.751 0.841 0.704 0.749 0.803
+KIKI-Net+SEG 0.703 0.754 0.837 0.637 0.711 0.793
+KUNET+SEG 0.642 0.741 0.788 0.611 0.692 0.747
+Proposed 0.793 0.841 0.898 0.767 0.826 0.889
+CSF GM WM
+SEG 0.805 0.855 0.913
+TABLE II
+COMPARISON OF SEGMENTATION PERFORMANCE. DICE COEFFICIENT
+IS REPORTED FOR CSF, GM AND WM SEGMENTATION. ALL THE
+METRICS ARE AVERAGED OVER 15 SUBJECTS. THE PROPOSED
+METHODS ARE IN BOLD TEXT.
+the cascaded network misses some key regions of the gray
+matter at the center of the slice, denoted by blue arrows. The
+proposed fully supervised and few-shot learning approaches
+have preserved those segmentation details and perform at
+par with the SEG network (segmentation on fully sampled
+images).
+Comparison of Joint Recon-Seg Architectures
+6-fold undersampling
+Methods SNR CSF GM WM
+Proposed 22.76 0.793 0.841 0.898
+Proposed (few shot) 22.71 0.780 0.828 0.895
+Cascade 22.75 0.795 0.838 0.891
+Cascade (few shot) 22.39 0.726 0.773 0.840
+JRS 20.89 0.705 0.721 0.796
+8-fold undersampling
+Proposed 21.32 0.767 0.826 0.889
+Proposed (few shot) 21.28 0.761 0.817 0.886
+Cascade 21.35 0.761 0.818 0.893
+Cascade (few shot) 20.97 0.711 0.747 0.824
+JRS 19.74 0.683 0.702 0.776
+TABLE III
+COMPARISON OF JOINT ARCHITECTURES FOR RECONSTRUCTION AND
+SEGMENTATION QUALITY EVALUATION. DICE COEFFICIENT IS
+REPORTED FOR CSF, GM, AND WM SEGMENTATION, AND THE
+RECONSTRUCTION SNR VALUES ARE IN DB. ALL THE METRICS ARE
+AVERAGED OVER 15 SUBJECTS.
+D. Comparison with State-of-the-art
+The proposed framework is compared against the JRS
+framework in Table III and Fig. 6. The JRS was introduced for
+single-channel MRI; we compare the proposed method against
+a multi-channel extension of it as shown in Fig. 3.(b). The
+weights of the reconstruction network are not shared across
+the iterations, while the weights of the segmentation decoder
+are shared. Hence, if K denotes the number of iterations of the
+reconstruction network, then there are K times more trainable
+parameters than the proposed method. In the JRS scheme, the

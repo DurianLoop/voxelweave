@@ -1,0 +1,53 @@
+5.6. DISCUSSION AND CONCLUSION
+0 0.1 0.2 0.3 0.4
+Sampling rate
+28
+30
+32
+34
+36PSNR
+Lazy greedy (LB)
+Poisson disc-VD
+Adapted random
+Poisson disc
+CAIPIRINHA
+0 0.1 0.2 0.3 0.4
+Sampling rate
+0.55
+0.6
+0.65
+0.7
+0.75
+0.8
+0.85SSIM
+Lazy greedy (LB)
+Poisson disc-VD
+Adapted random
+Poisson disc
+CAIPIRINHA
+Figure 5.22: PSNR and SSIM performance of various masks averaged over 120 testing 3D volumes.
+The lLBCS model was trained using PSNR.
+Figure 5.23 shows the number of evaluations done per round of lLBCS, i.e. the number
+of times where the list of upper boundsρ(·) is updated before adding an element to the
+mask ω in Algorithm 3. Two observations can be made: first, after the initial, expensive,
+step of evaluation, there are remarkably few updates in lLBCS, averaging at2.644 per
+round, whereas the regular LBCS algorithm would have 76368.5, which amounts to the
+enormous speedup of a factor 28884. This testifies to the efficiency of the cost reduction
+achieved by lLBCS. However, and this is our second observation, it seems that the number
+of lazy evaluations are steadily decreasing throughout the iterations, and we hypothesize
+that the decrease of performance observed in Figure 5.22 can be attributed to the list of
+upper bounds getting increasingly unreliable as the number of iterations increase.
+This suggests avenues to further improve the performance of lLBCS. The simplest
+approach would consist in periodically re-computing the list of upper bounds, to more
+accurately track the potentially useful sampling locations. Although this step would
+not be necessary forsubmodular functions, it could benefit our objective, which does
+not exactly satisfy submodularity. Alternatively, one could also re-evaluate a couple of
+elements from the list randomly at each iteration, spreading the computational load over
+a larger number of iterations.
+5.6 Discussion and Conclusion
+In this chapter, we presented two algorithmic contribution that broaden the scale of
+applications of LBCS (Gözcü et al., 2019) beyond its original limits, by successfully
+scaling to settings where the number of candidates grows drastically compared to 2D
+Cartesian MRI, to large dataset and to methods that present long-running times, as in
+multicoil and 3D MRI.
+77

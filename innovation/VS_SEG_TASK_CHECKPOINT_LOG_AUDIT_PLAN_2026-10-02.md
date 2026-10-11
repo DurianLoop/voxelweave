@@ -1,0 +1,7 @@
+# Pretrained T2 release: checkpoint-associated logs only
+
+The [metadata/code source gate](VS_SEG_TASK_MODEL_SOURCE_GATE_PLAN_2026-10-02.md) identified an open CC BY 4.0 T2 release at Zenodo record 6323472. The official file is UNet2d5_Att_Hard_T2_final.zip, exactly 35,275,354 bytes, MD5 a13b58405481b5cbf30771e39499b829. The fixed Git source provides a 176/20/46 split, deterministic label-free test preprocessing (RAS orientation and image normalization) and Gaussian sliding windows of 384x384x64. It hardcodes cuda:0 and legacy MONAI 0.4.0, so do not execute its inference entrypoint.
+
+Download only this bounded T2 archive after checking the 15 GB workspace free-space floor. Verify exact size, official MD5 and independent SHA-256. Retain the source ZIP in innovation/data; list member names/sizes/hashes and read only small text log members. Do not deserialize checkpoints, run embedded code, decode images or read test labels/pixels. Extract text logs into the source cache with safe paths and a 5 MB per-log cap. Determine whether logged training, validation and test subjects match the fixed Git split and current TCIA mapping. Baseline test Dice values in these logs are released prior evidence and must be disclosed; they are not outcomes of our reconstruction intervention.
+
+The next experiment depends on verifying this association, reproducing preprocessing/mask conversion, and a bounded CPU compatibility check. No current user training process or environment is modified.

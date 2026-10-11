@@ -1,0 +1,65 @@
+APPENDIX A. APPENDIX FOR CHAPTER 6
+Focusing first on Figures A.5 and A.6, we can observe that random and low-to-high
+sampling lie significantly behind the performance of LBCS and RL. This is the reason
+why they are not included in the rest of the figures. We can see on the observation that
+random sampling tends to miss important structures, and results in a severely aliased
+observation. On the contrary LtH, that focuses on low frequencies, obtains a good quality
+observation, but fails to yield an improvement after reconstruction, and generally loses
+out on higher frequency details, yielding a poorer performance especially on edges. In
+the rest of the comparison, it is hard to notice any significant visual difference between
+the images obtained by LBCS and the RL method of Bakker et al. (2020). It is however
+clear that in thec+rhz setting, the cResNet yields a significantly better and sharper
+reconstruction at 25% sampling, compared to the UNet. This is also confirmed by the
+results in Table A.4. On this particular image, this trend is also observed at12.5%
+sampling rate on Figure A.6, but this isnot a consistent trend, as this is not highlighted
+by the AUC computation of Table A.3.
+LBCS - LH
+UNet
+Mask
+ Observation
+ Reconstruction
+ Ground truth
+ Error map
+RL - LH
+UNet
+LBCS - LH
+cResNet
+RL - LH
+cResNet
+0.1
+0.2
+0.3
+0.0
+0.1
+0.2
+0.3
+0.1
+0.2
+0.1
+0.2
+SSIM=0.7109
+SSIM_zf=0.6629
+PSNR=23.071
+PSNR_zf=23.618
+SSIM=0.7102
+SSIM_zf=0.6762
+PSNR=22.867
+PSNR_zf=23.864
+SSIM=0.7652
+SSIM_zf=0.6694
+PSNR=26.958
+PSNR_zf=23.453
+SSIM=0.7619
+SSIM_zf=0.6712
+PSNR=26.984
+PSNR_zf=23.529
+Figure A.6: Additional visualization for the image displayed in Figure A.5. The results feature
+12.5% sampling rate.
+Turning now to Figure A.7, it is interesting first to discuss the policies obtained by LBCS
+and RL respectively. The LBCS policy is fixed for the reconstruction algorithm, so the
+first and third rows of Figures A.7a and A.7b will each feature the same policy. The
+adaptive RL policy, on the second and fourth rows seems to have central backbone of
+common frequency, but varies more around higher frequencies, as observed in the Figure
+5 of the appendix of Bakker et al. (2020). However, in both cases, these differences have
+very little quantitative impact, and the same is true visually: there is no clear visual
+144

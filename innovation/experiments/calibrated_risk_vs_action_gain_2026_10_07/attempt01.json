@@ -1,0 +1,814 @@
+{
+  "created_utc": "2026-10-07T12:02:08.824379+00:00",
+  "complete": true,
+  "errors": [],
+  "source_bindings": [
+    {
+      "path": "CALIBRATED_RISK_VS_ACTION_GAIN_CPU_PROTOCOL_2026-10-07.md",
+      "sha256": "b694e43a093333566fcd8df415b9343e2d5158a8cbbae98a87cf022bcd1f53b8"
+    },
+    {
+      "path": "experiments/audit_calibrated_risk_vs_action_gain_2026_10_07.py",
+      "sha256": "ce0961079b12aa405b5bbaf545429600b6f72fa5d2c0c9bc40d38eaa1abc482c"
+    },
+    {
+      "path": "experiments/mc_rc_reference_resources_2026_10_07.py",
+      "sha256": "f98d3f4a46d655b4b0db2967a277288849e91df7de270a7c6b3981d2f5b6e243"
+    }
+  ],
+  "MRI_arrays_loaded": 0,
+  "MRI_model_forwards": 0,
+  "training_updates": 0,
+  "GPU_initialized": false,
+  "confirmation_opened": false,
+  "new_theorem_claimed": false,
+  "publication_claim_confirmed": false,
+  "goal_status": "active",
+  "resources_before": {
+    "workspace_free_bytes": 9778724864,
+    "available_ram_bytes": 99632336896,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false
+  },
+  "groups": [
+    {
+      "group": "A",
+      "four_cell_counts": [
+        0,
+        10,
+        5,
+        85
+      ],
+      "baseline_risk": {
+        "numerator": 9,
+        "denominator": 10,
+        "value": 0.9
+      },
+      "action_risk": {
+        "numerator": 19,
+        "denominator": 20,
+        "value": 0.95
+      },
+      "gain": {
+        "numerator": -1,
+        "denominator": 20,
+        "value": -0.05
+      },
+      "baseline_calibration_error": 0,
+      "action_calibration_error": 0
+    },
+    {
+      "group": "B",
+      "four_cell_counts": [
+        30,
+        10,
+        50,
+        10
+      ],
+      "baseline_risk": {
+        "numerator": 3,
+        "denominator": 5,
+        "value": 0.6
+      },
+      "action_risk": {
+        "numerator": 1,
+        "denominator": 5,
+        "value": 0.2
+      },
+      "gain": {
+        "numerator": 2,
+        "denominator": 5,
+        "value": 0.4
+      },
+      "baseline_calibration_error": 0,
+      "action_calibration_error": 0
+    },
+    {
+      "group": "C",
+      "four_cell_counts": [
+        60,
+        0,
+        30,
+        10
+      ],
+      "baseline_risk": {
+        "numerator": 2,
+        "denominator": 5,
+        "value": 0.4
+      },
+      "action_risk": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "gain": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "baseline_calibration_error": 0,
+      "action_calibration_error": 0
+    },
+    {
+      "group": "D",
+      "four_cell_counts": [
+        90,
+        0,
+        10,
+        0
+      ],
+      "baseline_risk": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "action_risk": {
+        "numerator": 0,
+        "denominator": 1,
+        "value": 0.0
+      },
+      "gain": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "baseline_calibration_error": 0,
+      "action_calibration_error": 0
+    }
+  ],
+  "total_samples": 400,
+  "policies": [
+    {
+      "name": "highest_baseline_risk_equal_budget",
+      "selected_groups": [
+        "A"
+      ],
+      "action_calls": 100,
+      "total_errors": 205,
+      "system_error": {
+        "numerator": 41,
+        "denominator": 80,
+        "value": 0.5125
+      },
+      "net_error_reduction": -5
+    },
+    {
+      "name": "known_two_path_cost_sensitive_equal_budget",
+      "selected_groups": [
+        "B"
+      ],
+      "action_calls": 100,
+      "total_errors": 160,
+      "system_error": {
+        "numerator": 2,
+        "denominator": 5,
+        "value": 0.4
+      },
+      "net_error_reduction": 40
+    },
+    {
+      "name": "random_one_group_outcome_A",
+      "selected_groups": [
+        "A"
+      ],
+      "action_calls": 100,
+      "total_errors": 205,
+      "system_error": {
+        "numerator": 41,
+        "denominator": 80,
+        "value": 0.5125
+      },
+      "net_error_reduction": -5
+    },
+    {
+      "name": "random_one_group_outcome_B",
+      "selected_groups": [
+        "B"
+      ],
+      "action_calls": 100,
+      "total_errors": 160,
+      "system_error": {
+        "numerator": 2,
+        "denominator": 5,
+        "value": 0.4
+      },
+      "net_error_reduction": 40
+    },
+    {
+      "name": "random_one_group_outcome_C",
+      "selected_groups": [
+        "C"
+      ],
+      "action_calls": 100,
+      "total_errors": 170,
+      "system_error": {
+        "numerator": 17,
+        "denominator": 40,
+        "value": 0.425
+      },
+      "net_error_reduction": 30
+    },
+    {
+      "name": "random_one_group_outcome_D",
+      "selected_groups": [
+        "D"
+      ],
+      "action_calls": 100,
+      "total_errors": 190,
+      "system_error": {
+        "numerator": 19,
+        "denominator": 40,
+        "value": 0.475
+      },
+      "net_error_reduction": 10
+    },
+    {
+      "name": "never_call",
+      "selected_groups": [],
+      "action_calls": 0,
+      "total_errors": 200,
+      "system_error": {
+        "numerator": 1,
+        "denominator": 2,
+        "value": 0.5
+      },
+      "net_error_reduction": 0
+    },
+    {
+      "name": "always_call_different_budget",
+      "selected_groups": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "action_calls": 400,
+      "total_errors": 125,
+      "system_error": {
+        "numerator": 5,
+        "denominator": 16,
+        "value": 0.3125
+      },
+      "net_error_reduction": 75
+    },
+    {
+      "name": "nested_high_risk_acceptance_0",
+      "selected_groups": [],
+      "action_calls": 0,
+      "total_errors": 200,
+      "system_error": {
+        "numerator": 1,
+        "denominator": 2,
+        "value": 0.5
+      },
+      "net_error_reduction": 0
+    },
+    {
+      "name": "nested_high_risk_acceptance_1",
+      "selected_groups": [
+        "A"
+      ],
+      "action_calls": 100,
+      "total_errors": 205,
+      "system_error": {
+        "numerator": 41,
+        "denominator": 80,
+        "value": 0.5125
+      },
+      "net_error_reduction": -5
+    },
+    {
+      "name": "nested_high_risk_acceptance_2",
+      "selected_groups": [
+        "A",
+        "B"
+      ],
+      "action_calls": 200,
+      "total_errors": 165,
+      "system_error": {
+        "numerator": 33,
+        "denominator": 80,
+        "value": 0.4125
+      },
+      "net_error_reduction": 35
+    },
+    {
+      "name": "nested_high_risk_acceptance_3",
+      "selected_groups": [
+        "A",
+        "B",
+        "C"
+      ],
+      "action_calls": 300,
+      "total_errors": 135,
+      "system_error": {
+        "numerator": 27,
+        "denominator": 80,
+        "value": 0.3375
+      },
+      "net_error_reduction": 65
+    },
+    {
+      "name": "nested_high_risk_acceptance_4",
+      "selected_groups": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "action_calls": 400,
+      "total_errors": 125,
+      "system_error": {
+        "numerator": 5,
+        "denominator": 16,
+        "value": 0.3125
+      },
+      "net_error_reduction": 75
+    }
+  ],
+  "random_one_group_expected_net_error_reduction": {
+    "numerator": 75,
+    "denominator": 4,
+    "value": 18.75
+  },
+  "gain_and_cost_routing_equivalent_permutations": 24,
+  "nested_acceptance_error_curve": [
+    {
+      "name": "nested_high_risk_acceptance_0",
+      "selected_groups": [],
+      "action_calls": 0,
+      "total_errors": 200,
+      "system_error": {
+        "numerator": 1,
+        "denominator": 2,
+        "value": 0.5
+      },
+      "net_error_reduction": 0
+    },
+    {
+      "name": "nested_high_risk_acceptance_1",
+      "selected_groups": [
+        "A"
+      ],
+      "action_calls": 100,
+      "total_errors": 205,
+      "system_error": {
+        "numerator": 41,
+        "denominator": 80,
+        "value": 0.5125
+      },
+      "net_error_reduction": -5
+    },
+    {
+      "name": "nested_high_risk_acceptance_2",
+      "selected_groups": [
+        "A",
+        "B"
+      ],
+      "action_calls": 200,
+      "total_errors": 165,
+      "system_error": {
+        "numerator": 33,
+        "denominator": 80,
+        "value": 0.4125
+      },
+      "net_error_reduction": 35
+    },
+    {
+      "name": "nested_high_risk_acceptance_3",
+      "selected_groups": [
+        "A",
+        "B",
+        "C"
+      ],
+      "action_calls": 300,
+      "total_errors": 135,
+      "system_error": {
+        "numerator": 27,
+        "denominator": 80,
+        "value": 0.3375
+      },
+      "net_error_reduction": 65
+    },
+    {
+      "name": "nested_high_risk_acceptance_4",
+      "selected_groups": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "action_calls": 400,
+      "total_errors": 125,
+      "system_error": {
+        "numerator": 5,
+        "denominator": 16,
+        "value": 0.3125
+      },
+      "net_error_reduction": 75
+    }
+  ],
+  "nested_action_support_does_not_imply_monotone_system_loss": true,
+  "CRC_finite_n_arithmetic": [
+    {
+      "n": 4,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 5,
+        "value": 0.2
+      },
+      "zero_empirical_satisfies_corrected_inequality": false,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": -3,
+        "denominator": 16,
+        "value": -0.1875
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 4,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 5,
+        "value": 0.2
+      },
+      "zero_empirical_satisfies_corrected_inequality": false,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": -1,
+        "denominator": 8,
+        "value": -0.125
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 4,
+      "alpha": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 5,
+        "value": 0.2
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 1,
+        "denominator": 8,
+        "value": 0.125
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 8,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 9,
+        "value": 0.1111111111111111
+      },
+      "zero_empirical_satisfies_corrected_inequality": false,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": -11,
+        "denominator": 160,
+        "value": -0.06875
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 8,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 9,
+        "value": 0.1111111111111111
+      },
+      "zero_empirical_satisfies_corrected_inequality": false,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": -1,
+        "denominator": 80,
+        "value": -0.0125
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 8,
+      "alpha": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 9,
+        "value": 0.1111111111111111
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 17,
+        "denominator": 80,
+        "value": 0.2125
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 11,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 12,
+        "value": 0.08333333333333333
+      },
+      "zero_empirical_satisfies_corrected_inequality": false,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": -2,
+        "denominator": 55,
+        "value": -0.03636363636363636
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 11,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 12,
+        "value": 0.08333333333333333
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 1,
+        "denominator": 55,
+        "value": 0.01818181818181818
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 11,
+      "alpha": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 12,
+        "value": 0.08333333333333333
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 13,
+        "denominator": 55,
+        "value": 0.23636363636363636
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 19,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 0,
+        "denominator": 1,
+        "value": 0.0
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 19,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 1,
+        "denominator": 19,
+        "value": 0.05263157894736842
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 19,
+      "alpha": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 5,
+        "denominator": 19,
+        "value": 0.2631578947368421
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 59,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 60,
+        "value": 0.016666666666666666
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 2,
+        "denominator": 59,
+        "value": 0.03389830508474576
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 59,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 60,
+        "value": 0.016666666666666666
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 5,
+        "denominator": 59,
+        "value": 0.0847457627118644
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 59,
+      "alpha": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 60,
+        "value": 0.016666666666666666
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 17,
+        "denominator": 59,
+        "value": 0.288135593220339
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 99,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 20,
+        "value": 0.05
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 100,
+        "value": 0.01
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 4,
+        "denominator": 99,
+        "value": 0.04040404040404041
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 99,
+      "alpha": {
+        "numerator": 1,
+        "denominator": 10,
+        "value": 0.1
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 100,
+        "value": 0.01
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 1,
+        "denominator": 11,
+        "value": 0.09090909090909091
+      },
+      "real_MRI_calibration_authorized": false
+    },
+    {
+      "n": 99,
+      "alpha": {
+        "numerator": 3,
+        "denominator": 10,
+        "value": 0.3
+      },
+      "bounded_loss_B": 1,
+      "zero_empirical_corrected": {
+        "numerator": 1,
+        "denominator": 100,
+        "value": 0.01
+      },
+      "zero_empirical_satisfies_corrected_inequality": true,
+      "maximum_empirical_risk_for_corrected_inequality": {
+        "numerator": 29,
+        "denominator": 99,
+        "value": 0.29292929292929293
+      },
+      "real_MRI_calibration_authorized": false
+    }
+  ],
+  "gates": {
+    "per_group_exact_calibration": true,
+    "independent_fraction_counts": true,
+    "perfect_baseline_risk_can_choose_harmful_action": true,
+    "paired_risk_is_known_cost_sensitive_baseline": true,
+    "nonmonotone_correction_loss": true
+  },
+  "resources_after": {
+    "workspace_free_bytes": 9778724864,
+    "available_ram_bytes": 99626393600,
+    "own_process_below_normal": true,
+    "cpu_threads": 1,
+    "disk_reserve_bytes": 8000000000,
+    "new_stage_max_saved_bytes": 250000000,
+    "other_processes_enumerated": false,
+    "other_processes_modified": false
+  },
+  "elapsed_seconds": 0.0014281999319791794
+}

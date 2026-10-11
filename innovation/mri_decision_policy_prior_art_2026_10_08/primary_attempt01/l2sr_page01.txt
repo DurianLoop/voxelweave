@@ -1,0 +1,38 @@
+L2SR: Learning to Sample and Reconstruct for
+Accelerated MRI via Reinforcement Learning
+Pu Y ang1 and Bin Dong 2
+1 the School of Mathematical Sciences, Peking University, Beijing, P.R.China
+2 Beijing International Center for Mathematical Research, Peking University,
+Beijing, P.R.China
+E-mail: dongbin@math.pku.edu.cn
+Submitted 29 October 2023
+Abstract. Magnetic Resonance Imaging (MRI) is a widely used medical
+imaging technique, but its long acquisition time can be a limiting factor in
+clinical settings. To address this issue, researchers have been exploring ways
+to reduce the acquisition time while maintaining the reconstruction quality.
+Previous works have focused on finding either sparse samplers with a fixed
+reconstructor or finding reconstructors with a fixed sampler. However, these
+approaches do not fully utilize the potential of joint learning of samplers and
+reconstructors. In this paper, we propose an alternating training framework for
+jointly learning a good pair of samplers and reconstructors via deep reinforcement
+learning (RL). In particular, we consider the process of MRI sampling as a
+sampling trajectory controlled by a sampler, and introduce a novel sparse-reward
+Partially Observed Markov Decision Process (POMDP) to formulate the MRI
+sampling trajectory. Compared to the dense-reward POMDP used in existing
+works, the proposed sparse-reward POMDP is more computationally efficient
+and has a provable advantage. Moreover, the proposed framework, called
+L2SR (Learning to Sample and Reconstruct), overcomes the training mismatch
+problem that arises in previous methods that use dense-reward POMDP. By
+alternately updating samplers and reconstructors, L2SR learns a pair of samplers
+and reconstructors that achieve state-of-the-art reconstruction performances on
+the fastMRI dataset. Codes are available at https://github.com/yangpuPKU/
+L2SR-Learning-to-Sample-and-Reconstruct .
+Keywords: Accelerated MRI, Deep RL, Sparse-reward POMDP, Alternating Training
+Submitted to: Inverse Problems
+1. Introduction
+Magnetic resonance imaging (MRI) is a valuable medical imaging tool that does not
+involve ionizing radiation. However, it suffers from slow data acquisition, which limits
+its widespread clinical use.
+To accelerate MRI, Compressed sensing (CS) [1] techniques have been introduced
+to speed up the MRI scanning process by reducing the number of measurements.
+arXiv:2212.02190v3  [cs.CV]  6 Apr 2024

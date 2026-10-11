@@ -1,0 +1,31 @@
+The recent literature has begun to explore hetero-modal learning. Shi
+et al. (2024) simulated imbalanced, incomplete modality scenarios in the
+BraTS (Menze et al., 2014) and MyOPS (Li et al., 2023) datasets. Lan
+et al. (2025) studied incomplete hetero-modal learning under varying miss￾ing rates using BraTS. Wagner et al. (2025) investigated federated learning in
+seven datasets comprising seven MRI sequences and five pathologies. Using a
+multi-channel U-Net (Ronneberger et al., 2015) with zero-imputation (pass￾ing missing modalities into the network as channels of zeros), they showed
+their model could perform segmentation on unseen modality combinations.
+In particular, they used the WMH segmentation challenge dataset (Kuijf
+et al., 2019) for WMH segmentation (T1w and FLAIR), alongside the AT￾LAS v2.0 (Liew et al., 2022) (T1w only) and ISLES (Hernandez Petzsche
+et al., 2022) (T1w, T2w, FLAIR, and DWI) datasets for ISL segmentation.
+However, all pathologies were merged into a single “lesion” class. While the
+WMH Challenge, ATLAS v2.0, and ISLES datasets contain ground truth
+segmentations for WMH or ISL independently, no publicly available dataset
+currently provides joint ground truth annotations for both pathologies. This
+lack of joint labels restricts a model’s ability to accurately penalise false
+negatives when these visually similar lesions co-occur. Furthermore, mild
+SVD-related ISL (i.e., lacunar strokes) are under-represented in the ATLAS
+and ISLES cohorts. To address this gap, we leverage a privately held dataset
+containing expertly annotated ground truth segmentations for both WMH
+and ISL, with four distinct MRI sequences available (T1w, T2w, FLAIR, and
+DWI).
+While utilising this unique dataset allows us to rigorously evaluate hetero￾modal learning for joint segmentation of WMH and ISL, real-world clinical
+deployment presents an additional hurdle: silent data corruption. A lim￾itation of current hetero-modal approaches is the assumption that missing
+modalities are always correctly identified by the system. In automated im￾age processing workflows, this is frequently not the case. MRI files might
+be filled with zeros or other constant voxel values, or a scan might be cor￾rupted by artefacts severe enough to make it unusable. To overcome this,
+we introduce an additional layer of extreme data augmentation which we
+refer to as “corruption augmentation”. With this corruption augmentation in
+mind, we develop the Multimodal Attention Router (MMAR) block. While
+we do not comprehensively benchmark our MMAR-based model against the
+entirety of the hetero-modal literature, we present it as a proof-of-concept
+4

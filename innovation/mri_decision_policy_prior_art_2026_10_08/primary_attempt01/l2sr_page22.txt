@@ -1,0 +1,65 @@
+Learning to Sample and Reconstruct for Accelerated MRI 22
+Appendix A. Notation Index
+We give a list of notation index and where it is defined in table A1.
+T able A1. Notation index.
+Noun Notation Reference
+image width N section 3.1
+ground truth x section 3.1
+2D Discrete Fourier Transform F section 3.1
+fully sampled measurement y section 3.1
+binary mask matrix M section 3.1
+reconstructor R section 3.1
+heuristic sampling policy πh
+t section 3.1
+binary mask vector a section 3.1
+dense-reward joint optimization problem (3.1)
+dataset D (3.1)
+sampler π (3.1)
+N-dimensional probability simplex ∆N (3.1)
+reconstruction suboptimization problem (3.2)
+dense-reward suboptimization problem (3.3)
+dense-reward POMDP section 3.2
+observation yt section 3.2
+discount factor γ section 3.2
+sparse-reward POMDP section 4.2
+sparse-reward joint optimization problem (4.6)
+continuous function space C theorem 1 and 2
+sparse-reward suboptimization problem (4.8)
+Fixed Reconstructor section 5.1
+Joint Training section 5.1
+acceleration factor section 5.1
+initial acceleration factor section 5.1
+Base-horizon section 5.1
+Long-horizon section 5.1
+Appendix B. Supplements and Proofs for the Theoretic Analysis
+Appendix B.1. Proof of theorem 1
+We prove it with the idea of dynamic programming.
+Proof Let vdense
+π,R (x, Mt) and vsparse
+π,R (x, Mt) be the value function of dense-reward
+POMDP and sparse-reward POMDP, defined as
+vdense
+π,R (x, Mt) = Eπ
+T∑
+s=t+1
+rs, where yt = Mt⊙F (x),
+vsparse
+π,R (x, Mt) = EπrT, where yt = Mt⊙F (x).
+We define vdense
+π,R (D, Mt) = Ex∼Dvdense
+π,R (x, Mt) and vsparse
+π,R (D, Mt) =
+Ex∼Dvsparse
+π,R (x, Mt). Indeed, vdense
+π,R (D, M0) is the objective function of (3.1) and
+vsparse
+π,R (D, M0) is the objective function of (4.6). We want to prove:
+sup
+π∈C(RN×N,∆N)
+R∈C(CN×N,RN×N)
+vdense
+π,R (D, M0)≤ sup
+π∈C(CN×N,∆N)
+R∈C(CN×N,RN×N)
+vsparse
+π,R (D, M0).

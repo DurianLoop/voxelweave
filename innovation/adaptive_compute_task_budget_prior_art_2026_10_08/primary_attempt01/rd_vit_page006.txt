@@ -1,0 +1,51 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+6
+We use standard multi-head self-attention without causal masking (bidirectional attention for vision). Given 
+input x ∈ ℝ N ×dim), we compute queries, keys, and values via a single linear projection QKV = x ⋅ Wqkv, 
+split into h attention heads. Attention scores are computed as softmax(Q ⋅ K
+T
+/ √𝑑_ℎ𝑒𝑎𝑑) and applied to 
+values. The output is projected back via Wproj. We apply dropout to attention weights during training.
+We note that Multi-Latent Attention (MLA), as implemented in OpenMythos [1], compresses the key-value 
+cache into a low-rank latent space, which would reduce memory consumption for 3D volumes with many 
+patches. We leave MLA evaluation for future work and use standard full attention in all experiments.
+The computational complexity of self-attention is O(N
+2
+⋅ d). For 3D (N = 512), the quadratic cost is 5122
+= 262,144 entries per head versus 1962 = 38,416 in 2D—a 6.8× increase. ACT partially mitigates this 
+through early halting.
+The memory footprint is B × H × N
+2 × 2 bytes in FP16. For batch 2, 6 heads, 512 patches: 6.3 MB per 
+iteration, 50.3 MB for T = 8.
+Bidirectional attention provides global receptive field from the first layer. For tooth segmentation, a 
+premolar patch directly attends to its bilateral counterpart, enabling jaw symmetry exploitation for FDI 
+assignment.
+3.3 Feed-Forward Network
+The base feed-forward network uses the SwiGLU activation: FFN(x) = (x ⋅ Wgate ⊙ SiLU(x ⋅ Wup)) ⋅
+Wdown, where ⊙ denotes element-wise multiplication and SiLU(z) = z ⋅ 𝜎(z) is the sigmoid linear unit. 
+The hidden dimension is set to 8/3 × dim, following the SwiGLU convention.
+When MoE is enabled, the SwiGLU FFN is replaced with a sparse Mixture-of-Experts layer. A linear router 
+computes gating logits g = x ⋅ Wrouter ∈ ℝ E where E is the number of experts (E = 8 in our experiments). 
+The top-k = 2 experts are selected per token, their outputs weighted by softmax-normalized gating scores, 
+and summed. A shared expert (with larger hidden dimension expertdim × k) processes all tokens 
+unconditionally and its output is added to the routed output. This design follows the DeepSeek-style MoE 
+with aux-loss-free load balancing via a learnable router bias [1].
+For each token x ∈ ℝ d
+, the router computes g(x) = Wrouter ⋅ x ∈ ℝ E
+. Top-k experts are selected via g(x) 
++ b, where b is a learnable bias for load balancing. Routing weights are wi = softmax(g(x))_i / 𝛴_{j ∈ topk} 
+softmax(g(x))_j. The output is y = 𝛴i wi
+⋅ Experti
+(x) + SharedExpert(x).
+The shared expert processes all tokens, absorbing common features. Routed experts specialize for class￾specific morphology. This decomposition is natural for segmentation.
+Parameter cost: 8 × 3 × 192 × 128 = 589,824 for routed experts plus 147,456 for shared, totaling ~737K. 
+Active computation uses only k = 2 experts, so FLOPs overhead is ~1.25× base FFN.
+3.4 LTI-Stable Injection
+The core recurrence mechanism ensures stable long-horizon iteration. At each loop step t, the hidden state 
+evolves as:
+ℎt+1 = A ⋅ ht + B ⋅ e + ViTBlock(ht
+)
+where e is the frozen encoded input from the Prelude (providing a residual connection to the original 
+features), A is the state transition matrix, and B is the input injection matrix. The critical design choice is 
+the parameterization of A. Rather than learning A directly (which could lead to eigenvalues ≥ 1 and 
+divergent dynamics), A is parameterized as:

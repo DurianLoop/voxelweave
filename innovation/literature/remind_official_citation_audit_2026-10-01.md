@@ -1,0 +1,9 @@
+# ReMIND official dataset citation: current-source audit
+
+On 2026-10-01, direct HTTPS reads (without the broken local proxy) returned HTTP 200 from the [TCIA ReMIND collection page](source_cache/remind_tcia_collection_2026-10-01.html) and [DataCite DOI record](source_cache/remind_datacite_2026-10-01.json). The raw TCIA HTML is 300,362 bytes, SHA-256 `f500d7721f95f6f187d079603203908ea1b1eae6747b10214fb39c83c5ae4aa7`; the DOI JSON is 18,807 bytes, SHA-256 `1a21f1011e639946c733570a77703dc7c54d5712376b8ba481c799e156d01347`. [Retrieval script](fetch_remind_official_citation.py) records the URLs and validates the expected DOI/page heading. These are official-source snapshots, not a legal opinion or a substitute for source-image rights review.
+
+The TCIA page explicitly says **Data Citation Required** and that attribution must include its dataset citation and DOI. Its citation is:
+
+> Juvekar, P., Dorent, R., Kögl, F., Torio, E., Barr, C., Rigolo, L., Galvin, C., Jowkar, N., Kazi, A., Haouchine, N., Cheema, H., Navab, N., Pieper, S., Wells, W. M., Bi, W. L., Golby, A., Frisken, S., & Kapur, T. (2023). *The Brain Resection Multimodal Imaging Database (ReMIND)* (Version 1) [dataset]. The Cancer Imaging Archive. https://doi.org/10.7937/3RAG-D070
+
+The DataCite record independently agrees on the ordered 18 creators, title, 2023 year, TCIA publisher, DOI and CC BY 4.0 rights URI. The TCIA page also lists related **publication** citations; those supplement, rather than replace, its required **data** citation. Its data usage policy and the ZIP-specific no-reidentification terms still apply. This closes the previously missing preferred dataset-citation text for the internal manuscript. It does not approve checkpoint redistribution, source DICOM/image publication, authorship or an original-acquisition claim; ReMIND's tested DICOM headers retain `MPR`.

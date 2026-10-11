@@ -1,0 +1,61 @@
+Fig. 2. (left) Detailed structure of the Vision-LSTM module. (right) Detailed structure of the cSFE and sSFE modules.
+and processed through fully connected layers to produce a
+fusion vector Vfuse. This fusion vector is utilized to derive
+R1 and R2, which, through channel multiplication, generate
+F1 cSF E and F2 cSF E. For spatial recalibration, sSFE begins
+by processing F1 and F2 with a convolutional layer. The re￾sultant features are concatenated and further processed by an
+additional convolutional layer to form Mfuse. This fused fea￾ture map is then introduced into two separate convolutional
+pathways, where spatial multiplication is applied to obtain the
+refined outputs F1 sSF E and F2 sSF E.
+3. EXPERIMENT RESULT
+3.1. Dataset and Implementation Details
+Our study utilizes the multimodal Brain Tumor Segmentation
+Challenge (BraTS) 2024 dataset [12]. This dataset includes
+MRI scans from T1, T1ce, T2, and FLAIR modalities of ap￾proximately 4,500 patients diagnosed with various gliomas.
+The images have been resampled to a uniform one mm³ res￾olution, aligned to anatomical templates, and pre-processed
+to remove cranial structures. Expert radiologists manually la￾beled the images, focusing segmentation on three key regions.
+For our experiments, we divided the dataset randomly into
+training and testing sets, comprising 80% and 20% of the total
+data, respectively. We conducted our experiments using the
+PyTorch framework, leveraging an NVIDIA Tesla V100 for
+computational support. During training, we utilized a batch
+size of 2, set a learning rate of 0.0001, and carried out the
+training over a period of 72 hours.
+3.2. Comparative Experiment
+For evaluation, we utilized the RA-HVED [9] and RMBTS
+[13] models as baselines. All the baselines and our model
+were trained and tested using the same backbone network
+to ensure consistency in the evaluation phase. As detailed
+in Table 1, our model’s performance is compared to these
+baselines using Dice scores and HD95 scores. We selected
+U-HVED [3] as the backbone network. Our model demon￾strates strong performance across all metrics and is particu￾larly effective in scenarios involving multimodal fusion. Fur￾thermore, we compared the XLSTM-HVED model to several
+baseline models and the state-of-the-art. Table 1 highlights
+that the XLSTM-HVED model achieves competitive results
+in the HD95 metric compared to other advanced models like
+mmformer [14], particularly in multimodal fusion contexts.
+However, it is noted that the XLSTM-HVED model has lower
+Dice metrics for Enhancing tumor segmentation.
+3.3. Ablation Study
+We investigated the impact of the SAVE, ViLA, and SFECA
+modules on model performance. The findings are summa￾rized in Table 2. Removing the ViLA module led to a notice￾able decline in segmentation performance for the T1 modal￾ity, with both HD95 and Dice metrics worsening. Similarly,
+excluding the SAVE module reduced the overall performance
+of multimodal fusion, particularly affecting the segmentation
+of the whole tumor. Omitting the SFECA module resulted in
+significant degradation in segmentation performance for the
+T1c and T1 modalities, especially in the HD95 metrics. These
+results underscore the importance of these three modules.
+4. CONCLUSION
+In this paper, we introduce the XLSTM-HVED model to
+address brain tumor segmentation challenges, particularly
+in scenarios where some MRI modalities are unavailable.
+Our model enhances segmentation accuracy and MRI data
+reconstruction quality by integrating cross-modal encoding,
+multi-task learning, and attention mechanisms. The SAVE
+module facilitates effective multimodal information fusion,
+while the SFECA module optimizes the coordination be￾tween segmentation and reconstruction tasks. Our extensive
+experiments on the BraTS 2024 dataset reveal that the model
+is highly robust across various tasks, even when dealing with
+the loss of certain modalities. Additionally, ablation studies
+confirm that removing any module significantly diminishes
+the model’s overall performance, highlighting the critical role
+each component plays in ensuring the model’s effectiveness.

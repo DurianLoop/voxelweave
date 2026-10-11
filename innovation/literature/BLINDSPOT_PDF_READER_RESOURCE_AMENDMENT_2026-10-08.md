@@ -1,0 +1,9 @@
+# 独立PDF读取器：保留MiKTeX失败与扩大可归档工具预算
+
+正式Noise2Same PDF已在official_attempt02下载9591234字节。a02665之外的获取v2（0cd39c）失败发生在`pdfinfo.returncode==0`，不是下载失败。直接pdfinfo99c2d8打印11页但exit=-1073740791，报告MiKTeX尝试写AppData日志被拒绝；MIKTEX_LOG_DIR试验e20b37同退出，变量未使本机读取器改日志路径，不重复此路线，不升级权限写AppData。实际最终源PDF未修改。
+
+本阶段在innovation/tools的独立新目录准备pypdf（文本）和pypdfium2（页面渲染），不改MRI环境或根environment.yml，不创建旧程序覆盖。执行前实现选用PyPI公开metadata与wheel直接GET、核官方SHA并仅向该新目录解包；不调用pip、不使用其cache或临时目录，不产生bytecode。记录安装真实退出、包版本、distribution metadata及所有新增runtime文件SHA，不计作者模型复现。
+
+为把新增portable reader runtime一并绑定而非隐瞒工具依赖，**本阶段完整归档预算从25MB增为50MB**；两个MRI资格作业20MB/1200s/CPU1/8GB余量及其科学协议均不变。此修正先于正确Noise2Same正文阅读，不改变任何已测留出fold/预测/效果。原20MB和25MB文件保留。
+
+新读取器必须实际成功打开该原PDF、逐页提取并保存文本，render后实际view_image才计视觉核读。已有错误ID PDF、HTTP429、8MB失败、MiKTeX失败都保留。没有自动审批拒绝或用户训练进程操作；goal仍active。

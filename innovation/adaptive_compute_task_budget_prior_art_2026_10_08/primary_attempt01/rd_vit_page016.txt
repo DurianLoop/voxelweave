@@ -1,0 +1,43 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+16
+teeth, and accounting for missing teeth—that exceeds the receptive field of typical 3D convolutional 
+networks.
+6.8.1 Dataset and Task
+We evaluate on the ToothFairy2 dataset from the MICCAI 2024 challenge, which provides 482 CBCT 
+volumes (336 training, 72 validation, 74 test) at 0.3mm isotropic spacing with voxel-level annotations for 
+32 individual teeth following the FDI World Dental Federation numbering system (teeth 11–18, 21–28, 31–
+38, 41–48) plus background, yielding 33 classes total. This is substantially more complex than the 4-class 
+ACDC task: the model must simultaneously detect tooth boundaries, segment individual instances, and 
+assign correct FDI numbers—where numbering depends on spatial position within the jaw.
+6.8.2 Architecture Adaptation
+We adapt RD-ViT to single-phase tooth instance segmentation using a multi-head decoder. The backbone 
+remains identical to the ACDC architecture (PatchEmbed3D → Prelude → RecurrentBlock×T → Coda), 
+but the segmentation head is replaced with three task-specific output heads operating on shared upsampled 
+features:
+Spatial offset head (3 channels): Each foreground voxel predicts a 3D displacement vector pointing 
+toward its instance center. Voxels belonging to the same tooth predict similar centers, enabling instance 
+separation via clustering.
+For each foreground voxel at position p = (d, h, w), the model predicts offset 𝛥p = (𝛥d, 𝛥h, 𝛥w) toward the 
+instance centroid. Accurate predictions cluster all voxels of the same tooth around a common predicted 
+center.
+Clustering: (1) threshold seed at 0.5, (2) compute cpred = p + 𝛥p ⋅ S, (3) quantize to grid 𝛿 = 4, (4) discard 
+clusters &lt; 50 voxels, (5) majority-vote FDI per cluster. Grid clustering is O(N) versus O(N
+2
+) for mean￾shift.
+Loffset = (1/|F|) ⋅ 𝛴_{p ∈ F} |Δppred - Δpgt| uses L1 for robustness to outlier predictions at instance 
+boundaries where offsets change abruptly between adjacent teeth.
+Seed/foreground head (1 channel): Binary classification of each voxel as tooth or background, providing 
+the foreground mask for offset clustering.
+FDI classification head (33 channels): Per-voxel classification into one of 32 teeth or background. The 
+transformer’s global self-attention is critical here: a patch in the upper-left jaw attends to patches in the 
+lower-right jaw, enabling the model to infer FDI numbering from bilateral context.
+The combined loss is L = Lseed + Loffset + LFDI + 𝜆 ⋅ Lponder, where Lseed is binary cross-entropy, Loffset
+is L1 regression on foreground voxels toward ground truth instance centers, LFDI is cross-entropy for tooth 
+class, and Lponder is the ACT ponder cost.
+MoE is enabled by default in the recurrent block (8 experts, top-k=2), with the hypothesis that different 
+experts will specialize for different tooth groups (incisors, canines, premolars, molars) analogously to the 
+cardiac structure specialization observed in Section 6.3.
+6.8.3 Training Details
+We use the RD-ViT Tiny architecture with MoE (5.4M parameters). Training uses isotropic 1283
+random 
+crops centered on foreground voxels, with augmentation including random rotation (±10° around the z￾axis), intensity shift/scale, and Gaussian noise. Crucially, no flipping augmentation is used because left-

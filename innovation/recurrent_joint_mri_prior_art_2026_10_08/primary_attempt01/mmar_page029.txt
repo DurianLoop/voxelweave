@@ -1,0 +1,28 @@
+5. Conclusion
+This study establishes the first benchmark for the joint hetero-modal
+segmentation of co-occurring white matter hyperintensities (WMH) and is￾chaemic stroke lesions (ISL). By leveraging a unique, fully annotated, multi￾sequence dataset, we demonstrated that hetero-modal learning effectively
+overcomes the rigid data requirements of traditional modality specialist mod￾els. Rather than discarding incomplete scans, this approach maximises the
+utility of all available data. We showed this to be effective in data-constrained
+scenarios, with hetero-modal models generally outperforming modality spe￾cialist baselines.
+Beyond accommodating missing data during training, our findings high￾light the adaptability of hetero-modal networks at inference. When trained
+on disjointed datasets sharing only a single anchor modality, these models
+successfully generalised to novel modality combinations, maintaining robust
+predictive performance even when the highly informative FLAIR sequence
+was unavailable.
+Additionally, we address a major hurdle in clinical deployment: silent data
+degradation. By introducing the Multimodal Attention Router (MMAR)
+block alongside a complimentary corruption augmentation strategy, we showed
+that this proof-of-concept method can dynamically adapt to unflagged, catas￾trophically corrupted modalities. Through spatially adaptive feature routing,
+the MMAR-based model learns to treat severely degraded regions in scans as
+missing, preserving segmentation accuracy in the presence of extreme noise,
+bias fields, and false-present modalities.
+Ultimately, these strategies offer a robust and practical pathway for de￾veloping and deploying medical image segmentation tools in imperfect, real￾world clinical environments.
+Limitations. We acknowledge several limitations in this study. First, it is
+likely that our comparative results are highly sensitive to the total volume
+and modality distribution of the training data; we urge caution when extrap￾olating our results to other data distributions. Second, due to the number of
+individual training runs required and limited computational resources, our
+evaluations are centred on a single random training, validation, and test split,
+and each model was trained only once. While we attempted to mitigate the
+impact of these factors by performing statistical significance tests, we must
+highlight this limitation. Third, our evaluation relies solely on the Dice simi￾larity coefficient (DSC). Although DSC has known limitations, it remains the
+29

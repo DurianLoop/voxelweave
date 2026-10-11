@@ -1,0 +1,5 @@
+# direct客户端建设中的引用源路径恢复
+
+73b566只证明建设与AST成功。该建设使用全局attempt目录替换，意外把既有SynthSR引用HTML路径也改成不存在的primary_attempt02。真实f553ed exit1在任何新GET、selection或输出目录之前停止；没有下载/阅读成功。原建设receipt中的传输/输出范围声明因此不能用作来源资格。
+
+保留原失败生成脚本/建设diff/receipt和实际失败返回；新脚本仅将refsrc精确恢复到已冻结的pulse_sequence_and_forward_model_2026_10_09/primary_attempt01/jointsr.html。直接HTTPS、原科学提取、独立attempt02输出和两新增GET上限保持。随后必须核原引用源SHA，不能只凭AST通过称恢复成功。

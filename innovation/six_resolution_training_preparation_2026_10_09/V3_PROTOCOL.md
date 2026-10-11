@@ -1,0 +1,9 @@
+# v3修正：分清训练wall与完整family成本，并使用新FOV终态
+
+沿V2_PROTOCOL.md所有科学范围/104,156,359bytes/资源门槛，新增文件计原family metadata额度。已执行v1/v2均不修改。
+
+代码复核发现v1/v2要求admitted_training_wall_seconds>=complete_family_wall_forecast_seconds；两者一个是训练wall，一个还包括全部FOV评估，字段含义不一致。v3检查完整family预测必须覆盖训练wall，两者均正；训练循环仍按训练wall硬停止，未放宽任何医学或数值gate。
+
+原FOV session74453失败且只做3/38，不可能成为成功资格。未来新完整38结果必须分别写ACTUAL_FULL_FOV_V2_START_TOOL.json与ACTUAL_FULL_FOV_V2_TERMINAL_TOOL.json，终态session必须匹配真实启动返回的session_id。独立审核使用terminal_audit_v2_attempt01，绑定full_fov_v2_attempt01；启动/终态文件均不可用手写成功替代。
+
+本版本只是入口准备。原GPU布局诊断若失败，不启动新的38；若成功，也只能在新完整38及35904真实完成/独立审核后生成资格文件，随后fresh disk/GPU预检准入才能训练。实现资格不能替代真实患者净收益或独立发表claim。

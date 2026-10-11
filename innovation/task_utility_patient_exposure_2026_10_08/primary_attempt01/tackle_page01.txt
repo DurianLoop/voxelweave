@@ -1,0 +1,105 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 1
+Learning Task-Specific Strategies
+for Accelerated MRI
+Zihui Wu, Graduate Student Member, IEEE , Tianwei Yin, Yu Sun, Member, IEEE, Robert Frost
+Andre van der Kouwe, Senior Member, IEEE, Adrian V . Dalca, Katherine L. Bouman
+Abstract—Compressed sensing magnetic resonance imaging
+(CS-MRI) seeks to recover visual information from subsampled
+measurements for diagnostic tasks. Traditional CS-MRI meth-
+ods often separately address measurement subsampling, image
+reconstruction, and task prediction, resulting in a suboptimal
+end-to-end performance. In this work, we propose TACKLE as a
+unified co-design framework for jointly optimizing subsampling,
+reconstruction, and prediction strategies for the performance on
+downstream tasks. The naïve approach of simply appending a
+task prediction module and training with a task-specific loss leads
+to suboptimal downstream performance. Instead, we develop a
+training procedure where a backbone architecture is first trained
+for a generic pre-training task (image reconstruction in our
+case), and then fine-tuned for different downstream tasks with
+a prediction head. Experimental results on multiple public MRI
+datasets show that TACKLE achieves an improved performance
+on various tasks over traditional CS-MRI methods. We also
+demonstrate that TACKLE is robust to distribution shifts by
+showing that it generalizes to a new dataset we experimentally
+collected using different acquisition setups from the training data.
+Without additional fine-tuning, TACKLE leads to both numerical
+and visual improvements compared to existing baselines. We
+have further implemented a learned 4 ×-accelerated sequence
+on a Siemens 3T MRI Skyra scanner. Compared to the fully-
+sampling scan that takes 335 seconds, our optimized sequence only
+takes 84 seconds, achieving a four-fold time reduction as desired,
+while maintaining high performance. Our code is available at
+https://github.com/zihuiwu/TACKLE.
+Index Terms—Compressed sensing MRI, deep learning, task-
+specific imaging, end-to-end training.
+I. I NTRODUCTION
+Compressed sensing magnetic resonance imaging (CS-MRI)
+is a popular accelerated MRI technology [1]. Commonly, CS-
+This work was sponsored by NSF Award 2048237, NIH Projects
+5R01AG064027, 5R01AG070988, R21EB029641, R01HD099846,
+R01HD085813, Heritage Medical Research Fellowship, S2I Clinard
+Innovation Award, and Rockley Photonics. Z. Wu was sponsored by the
+Kortschak Fellowship, Amazon AI4Science Fellowship, and Amazon
+AI4Science Partnership Discovery Grant.
+Z. Wu, Y . Sun, and K. L. Bouman are with the Department of Com-
+puting and Mathematical Sciences, California Institute of Technology,
+Pasadena, CA 91105, USA (email: zwu2@caltech.edu; sunyu@caltech.edu;
+klbouman@caltech.edu).
+T. Yin and A. V . Dalca are with the Computer Science and Artificial
+Intelligence Lab (CSAIL), Massachusetts Institute of Technology, Cambridge,
+MA 02139, USA (email: tianweiy@mit.edu; adalca@mit.edu).
+R. Frost, A. van der Kouwe, and A. V . Dalca are with the Athinoula
+A. Martinos Center for Biomedical Imaging, Department of Radiology,
+MGH, Harvard Medical School, Charlestown, MA 02129, USA (email:
+srfrost@mgh.harvard.edu; avanderkouwe@mgh.harvard.edu; adalca@mit.edu).
+This paper has supplementary downloadable material available at
+http://ieeexplore.ieee.org, provided by the authors. The material includes
+additional implementation details and experimental results. This material is
+1.5 MB in size.
+More information is available at http://imaging.cms.caltech.edu/tackle/.
+Dice score (): 0.8022↑ Error mapPoisson-disc random sampling
+Separately 
+designed
+Dice score (): 0.7970↑ Error mapJoint seg.-recon. sampling
+Dice score (): 0.8563↑ Error mapTask-specific sampling
+(a) Separate reconstruction & task prediction (traditional CS-MRI)
+Naïve approach to end-to-end task-specific co-design(b) 
+Proposed end-to-end task-specific co-design (Tackle)(c) 
+Task-specific 
+training
+Recon. pre-training + 
+task specific fine-tuning
+Recon. loss Task loss
+Task loss
+Task loss
+Background:  
+g.t. image
+Pre-trained 
+w/ recon. loss
+Forward pass types: No gradient back-propagation With gradient back-propagation
+Fig. 1. Comparison between (a) traditional CS-MRI, (b) a naïve approach to
+task-specific CS-MRI, and (c) the proposed TACKLE framework. Compared
+with panel (a) that separately deals with reconstruction and task prediction,
+panel (b) is a simple extension of co-design methods for solving downstream
+tasks by adding a learnable mapping from measurements to task predictions.
+However, this naïve approach leads to a suboptimal performance and can even
+lead to a worse task prediction accuracy, as shown in the example above. On
+the other hand, we introduce TACKLE for effectively learning task-specific
+CS-MRI strategies. TACKLE is first pre-trained for generic reconstruction, and
+then all three modules are fine-tuned for a more specific downstream task. We
+find that this training schedule allows TACKLE to robustly learn generalizable
+task-specific strategies. In the above knee segmentation example, all three
+approaches are trained with the same architectures for the reconstructor (second
+module) and predictor (third module). Nevertheless, TACKLE significantly
+outperforms the two baseline approaches.
+MRI is formulated as an imaging inverse problem where the
+goal is to recover a high-quality image from its subsampled
+measurements. Traditional CS-MRI techniques include solving
+a regularized optimization problem [2]–[5] or training deep
+learning (DL) models [6]–[8] that recover an image from a
+pre-determined set of measurements. Recently, a new group of
+DL-based methods, known as co-design, has been proposed to
+jointly optimize the choice of measurements and a reconstruc-
+tion module, leading to better reconstruction performance than
+arXiv:2304.12507v3  [eess.IV]  6 Nov 2024

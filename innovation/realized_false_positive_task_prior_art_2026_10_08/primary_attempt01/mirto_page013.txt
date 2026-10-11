@@ -1,0 +1,95 @@
+MIRTO 13
+0.0
+0.2
+0.4
+0.6
+Dice
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+lesion sensitivity
+0.825
+0.850
+0.875
+0.900
+0.925
+0.950
+voxel AUROC
+0.3
+0.4
+0.5
+0.6
+0.7
+voxel AUPRC
+defensible universes, ordered by REFLECT's score
+0.6
+0.7
+0.8
+0.9
+slice AUROC (marginal)
+0.7
+0.8
+0.9
+slice AUROC (anatomy-adjusted)
+REFLECT UCCD cDDPM AnomalyDINO
+Fig. 5. Multiverse. Specification curves, one panel per metric; each column is a defensible universe (2,592 per metric), ordered
+by REFLECT’s score. Dice and lesion sensitivity reorder the three residual models from universe to universe; voxel AUROC
+does not.
+within α + 0.02 in all 128 calibrated combinations, and
+Lemma 1 predicts how the exceedance is distributed over
+calibration sets.
+Nominal budgets are not realised. At a nominal 20 cm3
+the mean realised burden on test was 16.3 (REFLECT),
+18.9 (UCCD), 12.9 (cDDPM) and 17.5 cm3
+(Anomaly￾DINO). The median was 3.0 to 10.1 cm3
+, the 95th per￾centile 37 to 64 cm3
+, the maximum 210 to 604 cm3
+, and
+between 15.7% and 29.8% of subjects exceeded 20 cm3
+(Table 4, Fig. 7a). The mean describes no typical subject;
+it is pulled up by a minority with very large false-positive
+volumes.
+The transfer gap is a burden mismatch. The gap was 0.02
+to 0.07 Dice for REFLECT and cDDPM at 5 to 20 cm3
+,
+because their validation thresholds were conservative on
+test (REFLECT realised 3.3 cm3 at a nominal 5; cDDPM
+12.9 cm3 at 20). For UCCD it was close to zero or negative
+(−0.008 [−0.008, −0.007] at 5 cm3
+): its validation thresh￾old almost equalled the test-matched one (0.385 against
+0.381 at 20 cm3
+) and was slightly liberal (5.3 cm3
+realised
+at 5). This is exactly the pattern Eq. (14) predicts: the
+sign of g¯ follows the sign of b−βˆ, scaled by the local slope
+of Ψ. Where Ψ is flat the gap vanishes even for a large mis￾match (UCCD at 40 cm3
+: βˆ = 31.8, g¯ = −0.001). The gap
+therefore measures how well a validation threshold trans￾fers, which differs between methods; it is not a uniform
+test-set optimism. This is why the secondary hypothesis
+of a positive UCCD gap at 5 cm3
+failed, and why H6,
+which required a lower bound of at least 0.02 at 20 cm3
+,
+narrowly failed (lower bounds 0.0191 for REFLECT and
+0.0199 for cDDPM).
+Consequence for a ranking. At the validation
+threshold UCCD beat cDDPM at every budget,
++0.020 [0.011, 0.029] at 20 cm3 with pH < 0.005
+(Fig. 8). At equal realised burden the difference was
+−0.001 [−0.012, 0.009] (pH = 1.00), and every interval
+at every budget included zero. Identity 1 accounts
+for the change: ∆val − ∆⋆ = −(¯gUCCD − g¯cDDPM) =
+−(0.002 − 0.023) = +0.021, against an observed +0.021.
+Across all 24 model pairs and budgets, the two sides of
+Eq. (13), computed from separately produced tables,
+agreed within 0.0045 Dice with the grid-matched thresh￾old and within 0.0017 with the interpolated one; the
+residual is the difference between the threshold grids
+of the two tables. The UCCD advantage at validation
+thresholds is a property of how its threshold transfers,
+not of its map.
+A risk-controlled alternative and its price. With CRC
+at α = 0.10 on the 24 validation subjects, the test ex￾ceedance P[FPi > 20 cm3
+] was 0.032 to 0.096 across meth￾ods, against 0.157 to 0.298 with the validation thresh￾old, at a Dice cost of 0.053 (REFLECT) to 0.116 (cD-

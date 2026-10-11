@@ -1,0 +1,100 @@
+{
+  "record_kind": "actual_tool_returns_no_elapsed_time_inference",
+  "entries": [
+    {
+      "store_key": "turn26_policy_schema_and_polls_0",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "3f4a41",
+          "wall_time_seconds": 2.1529939,
+          "exit_code": 0,
+          "original_token_count": 1332,
+          "output": "        assert all(sum(s['steps_completed'] for s in receipt['series'] if s['patient']==p)==272 for p in config['patient_ids'])\r\n        receipt.update(complete=True,status='completed',active_patches_completed=active,inactive_identity_patches=5984-active,patches_entirely_supported=fully,\r\n            FG_incomplete_exposure_voxels=foreground_missing,FG_exposure_voxels=foreground_exposures,max_support_error=max_error,max_coordinate_error=max_coordinate,\r\n            all5984_geometry_targets_verified=True,geometry_target_exposure_voxels=5984*1048576,old38_geometry_and_label_batches_replayed=True,\r\n            journal_path=journal.relative_to(ROOT).as_posix(),journal_sha256=sha(journal),journal_bytes=journal.stat().st_size,\r\n            frozen_config_sha256=sha(out/'frozen_config.json'),source_bindings=[entry(p) for p in sorted(sources)],\r\n            strict_support_qualification_not_task_output_safety=True,independent_journal_audit_completed=False)\r\n    except Exception as e:receipt.update(status='failed');receipt['errors'].append(type(e).__name__+': '+str(e));receipt['traceback']=traceback.format_exc();traceback.print_exc()\r\n    receipt['resources']=guard();save();print(json.dumps({k:receipt.get(k) for k in ['complete','status','errors','geometry_patches_completed','active_patches_completed','FG_incomplete_exposure_voxels','elapsed_seconds']}),flush=True)\r\n    return int(not receipt['complete'])\r\nif __name__=='__main__':raise SystemExit(main())\r\n# 2026-10-08 真实上下文入口与固定作者源码\r\n\r\n[实际结果与研究决策](AUTHOR_CODE_AND_ENTRY_DECISIONS.md)记录76个真实开发MRI字段逐体素独立重算，以及FastSurfer v2.3.0四文件2361行固定commit核读。两项已完成工作不代表患者分割收益，本轮新增不同论文正文数0。\r\n\r\n[真实入口协议](PROTOCOL.md)、[真实MRI结果](real_context_attempt02/receipt.json)及[作者源码获取](vinn_code_attempt02/receipt.json)保留具体参数、SHA、失败首跑和来源。没有运行作者代码或下载其模型。\r\n\r\n[全2992步资格协议](FULL_SCHEDULE_SUPPORT_PROTOCOL.md)对应新独立CPU session56132，5984候选往返geometry；该任务仍在运行，滚动receipt/journal不得先冻结。[terminal后审计准备](FULL_SCHEDULE_TERMINAL_AUDIT_PROTOCOL.md)规定真实exit0后另进程核全部5984行并用原sample_batch重放全部2992母label。\r\n\r\n[来源登记](READING_PROVENANCE.json)、[公开对话](VISIBLE_DIALOGUE_TURN25.md)和[交接](NEXT_STAGE_HANDOFF.md)集中保存本轮可用材料。原四臂session29823继续，不动用户终端或其他PID。8未见确认12series和lockedIXI关闭，目标active；归档只纳入已完成内容与两任务的immutable frozen_config，两个rolling目录都排除。\r\n# 本轮可见对话与执行记录\r\n\r\n用户既有要求持续有效：基于MRI项目批量核读论文/先探索能验证的创新点，不能验证的记录并准备，把本轮资料保存D:\\MRI\\innovation；GPU已授权，当前终端训练进程不得干预。当前goal继续指令的objective原文：“一直研究探索验证下去，直到达成一个可发表的claim，注意不要动我现在终端训练的进程”。目标active，上一轮为progress，不把部分资料/资格通过改定义成发表完成。\r\n\r\n助手本轮公开进展按发送顺序：\r\n\r\n1. 上一轮取得了两篇原文和新的支持范围证据，属于实际进展；发表结论仍待验证。我会继续轮询原训练，并检验真实 MRI 上下文能否接入增强算子，同时核对独立重算误差和实际开销。\r\n2. 真实上下文验证已开始，前 3 个输入字段通过了逐体素独立重算。首跑遇到来源链查找错误，我已修正并保留失败记录；数值门槛没有改变。GitHub API 的标签查询受到速率限制，接下来会尝试公开 Git 入口解析版本，取得固定提交后再核读源码。\r\n3. 真实 MRI 上下文已验证到 73/76 个输入字段，独立重算误差仍在原门槛内，标签保持不变。FastSurfer v2.3.0 的四个源码文件也已取得并核读：源码返回实际使用的尺度因子，供反向采样使用；它还包含裁剪和补零处理。这说明实现细节需要纳入对照，不能仅凭“往返插值”假定信息无损。\r\n4. 76 个真实 MRI 输入字段已全部通过，最大强度误差约5.96×10⁻⁸，标签保持不变。我已启动下一项 CPU 检查：覆盖原2992步对应的全部5984个候选增强patch，避免把38个stress patch的结果直接外推。目前实际完成到800/5984；它和原训练都仍在运行。\r\n\r\n全部可用本轮实际工具返回保存在ACTUAL_TOOL_OBSERVATIONS_PART01–03.json，之后追加观察另存。空输出仍含session_id即live观察，未由空输出或经过时间推断终止。首跑来源链StopIteration、API403、错误预读文件名均保留；后续成功内容不覆盖失败来源。\r\n\r\n新增文件仅innovation；未修改根.gitignore/environment.yml或旧冻结来源，不安装依赖、不委派，不枚举/干预其他PID，不向他人发送消息。公开作者Git广告仅只读引用，无clone/fetch对象/用户数据传送，作者文件未import执行。本文件保存公开可见对话与执行材料；最终公开回复与归档后观察另存。\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_policy_schema_and_polls_1",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "0338a6",
+          "wall_time_seconds": 5.002862,
+          "session_id": 29823,
+          "original_token_count": 45,
+          "output": "{\"branch\": \"native_reference_spatial\", \"updates\": 2970, \"loss\": 0.20187020301818848, \"branch_median_step_seconds\": 2.1365467000287026, \"cumulative_seconds\": 12665.841710299952}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_policy_schema_and_polls_2",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "9fb11d",
+          "wall_time_seconds": 5.0027886,
+          "session_id": 56132,
+          "original_token_count": 167,
+          "output": "{\"geometry_patches_completed\": 2600, \"active\": 792, \"FG_incomplete\": 0, \"elapsed_seconds\": 869.6467247999972}\r\n{\"geometry_patches_completed\": 2700, \"active\": 822, \"FG_incomplete\": 0, \"elapsed_seconds\": 903.898077199934}\r\n{\"geometry_patches_completed\": 2800, \"active\": 846, \"FG_incomplete\": 0, \"elapsed_seconds\": 933.899372600019}\r\n{\"geometry_patches_completed\": 2900, \"active\": 871, \"FG_incomplete\": 0, \"elapsed_seconds\": 962.8267146999715}\r\n{\"geometry_patches_completed\": 3000, \"active\": 906, \"FG_incomplete\": 0, \"elapsed_seconds\": 998.9822886999464}\r\n{\"geometry_patches_completed\": 3100, \"active\": 935, \"FG_incomplete\": 0, \"elapsed_seconds\": 1030.6039292999776}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_policy_schema_detail",
+      "available": true,
+      "actual_tool_result": {
+        "chunk_id": "63216d",
+        "wall_time_seconds": 2.1233668,
+        "exit_code": 0,
+        "original_token_count": 1287,
+        "output": "                            matrices=independently_physical_matrices(primitive,p,grid['realized_spacing_zrc_mm']);coordinates=[]\r\n                            for (a,b),production in zip(matrices,[plan['first_voxel_matrix'],plan['second_voxel_matrix']]):\r\n                                m=np.array(production)\r\n                                for corner in itertools.product([0,127],[0,127],[0,63]):coordinates.append(float(np.max(np.abs(a@corner+b-(m[:3,:3]@corner+m[:3,3])))))\r\n                            coordinate=max(coordinates);assert coordinate<=3e-12\r\n                            mask,error,binary=domain_support(row,grid,matrices);active+=1;sr['active']+=1\r\n                        else:\r\n                            assert all(np.max(np.abs(np.array(m)-np.eye(4)))<=3e-12 for m in [plan['first_voxel_matrix'],plan['second_voxel_matrix']])\r\n                            mask=identity_support(geometry,grid)\r\n                        stat=stats(mask);ov=overlap(mask,label.astype(bool));key=(step,pi);assert key not in keys;keys.add(key)\r\n                        foreground_missing+=ov['foreground']['incomplete_support_voxels'];foreground_exposures+=ov['foreground']['voxels'];fully+=int(stat['fully_supported_fraction']==1.)\r\n                        max_error=max(max_error,error);max_coordinate=max(max_coordinate,coordinate)\r\n                        sr['FG_incomplete_voxels']+=ov['foreground']['incomplete_support_voxels'];sr['FG_exposure_voxels']+=ov['foreground']['voxels'];sr['patches']+=1\r\n                        r=dict(step=step,patch=pi,patient=c['patient'],uid=c['uid'],geometry=geometry,pivot_zrc=p,primitive=primitive,mother_label_sha256=mother,\r\n                            target_label_sha256=array_sha(label),support_stats=stat,overlap=ov,coordinate_max_error=coordinate,support_max_error=error,binary_disagreements=binary,\r\n                            all_target_voxels_verified=True,active=plan['active'],elapsed_seconds=time.perf_counter()-at)\r\n                        log.write((json.dumps(r,separators=(',',':'))+'\\n').encode('utf-8'));del mask;gc.collect()\r\n                        receipt['geometry_patches_completed']+=1\r\n                    sr['steps_completed']+=1\r\n                    if receipt['geometry_patches_completed']%100==0:\r\n                        log.flush();raw.flush();receipt.update(active_patches_completed=active,FG_incomplete_exposure_voxels_so_far=foreground_missing,\r\n                            FG_exposure_voxels_so_far=foreground_exposures,series_in_progress=sr);save()\r\n                        print(json.dumps(dict(geometry_patches_completed=receipt['geometry_patches_completed'],active=active,FG_incomplete=foreground_missing,elapsed_seconds=time.perf_counter()-started)),flush=True)\r\n                    del labels\r\n                assert sr['steps_completed']==sr['steps_expected'];receipt['series'].append(sr);receipt.pop('series_in_progress',None);save();del target,fg;gc.collect()\r\n        assert keys==set(itertools.product(range(1,STEPS+1),range(2))) and receipt['geometry_patches_completed']==5984\r\n        assert len(receipt['series'])==19 and len({s['patient'] for s in receipt['series']})==11\r\n        assert all(sum(s['steps_completed'] for s in receipt['series'] if s['patient']==p)==272 for p in config['patient_ids'])\r\n        if geometry['flips'][axis]:validlo=start[axis]+target[axis]-full_shape[axis];validhi=start[axis]+target[axis]-1\r\n        else:validlo=-start[axis];validhi=full_shape[axis]-1-start[axis]\r\n        coords=np.arange(lo[axis],hi[axis]+1);axes.append((coords>=validlo)&(coords<=validhi))\r\n    return np.minimum(np.minimum(axes[0][:,None,None],axes[1][None,:,None]),axes[2][None,None,:]).astype(np.float64)\r\n\r\ndef scipy_sampling(source,out_shape,out_low_xyz,in_low_xyz,matrix):\r\n    a,b=matrix\r\n    # Reverse xyz into array zrc. All coordinates are voxel centers, no normalized grids.\r\n    array_a=a[::-1,::-1];offset=(a@np.asarray(out_low_xyz)+b-np.asarray(in_low_xyz))[::-1]\r\n    return affine_transform(source,array_a,offset,output_shape=out_shape,output=np.float64,order=1,mode='grid-constant',cval=0.,prefilter=False)\r\n\r\ndef independent_support(row,matrices,crop_only):\r\n    plan=row['plan'];target=plan['target_shape_zrc']\r\n    if crop_only:source=np.ones(target,np.float64);slow=[0,0,0];intermediate=target;ilow=[0,0,0]\r\n    else:source=independent_mask(plan,row['geometry'],row['full_shape_zrc']);slow=plan['source_low_xyz'];intermediate=plan['intermediate_shape_zrc'];ilow=plan['intermediate_low_xyz']\r\n    first=scipy_sampling(source,intermediate,ilow,slow,matrices[0]);del source\r\n    return scipy_sampling(first,target,[0,0,0],ilow,matrices[1])\r\n\r\ndef stats(x):\r\n    supported=x>=1-1e-9\r\n    return dict(voxels=int(x.size),minimum=float(x.min()),mean=float(x.mean()),maximum=float(x.max()),\r\n        fully_supported_voxels=int(supported.sum()),fully_supported_fraction=float(supported.mean()),\r\n        positive_but_incomplete_voxels=int(np.count_nonzero((x>1e-9)&~supported)),\r\n        no_support_voxels=int(np.count_nonzero(x<=1e-9)),fully_supported_mask_sha256=hashlib.sha256(np.packbits(supported.ravel()).tobytes()).hexdigest())\r\n"
+      }
+    },
+    {
+      "store_key": "turn26_freeze_preflight_and_polls_0",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "a260a1",
+          "wall_time_seconds": 5.0068897,
+          "session_id": 29823,
+          "original_token_count": 45,
+          "output": "{\"branch\": \"native_reference_spatial\", \"updates\": 2992, \"loss\": 0.06870681792497635, \"branch_median_step_seconds\": 2.1366617499734275, \"cumulative_seconds\": 12713.706371699926}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_freeze_preflight_and_polls_1",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "a54ac5",
+          "wall_time_seconds": 5.0066131,
+          "session_id": 56132,
+          "original_token_count": 141,
+          "output": "{\"geometry_patches_completed\": 3200, \"active\": 958, \"FG_incomplete\": 0, \"elapsed_seconds\": 1059.237635999918}\r\n{\"geometry_patches_completed\": 3300, \"active\": 991, \"FG_incomplete\": 0, \"elapsed_seconds\": 1094.6404608999146}\r\n{\"geometry_patches_completed\": 3400, \"active\": 1022, \"FG_incomplete\": 0, \"elapsed_seconds\": 1123.388765499927}\r\n{\"geometry_patches_completed\": 3500, \"active\": 1055, \"FG_incomplete\": 0, \"elapsed_seconds\": 1153.5091369999573}\r\n{\"geometry_patches_completed\": 3600, \"active\": 1082, \"FG_incomplete\": 0, \"elapsed_seconds\": 1184.2919077000115}\r\n"
+        }
+      }
+    },
+    {
+      "store_key": "turn26_freeze_preflight_and_polls_2",
+      "available": true,
+      "actual_tool_result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "48552e",
+          "wall_time_seconds": 2.2335222,
+          "exit_code": 0,
+          "original_token_count": 57,
+          "output": "syntax_ok register_completed_stage.py\r\nsyntax_ok archive_completed_stage.py\r\nsyntax_ok analyze_whole_patch_eligibility.py\r\nsyntax_ok fetch_vinn_training_chain.py\r\n{\"current_stage_bytes\": 1783020, \"disk_free_bytes\": 8030765056}\r\n"
+        }
+      }
+    }
+  ]
+}

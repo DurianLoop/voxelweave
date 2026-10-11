@@ -1,0 +1,132 @@
+, VOL. XX, NO. XX, XXXX 2020 11
+as discussed in Sec. IV-E, as domain-specific information
+is suppressed during training, our method experiences slight
+performance downgrades in some of source domains, when the
+ensembling is turned off. A potential solution to this issue may
+reside in the network architecture side [29]. Also, sampling
+weights for random networks in GIN for every training image
+and every iteration inevitably incurs computational overhead
+during training. For the abdominal CT to MRI experiment, on
+a single Nvidia RTX 2080Ti GPU, using the setting described
+in Sec. IV-B, the proposed method takes ∼19 seconds per
+epoch × 2k epochs (∼10.6 hours in total), with a GPU
+memory consumption of 10.6 GB. This is in comparison with
+ERM that takes ∼9 seconds per epoch and ∼ 4.3 GB of GPU
+memory. Optimization can be done by sharing the same ran￾dom network in GIN within a batch or across several batches.
+As our method is based on data augmentation during training,
+it does not incur additional test-time computational overhead.
+Although the ensemble strategy in Sec. IV-E approximately
+doubles the computation time in testing, it is still in most cases
+acceptable, as the inference process of segmentation models
+is relatively inexpensive compared with that of training.
+Starting from the current methodology, several potential
+extensions arise: As our method can efficiently produce huge
+amount of domain-shifted images, it is natural to combine
+the proposed method with multi-source domain generalization
+techniques [24], [30]. In addition, as our work focuses on
+image appearance, it is interesting to design methods targeting
+at domain shifts in terms of anatomical shapes.
+REFERENCES
+[1] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional networks
+for biomedical image segmentation,” in International Conference on
+Medical Image Computing and Computer Assisted Intervention (MIC￾CAI). Springer, 2015, pp. 234–241.
+[2] D. Shen, G. Wu, and H.-I. Suk, “Deep learning in medical image
+analysis,” Annual Review of Biomedical Engineering, vol. 19, pp. 221–
+248, 2017.
+[3] F. Isensee, J. Petersen, A. Klein, D. Zimmerer, P. F. Jaeger, S. Kohl,
+J. Wasserthal, G. Koehler, T. Norajitra, S. Wirkert et al., “nnu-net: Self￾adapting framework for u-net-based medical image segmentation,” arXiv
+preprint arXiv:1809.10486, 2018.
+[4] L. Zhang, X. Wang, D. Yang, T. Sanford, S. Harmon, B. Turkbey, B. J.
+Wood, H. Roth, A. Myronenko, D. Xu et al., “Generalizing deep learning
+for medical image segmentation to unseen domains via deep stacked
+transformation,” IEEE Transactions on Medical Imaging, vol. 39, no. 7,
+pp. 2531–2540, 2020.
+[5] Z. Zhou, M. M. R. Siddiquee, N. Tajbakhsh, and J. Liang, “Unet++:
+A nested u-net architecture for medical image segmentation,” in Deep
+Learning in Medical Image Analysis and Multimodal Learning for
+Clinical Decision Support. Springer, 2018, pp. 3–11.
+[6] M. Antonelli, A. Reinke, S. Bakas, K. Farahani, B. A. Landman,
+G. Litjens, B. Menze, O. Ronneberger, R. M. Summers, B. van Gin￾neken et al., “The medical segmentation decathlon,” arXiv preprint
+arXiv:2106.05735, 2021.
+[7] K. Kamnitsas, C. Baumgartner, C. Ledig, V. Newcombe, J. Simpson,
+A. Kane, D. Menon, A. Nori, A. Criminisi, D. Rueckert et al., “Unsuper￾vised domain adaptation in brain lesion segmentation with adversarial
+networks,” in International Conference on Information Processing in
+Medical Imaging (IPMI). Springer, 2017, pp. 597–609.
+[8] Q. Dou, C. Ouyang, C. Chen, H. Chen, and P.-A. Heng, “Unsupervised
+cross-modality domain adaptation of convnets for biomedical image
+segmentations with adversarial loss,” arXiv preprint arXiv:1804.10916,
+2018.
+[9] S. Ben-David, J. Blitzer, K. Crammer, A. Kulesza, F. Pereira, and
+J. W. Vaughan, “A theory of learning from different domains,” Machine
+Learning, vol. 79, no. 1, pp. 151–175, 2010.
+[10] B. Glocker, R. Robinson, D. C. Castro, Q. Dou, and E. Konukoglu,
+“Machine learning with multi-site imaging data: An empirical study on
+the impact of scanner effects,” arXiv preprint arXiv:1910.04597, 2019.
+[11] D. C. Castro, I. Walker, and B. Glocker, “Causality matters in medical
+imaging,” Nature Communications, vol. 11, no. 1, pp. 1–10, 2020.
+[12] J. R. Zech, M. A. Badgeley, M. Liu, A. B. Costa, J. J. Titano, and
+E. K. Oermann, “Variable generalization performance of a deep learning
+model to detect pneumonia in chest radiographs: a cross-sectional study,”
+PLoS medicine, vol. 15, no. 11, p. e1002683, 2018.
+[13] R. Geirhos, J.-H. Jacobsen, C. Michaelis, R. Zemel, W. Brendel,
+M. Bethge, and F. A. Wichmann, “Shortcut learning in deep neural
+networks,” Nature Machine Intelligence, vol. 2, no. 11, pp. 665–673,
+2020.
+[14] J. Pearl, Causality. Cambridge University Press, 2009.
+[15] D. Zhang, H. Zhang, J. Tang, X. Hua, and Q. Sun, “Causal inter￾vention for weakly-supervised semantic segmentation,” arXiv preprint
+arXiv:2009.12547, 2020.
+[16] Y. Ganin and V. Lempitsky, “Unsupervised domain adaptation by
+backpropagation,” in International Conference on Machine Learning
+(ICML). PMLR, 2015, pp. 1180–1189.
+[17] K. Muandet, D. Balduzzi, and B. Scholkopf, “Domain generalization ¨
+via invariant feature representation,” in International Conference on
+Machine Learning (ICML). PMLR, 2013, pp. 10–18.
+[18] M. Ilse, J. Tomczak, P. Forre´ et al., “Selecting data augmentation for
+simulating interventions,” 2020.
+[19] E. Tzeng, J. Hoffman, N. Zhang, K. Saenko, and T. Darrell, “Deep
+domain confusion: Maximizing for domain invariance,” arXiv preprint
+arXiv:1412.3474, 2014.
+[20] Y. Zou, Z. Yu, B. Kumar, and J. Wang, “Unsupervised domain adaptation
+for semantic segmentation via class-balanced self-training,” in Proceed￾ings of the European Conference on Computer Vision (ECCV), 2018,
+pp. 289–305.
+[21] C. Ouyang, K. Kamnitsas, C. Biffi, J. Duan, and D. Rueckert, “Data
+efficient unsupervised domain adaptation for cross-modality image seg￾mentation,” in International Conference on Medical Image Computing
+and Computer-Assisted Intervention. Springer, 2019, pp. 669–677.
+[22] N. Karani, E. Erdil, K. Chaitanya, and E. Konukoglu, “Test-time adapt￾able neural networks for robust medical image segmentation,” Medical
+Image Analysis, vol. 68, p. 101907, 2021.
+[23] M. Bateson, J. Dolz, H. Kervadec, H. Lombaert, and I. B. Ayed,
+“Source-free domain adaptation for image segmentation,” arXiv preprint
+arXiv:2108.03152, 2021.
+[24] Q. Dou, D. Coelho de Castro, K. Kamnitsas, and B. Glocker, “Domain
+generalization via model-agnostic learning of semantic features,” vol. 32,
+pp. 6450–6461, 2019.
+[25] D. Li, J. Zhang, Y. Yang, C. Liu, Y.-Z. Song, and T. M. Hospedales,
+“Episodic training for domain generalization,” in Proceedings of the
+IEEE/CVF International Conference on Computer Vision (ICCV).
+IEEE, 2019, pp. 1446–1455.
+[26] K. Zhou, Y. Yang, Y. Qiao, and T. Xiang, “Domain generalization with
+mixstyle,” arXiv preprint arXiv:2104.02008, 2021.
+[27] A. Chartsias, T. Joyce, M. V. Giuffrida, and S. A. Tsaftaris, “Multi￾modal mr synthesis via modality-invariant latent representation,” IEEE
+Transactions on Medical Imaging, vol. 37, no. 3, pp. 803–814, 2017.
+[28] F. M. Carlucci, A. D’Innocente, S. Bucci, B. Caputo, and T. Tommasi,
+“Domain generalization by solving jigsaw puzzles,” in Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition
+(CVPR). IEEE, 2019, pp. 2229–2238.
+[29] P. Chattopadhyay, Y. Balaji, and J. Hoffman, “Learning to balance
+specificity and invariance for in and out of domain generalization,” in
+Proceedings of the European Conference on Computer Vision (ECCV).
+Springer, 2020, pp. 301–318.
+[30] Q. Liu, Q. Dou, and P.-A. Heng, “Shape-aware meta-learning for
+generalizing prostate mri segmentation to unseen domains,” in Interna￾tional Conference on Medical Image Computing and Computer-Assisted
+Intervention. Springer, 2020, pp. 475–485.
+[31] X. Liu, S. Thermos, A. O’Neil, and S. A. Tsaftaris, “Semi-supervised
+meta-learning with disentanglement for domain-generalised medical
+image segmentation,” arXiv preprint arXiv:2106.13292, 2021.
+[32] R. Gu, J. Zhang, R. Huang, W. Lei, G. Wang, and S. Zhang, “Domain
+composition and attention for unseen-domain generalizable medical
+image segmentation,” in International Conference on Medical Image
+Computing and Computer Assisted Intervention (MICCAI). Springer,
+2021, pp. 241–250.
+[33] Z. Huang, H. Wang, E. P. Xing, and D. Huang, “Self-challenging
+improves cross-domain generalization,” in Proceedings of the European
+Conference on Computer Vision (ECCV). Springer, 2020, pp. 124–140.

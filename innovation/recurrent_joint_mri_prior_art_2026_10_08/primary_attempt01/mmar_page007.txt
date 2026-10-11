@@ -1,0 +1,41 @@
+Training split 1 Training split 2 Training split 3
+T1w
+T2w
+FLAIR
+DWI
+… T1w
+…
+…
+…
+T2w
+FLAIR
+DWI
+T1w
+T2w
+FLAIR
+DWI
+103 11 23 23 23 23 34 34 35
+Figure 2: Hetero-model training data splits. Training data (n=103) distributions
+for the three different experimental setups (subject count on x-axis). Training split 1 has
+all four modalities for all subjects. Training split 2 has all four modalities for only 11
+subjects, with the remaining subjects each having only a single modality (23 with T1w, 23
+with T2w, 23 with FLAIR, and 23 with DWI). Training split 3 has T1w scans for all 103
+subjects and each subject also has one addition sequence (34 with T2w, 34 with FLAIR,
+and 35 with DWI).
+of modalities). This split also served as the training distribution for our cor￾ruption augmentation-based experiments (described in section 3.5.4), where
+we applied extreme data augmentation to enable the models to become ro￾bust not only to missing modalities, but to modalities corrupted with extreme
+levels of noise too.
+2.2.2. Training split 2
+In this highly uni-modal setup, a complete set of sequences is available
+for only a small subset (10%) of the data, while the remaining subjects
+contribute only a single sequence. We designed this split to test whether
+hetero-modal learning can improve predictive performance on specific target
+sequences by leveraging additional, disjointed training data that a standard
+specialist model would otherwise be unable to access.
+2.2.3. Training split 3
+In this setup, we designated T1w as the “anchor sequence” due to its
+high prevalence in standard MRI protocols. All other sequences overlap with
+this T1w anchor, but never with each other. We used this distribution to
+investigate whether hetero-modal learning can train models capable of per￾forming inference on novel, unseen combinations of sequences (e.g., FLAIR
+and DWI).
+7

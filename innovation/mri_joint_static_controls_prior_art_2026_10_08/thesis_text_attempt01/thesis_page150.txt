@@ -1,0 +1,30 @@
+A.2. FURTHER EXPERIMENTS AND RESULTS ON BAKKER’S
+SETTING
+our results are overall consistent with the results displayed in the paper of Bakker et al.
+(2020), although this is not anexact replication.
+A.2.3 Further results in the Bakker experiment
+We provide the results of our full ablation study on the components described in section
+6.3. We report observations on thecvb, cvz, c+rvz and c+rhz settings. The summary
+of the full trajectory with an AUC is presented on Table A.3 and the performance at the
+end of sampling is shown in Table A.4.
+It is difficult to consistently establish a trend for when reversals will happen, but several
+important observations can be made from the results.
+First of all, by comparing Tables A.3 and Table A.4, we see that reversals can happen by
+considering one way of reporting over another (seec+rvz cResNet in both tables). This
+highlights again the impact of the way results are reported.
+The effect of the masks used for pretraining the reconstructor is also interesting. Com-
+paring the cvb and cvz results, once can consistently see the following trend. In the
+short horizon setting (LHS of the tables), usingcvb leads to consistent improvements
+over cvz. In the long horizon setting, the opposite is true. Recall that theb masks are
+discretely distributed from sampling rates12.5% to 25%, which matches the short horizon
+experiment range. The z masks span a continuous range, from roughly7% to 37.5%,
+whereas the long horizon experiment spans a range from3% to 25% sampling rate. These
+results suggest that matching the pretraining regime to the regime on which evaluation
+will be carried out has a significant influence on the performance of the sampling policy,
+an observation which has, to our knowledge, never been quantified before.
+PSNR evaluation. We also provide a PSNR evaluation for the models trained on
+SSIM in Tables A.5 and A.6. There does not seem a clear trend or correlation between
+the policy’s performance on SSIM and PSNR. We observe however the same kind of
+dynamics in the settings, where cropped + resized data naturally have a higher PSNR
+than cropped ones, and cResNet improves the reconstruction quality of UNet.
+137

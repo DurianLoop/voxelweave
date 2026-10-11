@@ -1,0 +1,20 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 9
+APPENDIX
+A.1 Data Preprocessing
+The preprocessing for fastMRI and CC359 follows the data preprocessing pipeline of HiFi-Mamba. For Prostate158, we adopt
+the same procedure, except that the sampling mask is replaced with a random mask. For ACDC, we employ a golden-angle
+radial sampling mask and first perform a center crop to an image size of 128 × 128. Four-fold undersampling corresponds
+to using 32 radial spokes, while eight-fold undersampling uses 16 spokes. For M4Raw, we use the equispaced Cartesian
+undersampling mask and split the real and imaginary parts of the four-channel k-space input to form an eight-channel input.
+A.2 Dataset Introduction
+The fastMRI dataset used in our study consists of 1,172 complex-valued single-coil coronal knee examinations acquired
+with proton-density (PD) weighting. Each volume contains approximately 35 coronal slices with an in-plane matrix size of
+320 × 320. We train and evaluate all models on the proton-density fat-suppressed (PDFS) subset, strictly following the official
+train/validation/test split.
+The CC359 dataset contains raw brain MR scans acquired on clinical MR scanners. Following the official split, we use 25
+subjects for training and 10 subjects for testing. Each 2D slice has an in-plane matrix size of 256 × 256.
+The ACDC dataset consists of cardiac MR images from 150 subjects. Following the official split, we use 100 cases for
+training and 50 cases for testing, each containing short-axis slices with an in-plane resolution of 256 × 256.
+The M4Raw dataset consists of multi-channel brain MRI k-space data from 183 volunteers scanned at 0.3T using a
+four-channel coil. We use 139 volumes for training and 19 volumes for validation.
+Prostate158 dataset provides prostate MR images from 158 volunteers, split into 139 training and 19 testing cases.

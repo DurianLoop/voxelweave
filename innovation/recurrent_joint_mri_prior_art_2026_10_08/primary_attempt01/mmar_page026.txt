@@ -1,0 +1,31 @@
+demonstrating how the network responds when the FLAIR scan is subjected
+to various missingness and corruption scenarios.
+The first row illustrates the baseline output when all modalities are clean
+and present. Here, the router is highly selective about where it assigns high
+attention weights to the DWI scan. The two prominent bright areas strongly
+align with the locations of the ISL, while weights remain comparatively sup￾pressed outside these regions. This aligns with clinical intuition: DWI is a
+powerful modality for identifying acute ISL (often termed “DWI-positive”)
+but generally lacks anatomical detail and is acquired at a lower resolution.
+When FLAIR is completely missing, the attention distributions shift
+significantly—most notably for T2w and DWI. Features previously domi￾nated by the FLAIR sequence in the fused representation are drawn from the
+remaining available modalities. Specifically, the network relies more heavily
+on the DWI encoder for grey matter features and the T2w encoder for back￾ground features.
+When the FLAIR scan is subjected to catastrophic corruption (Gaussian
+noise, false present), the router assigns it negligible weight. The resulting
+attention maps for T1w, T2w, and DWI closely resemble those of the explic￾itly missing FLAIR scenario. This demonstrates that the MMAR naturally
+learns to treat severely corrupted modalities as if they were missing. Under
+bias field corruption, the router leverages its spatial adaptivity to selectively
+allow FLAIR features to pass into the hetero-modal fusion only in regions
+where the scan remains less affected by the artefact.
+Figure 7 plots the mean router weights on the validation set at each en￾coder level during full-modality inference (using the final model checkpoint),
+comparing models trained across the three different data splits (without cor￾ruption augmentation). Across training splits 1 and 2, FLAIR dominates the
+three highest resolution levels (levels 0-2).
+However, these plots reveal that the underlying training data distribution
+influences the weighting strategy learned by the router. For instance, in
+training split 3—where T1w scans are the “anchor” modality and far more
+abundant than the others—the router learns to prioritise T1w features. Here,
+FLAIR only retains its dominance at the absolute highest resolution level.
+This result is a logical consequence of the network maximising the utility of
+the T1w encoder, which naturally becomes a stronger feature extractor due
+to the higher T1w representation in the training data.
+26

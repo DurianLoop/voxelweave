@@ -1,0 +1,35 @@
+3.5.4. Corruption augmentation
+To equip the hetero-modal models with resilience to unidentified cor￾rupted modalities, we performed some of our experiments with an additional
+layer of extreme data augmentation severe enough to render a scan almost or
+completely unusable. During training for these experiments, we reassigned
+(with 50% probability per scan) some of the D scans that were initially se￾lected to undergo modality dropout, to undergo corruption instead. For each
+corrupted scan, the corruption transform was randomly selected as one of the
+following: gaussian noise (std=3); bias field (polynomial degree 3, coefficients
+in [0.4, 0.9]); low contrast (multiplier in [0, 0.1]); high contrast (multiplier
+in [10, 30]); Gaussian blur (sigma in [2, 6] per axis); Gibbs noise (alpha in
+[0.75, 1]); K-Space spike (intensity in [15, 18]); Rician noise (std=1). We
+randomly performed each of these corruptions on the entire scan, or on ran￾dom patches of the scan (3-10 patches, each of size 40-80 voxels in each axis).
+We implemented these transformations using the MONAI library (Cardoso
+et al., 2022). Figure 4 shows examples.
+3.5.5. Loss functions, optimisation, and schedule
+Models were optimised using a combination of Dice and Cross-Entropy
+loss:
+Lseg = 0.5LDSC + 0.5LCE. (2)
+We applied deep supervision across the four highest-resolution decoder
+output levels (l), scaling the loss with exponentially decreasing weights:
+wl =
+2
+−l
+P3
+i=0 2
+−i
+. (3)
+We trained all models for 2000 epochs (defining an epoch as 103 subjects,
+which is the total number of training subjects available when using all modal￾ities) using the AdamW optimiser (base learning rate 0.0003, weight decay
+0.01) and a batch size of 2. The learning rate followed a linear warm-up
+(20 epochs) into a cosine decay schedule. Validation checkpoints were evalu￾ated every 50 epochs. For training split 2, models trained exclusively on the
+full-modality subset for the initial 100 epochs to stabilise early learning.
+3.5.6. MMAR-specific training details
+When training the MMAR-based model with corruption augmentation,
+we introduced an auxiliary loss term to explicitly penalise the router for
+13

@@ -1,0 +1,64 @@
+Impact of Reconstruction on Downstream AI F airness and Performance
+U-Net GAN SDE AUROC/Dice PSNR Baseline
+100000 10000 3000
+Photon Count
+0.70
+0.75
+0.80
+0.85
+AUROC
+Average Classification (CheXpert)
+26
+27
+28
+29
+30
+31
+32
+33
+PSNR
+4 8 16
+Acceleration Factor
+0.55
+0.60
+0.65
+0.70
+0.75
+Dice
+32
+34
+36
+38
+40
+42
+44
+PSNR
+Segmentation (UCSF-PDGM)
+Figure 2: Downstream performance and PSNR at varying noise levels. Axes for PSNR and
+task performance are scaled to comparable percentage ranges. Although PSNR
+declines as noise increases, task performance remains stable. Baseline indicates
+performance on original images.
+all three reconstruction models. Using SSIM instead of PSNR as the reconstruction metric
+also shows similar trends (Appendix Figure 18).
+A closer look at CheXpert reveals a mild dependence on baseline task difficulty: patholo-
+gies with lower initial AUROC show slightly larger declines. For example, consolidation re-
+mains stable with U-Net reconstruction AUROC at 0.91, whereas lung lesion drops from 0.79
+to 0.77 as noise increases (see Appendix Table 7 for more details).
+4.2. Impact of Reconstruction on Fairness
+Although aggregate task performance is largely unaffected, reconstruction could still alter
+relative performance across demographic subgroups. To test this possibility, we evaluated
+fairness on the downstream models using acceleration factor 8 for UCSF-PDGM and a
+photon count of 10,000 for CheXpert, representing the middle noise levels.
+Sex Age Race
+Classification 0.05±0.07 0.17±0.08 0.07±0.03
+Segmentation 1.10 1.22 –
+Table 1: Baseline fairness of the classifiers (EODD) and the segmentation model (SER) for
+different sensitive attributes. For classification, mean and s.d. are reported across
+all classification tasks. Segmentation corresponds to UCSF-PDGM performance.
+Sex exhibits the lowest baseline bias.
+Fig. 3 displays the distribution of bias shifts when reconstructed images replace the
+original inputs. To provide a global overview, the histogram represents the bias shifts
+across all tasks, pathologies, and reconstruction models. As the diagnostic models exhibit
+bias on the original inputs (Table 1), the bias shifts with reconstruction are plotted on a
+percentage scale compared to the original bias to highlight the relative effects. We find
+7

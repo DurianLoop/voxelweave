@@ -1,0 +1,55 @@
+Learning to Sample and Reconstruct for Accelerated MRI 4
+2.2. Learning Dynamic Sampling with Fixed Reconstructors via Deep RL
+Heuristic sampling policies may not be adapted to specific datasets, which limits
+their acceleration-quality trade-off. Since the MRI sampling process is carried out
+over time and can be considered as a finite sequential decision-making process, a
+dynamic sampling method was proposed to learn a sampler with a fixed pre-trained
+reconstructor via deep RL. In Computed Tomography (CT) scanning, this method
+was first proposed by [21], and a similar idea was later proposed in the MRI region.
+These methods [11–13] formulate the MRI sampling trajectory as a Partially Observed
+Markov Decision Process (POMDP) (see section 3.2) and learn parametric samplers
+with a fixed pre-trained reconstructor by modern deep RL algorithms, such as DDQN
+[22] and policy gradient [23]. RL enables the learning of a non-greedy sequential
+decision function without relying on hand-designed policies. These methods use the
+RL-learned policies to guide the scanning based on the measurements collected in the
+preceding stage, thus achieving personalized scanning.
+2.3. Jointly Learning Samplers and Reconstructors via Back-Propagation
+If we fix a sampler to find an optimal reconstructor or fix a reconstructor to find
+an optimal sampler, we may obtain suboptimal pairs of samplers and reconstructors.
+Therefore, recent works aim to learn a good pair of samplers and reconstructors for
+a better acceleration-quality trade-off. These works propose to jointly train samplers
+and reconstructors end-to-end using Back-Propagation (BP).
+One line of works [24–31] use a learnable column vector of probabilistic sub-
+sampling masks p as the sampler, which is independent of the specific image, and
+jointly train it together with a neural network-based reconstruction model R. These
+works learn a better sampler p than human-designed heuristic sampling policies.
+However, these samplers are also fixed sampling patterns and not adaptive to each
+image. The ideas of these works can be illustrated by the following diagram:
+p
+sample
+−−−−→
+y
+yT
+R−−→xT
+where modules in the boxes are learnable and some notations are defined in section 3.1
+and can be quickly found through the notation index in Appendix A.
+Another line of works [32–35] use a neural network-based modelπ as the sampler,
+which is adaptive to sampled measurements. The sampler π is jointly trained with a
+DL-based reconstructorR end-to-end via BP. These methods learn sampling strategies
+that are adaptive to each image. However, training the sampler and the reconstructor
+by BP can be challenging. On the one hand, gradients are passed through long
+trajectories leading to gradient vanishing or exploding. On the other hand, GPU
+memory limits the size of neural networks due to long trajectories. Therefore, these
+works often solve weakened forms of the joint optimization problem (3.1). The ideas
+of these works can be illustrated by the following diagram:
+y0
+R−−→x0
+π−→
+y
+y1
+R−−→x1
+π−→
+y
+y2··· yT
+R−−→xT
+where modules in the boxes are learnable.

@@ -1,0 +1,64 @@
+Learning to Sample and Reconstruct for Accelerated MRI 28
+Finally, we have
+∇θRJ dense
+T (x)
+=
+T−1∑
+t=0
+∑
+a0,···,at−1
+Prπ(y0
+{as}t−1
+s=0
+−−−−−→yt)·
+[∑
+at
+∇θRπ(at|R (yt))·qt
+]
++
+∑
+a0,···,aT−1
+Prπ(y0
+{at}T−1
+t=0
+−−−−−→yT )·∇θRS(xT, x)
+=
+T−1∑
+t=0
+E{as}t−1
+s=0∼π
+[∑
+at
+∇θRπ(at|R (yt))·qt
+]
++ E{at}T−1
+t=0∼π [∇θRS(R(yT ), x)].
+□
+Although proposition 2 gives the derivative of dense-reward objective function
+w.r.t parameters of the reconstructor, we empirically find that training reconstructor
+with the derivative by gradient-based methods fails. The reason may be that the
+sequential acquisition{at}t−1
+t=0∼ π depends on not only π but alsoR. Changing the
+reconstructor results to an unpredictable change of the sampling strategy, leading to
+the failure. From another perspective, the reconstructor can also be viewed as an RL
+agent, so gradient-based methods hardly work.
+Appendix C. Implementation Details
+In this section, We will show the implementation details of all methods. In
+section Appendix C.1, we show the basic settings of all algorithms. In
+section Appendix C.2, we show the implementation details of L2S and L2SR. In
+section Appendix C.3, we show the implementation details of competing methods.
+Appendix C.1. Basic Settings
+Both our methods and competing methods, are performed with the same basic settings.
+SSIM V alues. SSIM hyperparameters are kept to their original values in [38].
+The dynamic range is set to the maximum pixel value of the ground truth volume.
+Loss F unction. Since we leverage the SSIM value as the similarity metric, for
+consistency, all algorithms use negative SSIM values as the loss.
+Appendix C.2. Our Methods
+Pre-training the reconstructor is the same as the competing method ‘Random’, as
+detailed in the following subsection. We implement the A2C algorithm based on the
+stable-baselines3 [42] which is a popular framework for reliable implementations of RL
+algorithms. The learning rate is set to 0.0003, the update timestep is set to T , and
+the other hyperparameters are to the default values. The reconstructor is trained by
+Adam optimizer for 10 epochs in the alternating training stage. The learning rate for
+both θπ and θR decays at a rate of 3 at each alternate training. We refer you to our
+official code for more details.

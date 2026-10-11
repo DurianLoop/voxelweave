@@ -1,0 +1,28 @@
+CHAPTER 5. SCALABLE LEARNING-BASED SAMPLING
+OPTIMIZATION
+Figure 5.1: Illustration of the LBCS greedy approach. On the right, we start from an empty
+mask, and select the line that yields to the best performance. Once it is acquired, we keep this
+mask, try adding to it the line that yields the best performance given what has been acquired, and
+continue until the final sampling budget is reached. On the left, we see how the performance is
+assessed: we use a setD of training data, that are subsampled according to the current mask,
+then reconstructed and evaluated using the performance metricη. The computation is repeated
+for each different mask.
+Fourier space at once, we define aset of subsetsS of{1,...,P } and assume that the
+final mask will be constructed as
+ω =
+t⋃
+j=1
+Sj, s.t. Sj∈S (5.1)
+for somet> 0. Gözcü et al. (2018) also introduce acost functionc(ω)≥ 0 and amaximal
+cost Γ that the final maskω must not exceed. In the case of Problem 4.5, we have
+c(ω) =|ω| and Γ =N. With these two additions, the LBCS method (Gözcü et al., 2018)
+is displayed in Algorithm 1. The procedure is very simple: while budget is available (l.2),
+the algorithm tests all feasible candidatesS∈S (l.3-7) and adds permanently to the
+sampling mask the candidate that yields the largest performance gain (l.8).
+The greedy approach of LBCS brings multiple advantages over previous heuristics such
+as variable-density sampling. First, the maskω has anested structure: by recording the
+order in which elements were added to the mask, it is possible to immediately adapt to
+different costs Γ. This feature is not possible for many approaches that directly optimize
+the sampling mask for a given sampling rate. In addition, this approach does not have
+any parameter that requires to be tuned, making it particular easy to implement in
+48

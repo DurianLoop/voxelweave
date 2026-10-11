@@ -1,0 +1,39 @@
+4.4. A MATTER OF PERFORMANCE: HOW DO THESE METHODS
+COMPARE TO EACH OTHER?
+of the methods, and while no quantitative comparison was available in the paper, further
+works confirmed the impact of including the reconstruction algorithm in the mask design
+(Zijlstra et al., 2016).
+While these methods capture the paradigm that will be overwhelmingly dominant in the
+deep learning era, there was little follow-up work until much later, around 2018.
+The case of Seeger et al. (2010).The work of Seeger et al. (2010) lies in its own
+category. This approach builds on a sequential Bayesian experiment design perspective
+for sparse linear models (Seeger et al., 2007; Seeger and Nickisch, 2008). First a model of
+the posterior distributionp(x|yω) is built, and then, a sampling pattern is iteratively
+built by successively acquiring the readouts that have the highest entropy. This approach
+is able to sequentially tailor the sampling pattern to the need of an unseen image, given
+the previously acquired measurements. However, the approach features a quite high
+computational cost for a single image. Liu et al. (2012) raise that is not practical, as the
+matrix inversion required to compute the next measurement that must be acquired is
+too slow to match the readout time of a scanner.
+While methods to optimize sequentially the sampling mask are common in the deep
+learning era, the approach of Seeger et al. (2010) is unique in its time, as all other
+works focused on optimizing the sampling pattern for a fixed sampling rate, and not in a
+sequential fashion. While more principled than other approaches, and using maximum
+entropy as the criterion to optimize the acquisition trajectory, this method remains
+model-based (using a Laplace prior) and model-driven (maximum entropy).
+4.4 A matter of performance: how do these methods com-
+pare to each other?
+Very few of the works discussed until then feature an extensive comparison of performance
+of their proposed approaches. Most works rely on visual comparisons, or state the
+weaknesses of previous methods, but do not compare against them. In this regard,
+the contributions that bring a comparison of various approaches to mask design are
+particularly valuable, and in this section, we will discuss two of them, namely Chauffert
+et al. (2013) and Zijlstra et al. (2016).
+The work of Chauffert et al. (2013) aims at designing a better VDS density, while also
+providing a comparison between theoretically informed sampling patterns, and the ones
+obtained using the polynomial of Equation 4.3 tuned at various degreesd∈{ 1, 2,..., 6},
+and a hybrid distribution mixing some theoretically prescribed components and heuristics.
+It is interesting to observe that in their data, the tuned hybrid distribution performs best,
+followed by the tuned polynomial and the optimal theoretically predicted distribution.
+This theoretically optimal distribution is based on the arguments from Rauhut (2010) uses
+35

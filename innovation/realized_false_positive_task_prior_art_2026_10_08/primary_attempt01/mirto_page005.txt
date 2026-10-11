@@ -1,0 +1,131 @@
+MIRTO 5
+Registration gate. Let Tg be the method’s own refer￾ence (the label resampled by its preprocessing) mapped
+by Tm, Tf = Tg ∩ F and Cf = C ∩ F. Let Θ be the
+56 candidate transforms obtained from two transposi￾tions, four in-plane flip patterns and through-plane offsets
+dz ∈ {−3, . . . , 3} (the applied transform is one of them).
+A subject passes if
+(i) ∥cen(Tf ) − cen(Cf )∥2 ≤ 3 mm,
+(ii-b) max
+θ∈Θ
+D(T
+θ
+f
+, Cf ) − D(Tf , Cf ) ≤ 0.02, (8)
+(iii) D(Tf , Cf ) ≥ 0.85,
+and its method passes (ii-a), that is, the applied transform
+maximises the cohort mean of D(T
+θ
+f
+, Cf ) over Θ (Fig. 2b).
+We do not use the more obvious rule of a fixed overlap
+threshold (centroid within 3 mm, at least 95% of the tu￾mour inside the field of view and D ≥ 0.95), because its
+last two clauses measure label fidelity and field-of-view
+truncation rather than registration: it would fail between
+61 and 242 correctly registered subjects per method (Sec￾tion 3.1). On synthetic volumes the gate passes the iden￾tity, a field of view that removes 40% of a sphere, a one￾voxel erosion and a 20% dilation, and fails an in-plane
+flip, a transpose and a two-slice offset.
+Label-free diagnostics. Five quantities flag discordance
+from maps and references alone. Rank stability is the
+Spearman correlation of per-subject voxel AUROC be￾tween two conditions that should describe the same tu￾mour. Shared conspicuity is the cross-method correlation
+of per-subject AUROC, since how conspicuous a tumour
+is belongs to the subject. The anti-location rate is the
+share of subjects with AUROC < 0.5. The transform scan
+is the best mean AUROC over Θ minus that of the ap￾plied transform. The Jaccard bound uses the fact that
+the Jaccard distance dJ (X, Y ) = 1 − |X ∩ Y |/|X ∪ Y | is
+a metric, so that for any prediction P
+dJ (RA, RB) ≥
+
+ dJ (P, RA) − dJ (P, RB)
+
+
+, (9)
+and a violation certifies that two references RA, RB dis￾agree. The power of rank stability and of the anti-location
+rate was measured by injecting known corruptions into
+two independently verified pipelines and setting each de￾cision threshold at the 5th or 95th percentile, respectively,
+of its bootstrap distribution without corruption, which
+fixes the false-alarm rate at 0.05 by construction.
+2.4 Operating points and threshold transfer
+Validation-only threshold. For a nominal budget b ∈
+{5, 10, 20, 40} cm3
+, let FPV (τ ), D¯
+V (τ ) and SensV (τ ) be
+the validation mean burden, mean Dice and above-floor
+lesion sensitivity (Section 2.5). With the feasible set Fb =
+{τ ∈ G : FPV (τ ) ≤ b},
+τˆb = max n
+arg max
+τ∈F′
+b
+D¯
+V (τ )
+o
+,
+F
+′
+b =
+n
+τ ∈ Fb : SensV (τ ) ≥ max
+τ
+′∈Fb
+SensV (τ
+′
+) − 0.03o
+.
+(10)
+The 3-point guard keeps sensitivity within about one le￾sion of the feasible best (36 above-floor validation lesions);
+ties go to the larger τ . Sensitivity is not monotone in τ ,
+so the feasible set is searched rather than assumed to be
+an interval.
+Realised burden. The nominal b names how τˆb was cho￾sen; it is not an operating point. Every table reports the
+realised FPi(ˆτb) on test subjects: mean with interval, me￾dian, 95th percentile, maximum and the share of subjects
+with FPi > b.
+Test-matched threshold and the transfer gap. As a di￾agnostic of map quality at equal burden, and never as
+a result that could be used in practice, we also use the
+threshold matched on the test cohort,
+τ
+⋆
+b = min 
+τ ∈ G : FPT (τ ) ≤ b
+	
+, (11)
+and its interpolated version that sets the test mean bur￾den to exactly b. Both are re-selected inside every boot￾strap replicate. The per-subject threshold-transfer gap is
+gi(b) = Di(τ
+⋆
+b
+) − Di(ˆτb). (12)
+(The quantity g¯ is sometimes called the “regret” of test￾set tuning. We avoid the term, because the gap is not
+purely the optimism of tuning on the test set, as the next
+identity shows.)
+Write β(τ ) = FPT (τ ) and D( ¯ τ ) for the test means.
+Because β is non-increasing, on any interval where it is
+strictly decreasing the curve Ψ = D¯ ◦ β
+−1
+(mean Dice as
+a function of mean realised burden) is well defined.
+Identity 1 (Transfer decomposition). For methods a
+and c at budget b, let ∆val = D¯
+a(ˆτa,b)−D¯
+c(ˆτc,b) and ∆⋆ =
+D¯
+a(τ
+⋆
+a,b) − D¯
+c(τ
+⋆
+c,b). Then exactly
+∆val = ∆⋆ −
+
+g¯a(b) − g¯c(b)
+
+, (13)
+and, if Ψm is differentiable between the realised burden
+βˆm = βm(ˆτm,b) and βm(τ
+⋆
+m,b) ≈ b,
+g¯m(b) = Ψm(b) − Ψm(βˆm) = Ψ
+′
+m(ξm) (b − βˆm) (14)
+for some ξm between βˆm and b.
+The identity needs only two lines of algebra and the mean￾value theorem (Appendix A); its use is in what it lets
+a reader attribute. Equation (13) says that a contrast
+at validation thresholds is the contrast at equal burden
+minus a difference of transfer gaps; Eq. (14) says that each

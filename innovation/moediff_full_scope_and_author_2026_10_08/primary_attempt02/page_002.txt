@@ -1,0 +1,106 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+learning architectures, surpassing the capabilities of conven￾tional interpolation and reconstruction methodologies. Modern
+deep learning approaches employ sophisticated neural networks
+to establish nonlinear mappings between Low-Resolution (LR)
+and High-Resolution (HR) image domains, achieving unprece￾dented fidelity in image reconstruction from lower-field MRI
+acquisitions [10]. The transition from handcrafted priors to data￾driven feature extraction enables the preservation of intricate
+anatomical details while enhancing spatial resolution, a critical
+advancement for clinical diagnostics and quantitative analysis
+[11]. Early implementations of deep learning-based SR adopted
+convolutional neural networks (CNNs) [12] as foundational
+architectures. The pioneering work of Dong et al. with Super￾Resolution Convolutional Neural Networks (SRCNN) [13]
+established an end-to-end learning framework that directly trans￾formed LR MRI inputs into HR outputs through hierarchical
+feature abstraction. Subsequent CNN variants, including Very
+Deep Super-Resolution (VDSR) [14] and Super-Resolution
+Residual Networks (SRResNet) [15], demonstrated quantitative
+improvements in Peak Signal-to-Noise Ratio (PSNR) by 2-4
+dB and Structural Similarity Index (SSIM) enhancements of
+0.05-0.12 compared to bicubic interpolation baselines. However,
+these architectures exhibit intrinsic limitations in modelling
+long-range spatial dependencies and preserving high-frequency
+textures, often resulting in over-smoothed reconstructions with
+compromised edge definition [16]. The field has witnessed
+significant advancements through the integration of Generative
+Adversarial Networks (GANs) [17], addressing the perceptual
+quality limitations of conventional CNN architectures. GAN￾based frameworks, particularly those employing perceptual
+loss functions and attention mechanisms, have demonstrated
+superior performance in texture synthesis and structural preser￾vation. Ledig et al. [15] demonstrated that SRGAN architectures
+could achieve Mean Opinion Scores (MOS) improvements
+of 0.8-1.2 points compared to CNN-based methods through
+adversarial training strategies. Furthermore, the Enhanced
+Super-Resolution Generative Adversarial Network (ESRGAN)
+[18] proposed by Wang et al improved upon the original
+SRGAN by introducing a Residual-in-Residual Dense Block
+(RRDB) without batch normalization, allowing for deeper
+network architectures. ESRGAN also employed a relativistic
+discriminator to predict the probability that a given image is
+more realistic than a reference image, rather than distinguishing
+between real and fake images, achieving higher Natural
+Image Quality Evaluator (NIQE) scores compared to previous
+methods. K Diffusion MRI (KDMRI) [19] incorporates k-space
+consistency through a modified reverse process that minimizes
+data fidelity loss at each denoising step. This approach
+demonstrated 23% improvement in Normalized Root Mean
+Square Error (NRMSE) compared to vanilla diffusion models
+when reconstructing 7T-like images from 3T MRI inputs, while
+maintaining spectral compatibility in the frequency domain. The
+method’s alternating projection between image space denoising
+and k-space constraint enforcement effectively reduces Gibbs
+artefacts in SR reconstructions. In [20], InverseSR is proposed
+for 3D brain MRI super-resolution that leverages a pre-trained
+3D Latent Diffusion Model (LDM) [21] to enhance the
+resolution of clinical MRI scans. By utilizing the LDM as
+a generative prior, InverseSR captures the prior distribution of
+3D T1-weighted brain MRIs, enabling the reconstruction of
+high-resolution images from low-resolution inputs. Validation
+on over 100 brain T1-weighted MRIs from the IXI dataset
+demonstrated that InverseSR achieved superior performance
+compared to baseline models.
+Despite these advances, existing diffusion-based SR models
+in the medical imaging domain still face several challenges.
+Most models apply a uniform denoising strategy across the
+entire image, disregarding the significant anatomical and textu￾ral heterogeneity present within different regions, such as the
+smooth intensity transitions observed in white matter, intricate
+folding patterns in the cortex, and delicate branching structures
+within the vasculature. Such a global denoising approach
+inherently neglects region-specific variations in noise levels,
+anatomical complexity, and tissue contrast, which consequently
+induces excessive smoothing of fine-grained anatomical features
+and clinically relevant structural boundaries. Furthermore, the
+inability of uniform strategies to adaptively handle diverse noise
+characteristics often leads to persistent residual noise artefacts,
+adversely impacting the clinical utility of reconstructed images
+by potentially obscuring subtle pathological indicators or
+essential diagnostic markers. To address these challenges, we
+introduce MoEDiff-SR, a novel Mixture-of-Experts (MoE)-
+Guided Diffusion Model for region-adaptive MRI SR. In
+contrast to conventional SR methods, MoEDiff-SR dynamically
+assigns weights to specialized denoising experts, thereby
+tailoring the reconstruction process to specific anatomical
+structures and tissue characteristics. Specifically, MoEDiff-SR
+employs an MoE framework [22] wherein each diffusion expert
+is trained to effectively reconstruct distinct tissue types and
+structural patterns inherent in MRI scans. A gating network
+intelligently routes 3T MRI inputs to three specialized diffusion
+experts based on multi-scale feature embeddings derived via a
+Transformer-based feature extractor from the conditional input
+3T MRI. These experts collaboratively generate a weighted
+super-resolution output, facilitating fine-grained adaptation to
+various anatomical regions and diverse noise levels. During
+the training phase, in addition to utilizing 7T MRI inputs,
+we incorporate gradient nonlinearity correction and bias field
+correction. These corrections enhance the gating network’s
+convergence by addressing signal distortions and intensity
+inhomogeneities. During inference, MoEDiff-SR efficiently
+generates high-quality 7T-like MRI from only a 3T MRI input
+combined with Gaussian-distributed noise. Furthermore, the
+specialized structure inherent in the MoE architecture supports
+asynchronous inference, allowing individual experts to indepen￾dently process different image regions, substantially enhanc￾ing deployability and computational efficiency. Experimental
+validation demonstrates that MoEDiff-SR significantly outper￾forms state-of-the-art SR methods, exhibiting improvements
+in perceptual quality metrics. Visual comparisons highlight its
+enhanced capacity to preserve cortical boundaries, delineate
+tissue interfaces, and suppress noise in homogeneous regions.
+Moreover, difference-map visualizations demonstrate that each
+expert is effectively activated in the anatomical domains for
+which it is specialized, validating the interpretability and
+targeted functionality of the MoE framework. The experimental

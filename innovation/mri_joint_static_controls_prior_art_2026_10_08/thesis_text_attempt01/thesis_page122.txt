@@ -1,0 +1,59 @@
+7.1. GENERATIVE ADVERSARIAL NETWORKS (GANS) FOR
+POSTERIOR MODELING
+mean ˆxθ with variance ˆσ2
+θ. Both the reconstruction mean and variance can be output of
+two heads of a model with shared parameters, i.e.(ˆxθ, ˆσ2
+θ) =fθ(yω). And they can be
+learned through minimizing the conditional negative log-likelihood (NLL)
+min
+θ
+ℓNLL(θ) = min
+θ
+1
+mP
+m∑
+i=1
+P∑
+j=1
+(xi,j− ˆxθ,i,j)2
+2ˆσ2
+θ,i,j
++ 1
+2 log
+(
+2π ˆσ2
+θ,i,j
+)
+(7.8)
+where xi,j denotes the j-th pixel of thei-th data point for a training set of sizem.
+Such an approach of aiming at solvingminθ− log(pθ(x|y)) is referred to as anegative
+log-likelihood in the machine learning (ML) literature, but in our context of inverse
+problems, Equation 7.8 amounts to assuming that theposterior takes the shape of a
+Gaussian distribution, and that we learn its moments by minimizing the parameters of
+the neural networkfθ(yω).
+Remark. There is here a considerable overlap with the terminology used in Bayesian
+Neural Networks (Kendall and Gal, 2017), where the aim is to learn a posterior
+distribution overweights,
+p(θ|x, y) = p(y|x,θ )p(θ)
+p(y|x) .
+We see that in our case, the notation is inverted compared to classical ML literature,
+as they denote the label or reference asy and the data asx, whereas in our case,
+the reference image is denotedx, and the data (i.e. the observation) is denoted as
+y. This is because in standard ML, we do not consider an inverse problem where
+we aim at retrieving the data from partial observations obtained through a forward
+model, but rather assume thaty contains some high-level structure (e.g. a class)
+that is hidden in some raw datax.
+We see then thatp(y|x,θ ) in the ML notation corresponds topθ(x|y) in our notation,
+and serves in the ML case the role of likelihood, hence Equation 7.8 describing
+pθ(x|y) as a negative log-likelihood. However, in an inverse problem,pθ(x|y) plays
+the role ofposterior, as seen in Section 3.2.4. We have
+pθ(x|y) = p(y|x)p(x)
+p(y) .
+In the case of an inverse problem,p(y|x) is the likelihood defined by the forward
+model of Equation 2.12,p(x) the prior defined by the ground truth data andp(y)
+is the marginal. As computing probabilities from a discrete set of training data is
+difficult and marginalization is computationally prohibitive on such problems, Zhang
+et al. (2019b) circumvent the problem by directly assuming that the posterior is a
+Gaussian distribution, and simply train a model to learn its moments from data.
+However, as we will see in the sequel, such modeling simplifications incur a cost,
+109

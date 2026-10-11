@@ -1,0 +1,34 @@
+Introduction
+Image spaceFourier space
+Inverse Fourier 
+Transform
+Figure 1.1: Fourier domain and image domain representation of a knee MRI scan.
+techniques such as gridding (O’sullivan, 1985; Jackson et al., 1991) or non-uniform fast
+Fourier transform (NUFFT) (Fessler and Sutton, 2003), as well as density compensation
+(Pipe and Menon, 1999; Pauly, 2007). In addition to this, non-Cartesian trajectories can
+be sensitive to errors in the magnetic field gradients, due to field imperfections of various
+sources (Vannesjo et al., 2013). As a result, Cartesian trajectories have been the most
+popular in practice (Lustig et al., 2008; Feng et al., 2016b).
+However, MRI examinations suffer from being relatively slow compared to other imaging
+modalities, due to the sequential nature of the acquisition. For instance, MRI acquisition
+can easily exceed 30 minutes (Zbontar et al., 2019). Improving imaging speed has been a
+major concern for researchers of the community and has led to many innovations along
+the years, such as rapid imaging sequences (Frahm et al., 1986; Hennig et al., 1986)
+or parallel/multi-coil imaging (Sodickson and Manning, 1997; Pruessmann et al., 1999;
+Griswold et al., 2002a). But there is a need to further accelerate imaging. As scanning
+time is directly related to the number of acquisitions, collecting fewer of them directly
+enables faster imaging. In Cartesian imaging, this can be achieved byundersampling
+the Fourier space, which is implemented bynot acquiring some lines in Fourier space.
+However, as we see on Figure 1.2, such undersampling degrades the quality of the image
+by introducing artifacts. This is called aliasing. As a result, an additional step of
+reconstructionis required in order to obtain a cleaner estimation of the original image.
+The problem of reconstructing data from undersampled measurements is a typical
+instance of anill-posed inverse problem. It is called an inverse problem because we
+aim at constructing an image of an object of interest fromindirect measurements, in
+this case frequency information about the image. It isill-posed because there is not
+sufficient information to directly retrieve the image of interest from the undersampled
+measurements. More precisely, there are infinitely many signals that could produce these
+partial measurements.
+The typical way of solving this problem is by exploitingprior knowledgeabout the data,
+by leveraging somestructure that is present in them. A particularly successful approach
+2

@@ -1,0 +1,107 @@
+{
+  "complete": true,
+  "errors": [],
+  "source": {
+    "path": "adaptive_acquisition_primary_followup_2026_10_09/foundation_primary_html_attempt01/swin_pretraining/primary.html.gz",
+    "bytes": 53767,
+    "sha256": "93225ba881ba218d9657b7b529587c21af7287d6a7c08dde1cb07903dc08d087"
+  },
+  "reader_source": {
+    "path": "adaptive_acquisition_primary_followup_2026_10_09/read_swin_algorithm_v1.py",
+    "bytes": 1217,
+    "sha256": "35d2f40093089ca1d49571b94cf914439bfa1a56678125037535364b078d6a6f"
+  },
+  "lines": [
+    {
+      "id": "algx1.l1",
+      "text": "# RandRot: transforms of random rotation"
+    },
+    {
+      "id": "algx1.l2",
+      "text": "# Cutout: transforms of cutout"
+    },
+    {
+      "id": "algx1.l3",
+      "text": "# Encoder: swin transformer encoder"
+    },
+    {
+      "id": "algx1.l4",
+      "text": "# RecHead: reconstruction head"
+    },
+    {
+      "id": "algx1.l5",
+      "text": "# RotHead: rotation head"
+    },
+    {
+      "id": "algx1.l6",
+      "text": "# CnHead: contrastive head"
+    },
+    {
+      "id": "algx1.l7",
+      "text": "# Linpaint: reconstruction loss"
+    },
+    {
+      "id": "algx1.l8",
+      "text": "# Lrot: rotation loss"
+    },
+    {
+      "id": "algx1.l9",
+      "text": "# Lcontrast: contrastive loss"
+    },
+    {
+      "id": "algx1.l10",
+      "text": "for x in Loader: # minibatch of samples"
+    },
+    {
+      "id": "algx1.l11",
+      "text": "x1, rot1 = RandRot(x)"
+    },
+    {
+      "id": "algx1.l12",
+      "text": "x2, rot2 = RandRot(x)"
+    },
+    {
+      "id": "algx1.l13",
+      "text": "x1’, x2’ = Cutout(x1), Cutout(x2)"
+    },
+    {
+      "id": "algx1.l14",
+      "text": "z1, z2 = Encoder(x1’), Encoder(x2’)"
+    },
+    {
+      "id": "algx1.l15",
+      "text": "rec1, rec2 = RecHead(z1), RecHead(z2)"
+    },
+    {
+      "id": "algx1.l16",
+      "text": "contr1, contr2 = CnHead(z1), CnHead(z2)"
+    },
+    {
+      "id": "algx1.l17",
+      "text": "r1, r2 = RotHead(z1), RotHead(z2)"
+    },
+    {
+      "id": "algx1.l18",
+      "text": "rot, r = torch.cat(rot1, rot2), torch.cat(r1, r2)"
+    },
+    {
+      "id": "algx1.l19",
+      "text": "rec, x = torch.cat(rec1, rec2), torch.cat(x1, x2)"
+    },
+    {
+      "id": "algx1.l20",
+      "text": "loss = Linpaint(rec,x) + Lrot(r,rots) + Lcontrast(contr1,contr2)"
+    },
+    {
+      "id": "algx1.l21",
+      "text": "loss.backward() # back-propagate"
+    },
+    {
+      "id": "algx1.l22",
+      "text": ""
+    }
+  ],
+  "text_actually_read": false,
+  "scope": "Exposure only; actual inspected returned chunk bound separately",
+  "author_code_executed": false
+}

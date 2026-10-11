@@ -1,0 +1,20 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+18
+Figure 10: Qualitative tooth segmentation results on validation volumes. Columns from left to right: input CBCT slice, ground
+truth FDI labels (each tooth colored by class), predicted seed score (tooth detection probability, bright = tooth), predicted FDI 
+class map. Row 1 shows a full dental arch with the model correctly detecting all teeth and assigning largely correct FDI regions. 
+Row 2 shows a partial arch. Rows 3–4 show sparser slices. The seed head accurately highlights tooth regions while the FDI head 
+assigns spatially coherent class regions, though boundary precision remains an area for improvement.
+The seed Dice of 0.797 demonstrates that the single-phase RD-ViT architecture can reliably detect tooth 
+boundaries in 3D CBCT. More notably, the 89.1% FDI classification accuracy shows that the transformer’s 
+global self-attention is effective for the tooth numbering task, which fundamentally requires long-range 
+spatial reasoning: a tooth’s FDI number depends not only on its local morphology but on its position relative 
+to other teeth in the jaw, the quadrant it occupies, and the pattern of present and missing neighboring teeth.
+Both the seed Dice and FDI accuracy curves are still improving at epoch 200 (Figure 9), suggesting that 
+longer training would yield further gains. This is consistent with the relatively large number of classes (33) 
+and the complexity of the instance segmentation task.
+6.8.5 Comparison with CNN Baselines
+The ToothSeg benchmark [20] provides several multi-phase baselines using CNN backbones (3D U-Net, 
+ERFNet, VNet). These baselines decompose the problem into 2–4 sequential stages: binary tooth detection, 
+ROI extraction, per-tooth segmentation, and tooth identification. In contrast, our single-phase RD-ViT 
+predicts all three outputs (seed, offset, FDI class) simultaneously from a single forward pass.

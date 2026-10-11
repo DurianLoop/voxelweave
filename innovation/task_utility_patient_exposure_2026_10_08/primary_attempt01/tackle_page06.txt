@@ -1,0 +1,92 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 6
+33.37 dB 36.13 dB
+Ground Truth 
+Full-FOV PSNR
+ROI
+36.01 dB
+39.95 dB Local PSNR33.61 dB31.48 dB
+29.20 dB 31.02 dB
+ Full-FOV PSNR30.44 dB
+ROIs
+Local PSNR
+32.28 dB25.13 dB24.92 dB
+34.17 dB
+Mask
+32.12 dB
+29.69 dB
+23.10 dB
+TackleROILOUPEFOVPD+UNFOVLP+UNFOV
+Fig. 3. Visual examples of two Meniscus Tear samples reconstructed by different methods in the 16 × acceleration single-coil setting. For each reconstruction,
+the full-FOV PSNR is labeled in white, and the local PSNR for the ROI is in orange. Note how TACKLE ROI recovers the structure and details of the ROI more
+accurately than the two baselines, as indicated by the red arrows. The better recovery of TACKLE ROI over the ROI leads to a more accurate diagnosis of the
+Meniscus Tear. We emphasize that the location of the ROI is not an input to any of these models and is only used for evaluating the accuracy of each method
+on the region that contains the pathology.
+TABLE I
+COMPARISON OF AVERAGE TEST LOCAL PEAK SIGNAL -TO-NOISE RATIO
+(LOCAL PSNR) IN DECIBEL (DB) WITHIN MENISCUS TEAR ROI S UNDER
+DIFFERENT ACCELERATION RATIOS (R)
+Data R LP+UNFOV PD+UNFOV LOUPEFOV TACKLE ROI
+Single-coil 8 26.95 28.23 30.32 34.04
+16 25.16 26.05 27.32 31.54
+Multi-coil 8 27.55 32.68 34.88 40.65
+16 26.02 30.00 31.79 37.89
+PSF of TackleROI (Meniscus Tear)
+PSF of TackleFOV
+≈40% improvement 
+on vertical resolution 
+in terms of FWHM
+TackleFOV
+TackleROI (MT)
+Vertical PSF profiles
+Fig. 4. Comparison of a subsampling PSF optimized for full-FOV
+reconstruction and another optimized for the reconstruction of menicus tear
+(MT) ROIs. Optimizing for MT ROI reconstruction leads to around 40%
+improvement on the vertical resolution in terms of the full width at half
+maximum (FWHM), as shown by the PSF profiles in the bottom panel. This
+improved vertical resolution leads to a better reconstruction of the meniscus
+that has horizontal anatomy.
+• Low-pass + U-NetFOV (LP+UNFOV): substitute the sampler
+in LOUPEFOV with a fixed low-pass filter sampling pattern.
+• Poisson-disc + U-Net FOV (PD+UNFOV): substitute the
+sampler in LOUPE FOV with a Poisson-disc sampling
+pattern drawn from a variable density distribution and
+generated with the sigpy.mri.poisson function in
+the SigPy package1.
+Results We compare the average local PSNR of our method
+and other baselines over the test set in Table I. For all
+1https://github.com/mikgroup/sigpy
+settings, TACKLE outperforms other baselines designed for full-
+FOV reconstruction by at least 3 dB, indicating a significant
+improvement of image quality within the ROI.
+In Figure 3, we provide example reconstructions by our
+method and three baseline methods. For each reconstruction,
+a zoom-in on its ROI is provided on the bottom with the
+corresponding local PSNR value labeled above in orange, and
+its full-FOV PSNR is labeled on the top right corner. As shown
+in the ground truth of the MT example, a meniscus tear is
+indicated by a streak (dark in the top row and bright in the
+bottom row) that is present on the meniscus (bright in the
+top row and dark in the bottom row), as indicated by the
+red pointers. To accurately detect the existence and assess the
+severity of a meniscus tear, a reconstruction should clearly show
+the boundaries of the meniscus and details of the tear. However,
+the ROIs of both LP+UN FOV and LOUPE FOV reconstructions
+contain significant reconstruction artifacts that disguise the tear
+(see the red arrows). On the other hand, TACKLE ROI preserves
+the details of the tear and contains fewer artifacts than the
+baselines, providing a more accurate ROI reconstruction with
+a higher diagnostic value.
+In Supplement IV we also include a validation of
+TACKLE ROI on images that either are healthy or contain patholo-
+gies other than the meniscus tear. Although TACKLE ROI is
+not designed to generalize across different pathologies, we
+empirically find that TACKLE ROI still yields high-fidelity
+reconstructions for out-of-distribution images so that the
+pathologies on these images remain detectable. We also find
+that TACKLE ROI generalizes consistently across the three
+acceleration ratios (4×, 8×, and 16×) for the fastMRI+ dataset.
+Discussion Enhancing local ROIs for MRI may seem counter-
+intuitive, because the acquisition happens in k-space; each
+frequency measurement in theory corresponds to the entire
+FOV . Here we understand the feasibility via a PSF analysis.
+Consider the zero-filled reconstruction ex from some (noiseless)

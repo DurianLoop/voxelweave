@@ -1,0 +1,42 @@
+Brain Segmentation from
+k-space with
+End-to-end Recurrent Attention Network
+Qiaoying Huang
+1
+∗
+, Xiao Chen
+2
+, Dimitris Metaxas
+1
+, and Mariappan S. Nadar
+2
+1 Rutgers University, Department of Computer Science, Piscataway, NJ, USA
+2 Siemens Healthineers, Digital Technology and Innovation, Princeton, NJ, USA
+Abstract. The task of medical image segmentation commonly involves
+an image reconstruction step to convert acquired raw data to images be￾fore any analysis. However, noises, artifacts and loss of information due
+to the reconstruction process is almost inevitable, which compromises the
+final performance of segmentation. We present a novel learning frame￾work that performs magnetic resonance brain image segmentation di￾rectly from k-space data. The end-to-end framework consists of a unique
+task-driven attention module that recurrently utilizes intermediate seg￾mentation estimation to facilitate image-domain feature extraction from
+the raw data, thus closely bridging the reconstruction and the segmen￾tation tasks. In addition, to address the challenge of manual labeling, we
+introduce a novel workflow to generate labeled training data for segmen￾tation by exploiting imaging modality simulators and digital phantoms.
+Extensive experimental results show that the proposed method outper￾forms several state-of-the-art methods.
+1 Introduction
+Most image segmentation tasks start from existing images. While this might seem
+self-evident for natural image applications, many medical imaging modalities do
+not acquire data in the image space. Magnetic Resonance Imaging (MRI), for ex￾ample, acquires data in the spatial-frequency domain (the so called k-space) and
+the MR images need to be reconstructed from the
+k-space data before further
+analysis. The traditional pipeline of image segmentation treats reconstruction
+and segmentation as separate tasks. Image noises, residual artifacts and potential
+loss of information on the imperfect reconstructed images are almost inevitable,
+even with advanced image reconstruction methods. On the other hand, these
+algorithms are usually designed to recover images for optimal visual quality to
+be used by physicians, rather than the “task” quality, namely the “segmentation
+quality” here. Without the final segmentation quality as a target, the reconstruc￾tion algorithm may discard image features that are critical for segmentation but
+less influential to image quality. Meanwhile, the algorithm may spend most of
+the resources (e.g. reconstruction time) to recover image features that are less
+important to segmentation accuracy improvement. It is thus highly desirable to
+use an end-to-end approach to predict segmentation directly from
+k-space.
+*Work done while intern at Siemens Healthineers.
+arXiv:1812.02068v2 [cs.CV] 21 Jul 2019

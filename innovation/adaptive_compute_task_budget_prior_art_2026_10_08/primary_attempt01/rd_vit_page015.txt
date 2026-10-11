@@ -1,0 +1,27 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+15
+In 3D, Standard ViT outperforms RD-ViT at all data fractions. However, the gap narrows monotonically 
+from 5.2 pp (at 10%) to 2.9 pp (at 100%), suggesting that the recurrent architecture’s deficit is partially a 
+capacity issue that additional data helps alleviate. The MoE results from Table 2 (which were not included 
+in the data efficiency experiment due to computational constraints) suggest that adding MoE to the 3D 
+recurrent model would likely narrow or close this gap, as MoE adds capacity precisely where it helps most: 
+class-specific processing.
+6.7 Depth Extrapolation
+Figure 8: Depth extrapolation on 3D ACDC. The model was trained with T=8 loop iterations (red dashed line). At inference 
+time, Dice increases from 0.61 (T=2) to 0.77 (T=6) and saturates. Performance at T>8 is stable with no degradation, 
+demonstrating that the LTI-stable injection safely supports extrapolation beyond training depth.
+Depth extrapolation demonstrates a practical benefit of the LTI-stable recurrence. When we reduce the 
+number of iterations at inference time (T < 8), performance degrades gracefully: T=4 achieves 0.76 (vs 0.77 
+at T=8), and even T=2 achieves 0.61. When we increase iterations beyond the training depth (T=10, 12, 
+16), performance remains stable at 0.77 with no degradation.
+This property is guaranteed by the LTI injection parameterization: because 𝜌(A) &lt; 1, the recurrence is a 
+contraction mapping, meaning the hidden state converges to a fixed point as T → ∞. Additional iterations 
+beyond the convergence point simply repeat the fixed-point computation without changing the output. This 
+provides a practical inference-time knob: use fewer loops for faster inference with graceful degradation, or 
+more loops for potential accuracy gains, without any retraining.
+6.8 Application: 3D Tooth Instance Segmentation
+To evaluate the generalizability of RD-ViT beyond cardiac imaging, we apply the architecture to a 
+fundamentally different segmentation challenge: 3D tooth instance segmentation and numbering from 
+cone-beam computed tomography (CBCT) volumes. Tooth segmentation presents a compelling test case 
+for transformer-based architectures because tooth identification (FDI numbering) requires long-range 
+spatial context—knowing which quadrant of the jaw a tooth occupies, recognizing patterns of adjacent 

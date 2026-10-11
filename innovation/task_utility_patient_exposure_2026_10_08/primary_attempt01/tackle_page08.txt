@@ -1,0 +1,70 @@
+IEEE TRANSACTIONS ON COMPUTATIONAL IMAGING, VOL. 10, 2024 8
+0.8332 0.7943 0.8334 0.8933 Dice score
+Background: ground truth image
+PSNR (dB)33.00 ——30.9930.01
+Ground Truth
+Predictor inputPredicted seg. map Zoom-in
+Tackleseg.LOUPErecon.PD+UNrecon. Tacklerecon.
+Fig. 6. Comparison of segmentation results under 16 × acceleration on one sample of the SKM-TEA dataset. We show the input of the predictor in the
+first row, a zoom-in on the region that contains the tissues to be segmented in the second row, and the output of the predictor in the third row. Note that
+TACKLE seg. circumvents the typical “reconstruction” in terms of pixel-wise similarity with the ground truth image. Instead, it learns a feature map that accurately
+localizes the anatomy, leading to better segmentation prediction than other baselines both for this sample and on average over the test set (Table II).
+distinguish both from the background and from each other.
+Even though this feature map is not a typical “reconstruction”
+in terms of pixel-wise accuracy, it still accurately localizes
+the anatomy of the tissues to be segmented. We highlight
+that TACKLE recon. provides a high-fidelity reconstruction of the
+entire FOV with a PSNR of 33.00 dB, which demonstrates that
+our model is well capable of doing the full-FOV reconstruc-
+tion task accurately. However, TACKLE seg. still outperforms
+TACKLE recon. in terms of segmentation performance in Figure 6
+and on average over the dataset in Table V (see Section VI-A
+for more details). This observation demonstrates that finding
+the most accurate full-FOV reconstruction does not necessarily
+lead to the optimal result on the considered segmentation task.
+C. Pathology (tumor) classification
+Dataset and setup In this section, we demonstrate the
+effectiveness of the proposed method at detecting the existence
+of gliomas, a common type of brain tumors in adults. We use
+the images acquired by the FLAIR sequence in the Multimodal
+Brain Tumor Image Segmentation Benchmark (BRATS) dataset
+[24]. To obtain an image-level label of the existence of a
+tumor, we aggregate the pixel-level peritumoral edema (ED)
+segmentation annotations in the BRATS dataset by checking
+whether there exists any positive pixel in the segmentation map:
+negative (healthy) means there is no ED pixel, while positive
+(unhealthy) means there is at least one ED pixel. We simulate
+the single-coilk-space data for each image by taking the Fourier
+transform of the image and adding complex additive white
+Gaussian noise (AWGN), according to the forward model in
+(1). The standard deviation of the noise for each image is 0.05%
+of the magnitude of the DC component. We train all models
+TABLE III
+COMPARISON OF AVERAGE TEST ACCURACY ON THE PATHOLOGY
+CLASSIFICATION TASK UNDER DIFFERENT ACCELERATION RATIOS (R)
+Metric R PD+UNrecon. LOUPErecon. TACKLE recon. TACKLE class.
+Cls. acc. 16 0.9016 0.9024 0.9062 0.9159
+64 0.8809 0.8930 0.9054 0.9136
+F1 score 16 0.8853 0.8846 0.8929 0.9039
+64 0.8628 0.8768 0.8910 0.8992
+using the BCE loss and evaluate them using the classification
+accuracy and F1 score as described in Section III-C3.
+Baselines We compare the proposed method
+TACKLE class. with the first three baselines as in Section IV-B
+except that the predictor of each baseline is subsequently
+trained for pathology classification rather than tissue
+segmentation (with input images optimized for full-FOV
+reconstruction). We do not include SemuNet here because it is
+originally proposed for the segmentation task only.
+Results In Table III, we compare the classification-
+oriented method, TACKLE class., with reconstruction-oriented
+baselines, and find that TACKLE class. achieves higher classifi-
+cation accuracy under both performance metrics. Specifically,
+TACKLE class. outperforms the existing reconstruction-oriented
+baseline LOUPE recon. by around 2% in the extreme 64 ×
+accelerated acquisition scenario. Both variants of TACKLE main-
+tain competitive performance under the highly accelerated
+setting (R=64), while PD+UNrecon. and LOUPErecon. suffer from
+significant performance degradation. Note that TACKLE class. out-
+performs TACKLE recon. by more than 0.8% in both cases, despite
+having the same architecture. We also visualize and compare the

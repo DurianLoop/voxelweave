@@ -1,0 +1,47 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+reconstruction at statest simply as ˆxt.
+Note also that while the RL framework allows for transitionprobabilities, the case of
+MRI, they are deterministic: we know in what state we will end up should we take an
+action.
+The main difference lies in the fact that although the reward is well defined, it depends on
+the unobserved underlying ground truthx. As a result, our problem falls into the category
+of Partially Observable Markov Decision Processes (POMDP) (Monahan, 1982). To take
+this into account, we need to introduce the set of observationsO and the conditional
+observation functionO(s′|a,o ). This leads us to define a POMDP as the 7-element tuple
+⟨S,O,A,P,O,R,γ ⟩, whereS is the set of all ground truths and mask{⟨x,ω⟩},O is the
+set of all observations{⟨ˆx,ω⟩},A is the set of all actions, corresponding typically to all
+columns to be acquired. The transition probability function is deterministic as discussed
+above, and the conditional observation probability will also be deterministic, as taking
+action at from statest will result in observing the tuple⟨ˆxt+1,ωt+1 =ωt∪at⟩. Finally,
+we have defined the reward function above, and the discount factorγ can be taken as a
+parameter.
+6.1.3 Double Deep Q-Networks
+Until now, we have defined the fundamental building blocks of RL and the environment
+corresponding to the problem of learning sampling policies. We turn now to practical
+methods to learn sampling policies3.
+The state of possible state-action pairs in RL is very large, and in most modern RL
+applications, it is simply impossible to explore it in an exhaustive manner. Similarly,
+storing the value for each state-action pair is impractical, and in practice, one will
+choose to represent the state-value function with a parametric modelQϕ(s,a ) (with
+parameters ϕ). Of course, deep neural networks have turned out to be prime candidates
+for such models, and led to the famous Deep Q-Networks (DQN) (Mnih et al., 2015). In
+Q-learning, the Q-networkQϕ(s,a ) is learned by minimizing the objective
+L(θ) = E(s′,r,a,s)
+
+
+(
+TargetYQ
+/bracehtipdownleft/bracehtipupright/bracehtipupleft/bracehtipdownright
+r +γ max
+a′
+Qϕ(s′,a′)−Qϕ(s,a )big)2
+
+.
+One aims at solving this problem becauser +γ maxa′Qϕ(s′,a′) provides a more reliable
+estimate to the future return thanQϕ(s,a ). Indeed, it can be proven that the optimal
+policy satisfiesQ∗(s,a ) = r +γaQ∗(s′,a′) given any tuple (s,a,r,s’), and thus the loss
+quantifies how far one is from optimality.
+3This is a big jump forward, but the interested reader should read the excellent introduction to
+reinforcement learning (Weng, 2018).
+86

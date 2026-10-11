@@ -1,0 +1,41 @@
+CHAPTER 6. ON THE BENEFITS OF DEEP RL IN ACCELERATED
+MRI SAMPLING
+striking. In communication with the authors, we learned that it took them more than20
+days to train either of the DDQN models, while the training of sLBCS takes 30 minutes
+when distributed over 5 A-100 GPUs. This points to two main advantages of this testifies
+to the main advantage of sLBCS over RL-based approaches. Being a fixed policy, sLBCS
+does not require to do multiple iterations in order to converge, but is a one-shot approach.
+In addition, sLBCS can beheavily parallelized, while deep RL-based approaches are
+inherently sequential, and result in a slow training procedure.
+Table 6.4 confirms the expectation that methods trained on SSIM can underperform
+with respect to PSNR and vice versa. In general agreement with the literature, we see
+that using several metrics is important to capture these trade-offs, as reporting only one
+particular metric might hide underperformance in the other.
+There have been various ways of reporting the metrics, ranging from showing sampling
+curves as in Figure A.3a, reporting the area under curve (AUC) tables or simply reporting
+the metric at the final sampling rate. We see that reporting only the summarizing statistic
+can be deceitful and give relatively little information on the overall performance of the
+method. For instance, using only the last sampling rate, one could not distinguish
+between a method that performs well at all sampling rates leading to the final one, and
+one that has overall mediocre results and quickly improves on the performance at the
+end.
+For this reason, we consider sampling curves the gold standard for assessing the quality
+of accelerated MRI sampling methods, as a good performance at all sampling rates
+coupled with some stopping criterion could mean that MRI scans could be stopped when
+sufficient information has been acquired, further increasing their efficiency. If one wishes
+to report a single number, we recommend using AUC unless only the final performance
+is of interest.
+There is also the question of reporting acceleration factors or sampling rates, which put
+focus on very different regimes of sampling: acceleration factors, as shown in Pineda et al.
+(2020) focus on extreme undersampling rates. While is true that the high acceleration
+regimes are where it is most desirable to make improvements, results on sampling rates
+have the advantage of uniformly distributing the performance throughout a range of
+interest instead of a single acquisition determining a third of the metric as in Figure 6.3b.
+Alternatives to using acceleration factors could consist in displaying sampling rates over
+a region of interest or computing the AUC by explicitly assigning more weight to low
+sampling rates instead of doing it implicitly and nonlinearly through acceleration factors.
+Finally, a close study of the masks given by the SS-DDQN in Figure A.2, the edge of the
+SS-DDQN over the LBCS mask in Figure A.1a and the comparison of the LBCS and
+SSDQN edge over a fixed heuristic in Figures A.1b and A.1c reveals that the frequencies
+selected by the adaptive policy are very similar to those selected by the LBCS mask and
+100

@@ -1,0 +1,80 @@
+MIRTO 3
+gogiannis et al. re-ran a diverse set of methods in a
+common framework on several datasets and found that
+feature-modelling methods, many from industrial inspec￾tion, set the state of the art [40]. Two broad benchmarks
+unify methods across medical domains: BMAD assem￾bles six datasets from five domains, amongst them brain
+MRI, and fifteen algorithms [6], and MedIAnomaly com￾pares thirty methods on seven datasets of five modali￾ties, for both image-level classification and pixel-level seg￾mentation [18]. Bercea et al. argued that the quality of
+the normative reconstruction, which the usual metrics ig￾nore, governs downstream behaviour [16]. A recent multi￾centre benchmark selected thresholds on separate valida￾tion scans, reported Dice from 0.03 to 0.65 across algo￾rithms and found biases with scanner, lesion size, age and
+sex [28]. Myles et al. recast UAD as a Bayesian inverse
+problem and derived several existing scores as instances
+of one energy [50]. These works compare methods under
+a fixed protocol, or improve the scoring rule; none quanti￾fies how much of the resulting ranking the protocol itself
+determines, nor checks the geometric correctness of the
+comparison.
+Validation methodology. Maier-Hein et al. showed that
+challenge rankings change with the metric and the ag￾gregation [45], and the Metrics Reloaded consortium
+catalogued metric pitfalls and recommendations [46,56],
+including the dependence of overlap metrics on struc￾ture size [61]. Multiverse analysis [60] and specification
+curves [59] evaluate a conclusion over all defensible anal￾ysis paths; the many-analysts design shows how widely
+reasonable paths diverge [58]. Selection on the evaluation
+data inflates estimates [62,20]. Across medical imaging,
+Varoquaux and Cheplygina traced how biases enter at
+every step from data to evaluation [63]; Christodoulou et
+al. found that more than half of the MICCAI 2023 seg￾mentation papers did not assess performance variability
+and that only one reported confidence intervals [23]; and
+a Bayesian analysis of published comparisons estimated a
+probability of a false outperformance claim above 5% for
+86% of classification and 53% of segmentation papers [22].
+In machine learning generally, data sampling, initialisa￾tion and hyperparameter choice add enough variance to
+change benchmark conclusions [17]. MIRTO brings these
+ideas to UAD and adds what segmentation by threshold￾ing needs: an explicit operating point.
+Distribution-free control of operating points. Conformal
+risk control (CRC) chooses a threshold on calibration data
+so that the expected value of a bounded, monotone loss on
+a new exchangeable case is at most α [3]; risk-controlling
+prediction sets (RCPS) [8] and Learn-then-Test [2] give
+control with high probability over the calibration set in￾stead; see [1] for an introduction. We use the loss “this
+scan exceeds its false-positive budget”. For such an in￾dicator loss CRC reduces to split-conformal calibration,
+whose coverage conditional on the calibration set follows
+a known Beta law [64,1]; we use that law to state how
+often a small calibration set misses its target. Covariate￾adjusted ROC analysis [36] provides the tool we use to
+separate anatomy from detection in slice-level scores.
+1.2 Contributions
+Our contribution is an evaluation protocol, the exact ac￾counting that makes what it reports interpretable, and
+one method-level improvement evaluated with it; the ex￾periments validate the protocol and apply it.
+1. Registration gate and label-free diagnostics.
+A gate that accepts correct registrations and rejects
+flips, transposes and two-slice offsets, and five dis￾cordance diagnostics computable without extra la￾bels, two of which detect injected in-plane errors with
+power 1.000 at a false-alarm rate of 0.05 in 30 subjects
+(Section 2.3).
+2. Operating points that account for threshold
+transfer. Validation-only thresholds, realised rather
+than nominal burden, a threshold-transfer gap with
+an exact decomposition of any contrast into a map
+term and a transfer term (Identity 1), and a conformal
+per-scan burden guarantee, for which we apply the
+known training-conditional law of split-conformal cal￾ibration to state, from the calibration size alone, how
+often a calibration set misses its target (Lemma 1;
+Section 2.4).
+3. Exact accounting of post-processing and met￾rics. Elementary identities, applied to UAD, that
+split a post-processing gain at equal burden into an
+effect at fixed threshold and a threshold relaxation,
+state exactly when deleting a component raises Dice
+(Identities 4 and 5), and decompose pooled Dice and
+pooled AUROC so as to explain when subject-level
+and pooled rankings disagree (Identities 2 and 3).
+Their value lies in what they let a reader attribute,
+not in their difficulty.
+4. An evaluation multiverse. Ten axes of evaluation
+choices, flip shares read together with the size of each
+difference, per-metric variance shares with bootstrap
+intervals, and the training data as an eleventh axis
+(Section 2.7).
+5. Latent aggregation for REFLECT. A training￾free change to how REFLECT combines its latent
+channels, which raises Dice at equal burden in two
+independently trained models (Sections 2.9 and 3.10).
+We apply the protocol to four UAD methods and two
+model-free baselines. We do not claim that any method is
+best, nor that the inference is confirmatory: the 312 test
+subjects served both to develop the protocol and to test
+its hypotheses, so every test is exploratory (Section 2.8).

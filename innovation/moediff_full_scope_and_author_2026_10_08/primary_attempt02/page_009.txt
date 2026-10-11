@@ -1,0 +1,107 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 9
+subcortical white matter abnormalities, lesion detection poses a
+significant challenge, particularly on lower-field MRI systems.
+MS lesions, often presenting as small hypointense foci, so￾called “black holes”, on T1w imaging, are frequently subtle
+and prone to under-recognition at 3T due to limitations in
+spatial resolution and tissue contrast. As illustrated in Table V,
+7T MRI provided a marked improvement in image resolution
+and contrast, enabling enhanced visualization of periventricular
+abnormalities and facilitating the detection of MS-associated
+pathology with greater fidelity, which highlights the diagnostic
+advantages of ultra-high-field imaging in neuroinflammatory
+conditions. It is noteworthy that, when our proposed SR method
+was applied to the 3T MRI, the synthesized 7T-like image
+closely approximated the ground-truth 7T scan in its delineation
+of periventricular white matter and the visibility of small
+hypointense lesions. While exact slice correspondence between
+3T and 7T scans cannot be guaranteed due to inherent inter￾scan variability in positioning and acquisition parameters, the
+qualitative improvements achieved by the SR model are evident
+in the enhanced conspicuity of clinically relevant features,
+which underscores the clinical utility of our proposed SR
+framework.
+E. Discussion
+In this study, we introduced MoEDiff-SR, a novel Mixture￾of-Experts (MoE) guided diffusion framework for region￾adaptive super-resolution (SR) of brain MRI. By integrating a
+Transformer-based gating mechanism with anatomically special￾ized diffusion experts, the proposed model adaptively modulates
+the denoising process in accordance with the structural and
+textural heterogeneity across brain regions. This expert-driven
+design enables precise enhancement of both low-frequency
+anatomical continuity and high-frequency cortical details,
+yielding superior performance over state-of-the-art CNN- and
+diffusion-based SR methods across perceptual, structural, and
+quantitative evaluation metrics. Clinical assessments further
+validate the diagnostic utility of the generated 7T-like images,
+particularly in scenarios where conventional 3T MRI fails to
+capture subtle but clinically relevant abnormalities. Overall, our
+proposed MoEDiff-SR effectively bridges data-driven SR with
+anatomy-aware modelling, offering a scalable and clinically
+meaningful solution for enhancing image quality in routine
+neuroimaging.
+1) Strengths: A central innovation of MoEDiff-SR lies in
+its anatomically-informed denoising strategy. From a technical
+perspective, unlike prior SR methods that rely on globally
+uniform processing, our model adaptively distributes denoising
+responsibilities across specialized diffusion experts. As shown
+in both quantitative metrics and visual analysis, this architecture
+results in superior reconstruction fidelity, especially in areas
+where classical methods often struggle. Second, the integration
+of bias field correction and gradient nonlinearity correction
+into the latent embedding space further enhances the model’s
+capacity for accurate expert assignment, which suggests that
+domain-specific prior information can be repurposed as condi￾tioning cues within learning-based frameworks to drive more
+anatomically-aware restoration. Another critical strength is the
+model’s deployment efficiency. Despite comprising multiple
+diffusion experts, the MoE design supports asynchronous
+inference, allowing individual experts to be selectively activated
+based on region-specific needs, which enables a substantial
+reduction in FLOPs and parameter usage without compromising
+image quality. From a clinical perspective, clinical evaluation
+has affirmed that MoEDiff-SR-generated 7T-like images offer
+not only improved visual quality but also enhanced diagnostic
+clarity, especially in cases where subtle pathological features
+are otherwise obscured at lower field strengths.
+2) Limitations: Despite these strengths, the study has several
+limitations. Firstly, the performance of the model is heavily
+dependent on the availability of large, high-quality paired
+data. The scarcity of datasets, especially for rare conditions
+or specialized applications, may restrict the generalizability
+of the approach. Secondly, although the MoE strategy results
+in a significantly lighter inference process, the model still
+requires approximately 45GB of graphic memory, deploying
+the framework on common computers thus remains challenging.
+Finally, the use of bias field correction and gradient nonlinearity
+correction, while beneficial for generating high-quality outputs,
+introduces an additional dependency on pre-processing steps,
+which could pose challenges in workflows where these correc￾tions are unavailable or impractical to implement consistently.
+3) Future work: Future work for this study will focus on
+expanding the generalizability and robustness of the proposed
+SR framework. One key direction is the exploration of multi￾modal data integration, combining MRI with complementary
+imaging modalities such as CT or ultrasound, to improve the
+reconstruction process and accuracy. Additionally, expanding
+the framework to accommodate other imaging modalities could
+further broaden its applicability and impact across diverse
+clinical and research domains.
+V. STATEMENTS
+This manuscript was prepared using data from the HCP
+project. The views expressed in it are those of the authors and
+do not necessarily reflect the opinions of the HCP investigators,
+the National Institutes of Health (NIH), or the private funding
+partners.
+VI. ACKNOWLEDGEMENTS
+The authors gratefully acknowledge the support of the Ralph
+Schlaeger Research Fellowship under award number 246448
+from Massachusetts General Hospital (MGH), Harvard Medical
+School (HMS) and the French National Agency of Research
+(ANR) under project number ANR-20-CE45-0013-01.
+REFERENCES
+[1] S. Geethanath and J. T. Vaughan Jr, “Accessible magnetic resonance
+imaging: a review,” Journal of Magnetic Resonance Imaging, vol. 49,
+no. 7, pp. e65–e77, 2019.
+[2] L. K. Niraj, B. Patthi, A. Singla, R. Gupta, I. Ali, K. Dhama, J. K.
+Kumar, and M. Prasad, “Mri in dentistry-a future towards radiation free
+imaging–systematic review,” Journal of clinical and diagnostic research:
+JCDR, vol. 10, no. 10, p. ZE14, 2016.
+[3] T. Skandsen, K. A. Kvistad, O. Solheim, S. Lydersen, I. H. Strand, and
+A. Vik, “Prognostic value of magnetic resonance imaging in moderate
+and severe head injury: a prospective study of early mri findings and
+one-year outcome,” Journal of neurotrauma, vol. 28, no. 5, pp. 691–699,
+2011.

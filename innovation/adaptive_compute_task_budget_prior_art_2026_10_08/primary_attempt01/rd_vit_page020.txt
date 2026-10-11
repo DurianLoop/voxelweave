@@ -1,0 +1,40 @@
+RD-ViT: Recurrent-Depth Vision Transformer for Segmentation
+20
+The reversal between 2D (RD-ViT wins) and 3D (Standard ViT wins at matched parameters) on cardiac 
+segmentation reveals an important interaction between recurrent depth and input dimensionality. We 
+hypothesize that this reflects a trade-off between spatial context richness and optimization difficulty.
+In 2D, each 224×224 slice provides 196 patches at the native resolution of the cardiac structures. The spatial 
+context within each patch is rich enough for iterative refinement to add value—the recurrent block can 
+progressively sharpen boundary predictions by attending to neighboring patches across iterations.
+In 3D, the volume is resized to 128×128×16 (cardiac) or cropped to 1283
+(dental), producing 512 patches 
+but at much lower effective resolution per patch. RD-ViT Small (10.3M) matches Standard ViT (5.7M) on 
+cardiac segmentation, confirming that capacity is the primary bottleneck in 3D, not the recurrent 
+architecture itself.
+The tooth segmentation results support this interpretation: with 1283
+isotropic crops providing higher 
+effective per-patch resolution than the anisotropic cardiac volumes (128×128×16), the RD-ViT+MoE 
+model achieves competitive single-phase performance (seed Dice 0.797, FDI accuracy 89.1%) despite using 
+only 5.4M parameters.
+7.3 Single-Phase vs Multi-Phase Instance Segmentation
+The tooth segmentation experiment demonstrates that a single-phase transformer approach can perform 
+competitive instance segmentation and numbering without the multi-stage pipelines typically used in the 
+dental imaging literature. The ToothSeg baselines [20] use 2–4 sequential stages, each with its own CNN 
+backbone, creating cascaded error propagation and complex training procedures.
+Our single-phase approach—predicting offsets, seeds, and FDI class simultaneously from a single forward 
+pass—simplifies the pipeline while leveraging the transformer’s natural ability to capture long-range spatial 
+relationships. The 89.1% FDI accuracy suggests that explicit multi-stage decomposition may be 
+unnecessary when the backbone has sufficient global context through self-attention.
+However, we note that the seed Dice (0.797) leaves room for improvement, and the training curves suggest 
+that longer training or architectural refinements (e.g., multi-scale feature fusion, boundary-aware loss 
+terms) could yield further gains. If single-phase performance plateaus, a two-phase approach (RD-ViT for 
+initial segmentation followed by a refinement stage) could be considered.
+7.4 Clinical Implications of ACT
+The ACT halting maps provide a form of model interpretability that could be valuable in clinical settings. 
+For cardiac segmentation, regions where the model allocates more computation correspond to regions of 
+diagnostic uncertainty—typically boundaries between cardiac structures. For dental segmentation, ACT 
+could similarly highlight ambiguous tooth boundaries or regions where tooth identification is uncertain.
+The decreasing ponder time during training (2.6 → 1.4 effective iterations on ACDC) suggests that a well￾trained model can achieve fast inference by using only 1–2 iterations for most patches, with additional 
+iterations reserved for difficult regions. This adaptive compute property could enable real-time 
+segmentation in clinical workflows where inference speed is critical.
+7.5 Cross-Domain Generalization

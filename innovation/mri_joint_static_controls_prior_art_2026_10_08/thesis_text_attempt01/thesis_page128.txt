@@ -1,0 +1,37 @@
+7.4. EXPERIMENTS
+• GAN (ours): We take samples from the conditional GAN posterior, transform
+them to Fourier and compute their empirical variance to guide the decision of what
+location to observe next.
+• MSE oracle: An adaptive oracle acquiring at each step the line with the largest
+mean squared error.
+For all the policies considered, we initialized the mask with8 low-frequency lines, and
+then carried out sequential sampling until a rate of50% sampling. Note however that
+the deep RL policy of Bakker et al. (2020) was trained only until25% sampling rate for
+computational reasons, and to provide a fair comparison, the aggregated results will be
+computed up to25% sampling.
+Results
+The results of our experiment are presented in Table 7.2 and Figure 7.1.
+Similar trends can be observed on PSNR (provided in Appendix B.1) and SSIM, where the
+1-step information policies (LBCS and RL) generally outperform the0-step information
+provided by the Evaluator and the GAN. On the GAN model, the GAN policy largely
+outperform the Evaluator, and on the reconstructor, the opposite is true, although the
+gap is smaller. However, the trend isnot the same if one goes until50% sampling,
+as shown on Figure 7.1. Indeed, one sees that as the sampling horizon increases, the
+performance of the evaluator significantly worsens, whereas the GAN model matches
+the performance achieved by LBCS. Note that the Evaluator policy in this case is really
+the direct translation of the policy used in the case of Zhang et al. (2019b), but then
+reconstruction is carried out through the GAN. We see also that the RL policy is weaker
+on the reconstructor. This is due to the policy being trained on the GAN reconstruction
+model and then evaluated on the reconstructor. In addition, the results illustrate the
+inefficiency of sampling from the Gaussian NLL and transforming the samples into Fourier
+in order to sample: such a policy can perform evenworse than random sampling.
+We see also that while the MSE oracle provides an upper bound on the performance of
+our GAN policy, it is outperformed by LBCS. This further highlights the value of using
+1-step information horizon over0-step information horizon, as an adaptive0-step oracle
+can be outperformed by a1-step non-adaptive baseline.
+We observe also interesting trade-offs. The evaluator shows a very good performance
+at low sampling rates (< 10%) matching and even outperforming1-step information
+methods, but its performance deteriorates at later stages. On the other hand, our GAN
+method is weaker at very early stages but stays much more consistent throughout the
+whole range of sampling rates.
+115

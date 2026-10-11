@@ -1,0 +1,18 @@
+# 接续入口与索引
+
+先真实 poll 原 session99542。最后工具53a26c仍live，raw8910、invocation02新增28710、wall66345.58089610003秒；最新588288 GPU free1394MiB/util87%。没有terminal exit，不根据空输出、metadata或文件状态推断训练完成，不重启/迁移/改CPU正式训练、不操作其他PID、不委派。目标仍active，医学claim未成立。原两臂19998/总39996/30h合同不变。
+
+本stage TADT作者README完整读取282bytes，固定commit74138572a1a0ac625927478d03db0f6d8036cc53；Coming soon!，网页可见根只有README，未另取recursive tree，作者实现未知。没有author implementation阅读/执行或MRI/weights/forward/head/action标签。没有新论文全文，旧论文page1复读不计新论文。没有审批拒绝；误读文件名/乱码/截断已经逐项保存并修复，旧绑定文件不改。
+
+8168ab实际exit0：原5430所有SHA一致，新增30证据，合计5460。采用delta索引，不复制旧完整manifest。
+
+- 原完整5430 manifest：lossless_final_evaluation_entry_2026_10_08/ARCHIVE_MANIFEST.json，SHA d6481cf77e2e46303c4433969ac37804034ba0f70fbfa487570378abb696658e。
+- 本stage APPEND_INDEX.json：18491bytes，SHA274c0f1c5713e45f38d3e57a3b4b2d19bb9ffb90b3a121d6f81c6acf60ca7d39。
+- 本stage APPEND_PROOF.json：SHA97dc7cd533cb0d4d589727a8244834665d0d6a42774c09b76384af6aab0e9141，588288实际hash查询。
+- 次stage从原完整5430加本delta30重建5460，并纳入本目录APPEND_INDEX/APPEND_PROOF/POST_APPEND_TOOL_OBSERVATIONS/NEXT_STAGE_HANDOFF四份后附；旧lossless五份post与前三watch已在30新增中。
+
+磁盘8GB储备外约113MB，避免每个wait复制1.3MB累积manifest；不删除历史、不改环境，新文件只innovation。stage保存3MB上限；post仍小型。训练rolling history/resume不纳入冻结hash。已执行/绑定/冻结文件不改，修复另存版本。
+
+原final actual exit0与两last19998/source历史冻结后，立即优先lossless V3全56FOV/六能力gates和独立strict；主CPU评价不用等新GPU余量。eccb8c readiness实际exit3、MR/GT加载0/CUDAfalse，missing原退出/terminal/两last/rawfinal，medical_attempt03不存在。原主评价exit0后才写OBSERVED_EVALUATION_EXIT_V3.json并verify，不以软件exit0等同六gates或strict全过。
+
+后续科学主候选与顺序保持：充分适配后合法observed局部动作的真实病灶余量→三observed臂19series实际费用/另冻充分适配→全费用和强static/risk/error/cost/defer/random/calibration-only控制→全冻结后8未见患者一次确认。现4/9验证已见、8/12确认与lockedIXI关闭。无余量保留负结果，不能以继续查新或包装替代患者效应。GPU授权有效，8GB启动/4GB运行余量/2.5GBpeak条件仍未满足。

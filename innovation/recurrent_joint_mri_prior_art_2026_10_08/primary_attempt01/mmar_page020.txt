@@ -1,0 +1,52 @@
+4.3. Hetero-modal models perform well on unseen modality combinations
+Table 3 outlines the results for training split 3, further reinforcing the
+benefits of hetero-modal learning. The specialist models only achieved the
+best result during T1w inference—the single “anchor” modality present across
+all training samples. Conversely, the MMAR architecture demonstrated the
+strongest performance on 6 out of 8 novel modality combinations. Its mean
+macro-average score was significantly higher than that of U-HeMIS, though
+not significantly better than the multi-channel U-Net. We attribute this
+success to the MMAR’s locally adaptive, dynamic feature weighting, which
+handles novel modality combinations more robustly than the fixed statistical
+merging used in U-HeMIS.
+Table 3: Hetero-modal learning experiments — training split 3. Ticks represent
+present and crosses represent missing. Superscripts a, b, c, and d are shorthand for Spec.,
+U-Net, U-HeMIS, and MMAR respectively and DSCx denotes a DSC which is significantly
+better (p < 0.05) than the DSC achieved by method x (one-sided Wilcoxon signed-rank
+test with Holm-Bonferroni correction). DSC: Dice similarity coefficient.
+Modalities Macro Average WMH ISL
+T1w T2w FLAIR DWI Spec.a U-Netb U-HeMISc MMARd Spec.a U-Netb U-HeMISc MMARd Spec.a U-Netb U-HeMISc MMARd
+✓ ✗ ✗ ✗ 44.10 43.20 42.22 42.97 54.86d 53.77 54.27 53.87 33.34 32.62 30.16 32.06
+✗ ✓ ✗ ✗ 42.85 43.51 43.78ab 43.93b 55.41b 53.09 56.62abd 55.69b 30.28 33.92 30.93 32.17
+✗ ✗ ✓ ✗ 49.25 50.98 50.97 48.88 62.70 63.39 63.66 63.80a 35.81 38.56 38.28d 33.97
+✗ ✗ ✗ ✓ 35.81 38.24 38.88ad 37.71 46.68 46.45 49.34abd 46.99 24.93 30.04a 28.42 28.44
+✓ ✓ ✗ ✗ 46.04 46.37 45.46 45.77 56.22 56.87 56.36 58.59abc 35.86 35.87 34.56 32.96
+✓ ✗ ✓ ✗ 52.52 53.49a 54.52a 52.87 63.01 65.13acd 64.19a 64.58a 42.04 41.84 44.85 41.16
+✓ ✗ ✗ ✓ 42.71 46.27a 44.75a 47.01a 54.68 57.17a 57.10a 57.58a 30.74 35.37a 32.41 36.45
+✗ ✓ ✓ ✗ - 48.30 47.86 49.46c
+- 60.93c 58.65 63.41bc
+- 35.66 37.07 35.52
+✗ ✓ ✗ ✓ - 46.23cd 40.90 44.04c
+- 54.68c 52.65 54.13c
+- 37.78cd 29.14 33.94
+✗ ✗ ✓ ✓ - 46.05 46.75 49.47bc
+- 60.28 60.03 62.47bc
+- 31.82 33.48 36.46
+✓ ✓ ✓ ✗ - 53.28 51.77 54.04bc
+- 63.05 63.38 65.00bc
+- 43.51 40.16 43.09
+✓ ✓ ✗ ✓ - 48.03 48.74 48.89 - 57.71 59.26b 58.72b
+- 38.36 38.22 39.05
+✓ ✗ ✓ ✓ - 51.85 53.05 54.33bc
+- 63.18 63.91 65.32bc
+- 40.52 42.19 43.35b
+✗ ✓ ✓ ✓ - 50.86 50.09 49.30 - 60.12 61.43b 62.84bc
+- 41.60 38.76 35.75
+✓ ✓ ✓ ✓ - 50.92 51.99b 53.35bc
+- 61.11 62.77b 64.67bc
+- 40.73 41.22 42.03
+Mean - 47.84 47.45 48.13c
+- 58.46 58.91b 59.84bc
+- 37.21 35.99 36.43
+While MMAR is the most promising approach for inference on unseen
+20

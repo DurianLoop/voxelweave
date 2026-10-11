@@ -1,0 +1,33 @@
+"""Render selected formula and MRI result pages; rendering is not visual review."""
+import hashlib
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+FOLDER=ROOT/'literature/source_cache/selfsupervised_selection_primary_2026-10-08'
+
+
+def main():
+    sys.stdout.reconfigure(encoding='utf-8')
+    records=[]
+    for key,pages in [('noise2self',[2,6]),('ssdu',[36,40,45,54])]:
+        for page in pages:
+            prefix=FOLDER/f'{key}_page{page:02d}_visual'
+            proc=subprocess.run([shutil.which('pdftoppm'),'-f',str(page),'-l',str(page),'-singlefile','-scale-to','1400','-png',str(FOLDER/(key+'.pdf')),str(prefix)],capture_output=True,timeout=45)
+            assert proc.returncode==0
+            p=prefix.with_suffix('.png')
+            records.append(dict(key=key,physical_page=page,path=p.relative_to(ROOT).as_posix(),
+                bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                actual_subprocess_exit=proc.returncode,visually_reviewed=False))
+    assert sum(p.stat().st_size for p in FOLDER.iterdir() if p.is_file())<20_000_000
+    with (FOLDER/'render_attempt01.json').open('x',encoding='utf-8') as f:
+        json.dump(dict(complete=True,errors=[],records=records),f,ensure_ascii=False,indent=2);f.write('\n')
+    print(json.dumps(dict(complete=True,rendered_pages=len(records),bytes=sum(v['bytes'] for v in records))),flush=True)
+    return 0
+
+
+if __name__=='__main__':
+    raise SystemExit(main())

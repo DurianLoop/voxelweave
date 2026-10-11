@@ -1,0 +1,7 @@
+# 接6719的本批不可变增量
+
+先核上一index SHA36c4f0589788d27017ea8b7dd879737404833841b358bbf5d588f7f94721ce14、proof SHA7c4fe5e52c3073e5566f99d1602604cf671af474195b62daf5285da4f56fef69，再核累计6719旧来源。原医学36FOV已整体终态并在上批冻结；全强度90446与开发12652继续排除live目录（immutable frozen_config除外），不按rolling receipt冒充完成。
+
+纳入本批新主文/内嵌supp/40公式布局/1数据表，3固定作者文件336行、完整实际内层读流及显示补读、所有失败/恢复、11968日志描述分析、比较准备脚本、可见对话。源下载不计阅读，静态审计不计模型复现或医学确认。作者原README链接如有GitHub相对路径，按固定commit tree检查，不改镜像原文。
+
+完整开发比较是准备状态，不提前执行或冻结它将来的新结果。自身index/proof与实际归档terminal分开保存，不覆盖此前冻结源；本批公开回复与后续观察另存新post-archive增量。CPU1/below-normal/1200秒，本目录<=2MB；磁盘8GB另留全强度2MB/原医学3MB/开发2.8MB。没有独立确认发表claim，goal active。

@@ -1,0 +1,67 @@
+4.6. FORMALIZING LEARNING-BASED, DATA-DRIVEN MASK
+DESIGN
+from an optimal mask. The optimal mask describes the support of an optimal probability
+distribution.
+We model the mask designing process as finding a probability mass function (PMF)
+π∈SP−1, whereSP−1 :={π∈ [0, 1]P :∑P
+i=1πi = 1} is the standard simplex inRP. π
+assigns to each locationi in thek-space a probabilityπi to be acquired. The mask is
+then constructed by drawing without replacement fromπ until the cardinality constraint
+|ω| = N is met. We denote this dependency asω(π,N ). The problem of finding the
+optimal sampling distribution is subsequently formulated as
+max
+π∈SP−1
+η(π), η (π) := Eω(π,N)
+x∼p(x)
+[η (x,fθ (y,ω ))], (4.8)
+where the index setω⊂ [P ] is generated fromπ and [P ] :={1,...,P }. This problem
+corresponds to finding the probability distribution π that maximizes the expected
+performance metric with respect to the data p(x) and the masks drawn from this
+distribution. To ease the notation, we will useη (x,fθ (y,ω ))≡η (x;ω).
+In practice, we do not have access toEp(x) [η(x;ω)] and instead have at hand the training
+images{xi}m
+i=1 drawn independently fromp(x). We therefore maximize theempirical
+performance by solving
+max
+π∈SP−1
+ηm(π), η m(π) := 1
+m
+m∑
+i=1
+Eω(π,N) [η(ω,xi)]. (4.9)
+Note that Problem 4.9, while being an empirical maximization problem, is distinct from
+Problem 4.5 above, as it seeks to optimize the distribution from which masks are drawn,
+and as a result, performs an expectation over all the masks drawn from it.
+Given that Problem 4.9 looks for masks that are constructed by samplingN times
+without replacement fromπ, the following holds.
+Proposition 1. There exists a maximizer of Problem 4.9 that is supported on an
+index set of size at mostN.
+Proof. Let the distributionˆπn be a maximizer of Problem 4.9. We are interested in
+finding the support ofˆπn. Because∑
+|ω|=N Pr[ω] = 1, note that
+max
+π∈SP−1
+ηm(π) := max
+π∈SP−1
+∑
+|ω|=N
+1
+m
+∑m
+i=1η(xi;ω)· Pr[ω|π]
+≤ max
+π∈SP−1
+max
+|ω|=N
+1
+m
+∑m
+i=1η(xi;ω)
+= max
+|ω|=N
+1
+m
+∑m
+i=1η(xi;ω).
+Let ˆωN be an index set of sizeN that maximizes the last line above. The above
+43

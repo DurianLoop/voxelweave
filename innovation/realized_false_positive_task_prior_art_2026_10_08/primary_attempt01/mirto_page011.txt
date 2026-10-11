@@ -1,0 +1,81 @@
+MIRTO 11
+AUPRC and +0.520 [0.504, 0.537] in Dice at the valida￾tion threshold at 20 cm3
+(Appendix D.1, Table 14). Slice￾max AUROC moved by only +0.112 [0.099, 0.125] (me￾dian +0.083). This is the pattern the hypothesis predicts:
+a slice-level score is close to blind to the error that matters
+most for segmentation. The error is of the kind the reg￾istration gate is designed to reject (it fails in-plane flips
+and transposes on synthetic volumes; Section 2.3), and
+the label-free diagnostics flag it directly: under the wrong
+mapping 24% of cDDPM test subjects were anti-located
+(per-subject voxel AUROC < 0.5). Two further instances
+of the same risk occurred with REFLECT. A second ex￾port of its maps with the same kind of axis error left
+26% of test subjects anti-located and lowered voxel AU￾ROC from 0.936 to 0.616 whilst slice AUROC stayed at
+0.915 (with the correct mapping, 2 of 312 subjects were
+anti-located); and resampling REFLECT maps by sim￾ple zooming instead of with the mapped transform gave
+the published map a Dice of 0.089 instead of 0.548, which
+invalidated a comparison of score rules made with that
+resampling. Each error produced a plausible table. That
+is the case for gating geometry rather than assuming it.
+The registration gate on correct pipelines. The gate
+passed 1,342 of 1,344 method–subject pairs (312 test and
+24 validation subjects for each of four methods; Fig. 4a).
+Every method’s applied transform was the cohort-wide
+overlap maximiser amongst the 56 candidates (criterion
+ii-a). The one subject that failed, for UCCD and cD￾DPM, which share a reference, failed only the overlap
+floor (iii) with D = 0.845; its centroid error was within
+3 mm and no alternative did better, so it is a label-fidelity
+exception, not a misregistration. Excluding it changed the
+interval-excludes-zero status of 5 of 588 contrasts, each
+with a bound within 0.0013 of zero, and moved no esti￾mate by more than 0.008. A fixed overlap threshold of 0.95
+would have failed 61 (REFLECT), 63 (AnomalyDINO)
+and 242 (UCCD, cDDPM) correctly registered subjects
+(Appendix Table 15): their own references had been re￾sampled inside the method’s preprocessing (median la￾bel fidelity 0.966) or their tumour extended beyond the
+100-slice field of view of UCCD and cDDPM (45 of 336
+subjects). Across all twenty method–training-set combi￾nations the same subject was the only failure.
+Diagnostics where the truth is known. We injected con￾trolled corruptions into the two pipelines whose geometry
+had been verified independently (Fig. 4b; Appendix Ta￾ble 16). In-plane flips and the transpose cost UCCD 0.34
+to 0.50 Dice and 0.20 to 0.26 voxel AUROC, yet changed
+its slice-max AUROC by at most +0.012. A corrupted
+map can even improve a standard metric: an antero￾posterior flip raised AnomalyDINO’s slice-max AUROC
+by +0.181 and the transpose by +0.099. Rank stability
+and the anti-location rate detected every in-plane flip and
+transpose with power 1.000 at a false-alarm rate of 0.05
+already at n = 30, which supports H7 (Table 17); the sec￾ondary hypothesis on flips held as well. They behave dif￾ferently elsewhere: the anti-location rate stays near zero
+under through-plane shifts and reference dilation, so it is
+specific to localisation errors, whereas rank stability re￾acts to almost any perturbation of the per-subject rank￾ing (power 1.000 for a two-slice shift that moved AUROC
+by only +0.003) and is better read as a change detector.
+Permuting 5% of subject identifiers was not detectable at
+n ≤ 312, and the Jaccard bound was never violated. Fur￾ther robustness checks (excluding the failing subject, re￾stricting to tumours inside every field of view, a through￾plane offset check, spatial randomisation and a geometry
+factorial) are reported in Appendix D.1.
+3.2 Sensitivity of rankings to evaluation choices
+Hypotheses. If evaluation choices matter, the order of two
+methods should depend on them. H1 (ranking instability):
+some pair of methods takes its minority order in at least
+20% of defensible universes (lower 95% bound of ϕmax
+at least 0.20). H2 (evaluation dominance): the evaluation
+axes, with their interactions with method, explain more
+of the variance of scores than the method does, with non￾overlapping intervals. Because H2 pools metrics that live
+on different scales, we add an exploratory hypothesis that
+sharpens it: a metric measures a property of the method
+only if, within that metric, the method dominates the
+variance and the order of methods does not flip.
+Within each metric. The decomposition within a metric
+separates rankings that belong to the method from rank￾ings that the evaluation decides (Table 3, Fig. 6). The
+method explained 0.954 [0.933, 0.966] of the variance in
+voxel AUROC and 0.960 [0.941, 0.972] in voxel AUPRC.
+Voxel AUROC gave a single order in every universe (RE￾FLECT > cDDPM > UCCD > AnomalyDINO); in voxel
+AUPRC only the aggregation changed the order, RE￾FLECT and cDDPM exchanging places between subject￾level and pooled values (Section 3.4). The method ex￾plained 0.770 [0.738, 0.787] of the variance in Dice, but
+much of this is AnomalyDINO’s deficit. Amongst the
+three residual models every pair swapped places in a sub￾stantial share of Dice universes (within-metric flip shares
+0.36 to 0.49), Dice gave six different orders, and each of
+REFLECT, UCCD and cDDPM ranked first in between
+26% and 39% of them (Appendix C, Table 13). The bud￾get and the threshold protocol were the largest evaluation
+axes for Dice (0.108 and 0.056 of its variance, main effect
+plus interaction with method; point estimates). Lesion
+sensitivity was governed by the evaluation: the method
+explained 0.139 [0.127, 0.152] of its variance and the axes
+0.657 [0.648, 0.666], of which the lesion definition carried
+0.338 and the hit criterion 0.269 (point estimates). Part
+of the lesion-definition share is a change of denominator
+common to all methods (Section 3.7), which cannot re￾order them; the within-metric flip shares of 0.26 to 0.34
+between residual models show that the evaluation choices
+reorder them as well.

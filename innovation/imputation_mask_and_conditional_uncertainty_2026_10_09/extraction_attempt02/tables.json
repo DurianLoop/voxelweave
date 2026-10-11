@@ -1,0 +1,226 @@
+[
+  {
+    "id": "FD1",
+    "rows": [
+      [
+        "x i ∼ N ( 0 , I d × d ) ,",
+        "(1)"
+      ]
+    ]
+  },
+  {
+    "id": "FD2",
+    "rows": [
+      [
+        "y i = μ k + W k x i + ϵ i , Where ϵ i ∼ N ( 0 , σ k 2 I D × D ) , and ϵ i ⫫ x i .",
+        "(2)"
+      ]
+    ]
+  },
+  {
+    "id": "FD3",
+    "rows": [
+      [
+        "p ( Y ; θ ) = ∏ i ∑ k π k N ( y i ; μ k , C k ) .",
+        "(3)"
+      ]
+    ]
+  },
+  {
+    "id": "FD4",
+    "rows": [
+      [
+        "y i O i = μ k O i + W k O i x i + ϵ i O i ,",
+        "(4)"
+      ]
+    ]
+  },
+  {
+    "id": "FD5",
+    "rows": [
+      [
+        "p ( Y O ; θ ) = ∏ i ∑ k π k N ( y i O i ; μ k O i , C k O i O i ) ,",
+        "(5)"
+      ]
+    ]
+  },
+  {
+    "id": "FD6",
+    "rows": [
+      [
+        "γ i k ≜ p ( k ∣ y i O i ; θ ) = π k N ( y i O i ; μ k O i , C k O i O i ) ∑ k ′ π k ′ N ( y i O i ; μ k ′ O i , C k ′ O i O i ) ,",
+        "(6)"
+      ]
+    ]
+  },
+  {
+    "id": "FD7",
+    "rows": [
+      [
+        "x ^ i k ≜ E [ x i ∣ k ] = ( ( W k O i ) T ( W k O i ) + σ k 2 I d × d ) − 1 ( W k O i ) T ( y i O i − μ k O i ) ,",
+        "(7)"
+      ]
+    ]
+  },
+  {
+    "id": "FD8",
+    "rows": [
+      [
+        "S i k ≜ E [ x i x i T ∣ k ] − x ^ i k x ^ i k T = σ k 2 ( ( W k O i ) T ( W k O i ) + σ k 2 I d × d ) − 1 .",
+        "(8)"
+      ]
+    ]
+  },
+  {
+    "id": "FD9",
+    "rows": [
+      [
+        "δ i k = γ i k ∑ i ′ ∈ P j γ i ′ k",
+        "(9)"
+      ]
+    ]
+  },
+  {
+    "id": "FD10",
+    "rows": [
+      [
+        "b j = ∑ i ∈ P j δ i k E [ x i ∣ k ] = ∑ i ∈ P j δ i k x ^ i k",
+        "(10)"
+      ]
+    ]
+  },
+  {
+    "id": "FD11",
+    "rows": [
+      [
+        "A j = ∑ i ∈ P j δ i k E [ x i x i T ∣ k ] = ∑ i ∈ P j δ i k ( x ^ i k x ^ i k T + S i k ) .",
+        "(11)"
+      ]
+    ]
+  },
+  {
+    "id": "FD12",
+    "rows": [
+      [
+        "μ k j ← ∑ i ∈ P j γ i k ( 1 − x ^ i T A j − 1 b j ) y i j ∑ i ′ ∈ P j γ i ′ k ( 1 − x ^ i ′ T A j − 1 b j ) .",
+        "(12)"
+      ]
+    ]
+  },
+  {
+    "id": "FD13",
+    "rows": [
+      [
+        "W k j ← ∑ i ∈ P j δ i k ( y i j − μ k j ) x ^ i k T A j − 1 ,",
+        "(13)"
+      ]
+    ]
+  },
+  {
+    "id": "FD14",
+    "rows": [
+      [
+        "σ k 2 ← ∑ j ∑ i ∈ P j γ i k [ ( y i j − μ k j − W k j x ^ i k ) 2 + W k j S i k ( W k j ) T ] ∑ j ∑ i ′ ∈ P j γ i ′ k .",
+        "(14)"
+      ]
+    ]
+  },
+  {
+    "id": "FD15",
+    "rows": [
+      [
+        "π k = 1 N ∑ i γ i k .",
+        "(15)"
+      ]
+    ]
+  },
+  {
+    "id": "FD16",
+    "rows": [
+      [
+        "y ^ i = arg max y i p ( y i ∣ y i O i ; θ ) = arg max y i ∑ k p ( k ∣ y i O i ) ∫ x i p ( y i ∣ x i ) p ( x i ∣ k , y i O i ) d x i = arg max y i ∑ k γ i k ∫ x i p ( y i ∣ x i ) p ( x i ∣ k , y i O i ) d x i = arg max y i ∑ k γ i k N ( y i ; μ k + W k x ^ i k , Σ i k ) ,"
+      ]
+    ]
+  },
+  {
+    "id": "FD17",
+    "rows": [
+      [
+        "y ^ i = μ k ^ + W k ^ x ^ i k ^ .",
+        "(16)"
+      ]
+    ]
+  },
+  {
+    "id": "FD18",
+    "rows": [
+      [
+        "MSE ( Z , Z o ) = 1 N ∑ ‖ Z − Z o ‖ 2 ,",
+        "(17)"
+      ]
+    ]
+  },
+  {
+    "id": "FD19",
+    "rows": [
+      [
+        "PSNR = log 10 max ( Z o ) M S E ( Z , Z o ) .",
+        "(18)"
+      ]
+    ]
+  },
+  {
+    "id": "FD20",
+    "rows": [
+      [
+        "p ( Y O , X ; θ ) = ∏ i ∑ k π k N ( y i O i , x i ; μ k O i , C k O i O i ) ,",
+        "(19)"
+      ]
+    ]
+  },
+  {
+    "id": "FD21",
+    "rows": [
+      [
+        "Q ( θ ∣ θ ) = E X ∣ Y O , θ [ log p ( Y O , X ; θ ) ] = ∑ i , k E [ k ( − d 2 log 2 π − 1 2 log ∣ σ k 2 I ] − 1 2 σ k 2 ( y i O i − W k O x i − μ k O i ) T ( y i O i − W k O x i − μ k O i ) − d 2 log 2 π − 1 2 log ∣ I ∣ − 1 2 x i x i T ) ] .",
+        "(20)"
+      ]
+    ]
+  },
+  {
+    "id": "FD22",
+    "rows": [
+      [
+        "∂ Q ∂ μ k ∝ ∑ i ∈ P j ∂ ∂ μ k E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] ∝ ∑ i ∈ P j E [ k ( y i O i − W k O i x i − μ k O i ) ] = ∑ i ∈ P j γ ik ( y i O i − W k O i x ^ ik − μ k O i ) = 0 μ k j = 1 ∑ i ′ γ i ′ k ∑ i ∈ P j γ ik ( y i j − W k j x ^ ik )",
+        "(21)"
+      ]
+    ]
+  },
+  {
+    "id": "FD23",
+    "rows": [
+      [
+        "∂ Q ∂ W k ∝ ∑ i ∈ P j ∂ E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] ∂ W k ∝ ∑ i ∈ P j E [ k ( W k O i x i − ( y i O i − μ k O i ) ) x i T ] = ∑ i ∈ P j γ ik W O i ( x ^ ik x ^ ik T + S ik ) − ( y i O i − ( μ k O i ) ) x ^ ik T = 0 W k j = [ ∑ i ∈ P j γ ik ( x ^ ik x ^ ik T + S ik ) ] − 1 ∑ i ∈ P j γ ik ( y i j − μ k j ) x ^ ik T = ∑ i ∈ P j δ ik ( y i j − μ k j ) x ^ ik T A j − 1",
+        "(22)"
+      ]
+    ]
+  },
+  {
+    "id": "FD24",
+    "rows": [
+      [
+        "μ k j ∑ i γ ik = ∑ i ∈ P j γ ik y i j − W k j ∑ i ∈ P j γ ik x ^ ik μ k j = ∑ i ∈ P j δ ik y i j − W k j b j μ k j = ∑ i ∈ P j δ ik y i j − ∑ i ∈ P j δ ik ( y i j − μ k j ) x ^ ik T A j − 1 b j μ k j ( 1 − ∑ i ∈ P j δ ik x ^ ik T A j − 1 b j ) = ∑ i ∈ P j δ ik y i j ( 1 − x ^ ik T A j − 1 b j ) μ k j = ∑ i ∈ P j δ ik y i j ( 1 − x ^ ik T A j − 1 b j ) ∑ i ∈ P j δ ik ( 1 − x ^ ik T A j − 1 b j ) .",
+        "(23)"
+      ]
+    ]
+  },
+  {
+    "id": "FD25",
+    "rows": [
+      [
+        "∂ Q ∂ σ k 2 ∝ ∑ i ∈ P j − ∂ ∂ σ k 2 1 σ k 2 E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] − ∂ ∂ σ k 2 N log σ k 2 = ∑ i ∈ P j 1 σ k 4 E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] − N σ k 2 = 0 σ k 2 = ∑ i ∈ P j E [ k ( y i O i − W k O i x i − μ k O i ) T ( y i O i − W k O i x i − μ k O i ) ] σ k 2 = ∑ j ∑ i ∈ P j γ ik [ ( y i j − μ k j − W k j x ^ ik ) 2 + W k j S ik ( W k j ) T ] ∑ j ∑ i ∈ P j γ ik .",
+        "(24)"
+      ]
+    ]
+  }
+]

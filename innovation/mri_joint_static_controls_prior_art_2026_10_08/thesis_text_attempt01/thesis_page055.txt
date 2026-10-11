@@ -1,0 +1,37 @@
+CHAPTER 4. OPTIMIZING SAMPLING PATTERNS
+For instance, Zhang et al. (2019b) trained anevaluator that estimates the error
+made by the reconstruction model at the different locations to be acquired. They
+then use this heuristic for sampling, by acquiring at each step the location that is
+estimated to have the highest reconstruction error.
+We refer to this approach as aheuristic rather than a policy because it is not
+specifically trained to estimate what would be the best location to answer next; it
+only trains a model that estimates the current reconstruction error, and then uses it
+in a greedy fashion.
+We will expand upon the use of heuristics for adaptive sampling in Chapter 7, where
+we propose to use the variance of a generative adversarial network (Goodfellow et al.,
+2014) to perform adaptive sampling.
+Remark (Non-sequential adaptive sampling). Although a sequential acquisition is
+a natural choice for adaptive sampling, it is possible to perform patient-adaptive
+sampling with a fixed (non-sequential) mask.
+This was done for instance by Bakker et al. (2021), where in the case of multi-coil
+MRI, the authors used the auto-calibration signal (ACS), a small set of measurements
+that is systematically acquired, to design a patient-adaptive fixed mask in a one-shot
+fashion. They inputted the measurements into a policy model that outputs a single
+mask for the rest of the acquisition as a result. However, their results surprisingly
+show that their best performing sampling policies explicitly learn to be non-adaptive,
+and their results provide then a state-of-the-artnon-adaptive sampling mask.
+4.6.3 On the optimality of the discrete mask optimization problem
+In the previous sections, we defined Problems 4.4 and 4.5 as optimization problems over
+masks. However, compressed sensing approaches Puy et al. (2011); Chauffert et al. (2013)
+rather optimized the probabilitydistribution from which masks are subsequently drawn.
+These arguments were also constructed in the context of model-based, model-driven
+methods, aiming at minimizing coherence. Can we relate the optimization of a probability
+distribution to the optimization of a discrete mask such as Problem 4.5? How does
+the problem of finding an optimal probability distribution change when moving from a
+model-based, model-driven context to a learning-based, data-driven context? These are
+the questions that we will answer in this section.
+While in Chauffert et al. (2013), the optimization was done on the distributionπ from
+which masks are subsequently sampled, in our case, the performance metric will be
+optimized directly for a fixed mask rather than a distribution. We will formally show
+below that in a data-driven context, we can construct an optimal sampling distributionπ
+42

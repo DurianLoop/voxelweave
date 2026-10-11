@@ -1,0 +1,50 @@
+(a) GBRWT+MSN (b) MRN5+MSN (c) [Liu et al., 2017] (d) SegNetMRI5 (e) FS+MSN (f) GroundTruth
+Figure 4: The segmentations of the compared methods.
+Methods GM WM CSF
+DC HD AVD DC HD AVD DC HD AVD
+GBRWT+MSN 75.55 2.24 4.21 65.56 1.90 3.10 76.50 1.77 2.69
+MRN5+MSN 79.36 2.06 3.57 65.76 1.88 2.96 78.43 1.64 2.33
+[Liu et al., 2017] 83.41 1.81 2.96 78.05 1.24 1.61 77.81 1.76 2.58
+SegNetMRI5 86.38 1.66 2.52 81.49 1.08 1.34 79.23 1.61 2.23
+FS+MSN 87.36 1.60 2.33 85.94 1.00 1.14 81.01 1.61 2.18
+Table 1: The segmentation comparison of the different models using DC (%), HD and AVD (%) as metrics. FS+MSN is the segmentation
+performance when the ground truth MRI is known.
+2015]. The datasets are acquired using 3T MRI scans. Five
+datasets are provided containing T1-1mm, T1, T1-IR and T2-
+FLAIR imaging modalities already registered and with man￾ual segmentations. Here we use the T1 MRI data of the size
+240 × 240 throughout the paper. We use four datasets for
+training (total 192 slices) and one dataset for testing (total 48
+slices). We adopt the same data augmentation technique dis￾cussed in [Dong et al., 2017].
+4.2 Experimental Results
+To evaluate the segmentation performance, we compare
+the proposed SegNetMRI5 (5 blocks) with the inputting
+a fully-sampled MRI in MSN (FS+MSN) as ground truth
+performance, inputing the MRN5 reconstruction in MSN
+(MRN5+MSN) – i.e., no fine-tuning), inputting GBRWT re￾construction in MSN (GBRWT+MSN). GBRWT [Lai et al.,
+2016] represents the state-of-the-art performance in the con￾ventional sparse based CS-MRI methods. Finally, we also
+compare with the joint framework proposed by [Liu et al.,
+2017], where only the reconstruction network is fine-tuned
+in MRN5+MSN using the loss function L
+MRN + λL
+MSN.
+The same under-sampling mask shown in Figure 2(e) is again
+used.
+We show qualitative comparison in Figure 4. We colorize
+segmentation corresponding white matter, gray matter and
+cerebrospinal fluid with yellow, green and red. We observe
+that the proposed SegNetMRI5 model provides better seg￾mentation and approximates the ideal FS+MSN most closely,
+both of which are not perfect compared with the human la￾beling. For quantitative evaluation, we use the Dice Coeffi￾cient (DC), the 95th-percentile of the Hausdoff distance (HD)
+and the absolute volume difference (AVD), as also used in the
+MRBrainS challenge [Mendrik et al., 2015]. Larger DC, and
+smaller HD and AVD, indicate better segmentation. We show
+these results in Table 1, which is consistent with the subjec-
+(a) ZF (b) GBRWT (c) MRN5
+(d) Huang (e) SegNetMRI5 (f) FS
+(g) GBRWT Error (h) MRN5 Error (i) Huang Error (j) SegNetMRI5 Error
+Figure 5: The reconstructed MR images with different CS-MRI
+methods in the first two rows and the residual maps in the third row.
+tive evaluation.
+In addition to the improvement of segmentation accuracy,
+we also evaluate the reconstruction quality of the SegNetMRI
+model. We show the reconstructed MRI from SegNetMRI5,
+the model in [Liu et al., 2017], MRN5 and GBRWT in Fig-

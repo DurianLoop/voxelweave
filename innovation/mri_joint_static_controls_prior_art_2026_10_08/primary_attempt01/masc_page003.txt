@@ -1,0 +1,45 @@
+Accelerated MRI with Metal Implants
+direction, aiming to reduce scan times by acquiring only a subset of k-space lines (Wang
+et al., 2016; Han et al., 2019). Recent work has explored jointly optimizing fixed under-
+sampling patterns with reconstruction networks (Zibetti et al., 2022), while reinforcement
+learning approaches frame k-space acquisition as a sequential decision-making problem,
+where an agent learns which phase-encoding lines to acquire to maximize reconstruction
+quality under a limited sampling budget (Zhang et al., 2019; Pineda et al., 2020; Bakker
+et al., 2020; Yen et al., 2024).
+However, existing learned acquisition methods do not account for metal artifacts, and
+their interaction with artifact reduction remains unexplored. As illustrated in Figure 1,
+applying conventional active sampling policies to metal-corrupted data produces recon-
+structions that retain significant artifacts, since these policies were not designed to handle
+the unique k-space signatures induced by metal implants.
+In this work, we propose MASC (Metal-Aware Sampling and Correction via Reinforce-
+ment Learning for Accelerated MRI), a unified framework that jointly addresses metal ar-
+tifact reduction and accelerated MRI acquisition. Our approach formulates active k-space
+acquisition as a Markov decision process (Sutton and Barto, 2018), where an artifact-aware
+Proximal Policy Optimization (PPO) agent (Schulman et al., 2017) learns to select phase-
+encoding lines while a U-Net-based (Ronneberger et al., 2015) MAR network processes
+the undersampled reconstructions. To enable supervised training, we construct a paired
+dataset using the open-source physics-based MRI simulator (Zochowski et al., 2024), which
+generates realistic TSE k-space data from digital phantoms derived from the AutoPET CT
+dataset (Gatidis et al., 2022) via multi-tissue segmentation. Virtual metal implants are
+added to produce exactly matched clean-metal pairs with physically accurate off-resonance
+artifacts, providing ground truth supervision. Crucially, we introduce an end-to-end training
+scheme where both components co-adapt: the acquisition policy learns which k-space lines
+best support artifact removal, while the MAR network adapts to handle the specific under-
+sampling patterns produced by the learned policy (Figure 1, bottom). This co-adaptation
+addresses a fundamental limitation of frozen MAR approaches—networks trained on fully-
+sampled data may not optimally handle the aliasing artifacts introduced by aggressive un-
+dersampling. We evaluate our approach against conventional sampling strategies and two
+learning-based RL methods, demonstrating that the learned policies achieve superior recon-
+struction quality, with end-to-end training providing measurable improvements over frozen
+MAR baselines. We further validate cross-dataset generalization ability through evaluation
+on the FastMRI knee dataset (Zbontar et al., 2018; Knoll et al., 2020) with physics-based
+metal artifact simulation (Kwon et al., 2018), confirming successful transfer to realistic
+clinical MRI data. Our contributions are:
+•To the best of our knowledge, the first study to address accelerated MRI reconstruction
+in the presence of metal artifacts.
+•A physics-based paired hip MRI k-space dataset with simulated metal artifacts en-
+abling supervised training for artifact reduction and reward computation for policy
+learning.
+•An end-to-end artifact-aware reinforcement learning framework for joint optimization
+of k-space acquisition and metal artifact reduction.
+3
