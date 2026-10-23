@@ -2,6 +2,18 @@
 
 本仓库用于 MRI 体数据切片间超分辨率实验，涵盖数据准备、基线模型复现、方法设计、交叉验证、评估与论文材料。实验以病例级数据划分为基本单位，统一保存可复现的运行配置、训练记录、预测结果和指标。
 
+## 研究交接与模型筛选
+
+| 文档 | 用途 |
+| --- | --- |
+| [自研模型与 baseline 梯队](docx/experiment/self_model_baseline_tiers.md) | 同协议五指标对比、效果梯队与优先保留模型。 |
+| [完整研究交接](docx/experiment/research_handoff_20261023.md) | 后续模型研究、复现资产、运行入口、论文路线和证据缺口。 |
+| [方法与结果总汇](docx/experiment/self_innovation_methods_and_results.md) | 各代自研方法、消融、负结果与原始来源。 |
+| [统一 baseline 主表](docx/experiment/experiment_master_table.md) | T2/x4 三数据集及 x2/x6、训练预算敏感性。 |
+| [交接证据快照](docx/experiment/handoff_evidence_20261023/README.md) | 轻量汇总结果、源路径/SHA 和本地权重库存；影像和权重另行交接。 |
+
+优先候选为 PAST 成熟 G 系列和轻量 ACSI v1；性能信号、研究优先级与独立验证完整度分别说明。文档核验：`python processing/verify_research_handoff.py`。
+
 ## 目录结构
 
 | 路径 | 用途 |
